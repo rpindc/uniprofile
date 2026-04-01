@@ -1,1162 +1,622 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
-// ── MOCK DATA ──────────────────────────────────────────────────────────────
-const MOCK_UUID = "01926a3f-7c2e-7000-8b1d-4e9f2a0d5c8b";
-const MOCK_PASSENGER = {
-  uuid: MOCK_UUID,
-  firstName: "Rommel",
-  lastName: "Santos",
-  email: "rommel@uniworld.io",
-  phone: "+1 571 555 0192",
-  nationality: "PHL",
-  passportNo: "P12345678",
-  passportExpiry: "2030-04-15",
-  dob: "1985-03-22",
-  context: "bleisure",
-  biometricStatus: { frt: "enrolled", fido2: "enrolled", nfc: "pending" },
-  preferences: {
-    seat: "Window, front third",
-    meal: "Asian vegetarian",
-    cabin: "Business",
-    lounge: true,
-    contactMethod: "App push",
-  },
-};
+// ── CONFIG ────────────────────────────────────────────────────────────────
+const API_URL = import.meta.env.VITE_API_URL || "https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
+const COGNITO_DOMAIN = `https://uniprofile-auth.auth.us-east-1.amazoncognito.com`;
+const CLIENT_ID = import.meta.env.VITE_COGNITO_CLIENT_ID || "2heljmdli4f9cv2i4m0i020mfc";
+const USER_POOL_ID = import.meta.env.VITE_COGNITO_USER_POOL_ID || "us-east-1_OqNHNEWZP";
+const REGION = import.meta.env.VITE_REGION || "us-east-1";
 
-const MOCK_ORDERS = [
-  { id: "ORD-20240312-001", route: "IAD → DXB → SIN", airline: "Emirates", status: "confirmed", date: "2024-06-15", pnr: "EK7X4M", value: "$3,420", type: "business" },
-  { id: "ORD-20240410-002", route: "SIN → NRT", airline: "Singapore Airlines", status: "ticketed", date: "2024-07-01", pnr: "SQ9KL2", value: "$1,180", type: "leisure" },
-  { id: "ORD-20240502-003", route: "NRT → IAD", airline: "ANA", status: "pending", date: "2024-07-14", pnr: "NH3PQ7", value: "$2,650", type: "business" },
-];
-
-const MOCK_ANCILLARIES = [
-  { type: "Seat", detail: "14A Window — Business", order: "ORD-20240312-001", status: "confirmed", price: "Included" },
-  { type: "Lounge", detail: "Emirates Business Lounge DXB", order: "ORD-20240312-001", status: "confirmed", price: "$0" },
-  { type: "Meal", detail: "Asian Vegetarian (AVML)", order: "ORD-20240312-001", status: "confirmed", price: "$0" },
-  { type: "Extra Baggage", detail: "+23kg checked", order: "ORD-20240410-002", status: "confirmed", price: "$85" },
-  { type: "Fast Track", detail: "Changi T3 Priority", order: "ORD-20240410-002", status: "available", price: "$24" },
-];
-
-const MOCK_DISRUPTIONS = [
-  { id: "DIS-20240312-01", orderId: "ORD-20240312-001", type: "Delay", severity: "moderate", original: "EK521 06:20 DXB", new: "EK521 09:45 DXB", action: "Connection protected", compensation: "$150 voucher", resolved: true },
-];
-
-const MOCK_LOYALTY = [
-  { program: "Emirates Skywards", tier: "Gold", number: "EK-9872341", miles: 124800, expiry: "2025-12-31" },
-  { program: "Singapore KrisFlyer", tier: "PPS Club", number: "SQ-4519823", miles: 76200, expiry: "2025-06-30" },
-  { program: "ANA Mileage Club", tier: "Platinum", number: "NH-2341097", miles: 34500, expiry: "2025-03-31" },
-];
-
-const MOCK_BAGS = [
-  { tagId: "AC847291", flight: "EK521", route: "IAD→DXB", status: "In-flight", lastSeen: "DXB Baggage Hall 2", timestamp: "2024-06-15 14:22 GST", resolved: false },
-  { tagId: "AC847292", flight: "EK521", route: "IAD→DXB", status: "Delivered", lastSeen: "Belt 7, DXB T3", timestamp: "2024-06-15 15:40 GST", resolved: true },
-];
-
-const MOCK_PAYMENT = {
-  wallet: [
-    { type: "Visa", last4: "4821", expiry: "09/27", default: true, token: "tok_4821_bsp" },
-    { type: "Mastercard", last4: "9034", expiry: "03/26", default: false, token: "tok_9034_bsp" },
-  ],
-  transactions: [
-    { ref: "TXN-EK7X4M", desc: "Emirates IAD-DXB-SIN Business", amount: "$3,420.00", date: "2024-05-12", status: "settled" },
-    { ref: "TXN-SQ9KL2", desc: "Singapore Airlines SIN-NRT", amount: "$1,180.00", date: "2024-05-28", status: "settled" },
-    { ref: "TXN-BGTXN01", desc: "Extra baggage SQ9KL2", amount: "$85.00", date: "2024-05-28", status: "settled" },
-  ],
-};
-
-const MOCK_CONSENT = [
-  { org: "Emirates Airlines", scope: "Profile, loyalty, meal preferences", granted: "2024-01-15", status: "active" },
-  { org: "Amex GBT (Corporate)", scope: "Full bleisure profile, trip history", granted: "2024-02-01", status: "active" },
-  { org: "Singapore Airlines", scope: "Profile, seat preference", granted: "2024-03-10", status: "active" },
-  { org: "Changi Airport", scope: "Biometric (FRT) for border", granted: "2024-05-01", status: "active" },
-  { org: "Sabre GDS", scope: "PNR enrichment, preferences", granted: "2023-11-20", status: "revoked" },
-];
-
-// ── COLOUR TOKENS ──────────────────────────────────────────────────────────
+// ── CSS ───────────────────────────────────────────────────────────────────
 const CSS = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
-
-  :root {
-    --ink: #0a0d14;
-    --ink2: #141824;
-    --ink3: #1e2433;
-    --border: rgba(255,255,255,0.08);
-    --border2: rgba(255,255,255,0.14);
-    --text: #e8eaf0;
-    --muted: #7a8099;
-    --accent: #5b8dee;
-    --accent2: #3dd68c;
-    --warn: #f5a623;
-    --danger: #e85d5d;
-    --purple: #a78bfa;
-    --mono: 'DM Mono', monospace;
-    --sans: 'DM Sans', sans-serif;
-    --display: 'Syne', sans-serif;
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --ink:#0a0d14;--ink2:#141824;--ink3:#1e2433;
+    --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+    --text:#e8eaf0;--muted:#7a8099;
+    --accent:#5b8dee;--accent2:#3dd68c;--warn:#f5a623;--danger:#e85d5d;--purple:#a78bfa;
+    --mono:'DM Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Syne',sans-serif;
   }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--ink);
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 14px;
-    line-height: 1.6;
-    min-height: 100vh;
-  }
-
-  .app {
-    display: flex;
-    min-height: 100vh;
-    background: var(--ink);
-  }
-
-  /* ── SIDEBAR ── */
-  .sidebar {
-    width: 220px;
-    min-width: 220px;
-    background: var(--ink2);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    overflow: hidden;
-  }
-
-  .sidebar-logo {
-    padding: 20px 20px 16px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .sidebar-logo-mark {
-    font-family: var(--display);
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    color: var(--text);
-  }
-
-  .sidebar-logo-mark span { color: var(--accent); }
-
-  .sidebar-logo-sub {
-    font-size: 10px;
-    color: var(--muted);
-    font-family: var(--mono);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-top: 2px;
-  }
-
-  .uuid-chip {
-    margin: 12px 16px;
-    padding: 8px 10px;
-    background: var(--ink3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-  }
-
-  .uuid-label {
-    font-size: 9px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--muted);
-    font-family: var(--mono);
-  }
-
-  .uuid-value {
-    font-family: var(--mono);
-    font-size: 9px;
-    color: var(--accent);
-    word-break: break-all;
-    margin-top: 2px;
-    opacity: 0.85;
-  }
-
-  .context-toggle {
-    margin: 0 16px 12px;
-    display: flex;
-    background: var(--ink3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  .ctx-btn {
-    flex: 1;
-    padding: 6px 4px;
-    font-size: 11px;
-    font-family: var(--mono);
-    border: none;
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    transition: all 0.15s;
-    text-align: center;
-  }
-
-  .ctx-btn.active {
-    background: var(--ink2);
-    color: var(--accent2);
-    border-radius: 6px;
-  }
-
-  .nav-section-label {
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--muted);
-    font-family: var(--mono);
-    padding: 12px 20px 6px;
-  }
-
-  .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 9px 20px;
-    cursor: pointer;
-    border-left: 2px solid transparent;
-    transition: all 0.12s;
-    font-size: 13px;
-    color: var(--muted);
-  }
-
-  .nav-item:hover { background: var(--ink3); color: var(--text); }
-
-  .nav-item.active {
-    background: rgba(91,141,238,0.1);
-    border-left-color: var(--accent);
-    color: var(--text);
-  }
-
-  .nav-icon {
-    width: 16px;
-    height: 16px;
-    opacity: 0.7;
-    flex-shrink: 0;
-  }
-
-  .nav-item.active .nav-icon { opacity: 1; }
-
-  .sidebar-footer {
-    margin-top: auto;
-    padding: 16px;
-    border-top: 1px solid var(--border);
-  }
-
-  .biometric-badges {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-
-  .bio-badge {
-    font-size: 9px;
-    font-family: var(--mono);
-    padding: 3px 7px;
-    border-radius: 4px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-  }
-
-  .bio-enrolled { background: rgba(61,214,140,0.15); color: var(--accent2); border: 1px solid rgba(61,214,140,0.3); }
-  .bio-pending  { background: rgba(245,166,35,0.12); color: var(--warn); border: 1px solid rgba(245,166,35,0.25); }
-
-  /* ── MAIN CONTENT ── */
-  .main {
-    flex: 1;
-    overflow-y: auto;
-    padding: 28px 32px;
-    max-width: 1100px;
-  }
-
-  .page-header {
-    margin-bottom: 24px;
-  }
-
-  .page-title {
-    font-family: var(--display);
-    font-size: 26px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: -0.5px;
-  }
-
-  .page-sub {
-    font-size: 13px;
-    color: var(--muted);
-    margin-top: 4px;
-  }
-
-  /* ── CARDS ── */
-  .card {
-    background: var(--ink2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 16px;
-  }
-
-  .card-sm { padding: 14px 18px; border-radius: 10px; }
-
-  .card-title {
-    font-family: var(--display);
-    font-size: 13px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--muted);
-    margin-bottom: 14px;
-  }
-
-  /* ── GRID ── */
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-
-  /* ── STAT CARD ── */
-  .stat-card {
-    background: var(--ink3);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px;
-  }
-
-  .stat-label {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--muted);
-    font-family: var(--mono);
-  }
-
-  .stat-value {
-    font-family: var(--display);
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1.1;
-    margin-top: 4px;
-  }
-
-  .stat-value.accent { color: var(--accent); }
-  .stat-value.green  { color: var(--accent2); }
-  .stat-value.warn   { color: var(--warn); }
-
-  .stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
-
-  /* ── TABLE ── */
-  .table { width: 100%; border-collapse: collapse; }
-
-  .table th {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--muted);
-    font-family: var(--mono);
-    text-align: left;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .table td {
-    padding: 11px 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    font-size: 13px;
-    vertical-align: middle;
-  }
-
-  .table tr:last-child td { border-bottom: none; }
-
-  /* ── BADGE ── */
-  .badge {
-    display: inline-block;
-    font-size: 10px;
-    font-family: var(--mono);
-    padding: 3px 8px;
-    border-radius: 5px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-  }
-
-  .badge-green  { background: rgba(61,214,140,0.12); color: var(--accent2); border: 1px solid rgba(61,214,140,0.25); }
-  .badge-blue   { background: rgba(91,141,238,0.12); color: var(--accent); border: 1px solid rgba(91,141,238,0.25); }
-  .badge-warn   { background: rgba(245,166,35,0.12); color: var(--warn); border: 1px solid rgba(245,166,35,0.25); }
-  .badge-danger { background: rgba(232,93,93,0.12); color: var(--danger); border: 1px solid rgba(232,93,93,0.25); }
-  .badge-purple { background: rgba(167,139,250,0.12); color: var(--purple); border: 1px solid rgba(167,139,250,0.25); }
-  .badge-muted  { background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border); }
-
-  /* ── BUTTON ── */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: 1px solid var(--border2);
-    background: transparent;
-    color: var(--text);
-    font-size: 12px;
-    font-family: var(--mono);
-    cursor: pointer;
-    transition: all 0.12s;
-    letter-spacing: 0.5px;
-  }
-
-  .btn:hover { background: var(--ink3); border-color: var(--accent); }
-
-  .btn-primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-    font-weight: 500;
-  }
-
-  .btn-primary:hover { background: #4a7de0; }
-
-  .btn-danger { border-color: var(--danger); color: var(--danger); }
-  .btn-danger:hover { background: rgba(232,93,93,0.1); }
-
-  /* ── INPUT ── */
-  .input {
-    background: var(--ink3);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 13px;
-    padding: 8px 12px;
-    width: 100%;
-    outline: none;
-    transition: border-color 0.12s;
-  }
-
-  .input:focus { border-color: var(--accent); }
-
-  /* ── FIELD ROW ── */
-  .field-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-  }
-
-  .field-row:last-child { border-bottom: none; }
-
-  .field-label {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    color: var(--muted);
-    font-family: var(--mono);
-  }
-
-  .field-value {
-    font-size: 13px;
-    color: var(--text);
-    text-align: right;
-    font-family: var(--mono);
-  }
-
-  /* ── PROGRESS BAR ── */
-  .progress-bar {
-    height: 4px;
-    border-radius: 2px;
-    background: var(--ink3);
-    overflow: hidden;
-    margin-top: 6px;
-  }
-
-  .progress-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.5s ease;
-  }
-
-  /* ── DISRUPTION BANNER ── */
-  .disruption-banner {
-    background: rgba(232,93,93,0.08);
-    border: 1px solid rgba(232,93,93,0.25);
-    border-radius: 10px;
-    padding: 14px 18px;
-    margin-bottom: 16px;
-  }
-
-  /* ── CONSENT ROW ── */
-  .consent-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-    gap: 12px;
-  }
-
-  .consent-row:last-child { border-bottom: none; }
-
-  /* ── TOGGLE ── */
-  .toggle {
-    width: 38px;
-    height: 22px;
-    border-radius: 11px;
-    border: none;
-    cursor: pointer;
-    position: relative;
-    transition: background 0.2s;
-    flex-shrink: 0;
-  }
-
-  .toggle::after {
-    content: '';
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: white;
-    top: 3px;
-    transition: left 0.2s;
-  }
-
-  .toggle.on { background: var(--accent2); }
-  .toggle.on::after { left: 18px; }
-  .toggle.off { background: var(--muted); }
-  .toggle.off::after { left: 3px; }
-
-  /* ── BAG STATUS ── */
-  .bag-track {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 0;
-  }
-
-  .bag-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  /* ── SCANNER MOCK ── */
-  .scanner-box {
-    background: var(--ink3);
-    border: 1px dashed var(--border2);
-    border-radius: 12px;
-    padding: 32px;
-    text-align: center;
-  }
-
-  .scanner-icon {
-    font-size: 40px;
-    margin-bottom: 12px;
-    opacity: 0.6;
-  }
-
-  .pulse-ring {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    border: 2px solid var(--accent);
-    margin: 0 auto 12px;
-    animation: pulse 2s ease-in-out infinite;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 0.8; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(1.08); }
-  }
+  body{background:var(--ink);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh}
+  .app{display:flex;min-height:100vh}
+
+  /* AUTH PAGES */
+  .auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--ink)}
+  .auth-card{background:var(--ink2);border:1px solid var(--border);border-radius:16px;padding:40px;width:100%;max-width:420px}
+  .auth-logo{font-family:var(--display);font-size:24px;font-weight:800;margin-bottom:8px}
+  .auth-logo span{color:var(--accent)}
+  .auth-sub{font-size:12px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;margin-bottom:32px}
+  .auth-title{font-family:var(--display);font-size:20px;font-weight:700;margin-bottom:24px}
+  .field{margin-bottom:16px}
+  .field label{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-family:var(--mono);margin-bottom:6px}
+  .field input,.field select{width:100%;background:var(--ink3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--sans);font-size:13px;padding:10px 12px;outline:none;transition:border-color 0.12s}
+  .field input:focus,.field select:focus{border-color:var(--accent)}
+  .field select option{background:var(--ink3)}
+  .btn-full{width:100%;padding:12px;border-radius:8px;background:var(--accent);border:none;color:#fff;font-family:var(--mono);font-size:12px;font-weight:500;cursor:pointer;transition:background 0.12s;letter-spacing:0.5px}
+  .btn-full:hover{background:#4a7de0}
+  .btn-full:disabled{opacity:0.5;cursor:not-allowed}
+  .auth-switch{text-align:center;margin-top:20px;font-size:12px;color:var(--muted)}
+  .auth-switch a{color:var(--accent);cursor:pointer;text-decoration:none}
+  .auth-switch a:hover{text-decoration:underline}
+  .error-msg{background:rgba(232,93,93,0.1);border:1px solid rgba(232,93,93,0.25);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--danger);margin-bottom:16px}
+  .success-msg{background:rgba(61,214,140,0.1);border:1px solid rgba(61,214,140,0.25);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--accent2);margin-bottom:16px}
+  .divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--muted);font-size:11px}
+  .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+  /* SIDEBAR */
+  .sidebar{width:210px;min-width:210px;background:var(--ink2);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;position:sticky;top:0;overflow:hidden}
+  .logo-area{padding:16px 16px 12px;border-bottom:1px solid var(--border)}
+  .logotype{font-family:var(--display);font-size:19px;font-weight:800;letter-spacing:-0.5px}
+  .logotype span{color:var(--accent)}
+  .logo-sub{font-size:9px;color:var(--muted);font-family:var(--mono);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+  .uuid-chip{margin:10px 12px;padding:7px 10px;background:var(--ink3);border:1px solid var(--border);border-radius:7px}
+  .uuid-lbl{font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:var(--mono)}
+  .uuid-val{font-family:var(--mono);font-size:8px;color:var(--accent);word-break:break-all;margin-top:2px;opacity:0.8}
+  .ctx-row{margin:0 12px 8px;display:flex;background:var(--ink3);border:1px solid var(--border);border-radius:7px;overflow:hidden}
+  .ctx-btn{flex:1;padding:5px 2px;font-size:10px;font-family:var(--mono);border:none;background:transparent;color:var(--muted);cursor:pointer;text-align:center;transition:all 0.12s}
+  .ctx-btn.on{background:var(--ink2);color:var(--accent2);border-radius:5px}
+  .nav-sec{font-size:8px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-family:var(--mono);padding:10px 16px 4px}
+  .nav-item{display:flex;align-items:center;gap:8px;padding:8px 16px;cursor:pointer;border-left:2px solid transparent;font-size:12px;color:var(--muted);transition:all 0.1s;white-space:nowrap}
+  .nav-item:hover{background:var(--ink3);color:var(--text)}
+  .nav-item.on{background:rgba(91,141,238,0.1);border-left-color:var(--accent);color:var(--text)}
+  .nav-dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:0.5;flex-shrink:0}
+  .nav-item.on .nav-dot{opacity:1}
+  .sidebar-foot{margin-top:auto;padding:12px 16px;border-top:1px solid var(--border)}
+  .signout-btn{width:100%;padding:8px;border-radius:7px;background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--mono);font-size:10px;cursor:pointer;transition:all 0.12s;text-transform:uppercase;letter-spacing:0.5px}
+  .signout-btn:hover{border-color:var(--danger);color:var(--danger)}
+
+  /* MAIN */
+  .main{flex:1;overflow-y:auto;padding:22px 24px;height:100vh}
+  .ph{margin-bottom:20px}
+  .ptitle{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:-0.5px}
+  .psub{font-size:11px;color:var(--muted);margin-top:3px}
+  .card{background:var(--ink2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px}
+  .ctitle{font-family:var(--display);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .stat{background:var(--ink3);border:1px solid var(--border);border-radius:8px;padding:12px}
+  .slbl{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-family:var(--mono)}
+  .sval{font-family:var(--display);font-size:22px;font-weight:700;line-height:1.1;margin-top:3px}
+  .ssub{font-size:10px;color:var(--muted);margin-top:2px}
+  .fr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+  .fr:last-child{border-bottom:none}
+  .fl{font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);font-family:var(--mono)}
+  .fv{font-size:12px;color:var(--text);text-align:right;font-family:var(--mono)}
+  .badge{display:inline-block;font-size:9px;font-family:var(--mono);padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:0.5px}
+  .bg{background:rgba(61,214,140,0.12);color:var(--accent2);border:1px solid rgba(61,214,140,0.22)}
+  .bb{background:rgba(91,141,238,0.12);color:var(--accent);border:1px solid rgba(91,141,238,0.22)}
+  .bw{background:rgba(245,166,35,0.12);color:var(--warn);border:1px solid rgba(245,166,35,0.22)}
+  .bp{background:rgba(167,139,250,0.12);color:var(--purple);border:1px solid rgba(167,139,250,0.22)}
+  .empty-state{text-align:center;padding:48px 24px;color:var(--muted)}
+  .empty-icon{font-size:36px;margin-bottom:12px;opacity:0.4}
+  .empty-title{font-family:var(--display);font-size:16px;font-weight:600;margin-bottom:6px;color:var(--text)}
+  .empty-sub{font-size:12px;line-height:1.6}
+  .loading{display:flex;align-items:center;justify-content:center;padding:48px;color:var(--muted);font-family:var(--mono);font-size:12px;gap:10px}
+  .spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .tbl{width:100%;border-collapse:collapse}
+  .tbl th{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-family:var(--mono);text-align:left;padding:6px 10px;border-bottom:1px solid var(--border)}
+  .tbl td{padding:9px 10px;border-bottom:1px solid rgba(255,255,255,0.03);font-size:12px;vertical-align:middle}
+  .tbl tr:last-child td{border-bottom:none}
+  .mono{font-family:var(--mono)}
+  .acc{color:var(--accent)}.acc2{color:var(--accent2)}.muted{color:var(--muted)}.warn{color:var(--warn)}.pur{color:var(--purple)}
+  .setup-wizard{max-width:560px;margin:0 auto}
+  .wizard-step{background:var(--ink2);border:1px solid var(--border);border-radius:12px;padding:28px;margin-bottom:16px}
+  .wizard-step-num{font-family:var(--mono);font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+  .wizard-step-title{font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:20px}
+  .btn-primary{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;background:var(--accent);border:none;color:#fff;font-family:var(--mono);font-size:12px;cursor:pointer;transition:background 0.12s}
+  .btn-primary:hover{background:#4a7de0}
+  .btn-primary:disabled{opacity:0.5;cursor:not-allowed}
+  .g2-field{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 `;
 
-// ── ICONS (SVG inline) ────────────────────────────────────────────────────
-const Icon = ({ name }) => {
-  const icons = {
-    home: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M3 12L12 3l9 9"/><path d="M9 21V12h6v9"/></svg>,
-    order: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 8h10M7 12h7M7 16h5"/></svg>,
-    seat: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M6 2v10a2 2 0 002 2h8a2 2 0 002-2V2"/><path d="M4 22h16M8 12v5M16 12v5"/></svg>,
-    disruption: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M12 2L2 19h20L12 2z"/><path d="M12 9v5M12 17v1"/></svg>,
-    loyalty: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>,
-    payment: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>,
-    bag: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M21 16V8a2 2 0 00-1-1.73L13 2.27a2 2 0 00-2 0L4 6.27A2 2 0 003 8v8a2 2 0 001 1.73L11 21.73a2 2 0 002 0L20 17.73a2 2 0 001-1.73z"/></svg>,
-    bio: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20v-1a4 4 0 014-4h8a4 4 0 014 4v1"/><path d="M17 3.34A10 10 0 019.37 21"/></svg>,
-    consent: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>,
+// ── COGNITO AUTH HELPERS ──────────────────────────────────────────────────
+const COGNITO_URL = `https://cognito-idp.${REGION}.amazonaws.com/`;
+
+async function cognitoRequest(action, body) {
+  const res = await fetch(COGNITO_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-amz-json-1.1",
+      "X-Amz-Target": `AWSCognitoIdentityProviderService.${action}`,
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || data.__type || "Auth error");
+  return data;
+}
+
+async function signUp(email, password, firstName, lastName) {
+  return cognitoRequest("SignUp", {
+    ClientId: CLIENT_ID,
+    Username: email,
+    Password: password,
+    UserAttributes: [
+      { Name: "email", Value: email },
+      { Name: "given_name", Value: firstName },
+      { Name: "family_name", Value: lastName },
+    ],
+  });
+}
+
+async function confirmSignUp(email, code) {
+  return cognitoRequest("ConfirmSignUp", {
+    ClientId: CLIENT_ID,
+    Username: email,
+    ConfirmationCode: code,
+  });
+}
+
+async function signIn(email, password) {
+  return cognitoRequest("InitiateAuth", {
+    AuthFlow: "USER_PASSWORD_AUTH",
+    ClientId: CLIENT_ID,
+    AuthParameters: { USERNAME: email, PASSWORD: password },
+  });
+}
+
+async function forgotPassword(email) {
+  return cognitoRequest("ForgotPassword", { ClientId: CLIENT_ID, Username: email });
+}
+
+// ── API HELPERS ───────────────────────────────────────────────────────────
+async function apiCall(path, method = "GET", body = null, token) {
+  const res = await fetch(`${API_URL}/v1${path}`, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    ...(body ? { body: JSON.stringify(body) } : {}),
+  });
+  return res.json();
+}
+
+// ── UUID v7 GENERATOR ─────────────────────────────────────────────────────
+function generateUUID() {
+  const now = Date.now();
+  const hex = now.toString(16).padStart(12, "0");
+  const r = () => Math.floor(Math.random() * 0x10000).toString(16).padStart(4, "0");
+  const r12 = () => Math.floor(Math.random() * 0x1000000000000).toString(16).padStart(12, "0");
+  return `${hex.slice(0,8)}-${hex.slice(8)}-7${r().slice(1)}-${(0x8000|Math.random()*0x3fff).toString(16)}-${r12()}`;
+}
+
+// ── SIGN UP PAGE ──────────────────────────────────────────────────────────
+function SignUpPage({ onSwitch }) {
+  const [step, setStep] = useState("details"); // details | verify
+  const [form, setForm] = useState({ firstName:"", lastName:"", email:"", password:"", confirm:"" });
+  const [code, setCode] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const handleSignUp = async () => {
+    if (!form.firstName || !form.lastName || !form.email || !form.password)
+      return setError("All fields are required");
+    if (form.password !== form.confirm)
+      return setError("Passwords do not match");
+    if (form.password.length < 8)
+      return setError("Password must be at least 8 characters");
+    setError(""); setLoading(true);
+    try {
+      await signUp(form.email, form.password, form.firstName, form.lastName);
+      setStep("verify");
+    } catch (e) { setError(e.message); }
+    setLoading(false);
   };
-  return <span className="nav-icon" style={{ display:"inline-flex", alignItems:"center" }}>{icons[name] || null}</span>;
-};
+
+  const handleVerify = async () => {
+    if (!code) return setError("Enter the verification code");
+    setError(""); setLoading(true);
+    try {
+      await confirmSignUp(form.email, code);
+      onSwitch("login", form.email);
+    } catch (e) { setError(e.message); }
+    setLoading(false);
+  };
+
+  if (step === "verify") return (
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-logo">Uni<span>Profile</span></div>
+        <div className="auth-sub">IATA OneOrder · v2.0</div>
+        <div className="auth-title">Check your email</div>
+        <p style={{ fontSize:13, color:"var(--muted)", marginBottom:24 }}>
+          We sent a verification code to <strong style={{color:"var(--text)"}}>{form.email}</strong>
+        </p>
+        {error && <div className="error-msg">{error}</div>}
+        <div className="field">
+          <label>Verification Code</label>
+          <input value={code} onChange={e=>setCode(e.target.value)} placeholder="123456" maxLength={6} />
+        </div>
+        <button className="btn-full" onClick={handleVerify} disabled={loading}>
+          {loading ? "Verifying…" : "Verify Email →"}
+        </button>
+        <div className="auth-switch" style={{marginTop:16}}>
+          <a onClick={()=>setStep("details")}>← Back</a>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-logo">Uni<span>Profile</span></div>
+        <div className="auth-sub">IATA OneOrder · v2.0</div>
+        <div className="auth-title">Create your passenger profile</div>
+        {error && <div className="error-msg">{error}</div>}
+        <div className="g2-field">
+          <div className="field"><label>First Name</label><input value={form.firstName} onChange={set("firstName")} placeholder="Rommel" /></div>
+          <div className="field"><label>Last Name</label><input value={form.lastName} onChange={set("lastName")} placeholder="Santos" /></div>
+        </div>
+        <div className="field"><label>Email</label><input type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" /></div>
+        <div className="field"><label>Password</label><input type="password" value={form.password} onChange={set("password")} placeholder="Min. 8 characters" /></div>
+        <div className="field"><label>Confirm Password</label><input type="password" value={form.confirm} onChange={set("confirm")} placeholder="Repeat password" /></div>
+        <button className="btn-full" onClick={handleSignUp} disabled={loading}>
+          {loading ? "Creating account…" : "Create UniProfile →"}
+        </button>
+        <div className="auth-switch">Already have an account? <a onClick={()=>onSwitch("login")}>Sign in</a></div>
+      </div>
+    </div>
+  );
+}
+
+// ── LOGIN PAGE ────────────────────────────────────────────────────────────
+function LoginPage({ onLogin, onSwitch, prefillEmail }) {
+  const [form, setForm] = useState({ email: prefillEmail||"", password:"" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [mode, setMode] = useState("login"); // login | forgot | forgot-sent
+
+  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const handleLogin = async () => {
+    if (!form.email || !form.password) return setError("Email and password required");
+    setError(""); setLoading(true);
+    try {
+      const data = await signIn(form.email, form.password);
+      const tokens = data.AuthenticationResult;
+      onLogin({ email: form.email, token: tokens.IdToken, accessToken: tokens.AccessToken });
+    } catch (e) { setError(e.message); }
+    setLoading(false);
+  };
+
+  const handleForgot = async () => {
+    if (!form.email) return setError("Enter your email first");
+    setError(""); setLoading(true);
+    try {
+      await forgotPassword(form.email);
+      setMode("forgot-sent");
+    } catch (e) { setError(e.message); }
+    setLoading(false);
+  };
+
+  if (mode === "forgot-sent") return (
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-logo">Uni<span>Profile</span></div>
+        <div className="auth-sub">IATA OneOrder · v2.0</div>
+        <div className="success-msg">Password reset email sent to {form.email}</div>
+        <button className="btn-full" onClick={()=>setMode("login")}>Back to Sign In</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-logo">Uni<span>Profile</span></div>
+        <div className="auth-sub">IATA OneOrder · v2.0</div>
+        <div className="auth-title">{mode==="forgot" ? "Reset password" : "Sign in to UniProfile"}</div>
+        {error && <div className="error-msg">{error}</div>}
+        <div className="field"><label>Email</label><input type="email" value={form.email} onChange={set("email")} placeholder="you@example.com" /></div>
+        {mode === "login" && (
+          <div className="field"><label>Password</label><input type="password" value={form.password} onChange={set("password")} placeholder="Your password" onKeyDown={e=>e.key==="Enter"&&handleLogin()} /></div>
+        )}
+        {mode === "login"
+          ? <button className="btn-full" onClick={handleLogin} disabled={loading}>{loading?"Signing in…":"Sign In →"}</button>
+          : <button className="btn-full" onClick={handleForgot} disabled={loading}>{loading?"Sending…":"Send Reset Email →"}</button>
+        }
+        <div className="auth-switch" style={{marginTop:12}}>
+          {mode==="login"
+            ? <><a onClick={()=>setMode("forgot")}>Forgot password?</a> · <a onClick={()=>onSwitch("signup")}>Create account</a></>
+            : <a onClick={()=>setMode("login")}>← Back to sign in</a>
+          }
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── PROFILE SETUP WIZARD ──────────────────────────────────────────────────
+function SetupWizard({ user, onComplete }) {
+  const [form, setForm] = useState({
+    phone:"", nationality:"", passportNo:"", passportExpiry:"",
+    dob:"", seatPref:"Window", mealPref:"AVML", cabinPref:"Economy", context:"leisure"
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+
+  const handleSubmit = async () => {
+    setLoading(true); setError("");
+    try {
+      const uuid = generateUUID();
+      const nameParts = user.email.split("@")[0].split(".");
+      await apiCall("/passengers", "POST", {
+        uuid,
+        firstName: user.firstName || nameParts[0] || "Passenger",
+        lastName: user.lastName || nameParts[1] || "User",
+        email: user.email,
+        phone: form.phone,
+        nationality: form.nationality,
+        passportNo: form.passportNo,
+        passportExpiry: form.passportExpiry || null,
+        dateOfBirth: form.dob || null,
+        context: form.context,
+        seatPreference: form.seatPref,
+        mealPreference: form.mealPref,
+        cabinPreference: form.cabinPref,
+      }, user.token);
+      onComplete(uuid);
+    } catch (e) { setError("Could not create profile. Please try again."); }
+    setLoading(false);
+  };
+
+  return (
+    <div className="main">
+      <div className="setup-wizard">
+        <div className="ph">
+          <div className="ptitle">Welcome to UniProfile</div>
+          <div className="psub">Let's set up your passenger identity — takes 2 minutes</div>
+        </div>
+        {error && <div className="error-msg" style={{borderRadius:8,padding:"10px 14px",marginBottom:16}}>{error}</div>}
+        <div className="wizard-step">
+          <div className="wizard-step-num">Step 1 of 2</div>
+          <div className="wizard-step-title">Personal & Travel Documents</div>
+          <div className="g2-field">
+            <div className="field"><label>Phone</label><input value={form.phone} onChange={set("phone")} placeholder="+1 571 555 0192" /></div>
+            <div className="field"><label>Nationality (ISO)</label><input value={form.nationality} onChange={set("nationality")} placeholder="PHL" maxLength={3} /></div>
+          </div>
+          <div className="g2-field">
+            <div className="field"><label>Passport Number</label><input value={form.passportNo} onChange={set("passportNo")} placeholder="P12345678" /></div>
+            <div className="field"><label>Passport Expiry</label><input type="date" value={form.passportExpiry} onChange={set("passportExpiry")} /></div>
+          </div>
+          <div className="field"><label>Date of Birth</label><input type="date" value={form.dob} onChange={set("dob")} /></div>
+        </div>
+        <div className="wizard-step">
+          <div className="wizard-step-num">Step 2 of 2</div>
+          <div className="wizard-step-title">Travel Preferences</div>
+          <div className="g2-field">
+            <div className="field"><label>Seat Preference</label>
+              <select value={form.seatPref} onChange={set("seatPref")}>
+                <option>Window</option><option>Aisle</option><option>Middle</option>
+              </select>
+            </div>
+            <div className="field"><label>Cabin</label>
+              <select value={form.cabinPref} onChange={set("cabinPref")}>
+                <option>Economy</option><option>Premium Economy</option><option>Business</option><option>First</option>
+              </select>
+            </div>
+          </div>
+          <div className="g2-field">
+            <div className="field"><label>Meal Preference</label>
+              <select value={form.mealPref} onChange={set("mealPref")}>
+                <option value="AVML">Asian Vegetarian</option>
+                <option value="VGML">Vegan</option>
+                <option value="HNML">Hindu</option>
+                <option value="MOML">Muslim</option>
+                <option value="KSML">Kosher</option>
+                <option value="GFML">Gluten Free</option>
+                <option value="NLML">No Preference</option>
+              </select>
+            </div>
+            <div className="field"><label>Travel Context</label>
+              <select value={form.context} onChange={set("context")}>
+                <option value="leisure">Leisure</option>
+                <option value="business">Business</option>
+                <option value="bleisure">Bleisure</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <button className="btn-primary" onClick={handleSubmit} disabled={loading} style={{width:"100%",justifyContent:"center",padding:"14px"}}>
+          {loading ? "Creating your UniProfile…" : "Complete Setup →"}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────
-function Dashboard({ passenger }) {
+function Dashboard({ passenger, uuid }) {
+  if (!passenger) return <div className="loading"><div className="spinner"></div>Loading profile…</div>;
   return (
     <div>
-      <div className="page-header">
-        <div className="page-title">Welcome, {passenger.firstName}</div>
-        <div className="page-sub">Passenger Identity Dashboard · IATA OneOrder Active</div>
+      <div className="ph">
+        <div className="ptitle">Welcome, {passenger.first_name}</div>
+        <div className="psub">Your UniProfile Identity Dashboard · IATA OneOrder</div>
       </div>
-
-      <div className="grid-4" style={{ marginBottom: 16 }}>
-        <div className="stat-card">
-          <div className="stat-label">Active Orders</div>
-          <div className="stat-value accent">3</div>
-          <div className="stat-sub">2 business · 1 leisure</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">Total Miles</div>
-          <div className="stat-value green">235K</div>
-          <div className="stat-sub">Across 3 programs</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">Disruptions</div>
-          <div className="stat-value warn">1</div>
-          <div className="stat-sub">Resolved · EK521</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-label">Consent Grants</div>
-          <div className="stat-value">4</div>
-          <div className="stat-sub">1 revoked</div>
-        </div>
+      <div className="g4" style={{marginBottom:14}}>
+        <div className="stat"><div className="slbl">UUID v7</div><div style={{fontFamily:"var(--mono)",fontSize:9,color:"var(--accent)",marginTop:4,wordBreak:"break-all"}}>{uuid}</div></div>
+        <div className="stat"><div className="slbl">Context</div><div className="sval" style={{fontSize:16,marginTop:4}}><span className="badge bp">{passenger.bleisure_context||"leisure"}</span></div></div>
+        <div className="stat"><div className="slbl">Cabin Pref</div><div className="sval" style={{fontSize:16,marginTop:4}}>{passenger.cabin_preference||"—"}</div></div>
+        <div className="stat"><div className="slbl">Meal Code</div><div className="sval" style={{fontSize:16,marginTop:4}}>{passenger.meal_preference||"—"}</div></div>
       </div>
-
-      <div className="grid-2">
+      <div className="g2">
         <div className="card">
-          <div className="card-title">Traveller Identity</div>
-          <div className="field-row"><span className="field-label">UUID v7</span><span className="field-value" style={{ fontSize:10, color:"var(--accent)", maxWidth:180, wordBreak:"break-all" }}>{MOCK_UUID}</span></div>
-          <div className="field-row"><span className="field-label">Context</span><span><span className="badge badge-purple">Bleisure</span></span></div>
-          <div className="field-row"><span className="field-label">Passport</span><span className="field-value">P12345678 · PHL</span></div>
-          <div className="field-row"><span className="field-label">Expiry</span><span className="field-value">15 Apr 2030</span></div>
-          <div className="field-row"><span className="field-label">Biometrics</span>
-            <span style={{ display:"flex", gap:4 }}>
-              <span className="badge badge-green">FRT</span>
-              <span className="badge badge-green">FIDO2</span>
-              <span className="badge badge-warn">NFC</span>
-            </span>
-          </div>
+          <div className="ctitle">Identity</div>
+          <div className="fr"><span className="fl">Full Name</span><span className="fv">{passenger.first_name} {passenger.last_name}</span></div>
+          <div className="fr"><span className="fl">Email</span><span className="fv" style={{fontSize:11}}>{passenger.email}</span></div>
+          <div className="fr"><span className="fl">Phone</span><span className="fv">{passenger.phone||"—"}</span></div>
+          <div className="fr"><span className="fl">Nationality</span><span className="fv">{passenger.nationality||"—"}</span></div>
+          <div className="fr"><span className="fl">Passport</span><span className="fv">{passenger.passport_number||"—"}</span></div>
+          <div className="fr"><span className="fl">Expiry</span><span className="fv">{passenger.passport_expiry ? new Date(passenger.passport_expiry).toLocaleDateString() : "—"}</span></div>
         </div>
-
         <div className="card">
-          <div className="card-title">Travel Preferences</div>
-          <div className="field-row"><span className="field-label">Seat</span><span className="field-value">Window, front third</span></div>
-          <div className="field-row"><span className="field-label">Meal</span><span className="field-value">AVML</span></div>
-          <div className="field-row"><span className="field-label">Cabin</span><span className="field-value">Business</span></div>
-          <div className="field-row"><span className="field-label">Lounge Access</span><span className="field-value">Yes</span></div>
-          <div className="field-row"><span className="field-label">Contact</span><span className="field-value">App push</span></div>
+          <div className="ctitle">Preferences</div>
+          <div className="fr"><span className="fl">Seat</span><span className="fv">{passenger.seat_preference||"—"}</span></div>
+          <div className="fr"><span className="fl">Meal</span><span className="fv">{passenger.meal_preference||"—"}</span></div>
+          <div className="fr"><span className="fl">Cabin</span><span className="fv">{passenger.cabin_preference||"—"}</span></div>
+          <div className="fr"><span className="fl">Lounge</span><span className="fv">{passenger.lounge_access?"Yes":"No"}</span></div>
+          <div className="fr"><span className="fl">Context</span><span className="fv">{passenger.bleisure_context||"—"}</span></div>
+          <div className="fr"><span className="fl">Member Since</span><span className="fv">{new Date(passenger.created_at).toLocaleDateString()}</span></div>
         </div>
       </div>
-
       <div className="card">
-        <div className="card-title">Upcoming Itinerary</div>
-        <table className="table">
-          <thead><tr><th>Order ID</th><th>Route</th><th>Date</th><th>PNR</th><th>Type</th><th>Status</th></tr></thead>
-          <tbody>
-            {MOCK_ORDERS.map(o => (
-              <tr key={o.id}>
-                <td style={{ fontFamily:"var(--mono)", fontSize:11, color:"var(--accent)" }}>{o.id}</td>
-                <td>{o.route}</td>
-                <td style={{ fontFamily:"var(--mono)", fontSize:11 }}>{o.date}</td>
-                <td style={{ fontFamily:"var(--mono)", color:"var(--purple)" }}>{o.pnr}</td>
-                <td><span className={`badge ${o.type==="business" ? "badge-blue" : "badge-green"}`}>{o.type}</span></td>
-                <td><span className={`badge ${o.status==="confirmed"?"badge-green":o.status==="ticketed"?"badge-blue":"badge-warn"}`}>{o.status}</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="ctitle">Biometric Enrollment</div>
+        <div style={{display:"flex",gap:10}}>
+          <span className={`badge ${passenger.frt_enrolled?"bg":"bw"}`}>FRT {passenger.frt_enrolled?"✓":"pending"}</span>
+          <span className={`badge ${passenger.fido2_enrolled?"bg":"bw"}`}>FIDO2 {passenger.fido2_enrolled?"✓":"pending"}</span>
+          <span className={`badge ${passenger.nfc_enrolled?"bg":"bw"}`}>NFC {passenger.nfc_enrolled?"✓":"pending"}</span>
+        </div>
+        <div style={{fontSize:11,color:"var(--muted)",marginTop:10}}>Biometric enrollment available at partner airports and via the UniProfile mobile app.</div>
       </div>
     </div>
   );
 }
 
-// ── OFFER & ORDER ─────────────────────────────────────────────────────────
-function OfferOrder() {
+// ── EMPTY MODULE ──────────────────────────────────────────────────────────
+function EmptyModule({ icon, title, sub }) {
   return (
-    <div>
-      <div className="page-header">
-        <div className="page-title">Offer &amp; Order Management</div>
-        <div className="page-sub">IATA OneOrder · NDC-compatible · UUID-linked orders</div>
-      </div>
-      <div className="grid-4" style={{ marginBottom:16 }}>
-        <div className="stat-card"><div className="stat-label">Orders</div><div className="stat-value accent">3</div></div>
-        <div className="stat-card"><div className="stat-label">Total Value</div><div className="stat-value green">$7,250</div></div>
-        <div className="stat-card"><div className="stat-label">Segments</div><div className="stat-value">6</div></div>
-        <div className="stat-card"><div className="stat-label">NDC Level</div><div className="stat-value" style={{ fontSize:18 }}>4</div></div>
-      </div>
-      <div className="card">
-        <div className="card-title">Active OneOrders</div>
-        <table className="table">
-          <thead><tr><th>Order ID</th><th>Airline</th><th>Route</th><th>Date</th><th>PNR</th><th>Value</th><th>Status</th><th>Context</th></tr></thead>
-          <tbody>
-            {MOCK_ORDERS.map(o => (
-              <tr key={o.id}>
-                <td style={{ fontFamily:"var(--mono)", fontSize:11, color:"var(--accent)" }}>{o.id}</td>
-                <td>{o.airline}</td>
-                <td style={{ fontSize:12 }}>{o.route}</td>
-                <td style={{ fontFamily:"var(--mono)", fontSize:11 }}>{o.date}</td>
-                <td style={{ fontFamily:"var(--mono)", color:"var(--purple)" }}>{o.pnr}</td>
-                <td style={{ fontFamily:"var(--mono)" }}>{o.value}</td>
-                <td><span className={`badge ${o.status==="confirmed"?"badge-green":o.status==="ticketed"?"badge-blue":"badge-warn"}`}>{o.status}</span></td>
-                <td><span className={`badge ${o.type==="business"?"badge-blue":"badge-green"}`}>{o.type}</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="card">
-        <div className="card-title">NDC Offer Schema Preview</div>
-        <pre style={{ fontFamily:"var(--mono)", fontSize:11, color:"var(--accent2)", background:"var(--ink3)", padding:16, borderRadius:8, overflow:"auto", lineHeight:1.6 }}>
-{`{
-  "offerId": "NDC-EK-${MOCK_UUID.slice(0,8)}",
-  "passengerUUID": "${MOCK_UUID}",
-  "context": "bleisure",
-  "offers": [{
-    "offerItemId": "OI-001",
-    "serviceDefinitionId": "EK521-BUS",
-    "cabin": "BUSINESS",
-    "price": { "total": "3420.00", "currency": "USD" },
-    "fareRules": "SEMI_FLEX",
-    "ancillaries": ["SEAT_14A", "AVML", "LOUNGE_DXB"]
-  }]
-}`}
-        </pre>
-      </div>
+    <div className="empty-state">
+      <div className="empty-icon">{icon}</div>
+      <div className="empty-title">{title}</div>
+      <div className="empty-sub">{sub}</div>
     </div>
   );
 }
 
-// ── SEAT & ANCILLARY ──────────────────────────────────────────────────────
-function SeatAncillary() {
-  return (
-    <div>
-      <div className="page-header">
-        <div className="page-title">Seat &amp; Ancillary Services</div>
-        <div className="page-sub">EMD-S · IATA PADIS · Personalised upsell engine</div>
-      </div>
-      <div className="card">
-        <div className="card-title">Ancillary Services</div>
-        <table className="table">
-          <thead><tr><th>Type</th><th>Detail</th><th>Order</th><th>Price</th><th>Status</th></tr></thead>
-          <tbody>
-            {MOCK_ANCILLARIES.map((a, i) => (
-              <tr key={i}>
-                <td><span className="badge badge-purple">{a.type}</span></td>
-                <td style={{ fontSize:12 }}>{a.detail}</td>
-                <td style={{ fontFamily:"var(--mono)", fontSize:11, color:"var(--accent)" }}>{a.order}</td>
-                <td style={{ fontFamily:"var(--mono)" }}>{a.price}</td>
-                <td><span className={`badge ${a.status==="confirmed"?"badge-green":"badge-warn"}`}>{a.status}</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <div className="card">
-        <div className="card-title">Seat Map — EK521 Business (A380 Upper Deck)</div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(6, 1fr)", gap:8, maxWidth:400 }}>
-          {["12A","12C","12D","12F","13A","13C","13D","13F","14A","14C","14D","14F","15A","15C","15D","15F"].map(s => (
-            <div key={s} style={{
-              background: s==="14A" ? "var(--accent)" : s==="15A"||s==="15C" ? "rgba(232,93,93,0.2)" : "var(--ink3)",
-              border: `1px solid ${s==="14A"?"var(--accent)":"var(--border)"}`,
-              borderRadius:6, padding:"8px 4px", textAlign:"center",
-              fontFamily:"var(--mono)", fontSize:11,
-              color: s==="14A" ? "#fff" : s==="15A"||s==="15C" ? "var(--danger)" : "var(--muted)"
-            }}>
-              {s}
-            </div>
-          ))}
-        </div>
-        <div style={{ display:"flex", gap:12, marginTop:12, fontSize:11, color:"var(--muted)" }}>
-          <span style={{ display:"flex", alignItems:"center", gap:4 }}><span style={{ width:10, height:10, borderRadius:2, background:"var(--accent)", display:"inline-block" }}></span> Your seat</span>
-          <span style={{ display:"flex", alignItems:"center", gap:4 }}><span style={{ width:10, height:10, borderRadius:2, background:"rgba(232,93,93,0.2)", display:"inline-block" }}></span> Occupied</span>
-          <span style={{ display:"flex", alignItems:"center", gap:4 }}><span style={{ width:10, height:10, borderRadius:2, background:"var(--ink3)", display:"inline-block" }}></span> Available</span>
-        </div>
-      </div>
-    </div>
-  );
-}
+// ── MAIN APP ──────────────────────────────────────────────────────────────
+export default function App() {
+  const [authMode, setAuthMode] = useState("login"); // login | signup
+  const [user, setUser] = useState(null);           // { email, token }
+  const [uuid, setUuid] = useState(null);
+  const [passenger, setPassenger] = useState(null);
+  const [setupDone, setSetupDone] = useState(false);
+  const [activePage, setActivePage] = useState("dashboard");
+  const [context, setContext] = useState("bleisure");
+  const [prefillEmail, setPrefillEmail] = useState("");
+  const [loadingProfile, setLoadingProfile] = useState(false);
 
-// ── DISRUPTION ────────────────────────────────────────────────────────────
-function Disruption() {
-  return (
-    <div>
-      <div className="page-header">
-        <div className="page-title">Disruption &amp; Reprotection</div>
-        <div className="page-sub">Chaos recovery · EU261 · DOT 14 CFR 250 · Compensation engine</div>
-      </div>
-      {MOCK_DISRUPTIONS.map(d => (
-        <div key={d.id} className="disruption-banner">
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start" }}>
-            <div>
-              <div style={{ fontFamily:"var(--display)", fontWeight:600, marginBottom:6 }}>
-                <span style={{ color:"var(--danger)" }}>⚠ </span>{d.type} — {d.orderId}
-              </div>
-              <div style={{ fontSize:12, color:"var(--muted)", marginBottom:6 }}>
-                Original: <span style={{ color:"var(--text)", fontFamily:"var(--mono)" }}>{d.original}</span>
-                &nbsp;→ New: <span style={{ color:"var(--warn)", fontFamily:"var(--mono)" }}>{d.new}</span>
-              </div>
-              <div style={{ fontSize:12, color:"var(--muted)" }}>
-                Action: <span style={{ color:"var(--accent2)" }}>{d.action}</span>
-                &nbsp;· Compensation: <span style={{ color:"var(--accent)" }}>{d.compensation}</span>
-              </div>
-            </div>
-            <span className="badge badge-green">Resolved</span>
-          </div>
-        </div>
-      ))}
-      <div className="card">
-        <div className="card-title">Reprotection Logic</div>
-        <div style={{ display:"flex", gap:0, alignItems:"stretch" }}>
-          {["Detect disruption","Assess rebooking options","Apply passenger prefs","Execute reprotection","Notify + compensate"].map((s, i) => (
-            <div key={i} style={{ flex:1, textAlign:"center", position:"relative" }}>
-              <div style={{
-                background: i < 4 ? "rgba(91,141,238,0.15)" : "rgba(61,214,140,0.15)",
-                border: `1px solid ${i < 4 ? "rgba(91,141,238,0.3)" : "rgba(61,214,140,0.3)"}`,
-                borderRadius:8, padding:"12px 8px", margin:"0 4px", fontSize:11,
-                color: i < 4 ? "var(--accent)" : "var(--accent2)"
-              }}>
-                <div style={{ fontFamily:"var(--mono)", fontSize:9, opacity:0.6, marginBottom:4 }}>STEP {i+1}</div>
-                {s}
-              </div>
-              {i < 4 && <div style={{ position:"absolute", right:-4, top:"50%", transform:"translateY(-50%)", color:"var(--muted)", fontSize:14, zIndex:1 }}>›</div>}
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
+  // Load passenger profile after login
+  useEffect(() => {
+    if (!user) return;
+    setLoadingProfile(true);
+    apiCall(`/passengers/by-email?email=${encodeURIComponent(user.email)}`, "GET", null, user.token)
+      .then(data => {
+        if (data.passenger) {
+          setPassenger(data.passenger);
+          setUuid(data.passenger.uuid);
+          setSetupDone(true);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoadingProfile(false));
+  }, [user]);
 
-// ── LOYALTY ───────────────────────────────────────────────────────────────
-function Loyalty() {
-  return (
-    <div>
-      <div className="page-header">
-        <div className="page-title">Loyalty &amp; Recognition</div>
-        <div className="page-sub">FFP aggregation · Real-time status · UUID-linked rewards</div>
-      </div>
-      <div className="grid-3" style={{ marginBottom:16 }}>
-        {MOCK_LOYALTY.map((l, i) => (
-          <div key={i} className="card card-sm">
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
-              <div style={{ fontFamily:"var(--display)", fontWeight:600, fontSize:14 }}>{l.program}</div>
-              <span className={`badge ${l.tier==="PPS Club"?"badge-purple":l.tier==="Gold"?"badge-warn":"badge-blue"}`}>{l.tier}</span>
-            </div>
-            <div className="field-row"><span className="field-label">Number</span><span className="field-value" style={{ fontSize:11 }}>{l.number}</span></div>
-            <div className="field-row"><span className="field-label">Miles</span><span className="field-value" style={{ color:"var(--accent2)" }}>{l.miles.toLocaleString()}</span></div>
-            <div className="field-row"><span className="field-label">Expiry</span><span className="field-value">{l.expiry}</span></div>
-            <div className="progress-bar" style={{ marginTop:10 }}>
-              <div className="progress-fill" style={{ width:`${Math.min(100,(l.miles/150000)*100).toFixed(0)}%`, background:"var(--accent)" }}></div>
-            </div>
-            <div style={{ fontSize:10, color:"var(--muted)", marginTop:4, fontFamily:"var(--mono)" }}>
-              {Math.min(100,(l.miles/150000)*100).toFixed(0)}% to next tier
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="card">
-        <div className="card-title">Total Miles Summary</div>
-        <div className="grid-3">
-          <div className="stat-card"><div className="stat-label">Total Miles</div><div className="stat-value green" style={{ fontSize:22 }}>235,500</div></div>
-          <div className="stat-card"><div className="stat-label">Est. Value</div><div className="stat-value accent" style={{ fontSize:22 }}>$3,532</div></div>
-          <div className="stat-card"><div className="stat-label">Programs</div><div className="stat-value" style={{ fontSize:22 }}>3</div></div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── PAYMENT ───────────────────────────────────────────────────────────────
-function Payment() {
-  return (
-    <div>
-      <div className="page-header">
-        <div className="page-title">Payment &amp; Settlement</div>
-        <div className="page-sub">IATA PAX · BSP tokenisation · PCI-DSS compliant</div>
-      </div>
-      <div className="grid-2" style={{ marginBottom:16 }}>
-        {MOCK_PAYMENT.wallet.map((c, i) => (
-          <div key={i} className="card" style={{ background:"var(--ink3)", border:`1px solid ${c.default?"var(--accent)":"var(--border)"}`, position:"relative" }}>
-            {c.default && <span className="badge badge-blue" style={{ position:"absolute", top:14, right:14 }}>Default</span>}
-            <div style={{ fontFamily:"var(--display)", fontWeight:700, fontSize:18, marginBottom:12 }}>{c.type}</div>
-            <div style={{ fontFamily:"var(--mono)", fontSize:20, letterSpacing:4, color:"var(--text)", marginBottom:10 }}>
-              •••• •••• •••• {c.last4}
-            </div>
-            <div className="field-row">
-              <span className="field-label">Expiry</span>
-              <span className="field-value">{c.expiry}</span>
-            </div>
-            <div className="field-row">
-              <span className="field-label">BSP Token</span>
-              <span className="field-value" style={{ fontSize:10, color:"var(--muted)" }}>{c.token}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="card">
-        <div className="card-title">Transaction History</div>
-        <table className="table">
-          <thead><tr><th>Ref</th><th>Description</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
-          <tbody>
-            {MOCK_PAYMENT.transactions.map((t, i) => (
-              <tr key={i}>
-                <td style={{ fontFamily:"var(--mono)", fontSize:11, color:"var(--accent)" }}>{t.ref}</td>
-                <td style={{ fontSize:12 }}>{t.desc}</td>
-                <td style={{ fontFamily:"var(--mono)", color:"var(--accent2)" }}>{t.amount}</td>
-                <td style={{ fontFamily:"var(--mono)", fontSize:11 }}>{t.date}</td>
-                <td><span className="badge badge-green">{t.status}</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-// ── BAGGAGE ───────────────────────────────────────────────────────────────
-function Baggage() {
-  return (
-    <div>
-      <div className="page-header">
-        <div className="page-title">BagJourney Tracking</div>
-        <div className="page-sub">IATA Resolution 753 · RFID real-time · WorldTracer linked</div>
-      </div>
-      {MOCK_BAGS.map((b, i) => (
-        <div key={i} className="card">
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
-            <div>
-              <div style={{ fontFamily:"var(--display)", fontWeight:600 }}>Tag #{b.tagId}</div>
-              <div style={{ fontSize:12, color:"var(--muted)" }}>{b.flight} · {b.route}</div>
-            </div>
-            <span className={`badge ${b.resolved?"badge-green":"badge-blue"}`}>{b.status}</span>
-          </div>
-          <div className="bag-track">
-            <div className="bag-dot" style={{ background: b.resolved ? "var(--accent2)" : "var(--accent)" }}></div>
-            <div>
-              <div style={{ fontSize:13 }}>{b.lastSeen}</div>
-              <div style={{ fontSize:11, color:"var(--muted)", fontFamily:"var(--mono)" }}>{b.timestamp}</div>
-            </div>
-          </div>
-        </div>
-      ))}
-      <div className="card">
-        <div className="card-title">RFID Journey Timeline</div>
-        <div style={{ display:"flex", flexDirection:"column", gap:0 }}>
-          {["Check-in IAD T2 — Bag tagged & inducted","TSA Security scan — Cleared","Loaded onto EK521 at Gate B32","Offloaded DXB T3 — Baggage Hall 2","Belt 7 delivery — Collected"].map((s, i) => (
-            <div key={i} style={{ display:"flex", gap:12, alignItems:"flex-start", paddingBottom:16, position:"relative" }}>
-              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", flexShrink:0 }}>
-                <div style={{ width:20, height:20, borderRadius:"50%", background: i < 4 ? "var(--accent2)" : "var(--ink3)", border:`2px solid ${i < 4 ? "var(--accent2)" : "var(--border)"}`, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  {i < 4 && <div style={{ width:6, height:6, borderRadius:"50%", background:"var(--ink)" }}></div>}
-                </div>
-                {i < 4 && <div style={{ width:1, flex:1, background:"var(--border)", marginTop:4, minHeight:20 }}></div>}
-              </div>
-              <div style={{ paddingTop:2, fontSize:12 }}>{s}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── BIOMETRICS ────────────────────────────────────────────────────────────
-function Biometrics() {
-  const [scanning, setScanning] = useState(null);
-  const [enrolled, setEnrolled] = useState({ frt: true, fido2: true, nfc: false });
-
-  const startScan = (type) => {
-    setScanning(type);
-    setTimeout(() => { setScanning(null); setEnrolled(e => ({ ...e, [type]: true })); }, 2400);
+  const handleLogin = (userData) => {
+    setUser(userData);
   };
 
-  return (
-    <div>
-      <div className="page-header">
-        <div className="page-title">Profile &amp; Biometrics</div>
-        <div className="page-sub">FRT · FIDO2/WebAuthn · NFC ePassport · ICAO 9303</div>
-      </div>
+  const handleSwitch = (mode, email = "") => {
+    setAuthMode(mode);
+    if (email) setPrefillEmail(email);
+  };
 
-      <div className="grid-3" style={{ marginBottom:16 }}>
-        {[
-          { key:"frt", label:"Face Recognition", sub:"ICAO 9303 · Airport biometrics", icon:"👁" },
-          { key:"fido2", label:"Fingerprint / FIDO2", sub:"WebAuthn · W3C standard", icon:"🔑" },
-          { key:"nfc", label:"ePassport NFC", sub:"ISO 14443 · BAC / PACE", icon:"📘" },
-        ].map(b => (
-          <div key={b.key} className="card" style={{ textAlign:"center" }}>
-            {scanning === b.key
-              ? <div className="pulse-ring">{b.icon}</div>
-              : <div style={{ fontSize:36, marginBottom:12 }}>{b.icon}</div>
-            }
-            <div style={{ fontFamily:"var(--display)", fontWeight:600, marginBottom:4 }}>{b.label}</div>
-            <div style={{ fontSize:11, color:"var(--muted)", marginBottom:14 }}>{b.sub}</div>
-            <div style={{ marginBottom:14 }}>
-              <span className={`badge ${enrolled[b.key] ? "badge-green" : "badge-warn"}`}>
-                {enrolled[b.key] ? "Enrolled" : "Pending"}
-              </span>
-            </div>
-            {!enrolled[b.key] && (
-              <button className="btn btn-primary" style={{ width:"100%" }} onClick={() => startScan(b.key)}>
-                {scanning === b.key ? "Scanning…" : "Enroll Now"}
-              </button>
-            )}
-            {enrolled[b.key] && (
-              <button className="btn" style={{ width:"100%", color:"var(--danger)", borderColor:"rgba(232,93,93,0.3)" }}>
-                Revoke
-              </button>
-            )}
-          </div>
-        ))}
-      </div>
+  const handleSetupComplete = (newUuid) => {
+    setUuid(newUuid);
+    setSetupDone(true);
+    apiCall(`/passengers/${newUuid}`, "GET", null, user.token)
+      .then(data => { if (data.passenger) setPassenger(data.passenger); });
+  };
 
-      <div className="card">
-        <div className="card-title">Biometric Consent &amp; Usage Log</div>
-        <table className="table">
-          <thead><tr><th>Type</th><th>Used At</th><th>Purpose</th><th>Timestamp</th><th>Status</th></tr></thead>
-          <tbody>
-            {[
-              { type:"FRT", where:"DXB Terminal 3 Gate B32", purpose:"Boarding verification", ts:"2024-06-15 04:12 GST", ok:true },
-              { type:"FIDO2", where:"UniProfile Mobile App", purpose:"Profile unlock", ts:"2024-06-14 18:30 EDT", ok:true },
-              { type:"FRT", where:"IAD Customs & Border", purpose:"Entry biometric", ts:"2024-07-14 17:45 EDT", ok:true },
-            ].map((r, i) => (
-              <tr key={i}>
-                <td><span className="badge badge-purple">{r.type}</span></td>
-                <td style={{ fontSize:12 }}>{r.where}</td>
-                <td style={{ fontSize:12 }}>{r.purpose}</td>
-                <td style={{ fontFamily:"var(--mono)", fontSize:11 }}>{r.ts}</td>
-                <td><span className="badge badge-green">Verified</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+  const handleSignOut = () => {
+    setUser(null); setUuid(null); setPassenger(null);
+    setSetupDone(false); setActivePage("dashboard");
+  };
+
+  // Not logged in
+  if (!user) {
+    if (authMode === "signup") return <SignUpPage onSwitch={handleSwitch} />;
+    return <LoginPage onLogin={handleLogin} onSwitch={handleSwitch} prefillEmail={prefillEmail} />;
+  }
+
+  // Loading profile
+  if (loadingProfile) return (
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center"}}>
+      <div className="loading"><div className="spinner"></div>Loading your UniProfile…</div>
     </div>
   );
-}
 
-// ── CONSENT ───────────────────────────────────────────────────────────────
-function ConsentEngine() {
-  const [consents, setConsents] = useState(MOCK_CONSENT.map(c => ({ ...c, active: c.status === "active" })));
+  // First-time setup
+  if (!setupDone) return <SetupWizard user={user} onComplete={handleSetupComplete} />;
 
-  const toggle = (i) => setConsents(cs => cs.map((c, j) => j === i ? { ...c, active: !c.active, status: !c.active ? "active" : "revoked" } : c));
-
-  return (
-    <div>
-      <div className="page-header">
-        <div className="page-title">Consent Engine</div>
-        <div className="page-sub">GDPR Art. 7 · CCPA · IATA Resolution 787 · Granular data control</div>
-      </div>
-      <div className="card">
-        <div className="card-title">Data Sharing Consents</div>
-        {consents.map((c, i) => (
-          <div key={i} className="consent-row">
-            <div style={{ flex:1, minWidth:0 }}>
-              <div style={{ fontWeight:500, marginBottom:2 }}>{c.org}</div>
-              <div style={{ fontSize:11, color:"var(--muted)" }}>{c.scope}</div>
-              <div style={{ fontSize:10, color:"var(--muted)", fontFamily:"var(--mono)", marginTop:2 }}>Granted: {c.granted}</div>
-            </div>
-            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-              <span className={`badge ${c.active ? "badge-green" : "badge-muted"}`}>{c.active ? "active" : "revoked"}</span>
-              <button className={`toggle ${c.active ? "on" : "off"}`} onClick={() => toggle(i)}></button>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="card">
-        <div className="card-title">Consent Audit Log</div>
-        <div style={{ fontSize:12, color:"var(--muted)", fontFamily:"var(--mono)", lineHeight:2 }}>
-          <div><span style={{ color:"var(--accent2)" }}>GRANT</span> · Changi Airport · FRT biometric · 2024-05-01 08:00 SGT</div>
-          <div><span style={{ color:"var(--accent2)" }}>GRANT</span> · Singapore Airlines · Profile+seat · 2024-03-10 14:20 SGT</div>
-          <div><span style={{ color:"var(--danger)" }}>REVOKE</span> · Sabre GDS · PNR enrichment · 2024-01-05 09:44 EDT</div>
-          <div><span style={{ color:"var(--accent2)" }}>GRANT</span> · Amex GBT · Full bleisure profile · 2024-02-01 11:00 EDT</div>
-          <div><span style={{ color:"var(--accent2)" }}>GRANT</span> · Emirates Airlines · Profile+loyalty · 2024-01-15 15:30 DXB</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── NAV CONFIG ─────────────────────────────────────────────────────────────
-const NAV = [
-  { id:"dashboard", label:"Dashboard", icon:"home", section:"overview" },
-  { id:"order", label:"Offer & Order", icon:"order", section:"oneorder" },
-  { id:"seat", label:"Seat & Ancillary", icon:"seat", section:"oneorder" },
-  { id:"disruption", label:"Disruption", icon:"disruption", section:"oneorder" },
-  { id:"loyalty", label:"Loyalty", icon:"loyalty", section:"oneorder" },
-  { id:"payment", label:"Payment", icon:"payment", section:"oneorder" },
-  { id:"baggage", label:"BagJourney", icon:"bag", section:"oneorder" },
-  { id:"biometrics", label:"Biometrics", icon:"bio", section:"identity" },
-  { id:"consent", label:"Consent Engine", icon:"consent", section:"identity" },
-];
-
-// ── APP ROOT ──────────────────────────────────────────────────────────────
-export default function App() {
-  const [active, setActive] = useState("dashboard");
-  const [context, setContext] = useState("bleisure");
+  const NAV = [
+    { id:"dashboard", label:"Dashboard", section:"overview" },
+    { id:"order", label:"Offer & Order", section:"oneorder" },
+    { id:"seat", label:"Seat & Ancillary", section:"oneorder" },
+    { id:"disruption", label:"Disruption", section:"oneorder" },
+    { id:"loyalty", label:"Loyalty", section:"oneorder" },
+    { id:"payment", label:"Payment", section:"oneorder" },
+    { id:"baggage", label:"BagJourney", section:"oneorder" },
+    { id:"biometrics", label:"Biometrics", section:"identity" },
+    { id:"consent", label:"Consent Engine", section:"identity" },
+  ];
 
   const PAGES = {
-    dashboard: <Dashboard passenger={MOCK_PASSENGER} />,
-    order: <OfferOrder />,
-    seat: <SeatAncillary />,
-    disruption: <Disruption />,
-    loyalty: <Loyalty />,
-    payment: <Payment />,
-    baggage: <Baggage />,
-    biometrics: <Biometrics />,
-    consent: <ConsentEngine />,
+    dashboard: <Dashboard passenger={passenger} uuid={uuid} />,
+    order: <EmptyModule icon="✈️" title="No orders yet" sub="Your IATA OneOrder bookings will appear here once you book through a connected airline or TMC." />,
+    seat: <EmptyModule icon="💺" title="No ancillary services" sub="Seat selections, meal orders, and lounge access will appear here." />,
+    disruption: <EmptyModule icon="⚡" title="No disruptions" sub="Flight disruptions and reprotection actions will appear here automatically." />,
+    loyalty: <EmptyModule icon="⭐" title="No loyalty programs" sub="Add your frequent flyer numbers to start consolidating miles across airlines." />,
+    payment: <EmptyModule icon="💳" title="No payment methods" sub="Your BSP-tokenised payment methods will appear here." />,
+    baggage: <EmptyModule icon="🧳" title="No baggage tracked" sub="Real-time RFID baggage tracking will appear here during active trips." />,
+    biometrics: <EmptyModule icon="🪪" title="Biometrics not enrolled" sub="Visit a partner airport or use the UniProfile mobile app to enroll FRT, FIDO2, or NFC." />,
+    consent: <EmptyModule icon="🔒" title="No consent grants" sub="Data sharing consents with airlines, TMCs, and airports will appear here." />,
   };
 
   return (
     <>
       <style>{CSS}</style>
       <div className="app">
-        {/* SIDEBAR */}
         <aside className="sidebar">
-          <div className="sidebar-logo">
-            <div className="sidebar-logo-mark">Uni<span>Profile</span></div>
-            <div className="sidebar-logo-sub">IATA OneOrder · v2.0</div>
+          <div className="logo-area">
+            <div className="logotype">Uni<span>Profile</span></div>
+            <div className="logo-sub">IATA OneOrder · v2.0</div>
           </div>
-
-          <div className="uuid-chip">
-            <div className="uuid-label">Passenger UUID</div>
-            <div className="uuid-value">{MOCK_UUID}</div>
+          {uuid && (
+            <div className="uuid-chip">
+              <div className="uuid-lbl">Passenger UUID</div>
+              <div className="uuid-val">{uuid}</div>
+            </div>
+          )}
+          <div className="ctx-row">
+            {["business","bleisure","leisure"].map(c => (
+              <button key={c} className={`ctx-btn ${context===c?"on":""}`} onClick={()=>setContext(c)}>{c.charAt(0).toUpperCase()+c.slice(1,3)}</button>
+            ))}
           </div>
-
-          <div className="context-toggle">
-            <button className={`ctx-btn ${context==="business"?"active":""}`} onClick={()=>setContext("business")}>Business</button>
-            <button className={`ctx-btn ${context==="bleisure"?"active":""}`} onClick={()=>setContext("bleisure")}>Bleisure</button>
-            <button className={`ctx-btn ${context==="leisure"?"active":""}`} onClick={()=>setContext("leisure")}>Leisure</button>
-          </div>
-
           {["overview","oneorder","identity"].map(section => (
             <div key={section}>
-              <div className="nav-section-label">
-                {section==="overview"?"Overview":section==="oneorder"?"OneOrder Modules":"Identity"}
-              </div>
-              {NAV.filter(n => n.section===section).map(n => (
-                <div key={n.id} className={`nav-item ${active===n.id?"active":""}`} onClick={()=>setActive(n.id)}>
-                  <Icon name={n.icon} />
-                  {n.label}
+              <div className="nav-sec">{section==="overview"?"Overview":section==="oneorder"?"OneOrder Modules":"Identity"}</div>
+              {NAV.filter(n=>n.section===section).map(n => (
+                <div key={n.id} className={`nav-item ${activePage===n.id?"on":""}`} onClick={()=>setActivePage(n.id)}>
+                  <div className="nav-dot"></div>{n.label}
                 </div>
               ))}
             </div>
           ))}
-
-          <div className="sidebar-footer">
-            <div style={{ fontSize:10, color:"var(--muted)", fontFamily:"var(--mono)", marginBottom:8, textTransform:"uppercase", letterSpacing:"1px" }}>Biometric Status</div>
-            <div className="biometric-badges">
-              <span className="bio-badge bio-enrolled">FRT</span>
-              <span className="bio-badge bio-enrolled">FIDO2</span>
-              <span className="bio-badge bio-pending">NFC</span>
-            </div>
+          <div className="sidebar-foot">
+            <div style={{fontSize:10,color:"var(--muted)",fontFamily:"var(--mono)",marginBottom:6}}>{user.email}</div>
+            <button className="signout-btn" onClick={handleSignOut}>Sign Out</button>
           </div>
         </aside>
-
-        {/* MAIN */}
-        <main className="main">
-          {PAGES[active]}
-        </main>
+        <main className="main">{PAGES[activePage]}</main>
       </div>
     </>
   );
