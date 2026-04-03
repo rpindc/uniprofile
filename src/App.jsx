@@ -282,7 +282,7 @@ function SetupWizard({user,onComplete}){
       const uuid=genUUID();
       const np=user.email.split("@")[0].split(".");
       const d=await api("/passengers","POST",{uuid,firstName:np[0]||"Passenger",lastName:np[1]||"User",email:user.email,phone:f.phone,nationality:f.nat,passportNo:f.passport,passportExpiry:f.exp||null,dateOfBirth:f.dob||null,context:f.ctx,seatPreference:f.seat,mealPreference:f.meal,cabinPreference:f.cabin},user.token);
-      if(d.passenger)onComplete(d.passenger.uuid);
+      if(d.passenger)onComplete(d.passenger.uuid,d.passenger);
       else setErr("Could not create profile. Please try again.");
     }catch(e){setErr(e.message||"Error creating profile");}
     setLoading(false);
@@ -324,8 +324,15 @@ function SetupWizard({user,onComplete}){
   );
 }
 
-function Dashboard({passenger,uuid}){
-  if(!passenger)return <div className="loading"><div className="spinner"></div>Loading your profile…</div>;
+function Dashboard({passenger,uuid,onRefresh}){
+  if(!passenger)return(
+    <div className="card" style={{textAlign:"center",padding:"48px 32px"}}>
+      <div style={{fontSize:36,marginBottom:14,opacity:0.4}}>👤</div>
+      <div style={{fontFamily:"var(--display)",fontWeight:700,fontSize:18,marginBottom:8}}>Profile loading…</div>
+      <div style={{fontSize:13,color:"var(--muted)",marginBottom:24}}>If this persists, try signing out and back in.</div>
+      <button className="btn btn-p" onClick={onRefresh}>Refresh Profile</button>
+    </div>
+  );
   return(
     <div>
       <div className="ph"><div><div className="ptitle">Welcome back, {passenger.first_name} 👋</div><div className="psub">Your UniProfile Identity Dashboard · IATA OneOrder Active</div></div></div>
@@ -758,11 +765,16 @@ export default function App(){
 
   const handleLogin=u=>setUser(u);
   const handleSwitch=(mode,email="")=>{setAuthMode(mode);if(email)setPrefill(email);};
-  const handleSetupComplete=newUuid=>{
-    setUuid(newUuid);setSetupDone(true);
-    api(`/passengers/${newUuid}`,"GET",null,user.token).then(d=>{if(d.passenger)setPassenger(d.passenger);});
+  const handleSetupComplete=(newUuid,passengerData)=>{
+    setUuid(newUuid);setSetupDone(true);if(passengerData)setPassenger(passengerData);
+    
   };
   const handleSignOut=()=>{setUser(null);setUuid(null);setPassenger(null);setSetupDone(false);setActive("dashboard");};
+  const handleRefresh=()=>{
+    if(!user)return;
+    api(`/passengers/by-email?email=${encodeURIComponent(user.email)}`,"GET",null,user.token)
+      .then(d=>{if(d.passenger){setPassenger(d.passenger);setUuid(d.passenger.uuid);}});
+  };
 
   if(!user){
     if(authMode==="signup")return <><style>{CSS}</style><SignUpPage onSwitch={handleSwitch}/></>;
@@ -784,7 +796,7 @@ export default function App(){
   ];
 
   const PAGES={
-    dashboard:<Dashboard passenger={passenger} uuid={uuid}/>,
+    dashboard:<Dashboard passenger={passenger} uuid={uuid} onRefresh={handleRefresh}/>,
     order:<Orders uuid={uuid} token={user.token}/>,
     seat:<SeatAncillary passenger={passenger}/>,
     disruption:<Disruption/>,
