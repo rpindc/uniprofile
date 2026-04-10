@@ -829,8 +829,334 @@ function Biometrics({ passenger }) {
   );
 }
 
+// ── AIRPORT COORDINATES (lat/lon) for SVG arc drawing ────────────────────────
+const AIRPORTS = {
+  IAD:{x:178,y:148},JFK:{x:182,y:142},LAX:{x:140,y:158},ORD:{x:175,y:140},
+  MIA:{x:180,y:170},SFO:{x:132,y:152},ATL:{x:178,y:158},DFW:{x:162,y:162},
+  LHR:{x:310,y:118},CDG:{x:318,y:120},FRA:{x:326,y:118},AMS:{x:320,y:114},
+  MAD:{x:306,y:130},BCN:{x:314,y:128},FCO:{x:332,y:128},ZRH:{x:325,y:120},
+  DXB:{x:408,y:162},DOH:{x:400,y:166},AUH:{x:406,y:164},KWI:{x:398,y:158},
+  SIN:{x:476,y:208},BKK:{x:466,y:190},KUL:{x:472,y:208},CGK:{x:472,y:218},
+  NRT:{x:510,y:138},HND:{x:510,y:140},ICN:{x:500,y:136},HKG:{x:492,y:170},
+  SYD:{x:524,y:268},MEL:{x:518,y:276},AKL:{x:554,y:278},
+  GRU:{x:230,y:240},EZE:{x:220,y:264},BOG:{x:200,y:208},LIM:{x:192,y:230},
+  JNB:{x:360,y:248},NBO:{x:376,y:220},CPT:{x:342,y:262},
+  DEL:{x:440,y:158},BOM:{x:434,y:172},BLR:{x:440,y:182},MAA:{x:444,y:184},
+  YYZ:{x:176,y:132},YVR:{x:136,y:130},MEX:{x:164,y:178},
+  MUC:{x:328,y:116},VIE:{x:334,y:116},CPH:{x:330,y:108},ARN:{x:334,y:104},
+  IST:{x:356,y:130},CAI:{x:356,y:154},CMN:{x:304,y:148},
+};
+
+function arcPath(x1,y1,x2,y2){
+  const mx=(x1+x2)/2, my=(y1+y2)/2;
+  const dx=x2-x1, dy=y2-y1;
+  const len=Math.sqrt(dx*dx+dy*dy);
+  const sag=Math.min(len*0.22,28);
+  const cx=mx-dy/len*sag, cy=my+dx/len*sag;
+  return `M${x1},${y1} Q${cx},${cy} ${x2},${y2}`;
+}
+
+function JourneyMap({ uuid, token, passenger }) {
+  const [orders, setOrders] = useState(null);
+  const [loyalty, setLoyalty] = useState(null);
+  const [view, setView] = useState("map"); // map | timeline | wrapped
+
+  const load = useCallback(async () => {
+    const [od, ld] = await Promise.all([
+      api(`/orders?uuid=${uuid}`, "GET", null, token),
+      api(`/loyalty?uuid=${uuid}`, "GET", null, token),
+    ]);
+    setOrders(od.orders || []);
+    setLoyalty(ld.programs || []);
+  }, [uuid, token]);
+
+  useEffect(() => { load(); }, [load]);
+
+  if (!orders) return <div className="loading"><div className="spinner"></div>Loading your journey…</div>;
+
+  // ── STATS ──────────────────────────────────────────────────────────────────
+  const confirmedOrders = orders.filter(o => o.status !== "cancelled");
+  const totalMiles = loyalty?.reduce((a, p) => a + (p.miles_balance || 0), 0) || 0;
+  const totalSpend = confirmedOrders.reduce((a, o) => a + (parseFloat(o.total_amount) || 0), 0);
+  const destinations = [...new Set(confirmedOrders.map(o => o.destination).filter(Boolean))];
+  const airlines = [...new Set(confirmedOrders.map(o => o.airline_code).filter(Boolean))];
+  const cabinCounts = {};
+  confirmedOrders.forEach(o => { if (o.cabin) cabinCounts[o.cabin] = (cabinCounts[o.cabin] || 0) + 1; });
+  const topCabin = Object.entries(cabinCounts).sort((a,b)=>b[1]-a[1])[0]?.[0] || "—";
+  const businessTrips = confirmedOrders.filter(o => o.trip_context === "business").length;
+  const leisureTrips = confirmedOrders.filter(o => o.trip_context === "leisure" || o.trip_context === "bleisure").length;
+  const thisYear = new Date().getFullYear();
+  const thisYearOrders = confirmedOrders.filter(o => o.departure_date && new Date(o.departure_date).getFullYear() === thisYear);
+  const thisYearDests = [...new Set(thisYearOrders.map(o => o.destination).filter(Boolean))];
+  const thisYearSpend = thisYearOrders.reduce((a, o) => a + (parseFloat(o.total_amount) || 0), 0);
+
+  // ── PERSONALITY ────────────────────────────────────────────────────────────
+  const getPersonality = () => {
+    if (businessTrips > leisureTrips * 2) return { label: "Road warrior", sub: "Always on the move for work", color: "#4F46E5" };
+    if (leisureTrips > businessTrips * 2) return { label: "Adventure seeker", sub: "Travel is your favourite hobby", color: "#10B981" };
+    if (destinations.length > 8) return { label: "World explorer", sub: "Collecting stamps across continents", color: "#7C3AED" };
+    return { label: "Bleisure pro", sub: "Work hard, travel smart", color: "#F59E0B" };
+  };
+  const personality = getPersonality();
+
+  // ── ROUTES FOR MAP ─────────────────────────────────────────────────────────
+  const routes = confirmedOrders
+    .filter(o => o.origin && o.destination && AIRPORTS[o.origin] && AIRPORTS[o.destination])
+    .map(o => ({ from: o.origin, to: o.destination, context: o.trip_context, airline: o.airline_code }));
+
+  const visitedCodes = [...new Set([
+    ...confirmedOrders.map(o => o.origin),
+    ...confirmedOrders.map(o => o.destination)
+  ].filter(c => c && AIRPORTS[c]))];
+
+  // ── SORTED TIMELINE ────────────────────────────────────────────────────────
+  const timeline = [...confirmedOrders]
+    .filter(o => o.departure_date)
+    .sort((a, b) => new Date(b.departure_date) - new Date(a.departure_date));
+
+  const cabinColor = c => ({
+    "First": "#7C3AED", "Business": "#4F46E5",
+    "Premium Economy": "#10B981", "Economy": "#6B7280"
+  }[c] || "#6B7280");
+
+  const contextEmoji = c => c === "business" ? "💼" : c === "leisure" ? "🌴" : "✨";
+
+  const statTiles = [
+    { label: "Flights taken", val: confirmedOrders.length, sub: "confirmed bookings", cls: "stat-indigo" },
+    { label: "Destinations", val: destinations.length, sub: "unique cities", cls: "stat-emerald" },
+    { label: "Total miles", val: totalMiles.toLocaleString(), sub: "across all programs", cls: "stat-amber" },
+    { label: "Airlines flown", val: airlines.length, sub: "carriers", cls: "stat-gray" },
+  ];
+
+  return (
+    <div className="fade-up">
+      <div className="ph">
+        <div>
+          <div className="ptitle">Journey map 🌍</div>
+          <div className="psub">Your travel identity · {confirmedOrders.length} flights · {destinations.length} destinations</div>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          {["map","timeline","wrapped"].map(v => (
+            <button key={v} className={`btn ${view === v ? "btn-p" : ""}`}
+              onClick={() => setView(v)} style={{ textTransform: "capitalize" }}>
+              {v === "map" ? "🗺 Map" : v === "timeline" ? "📅 Timeline" : "🎉 Wrapped"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* STAT TILES */}
+      <div className="g4" style={{ marginBottom: 20 }}>
+        {statTiles.map(s => (
+          <div key={s.label} className={`stat ${s.cls}`}>
+            <div className="slbl">{s.label}</div>
+            <div className="sval">{s.val}</div>
+            <div className="ssub">{s.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* PERSONALITY CARD */}
+      <div className="card" style={{ background: personality.color, border: "none", marginBottom: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            <div style={{ fontFamily: "var(--display)", fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: "-0.3px" }}>{personality.label}</div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginTop: 4 }}>{personality.sub}</div>
+          </div>
+          <div style={{ textAlign: "right", color: "rgba(255,255,255,0.85)", fontSize: 13 }}>
+            <div>{businessTrips} business trips</div>
+            <div>{leisureTrips} leisure trips</div>
+            <div style={{ marginTop: 6, fontFamily: "var(--mono)", fontSize: 11, opacity: 0.6 }}>Preferred cabin: {topCabin}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── MAP VIEW ─────────────────────────────────────────────────────── */}
+      {view === "map" && (
+        <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+          <div style={{ padding: "14px 20px 8px", borderBottom: "1px solid var(--border)" }}>
+            <div className="ctitle" style={{ marginBottom: 0 }}>Flight routes · {routes.length} segments · {visitedCodes.length} airports</div>
+          </div>
+          <svg width="100%" viewBox="0 0 600 320" style={{ display: "block", background: "#F0F4FF" }}>
+            {/* World outline — simplified continents */}
+            <path fill="#DDE3F4" stroke="#C8D0EA" strokeWidth="0.5" d="
+              M60,80 L90,70 L120,65 L150,68 L170,75 L180,85 L175,100 L160,110 L140,115 L120,112 L100,108 L80,100 L60,90 Z
+              M185,68 L220,60 L260,55 L300,58 L330,62 L340,70 L335,82 L320,90 L295,95 L265,92 L240,88 L215,82 L190,78 Z
+              M305,95 L330,90 L355,92 L375,100 L385,112 L380,125 L365,132 L345,130 L325,122 L310,110 Z
+              M342,130 L360,128 L375,132 L385,145 L382,158 L370,164 L355,160 L344,150 Z
+              M390,140 L430,135 L465,140 L490,150 L500,165 L495,180 L480,190 L455,192 L430,185 L410,172 L395,158 Z
+              M460,190 L490,185 L515,190 L530,205 L528,225 L515,238 L495,240 L475,232 L462,218 Z
+              M500,120 L535,115 L560,120 L572,132 L568,148 L550,155 L528,150 L510,140 Z
+              M140,170 L165,165 L185,170 L195,185 L192,202 L178,210 L160,208 L145,196 Z
+              M205,200 L230,195 L248,202 L252,218 L245,232 L228,238 L212,230 L204,216 Z
+              M335,215 L360,210 L378,218 L382,235 L372,248 L352,252 L336,242 Z
+              M510,248 L540,242 L562,250 L568,268 L555,278 L532,280 L514,268 Z
+            "/>
+            {/* Route arcs */}
+            {routes.map((r, i) => {
+              const a = AIRPORTS[r.from], b = AIRPORTS[r.to];
+              if (!a || !b) return null;
+              const col = r.context === "business" ? "#4F46E5" : r.context === "leisure" ? "#10B981" : "#F59E0B";
+              return <path key={i} d={arcPath(a.x,a.y,b.x,b.y)} fill="none" stroke={col} strokeWidth="1.5" strokeOpacity="0.6" strokeLinecap="round"/>;
+            })}
+            {/* Airport dots */}
+            {visitedCodes.map(code => {
+              const pt = AIRPORTS[code];
+              if (!pt) return null;
+              return (
+                <g key={code}>
+                  <circle cx={pt.x} cy={pt.y} r="4" fill="#4F46E5" fillOpacity="0.15" stroke="#4F46E5" strokeWidth="1"/>
+                  <circle cx={pt.x} cy={pt.y} r="2" fill="#4F46E5"/>
+                  <text x={pt.x+5} y={pt.y+4} fontSize="7" fill="#374151" fontFamily="monospace" fontWeight="600">{code}</text>
+                </g>
+              );
+            })}
+          </svg>
+          <div style={{ padding: "10px 20px 14px", display: "flex", gap: 20, fontSize: 12, color: "var(--muted)" }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ width: 16, height: 2, background: "#4F46E5", display: "inline-block", borderRadius: 1 }}></span>Business</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ width: 16, height: 2, background: "#10B981", display: "inline-block", borderRadius: 1 }}></span>Leisure</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ width: 16, height: 2, background: "#F59E0B", display: "inline-block", borderRadius: 1 }}></span>Bleisure</span>
+          </div>
+        </div>
+      )}
+
+      {/* ── TIMELINE VIEW ─────────────────────────────────────────────────── */}
+      {view === "timeline" && (
+        <div className="card">
+          <div className="ctitle">Trip timeline — most recent first</div>
+          {timeline.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "32px 0", color: "var(--muted)", fontSize: 13 }}>No confirmed trips yet. Add orders to build your journey.</div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+              {timeline.map((o, i) => (
+                <div key={o.id} style={{ display: "flex", gap: 16, paddingBottom: 20, paddingTop: i === 0 ? 0 : 0, position: "relative" }}>
+                  {/* Timeline spine */}
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0, width: 32 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: "50%", background: cabinColor(o.cabin), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0, zIndex: 1 }}>
+                      <span style={{ fontSize: 14 }}>{contextEmoji(o.trip_context)}</span>
+                    </div>
+                    {i < timeline.length - 1 && <div style={{ width: 1.5, flex: 1, background: "var(--border)", marginTop: 4, minHeight: 24 }}></div>}
+                  </div>
+                  {/* Trip card */}
+                  <div style={{ flex: 1, paddingBottom: 16, borderBottom: i < timeline.length - 1 ? "1px solid var(--border)" : "none" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                          <span style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 16, color: "var(--ink)" }}>
+                            {o.origin || "?"} → {o.destination || "?"}
+                          </span>
+                          <span className={`badge ${o.trip_context === "business" ? "bb" : "bg"}`} style={{ fontSize: 10 }}>{o.trip_context}</span>
+                        </div>
+                        <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                          {o.airline_code && <span className="badge bm" style={{ fontSize: 10, marginRight: 6 }}>{o.airline_code}</span>}
+                          {o.cabin && <span style={{ fontFamily: "var(--mono)", color: cabinColor(o.cabin), fontWeight: 600 }}>{o.cabin}</span>}
+                          {o.pnr && <span style={{ color: "var(--hint)", marginLeft: 8, fontFamily: "var(--mono)", fontSize: 11 }}>{o.pnr}</span>}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: "right", flexShrink: 0 }}>
+                        <div style={{ fontFamily: "var(--mono)", fontSize: 11, color: "var(--muted)" }}>
+                          {new Date(o.departure_date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        </div>
+                        {o.total_amount && <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 14, color: "var(--emerald)" }}>${parseFloat(o.total_amount).toLocaleString()}</div>}
+                      </div>
+                    </div>
+                    {o.route && o.route !== `${o.origin}→${o.destination}` && (
+                      <div style={{ fontSize: 12, color: "var(--hint)", fontFamily: "var(--mono)" }}>{o.route}</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── TRAVEL WRAPPED VIEW ───────────────────────────────────────────── */}
+      {view === "wrapped" && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Hero */}
+          <div className="card" style={{ background: "var(--indigo)", border: "none", textAlign: "center", padding: "36px 32px" }}>
+            <div style={{ fontFamily: "var(--display)", fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>{thisYear} Travel Wrapped</div>
+            <div style={{ fontFamily: "var(--display)", fontSize: 42, fontWeight: 900, color: "#fff", letterSpacing: "-1px", lineHeight: 1.1, marginBottom: 8 }}>{thisYearDests.length}<br/><span style={{ fontSize: 20, fontWeight: 600, opacity: 0.8 }}>destinations this year</span></div>
+            <div style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", marginTop: 12 }}>
+              {thisYearOrders.length} flights · ${Math.round(thisYearSpend).toLocaleString()} spent · {passenger?.first_name}'s {thisYear}
+            </div>
+          </div>
+
+          <div className="g2">
+            {/* Top destinations */}
+            <div className="card">
+              <div className="ctitle">Top destinations {thisYear}</div>
+              {thisYearDests.length === 0 ? (
+                <div style={{ color: "var(--muted)", fontSize: 13 }}>No trips recorded this year yet.</div>
+              ) : thisYearDests.slice(0, 5).map((d, i) => (
+                <div key={d} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 0", borderBottom: i < Math.min(4, thisYearDests.length - 1) ? "1px solid var(--border)" : "none" }}>
+                  <div style={{ width: 28, height: 28, borderRadius: "50%", background: "var(--indigo-xlight)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--display)", fontWeight: 900, fontSize: 12, color: "var(--indigo)", flexShrink: 0 }}>{i + 1}</div>
+                  <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 16, color: "var(--ink)" }}>{d}</div>
+                  <div style={{ marginLeft: "auto" }}>
+                    <span className="badge bb" style={{ fontSize: 10 }}>
+                      {thisYearOrders.filter(o => o.destination === d).length}x
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Stats grid */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div className="stat stat-emerald">
+                <div className="slbl">Flights this year</div>
+                <div className="sval">{thisYearOrders.length}</div>
+                <div className="ssub">{thisYearOrders.filter(o=>o.trip_context==="business").length} business · {thisYearOrders.filter(o=>o.trip_context!=="business").length} leisure</div>
+              </div>
+              <div className="stat stat-indigo">
+                <div className="slbl">Total spend {thisYear}</div>
+                <div className="sval">${Math.round(thisYearSpend).toLocaleString()}</div>
+                <div className="ssub">Across {thisYearOrders.length} bookings</div>
+              </div>
+              <div className="stat stat-gray">
+                <div className="slbl">Travel persona</div>
+                <div className="sval" style={{ fontSize: 16, marginTop: 6 }}>{personality.label}</div>
+                <div className="ssub">{personality.sub}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* All-time records */}
+          <div className="card">
+            <div className="ctitle">All-time records</div>
+            <div className="g4">
+              {[
+                { label: "Total flights", val: confirmedOrders.length },
+                { label: "Countries / cities", val: destinations.length },
+                { label: "Airlines flown", val: airlines.length },
+                { label: "Loyalty miles", val: totalMiles.toLocaleString() },
+              ].map(s => (
+                <div key={s.label} style={{ textAlign: "center", padding: "16px 8px", background: "var(--bg)", borderRadius: "var(--r-lg)" }}>
+                  <div style={{ fontFamily: "var(--display)", fontSize: 26, fontWeight: 900, color: "var(--indigo)" }}>{s.val}</div>
+                  <div style={{ fontSize: 11, color: "var(--muted)", marginTop: 4, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>{s.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {confirmedOrders.length === 0 && (
+        <div className="card" style={{ textAlign: "center", padding: "48px 32px", marginTop: 0 }}>
+          <div style={{ fontSize: 44, marginBottom: 16 }}>✈️</div>
+          <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 20, color: "var(--ink)", marginBottom: 8 }}>Your journey starts here</div>
+          <div style={{ fontSize: 13, color: "var(--muted)", marginBottom: 24, lineHeight: 1.7 }}>Add your first booking in Offer &amp; Order to begin building your travel identity map.</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const NAV_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: "⬡", section: "overview" },
+  { id: "journey", label: "Journey map", icon: "🌍", section: "overview" },
   { id: "order", label: "Offer & Order", icon: "✈", section: "oneorder" },
   { id: "seat", label: "Seat & Ancillary", icon: "💺", section: "oneorder" },
   { id: "disruption", label: "Disruption", icon: "⚡", section: "oneorder" },
@@ -885,6 +1211,7 @@ export default function App() {
 
   const PAGES = {
     dashboard: <Dashboard passenger={passenger} uuid={uuid} onRefresh={handleRefresh} />,
+    journey: <JourneyMap uuid={uuid} token={user.token} passenger={passenger} />,
     order: <Orders uuid={uuid} token={user.token} />,
     seat: <SeatAncillary passenger={passenger} />,
     disruption: <Disruption />,
