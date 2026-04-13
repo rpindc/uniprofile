@@ -3,1418 +3,413 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UniProfile — The Passenger Identity Layer</title>
-<meta name="description" content="One UUID. Never re-enter your passport again. UniProfile is the portable passenger identity layer for the IATA OneOrder era.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<title>UniProfile — Traveler Identity</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
-/* ─── TOKENS ─────────────────────────────────────────────── */
-:root{
-  --bg:#07070d;--bg2:#0e0e18;--bg3:#14141f;--bg4:#1a1a28;
-  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--border3:rgba(255,255,255,0.22);
-  --text:#eeeef5;--text2:#8888a8;--text3:#4a4a68;--text4:#2e2e48;
-  --blue:#4f8ef7;--blue2:#2563d4;--violet:#7c5cfc;--teal:#00cba8;--amber:#f7a84f;--red:#f75f5f;
-  --mono:'DM Mono',monospace;--serif:'Instrument Serif',serif;--sans:'Geist',sans-serif;
-  --r:10px;--r2:14px;--r3:20px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;overflow-x:hidden}
-::selection{background:rgba(79,142,247,0.25);color:var(--text)}
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:var(--bg)}
-::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
-
-/* ─── NOISE OVERLAY ──────────────────────────────────────── */
-body::before{
-  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-  opacity:0.35;
-}
-
-/* ─── NAV ────────────────────────────────────────────────── */
-nav{
-  position:fixed;top:0;left:0;right:0;z-index:200;
-  height:58px;padding:0 40px;
-  display:flex;align-items:center;justify-content:space-between;
-  background:rgba(7,7,13,0.82);backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);
-  transition:background 0.3s;
-}
-.nav-logo{font-family:var(--mono);font-size:15px;font-weight:500;color:var(--text);letter-spacing:-0.01em;cursor:pointer}
-.nav-logo em{font-style:normal;color:var(--blue)}
-.nav-center{display:flex;gap:32px}
-.nav-center a{color:var(--text2);text-decoration:none;font-size:13px;font-weight:400;letter-spacing:0.01em;transition:color 0.15s;position:relative}
-.nav-center a:hover{color:var(--text)}
-.nav-center a::after{content:'';position:absolute;bottom:-2px;left:0;right:0;height:1px;background:var(--blue);transform:scaleX(0);transition:transform 0.2s}
-.nav-center a:hover::after{transform:scaleX(1)}
-.nav-right{display:flex;align-items:center;gap:10px}
-.nav-login{color:var(--text2);background:none;border:1px solid var(--border2);border-radius:8px;padding:7px 16px;font-size:13px;cursor:pointer;font-family:var(--sans);transition:all 0.15s}
-.nav-login:hover{color:var(--text);border-color:var(--border3)}
-.nav-cta{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--sans);transition:all 0.15s;letter-spacing:0.01em}
-.nav-cta:hover{background:#3a7de8;transform:translateY(-1px)}
-
-/* ─── HERO ───────────────────────────────────────────────── */
-.hero{
-  min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:120px 24px 80px;text-align:center;position:relative;
-}
-.hero-glow{
-  position:absolute;top:20%;left:50%;transform:translateX(-50%);
-  width:600px;height:400px;
-  background:radial-gradient(ellipse,rgba(79,142,247,0.12) 0%,rgba(124,92,252,0.06) 40%,transparent 70%);
-  pointer-events:none;
-}
-.hero-badge{
-  display:inline-flex;align-items:center;gap:8px;
-  border:1px solid rgba(79,142,247,0.25);background:rgba(79,142,247,0.07);
-  border-radius:20px;padding:5px 16px 5px 10px;
-  font-family:var(--mono);font-size:11px;color:var(--blue);letter-spacing:0.06em;
-  margin-bottom:32px;
-}
-.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,203,168,0.4)}50%{opacity:0.8;box-shadow:0 0 0 4px rgba(0,203,168,0)}}
-.hero h1{
-  font-family:var(--serif);font-weight:400;font-size:clamp(44px,7vw,80px);
-  line-height:1.06;letter-spacing:-0.02em;margin-bottom:24px;
-  max-width:840px;
-}
-.hero h1 em{font-style:italic;color:var(--blue)}
-.hero h1 strong{font-style:normal;font-weight:400;color:var(--teal)}
-.hero-sub{color:var(--text2);font-size:clamp(15px,2vw,18px);max-width:520px;margin:0 auto 40px;line-height:1.65;font-weight:300}
-.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:60px}
-.btn-xl{padding:14px 32px;border-radius:10px;font-size:15px;font-weight:500;cursor:pointer;font-family:var(--sans);transition:all 0.2s;letter-spacing:0.01em}
-.btn-primary{background:var(--blue);color:#fff;border:none}
-.btn-primary:hover{background:#3a7de8;transform:translateY(-2px);box-shadow:0 8px 24px rgba(79,142,247,0.3)}
-.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border2)}
-.btn-ghost:hover{border-color:var(--border3);background:var(--bg3)}
-
-/* UUID anatomy strip */
-.uuid-strip{
-  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
-  padding:18px 24px;display:inline-flex;align-items:center;gap:0;
-  font-family:var(--mono);font-size:13px;margin-bottom:16px;
-  max-width:100%;overflow-x:auto;
-}
-.uuid-seg{display:flex;flex-direction:column;align-items:center;padding:0 10px}
-.uuid-seg:not(:last-child){border-right:1px solid var(--border)}
-.uuid-hex{color:var(--text);font-size:14px;letter-spacing:0.05em}
-.uuid-hex.dim{color:var(--text3)}
-.uuid-lbl{font-size:9px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-top:4px}
-.uuid-dash{color:var(--text4);align-self:flex-start;padding-top:2px;font-size:14px}
-
-/* UNI ID display */
-.uni-strip{
-  background:rgba(79,142,247,0.07);border:1px solid rgba(79,142,247,0.2);
-  border-radius:12px;padding:14px 24px;
-  font-family:var(--mono);color:var(--blue);font-size:22px;letter-spacing:0.1em;
-  margin-bottom:10px;display:inline-block;
-}
-.hero-id-note{font-size:12px;color:var(--text3);font-family:var(--mono)}
-
-/* ─── STAT BAR ───────────────────────────────────────────── */
-.stat-bar{
-  display:grid;grid-template-columns:repeat(4,1fr);
-  border:1px solid var(--border);border-radius:16px;overflow:hidden;
-  background:var(--border);gap:1px;margin:0 auto;max-width:900px;
-}
-.stat-cell{background:var(--bg2);padding:24px;text-align:center}
-.stat-n{font-family:var(--serif);font-size:36px;color:var(--text);line-height:1}
-.stat-l{font-size:12px;color:var(--text3);margin-top:5px;letter-spacing:0.04em}
-
-/* ─── SECTIONS ───────────────────────────────────────────── */
-.section{padding:96px 40px;max-width:1140px;margin:0 auto;position:relative;z-index:1}
-.section-sm{padding:64px 40px}
-.section-pill{
-  font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;
-  color:var(--blue);background:rgba(79,142,247,0.1);border:1px solid rgba(79,142,247,0.2);
-  display:inline-block;padding:3px 12px;border-radius:20px;margin-bottom:14px;
-}
-.section-h{font-family:var(--serif);font-weight:400;font-size:clamp(28px,4vw,44px);letter-spacing:-0.02em;margin-bottom:12px;line-height:1.1}
-.section-sub{color:var(--text2);font-size:16px;max-width:480px;line-height:1.65;margin-bottom:48px;font-weight:300}
-
-/* ─── DIVIDER ────────────────────────────────────────────── */
-.divider{border:none;border-top:1px solid var(--border);margin:0}
-
-/* ─── IDENTITY LAYERS ────────────────────────────────────── */
-.layers-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
-.digital-card{
-  background:var(--bg2);border:1px solid var(--border2);border-radius:22px;
-  padding:28px;position:relative;overflow:hidden;
-  box-shadow:0 0 0 1px rgba(79,142,247,0.08),0 32px 64px rgba(0,0,0,0.5);
-}
-.dc-glow1{position:absolute;top:-80px;right:-80px;width:240px;height:240px;background:radial-gradient(circle,rgba(79,142,247,0.14) 0%,transparent 65%);pointer-events:none}
-.dc-glow2{position:absolute;bottom:-60px;left:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(124,92,252,0.1) 0%,transparent 65%);pointer-events:none}
-.dc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
-.dc-brand{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--text)}
-.dc-brand em{font-style:normal;color:var(--blue)}
-.dc-chip{width:38px;height:29px;background:linear-gradient(135deg,#b8902a,#f0cc60,#b8902a);border-radius:5px;opacity:0.85}
-.dc-avatar{
-  width:52px;height:52px;border-radius:50%;
-  background:linear-gradient(135deg,var(--blue),var(--violet));
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--sans);font-weight:600;font-size:18px;color:#fff;
-  margin-bottom:10px;
-}
-.dc-name{font-family:var(--sans);font-weight:600;font-size:17px;margin-bottom:2px}
-.dc-handle{font-family:var(--mono);font-size:12px;color:var(--blue);margin-bottom:20px}
-.dc-rows{display:flex;flex-direction:column;gap:12px}
-.dc-row{}
-.dc-rl{font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:2px}
-.dc-rv{font-family:var(--mono);font-size:13px;color:var(--text)}
-.dc-rv.uni{font-size:20px;color:var(--blue);font-weight:500;letter-spacing:0.06em}
-.dc-rv.uuid{font-size:9px;color:var(--text4);word-break:break-all;line-height:1.6}
-.dc-footer{display:flex;align-items:center;justify-content:space-between;margin-top:20px;padding-top:16px;border-top:1px solid var(--border)}
-.dc-tags{display:flex;gap:5px;flex-wrap:wrap}
-.dc-tag{font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:4px;background:rgba(79,142,247,0.1);color:var(--blue);letter-spacing:0.06em}
-.dc-qr{width:44px;height:44px;background:var(--text);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.dc-qr svg{width:32px;height:32px}
-
-/* layer cards */
-.layer-cards{display:flex;flex-direction:column;gap:10px}
-.layer-card{
-  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
-  padding:14px 16px;transition:border-color 0.2s,background 0.2s;cursor:default;
-}
-.layer-card:hover{border-color:var(--border2);background:var(--bg3)}
-.lc-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.lc-num{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.08em;text-transform:uppercase}
-.lc-ctx{font-family:var(--mono);font-size:9px;color:var(--text4)}
-.lc-label{font-size:12px;color:var(--text3);margin-bottom:3px;font-weight:400}
-.lc-val{font-family:var(--mono);font-size:14px;color:var(--text)}
-.lc-val.accent{color:var(--blue);font-size:20px;font-weight:500;letter-spacing:0.06em}
-.lc-val.violet{color:var(--violet);font-size:16px}
-.lc-val.teal{color:var(--teal);font-size:13px}
-.lc-val.dim{font-size:9px;color:var(--text4);word-break:break-all;line-height:1.6}
-
-/* ─── HOW IT WORKS ───────────────────────────────────────── */
-.steps-row{display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative}
-.steps-row::before{
-  content:'';position:absolute;top:20px;left:calc(10% + 10px);right:calc(10% + 10px);
-  height:1px;background:linear-gradient(90deg,var(--border),var(--border2),var(--border));
-  z-index:0;
-}
-.step-col{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 8px;position:relative;z-index:1}
-.step-circle{
-  width:40px;height:40px;border-radius:50%;
-  background:var(--bg3);border:1px solid var(--border2);
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--mono);font-size:13px;color:var(--blue);
-  margin-bottom:14px;flex-shrink:0;
-  transition:all 0.3s;
-}
-.step-col:hover .step-circle{background:var(--blue);color:#fff;border-color:var(--blue);box-shadow:0 0 20px rgba(79,142,247,0.3)}
-.step-title{font-size:13px;font-weight:500;margin-bottom:5px}
-.step-desc{font-size:12px;color:var(--text3);line-height:1.5}
-
-/* ─── MODULES ────────────────────────────────────────────── */
-.modules-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
-.module-card{
-  background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:22px;
-  transition:all 0.2s;cursor:default;position:relative;overflow:hidden;
-}
-.module-card::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(circle at 80% 20%,rgba(79,142,247,0.05) 0%,transparent 60%);
-  opacity:0;transition:opacity 0.3s;pointer-events:none;
-}
-.module-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,0.3)}
-.module-card:hover::before{opacity:1}
-.mc-icon{font-size:22px;margin-bottom:12px;display:block}
-.mc-name{font-size:15px;font-weight:600;margin-bottom:6px;letter-spacing:-0.01em}
-.mc-desc{font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:12px}
-.mc-tags{display:flex;gap:5px;flex-wrap:wrap}
-.mc-tag{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:4px;background:rgba(79,142,247,0.08);color:var(--blue);letter-spacing:0.06em}
-.mc-tag.teal{background:rgba(0,203,168,0.08);color:var(--teal)}
-.mc-tag.violet{background:rgba(124,92,252,0.08);color:var(--violet)}
-
-/* ─── BIOMETRICS ─────────────────────────────────────────── */
-.bio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.bio-card{
-  background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:22px;
-  text-align:center;transition:all 0.2s;
-}
-.bio-card:hover{border-color:var(--border2);transform:translateY(-2px)}
-.bio-icon{font-size:28px;margin-bottom:12px;display:block}
-.bio-name{font-size:14px;font-weight:600;margin-bottom:6px}
-.bio-desc{font-size:12px;color:var(--text2);line-height:1.55;margin-bottom:12px}
-.bio-tags{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
-
-/* ─── ENROLLMENT ─────────────────────────────────────────── */
-.enroll-wrap{display:grid;grid-template-columns:1fr 1.1fr;gap:56px;align-items:start}
-.enroll-aside{}
-.enroll-aside-sub{color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:28px;font-weight:300}
-.step-tracker{display:flex;flex-direction:column;gap:14px}
-.st-item{display:flex;align-items:flex-start;gap:12px;opacity:0.35;transition:opacity 0.3s}
-.st-item.active{opacity:1}
-.st-item.done{opacity:0.65}
-.st-dot{
-  width:26px;height:26px;border-radius:50%;flex-shrink:0;
-  background:var(--bg3);border:1px solid var(--border2);
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:1px;
-  transition:all 0.3s;
-}
-.st-item.active .st-dot{background:var(--blue);border-color:var(--blue);color:#fff}
-.st-item.done .st-dot{background:var(--teal);border-color:var(--teal);color:#000;font-size:11px}
-.st-text-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:1px}
-.st-text-sub{font-size:12px;color:var(--text3)}
-
-/* form card */
-.form-card{
-  background:var(--bg2);border:1px solid var(--border);border-radius:18px;
-  padding:28px;position:relative;
-}
-.form-prog{height:2px;background:var(--border);border-radius:2px;margin-bottom:26px;overflow:hidden}
-.form-prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--violet));border-radius:2px;transition:width 0.4s cubic-bezier(0.4,0,0.2,1)}
-.form-step{display:none}
-.form-step.active{display:block;animation:fadeUp 0.25s ease}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.fs-label{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px}
-.fs-title{font-family:var(--serif);font-size:22px;margin-bottom:20px;line-height:1.2}
-.fg{margin-bottom:14px}
-.fg label{display:block;font-size:12px;color:var(--text2);margin-bottom:5px;font-weight:400}
-.fg label span{color:var(--text3);font-size:11px;font-family:var(--mono)}
-input[type=text],input[type=email],select,textarea{
-  width:100%;background:var(--bg3);border:1px solid var(--border);
-  border-radius:8px;padding:10px 13px;font-size:13px;color:var(--text);
-  font-family:var(--sans);outline:none;transition:border-color 0.15s;
-  -webkit-appearance:none;appearance:none;
-}
-input[type=text]:focus,input[type=email]:focus,select:focus,textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,142,247,0.1)}
-input[type=text]::placeholder,input[type=email]::placeholder{color:var(--text4)}
-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234a4a68' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;cursor:pointer}
-select option{background:var(--bg3)}
-.fg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.handle-wrap{position:relative}
-.handle-prefix{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-family:var(--mono);font-size:13px;pointer-events:none}
-.handle-wrap input{padding-left:22px}
-.handle-avail{font-family:var(--mono);font-size:10px;margin-top:4px;height:14px;letter-spacing:0.04em}
-.handle-avail.ok{color:var(--teal)}
-.handle-avail.taken{color:var(--red)}
-.hint{font-size:11px;color:var(--text3);margin-top:4px;line-height:1.4}
-
-/* loyalty */
-.loyalty-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.loy-item{
-  background:var(--bg3);border:1px solid var(--border);border-radius:8px;
-  padding:10px 12px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:10px;
-}
-.loy-item:hover{border-color:var(--border2)}
-.loy-item.selected{border-color:var(--blue);background:rgba(79,142,247,0.08)}
-.loy-code{font-family:var(--mono);font-size:11px;color:var(--blue);min-width:20px}
-.loy-name{font-size:12px;color:var(--text2)}
-.loy-item.selected .loy-name{color:var(--text)}
-.loy-num{margin-left:auto}
-.loy-num input{width:90px;padding:5px 8px;font-size:11px;margin:0}
-
-/* prefs */
-.pref-section{margin-bottom:14px}
-.pref-section-label{font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:400}
-.pref-pills{display:flex;gap:5px;flex-wrap:wrap}
-.ppill{
-  font-family:var(--mono);font-size:11px;padding:4px 11px;border-radius:20px;
-  background:var(--bg3);border:1px solid var(--border);color:var(--text3);
-  cursor:pointer;transition:all 0.15s;
-}
-.ppill:hover{border-color:var(--border2);color:var(--text2)}
-.ppill.on{background:rgba(124,92,252,0.12);border-color:var(--violet);color:var(--violet)}
-
-/* form actions */
-.form-actions{display:flex;gap:8px;margin-top:20px}
-.btn-back{
-  background:transparent;color:var(--text2);border:1px solid var(--border);
-  border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:var(--sans);transition:all 0.15s;
-}
-.btn-back:hover{border-color:var(--border2);color:var(--text)}
-.btn-next{
-  flex:1;background:var(--blue);color:#fff;border:none;border-radius:8px;
-  padding:11px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--sans);transition:all 0.15s;
-}
-.btn-next:hover{background:#3a7de8;transform:translateY(-1px)}
-.btn-next:active{transform:translateY(0)}
-.btn-next.loading{opacity:0.7;cursor:wait}
-
-/* consent */
-.consent-box{display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px}
-.consent-box input[type=checkbox]{width:16px;height:16px;flex-shrink:0;margin-top:1px;accent-color:var(--blue);cursor:pointer}
-.consent-box label{font-size:12px;color:var(--text2);line-height:1.5;cursor:pointer}
-.consent-box label a{color:var(--blue);text-decoration:none}
-
-/* ─── SUCCESS ────────────────────────────────────────────── */
-.success-wrap{text-align:center}
-.success-check{
-  width:56px;height:56px;border-radius:50%;
-  background:rgba(0,203,168,0.12);border:1px solid rgba(0,203,168,0.3);
-  display:flex;align-items:center;justify-content:center;
-  margin:0 auto 16px;font-size:24px;
-}
-.success-title{font-family:var(--serif);font-size:24px;margin-bottom:6px}
-.success-sub{font-size:13px;color:var(--text2);margin-bottom:20px}
-.success-id-card{
-  background:linear-gradient(135deg,var(--bg3) 0%,var(--bg4) 100%);
-  border:1px solid rgba(79,142,247,0.25);border-radius:14px;padding:22px;
-  text-align:left;position:relative;overflow:hidden;margin-bottom:14px;
-}
-.success-id-card::before{content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;background:radial-gradient(circle,rgba(79,142,247,0.15) 0%,transparent 70%);pointer-events:none}
-.sid-lbl{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:5px}
-.sid-uni{font-family:var(--mono);font-size:30px;font-weight:500;color:var(--blue);letter-spacing:0.08em;margin-bottom:2px}
-.sid-handle{font-family:var(--mono);font-size:13px;color:var(--violet);margin-bottom:14px}
-.sid-uuid-lbl{font-family:var(--mono);font-size:9px;color:var(--text4);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:3px}
-.sid-uuid{font-family:var(--mono);font-size:10px;color:var(--text4);word-break:break-all;line-height:1.6}
-.sid-copy-row{display:flex;gap:6px;margin-top:12px}
-.btn-copy{
-  background:var(--bg2);border:1px solid var(--border2);color:var(--text2);
-  border-radius:6px;padding:6px 13px;font-size:11px;cursor:pointer;
-  font-family:var(--mono);transition:all 0.15s;
-}
-.btn-copy:hover{color:var(--text);border-color:var(--blue)}
-.success-layers{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
-.sl{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
-.sl-badge{font-family:var(--mono);font-size:9px;color:var(--text3);min-width:54px;text-transform:uppercase;letter-spacing:0.06em}
-.sl-val{font-family:var(--mono);font-size:12px;color:var(--text)}
-.sl-use{margin-left:auto;font-size:11px;color:var(--text3);text-align:right;max-width:130px;line-height:1.3}
-.btn-restart{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:11px;font-size:13px;cursor:pointer;font-family:var(--sans);transition:all 0.15s}
-.btn-restart:hover{border-color:var(--border2);color:var(--text)}
-
-/* ─── INFRA ──────────────────────────────────────────────── */
-.infra-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.infra-layer{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px}
-.infra-layer-title{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px}
-.infra-items{display:flex;flex-direction:column;gap:7px}
-.infra-item{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:9px 11px}
-.infra-name{font-size:12px;font-weight:500}
-.infra-desc{font-size:11px;color:var(--text3);margin-left:auto;font-family:var(--mono)}
-.infra-arrow{text-align:center;color:var(--text4);font-size:11px;font-family:var(--mono);padding:6px 0;letter-spacing:0.05em}
-
-/* ─── PRICING ────────────────────────────────────────────── */
-.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.pricing-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:26px;position:relative;transition:all 0.2s}
-.pricing-card.featured{border-color:rgba(79,142,247,0.4);background:linear-gradient(160deg,rgba(79,142,247,0.05) 0%,var(--bg2) 100%)}
-.pricing-card:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,0.3)}
-.pc-popular{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:10px;font-family:var(--mono);padding:3px 12px;border-radius:10px;letter-spacing:0.06em;white-space:nowrap}
-.pc-label{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px}
-.pc-price{font-family:var(--serif);font-size:38px;color:var(--text);line-height:1;margin-bottom:4px}
-.pc-price span{font-size:15px;color:var(--text3);font-family:var(--sans)}
-.pc-per{font-size:12px;color:var(--text3);margin-bottom:18px;font-family:var(--mono)}
-.pc-divider{border-top:1px solid var(--border);margin:16px 0}
-.pc-features{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
-.pc-feature{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--text2)}
-.pc-feature::before{content:'—';color:var(--text4);flex-shrink:0;font-family:var(--mono)}
-.pc-cta{
-  width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);
-  border-radius:8px;padding:11px;font-size:13px;font-weight:500;cursor:pointer;
-  font-family:var(--sans);transition:all 0.15s;
-}
-.pricing-card.featured .pc-cta{background:var(--blue);border-color:var(--blue);color:#fff}
-.pc-cta:hover{opacity:0.85;transform:translateY(-1px)}
-
-/* ─── ABOUT / TEAM ───────────────────────────────────────── */
-.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
-.values-list{display:flex;flex-direction:column;gap:18px}
-.value-item{display:flex;gap:14px;align-items:flex-start}
-.value-icon{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:var(--bg3)}
-.value-title{font-size:14px;font-weight:500;margin-bottom:3px}
-.value-desc{font-size:13px;color:var(--text3);line-height:1.55}
-.team-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:12px}
-.tc-top{display:flex;align-items:center;gap:14px;margin-bottom:12px}
-.tc-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--violet));display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;color:#fff;flex-shrink:0}
-.tc-name{font-size:15px;font-weight:500}
-.tc-role{font-size:12px;color:var(--text3);font-family:var(--mono);margin-top:2px}
-.tc-bio{font-size:13px;color:var(--text2);line-height:1.6}
-.partner-logos{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
-.partner-chip{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:7px 14px;font-size:12px;color:var(--text3);font-family:var(--mono);letter-spacing:0.04em}
-
-/* ─── CONTACT ────────────────────────────────────────────── */
-.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
-.contact-info{display:flex;flex-direction:column;gap:10px}
-.ci-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
-.ci-label{font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px}
-.ci-val{font-size:13px;color:var(--text)}
-.ci-val a{color:var(--blue);text-decoration:none}
-.integration-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:16px}
-.int-chip{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-size:11px;color:var(--text3);font-family:var(--mono)}
-
-/* contact form */
-.contact-form-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:24px}
-textarea{height:90px;resize:vertical;line-height:1.5}
-.contact-form-card .btn-next{margin-top:14px}
-.form-sent{display:none;text-align:center;padding:20px 0}
-.form-sent-icon{font-size:28px;margin-bottom:10px}
-.form-sent-title{font-size:15px;font-weight:500;margin-bottom:5px}
-.form-sent-sub{font-size:13px;color:var(--text2)}
-
-/* ─── SECURITY STRIP ─────────────────────────────────────── */
-.security-strip{
-  background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);
-  padding:16px 40px;display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap;
-}
-.sec-badge{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;color:var(--text3);letter-spacing:0.04em}
-.sec-dot{width:5px;height:5px;border-radius:50%;background:var(--teal)}
-
-/* ─── FOOTER ─────────────────────────────────────────────── */
-footer{padding:40px;border-top:1px solid var(--border);position:relative;z-index:1}
-.footer-inner{max-width:1140px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:40px;align-items:start}
-.footer-brand{font-family:var(--mono);font-size:14px;margin-bottom:8px}
-.footer-brand em{font-style:normal;color:var(--blue)}
-.footer-tagline{font-size:12px;color:var(--text3);max-width:300px;line-height:1.55}
-.footer-links{display:grid;grid-template-columns:repeat(4,auto);gap:36px}
-.footer-col-title{font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px;letter-spacing:0.04em}
-.footer-col a{display:block;font-size:12px;color:var(--text3);text-decoration:none;margin-bottom:7px;transition:color 0.15s}
-.footer-col a:hover{color:var(--text2)}
-.footer-bottom{max-width:1140px;margin:24px auto 0;padding-top:20px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
-.footer-copy{font-size:12px;color:var(--text4)}
-.footer-legal{display:flex;gap:16px}
-.footer-legal a{font-size:12px;color:var(--text4);text-decoration:none;transition:color 0.15s}
-.footer-legal a:hover{color:var(--text3)}
-
-/* ─── TOAST ──────────────────────────────────────────────── */
-.toast{
-  position:fixed;bottom:28px;right:28px;z-index:999;
-  background:var(--teal);color:#000;
-  padding:10px 18px;border-radius:8px;
-  font-size:12px;font-weight:500;font-family:var(--mono);
-  transform:translateY(60px);opacity:0;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
-  pointer-events:none;letter-spacing:0.04em;
-}
-.toast.show{transform:translateY(0);opacity:1}
-
-/* ─── RESPONSIVE ─────────────────────────────────────────── */
-@media(max-width:900px){
-  .layers-grid,.enroll-wrap,.about-grid,.contact-grid{grid-template-columns:1fr}
-  .infra-grid,.bio-grid,.pricing-grid{grid-template-columns:1fr}
-  .stat-bar{grid-template-columns:1fr 1fr}
-  .steps-row{grid-template-columns:1fr;gap:20px}
-  .steps-row::before{display:none}
-  .footer-inner{grid-template-columns:1fr}
-  .footer-links{grid-template-columns:repeat(2,auto)}
-}
-@media(max-width:640px){
-  nav{padding:0 16px}
-  .nav-center{display:none}
-  .section{padding:60px 20px}
-  .hero{padding:100px 20px 60px}
-  .stat-bar{grid-template-columns:1fr 1fr}
-  .modules-grid{grid-template-columns:1fr}
-  .loyalty-grid,.fg-row{grid-template-columns:1fr}
-  .security-strip{padding:14px 20px;gap:14px}
-  footer{padding:28px 20px}
-  .footer-links{grid-template-columns:1fr 1fr}
-}
+:root{--navy:#0A1628;--navy2:#0F1F3D;--teal:#0D9488;--tealLt:#14B8A6;--tealDim:#0A6E66;--gold:#C9973A;--goldLt:#E5B96A;--white:#FFFFFF;--offW:#F5F3EF;--slate:#8A97A8;--text:#E8E2D8;--textMid:#A8A098;--textDim:#6A6560;--red:#E05050;--green:#22C88A;--border:rgba(255,255,255,0.07);--borderM:rgba(255,255,255,0.12);--card:rgba(255,255,255,0.04);--cardHov:rgba(255,255,255,0.07);}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;background:var(--navy);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;}
+.app{display:flex;height:100vh;overflow:hidden;}
+.sidebar{width:240px;min-width:240px;background:var(--navy2);border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.sidebar-logo{padding:28px 24px 20px;border-bottom:1px solid var(--border);}
+.logo-mark{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.logo-circle{width:32px;height:32px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:white;}
+.logo-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--white);}
+.logo-sub{font-size:10px;color:var(--textMid);letter-spacing:1.5px;text-transform:uppercase;padding-left:42px;}
+.uuid-badge{margin:16px 24px;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px 12px;}
+.uuid-label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);margin-bottom:4px;}
+.uuid-value{font-family:'DM Mono',monospace;font-size:10px;color:var(--textMid);word-break:break-all;line-height:1.4;}
+.completeness{margin:0 24px 16px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:6px;}
+.comp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.comp-label{font-size:10px;color:var(--textMid);letter-spacing:0.5px;text-transform:uppercase;}
+.comp-pct{font-size:18px;font-weight:500;color:var(--goldLt);}
+.comp-bar-track{height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;}
+.comp-bar-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--goldLt));border-radius:2px;}
+.nav{padding:8px 12px;flex:1;overflow-y:auto;}
+.nav-section{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--textDim);padding:12px 12px 4px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;cursor:pointer;color:var(--textMid);font-size:13px;font-weight:400;transition:all 0.15s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;}
+.nav-item:hover{background:var(--cardHov);color:var(--text);}
+.nav-item.active{background:rgba(13,148,136,0.15);color:var(--tealLt);}
+.nav-dot{width:6px;height:6px;border-radius:50%;background:var(--textDim);flex-shrink:0;transition:background 0.15s;}
+.nav-item.active .nav-dot{background:var(--teal);}
+.nav-badge{margin-left:auto;font-size:9px;background:var(--red);color:white;padding:1px 6px;border-radius:10px;}
+.nav-alert{margin-left:auto;font-size:9px;background:rgba(201,151,58,0.2);color:var(--goldLt);padding:1px 6px;border-radius:10px;}
+.sidebar-footer{padding:16px 24px;border-top:1px solid var(--border);}
+.traveler-row{display:flex;align-items:center;gap:10px;}
+.traveler-avatar{width:32px;height:32px;border-radius:50%;background:var(--tealDim);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:white;flex-shrink:0;}
+.traveler-name{font-size:13px;font-weight:400;color:var(--text);}
+.traveler-tier{font-size:10px;color:var(--gold);}
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.topbar{display:flex;align-items:center;padding:0 32px;height:64px;min-height:64px;border-bottom:1px solid var(--border);background:var(--navy);position:sticky;top:0;z-index:100;gap:16px;}
+.topbar-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:var(--white);flex:1;}
+.bleisure-toggle{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 14px;}
+.bleisure-label{font-size:11px;letter-spacing:0.5px;transition:color 0.2s;}
+.bleisure-label.leisure{color:var(--tealLt);}
+.bleisure-label.business{color:var(--textMid);}
+.bleisure-label.business.active{color:var(--goldLt);}
+.bleisure-label.leisure.inactive{color:var(--textMid);}
+.toggle-switch{position:relative;width:44px;height:24px;cursor:pointer;}
+.toggle-switch input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-track{position:absolute;inset:0;background:var(--tealDim);border-radius:12px;transition:background 0.3s;}
+.toggle-switch input:checked ~ .toggle-track{background:var(--gold);}
+.toggle-thumb{position:absolute;width:18px;height:18px;background:white;border-radius:50%;top:3px;left:3px;transition:transform 0.3s;box-shadow:0 1px 4px rgba(0,0,0,0.3);}
+.toggle-switch input:checked ~ .toggle-track .toggle-thumb{transform:translateX(20px);}
+.bleisure-context-pill{font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:10px;font-weight:500;transition:all 0.2s;}
+.bleisure-context-pill.leisure{background:rgba(13,148,136,0.15);color:var(--tealLt);border:1px solid rgba(13,148,136,0.3);}
+.bleisure-context-pill.business{background:rgba(201,151,58,0.15);color:var(--goldLt);border:1px solid rgba(201,151,58,0.3);}
+.topbar-actions{display:flex;gap:8px;}
+.topbar-btn{padding:7px 16px;border-radius:6px;font-size:12px;cursor:pointer;border:1px solid var(--borderM);background:var(--card);color:var(--text);transition:all 0.15s;font-family:'DM Sans',sans-serif;}
+.topbar-btn:hover{background:var(--cardHov);}
+.topbar-btn.primary{background:var(--teal);border-color:var(--teal);color:white;}
+.topbar-btn.primary:hover{background:var(--tealLt);}
+.content{padding:32px;flex:1;}
+.section{display:none;}
+.section.active{display:block;}
+.overview-hero{display:flex;gap:24px;margin-bottom:28px;}
+.hero-stat{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 24px;position:relative;overflow:hidden;}
+.hero-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.hero-stat.teal::before{background:var(--teal);}
+.hero-stat.gold::before{background:var(--gold);}
+.hero-stat.green::before{background:var(--green);}
+.stat-value{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:600;color:var(--white);line-height:1;margin-bottom:4px;}
+.stat-label{font-size:11px;color:var(--textMid);letter-spacing:0.5px;}
+.stat-sub{font-size:11px;color:var(--tealLt);margin-top:4px;}
+.stat-sub.warn{color:var(--goldLt);}
+.modules-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.module-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;cursor:pointer;transition:all 0.2s;position:relative;}
+.module-card:hover{background:var(--cardHov);border-color:var(--borderM);transform:translateY(-1px);}
+.module-card.complete{border-left:3px solid var(--teal);}
+.module-card.partial{border-left:3px solid var(--gold);}
+.module-card.empty{border-left:3px solid var(--textDim);}
+.module-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
+.module-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.module-icon.teal{background:rgba(13,148,136,0.15);}
+.module-icon.gold{background:rgba(201,151,58,0.15);}
+.module-icon.blue{background:rgba(56,99,177,0.15);}
+.module-icon.purple{background:rgba(120,80,180,0.15);}
+.module-icon.green{background:rgba(34,200,138,0.12);}
+.module-icon.slate{background:rgba(138,151,168,0.12);}
+.module-status{font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:4px;font-weight:500;}
+.status-complete{background:rgba(13,148,136,0.12);color:var(--tealLt);}
+.status-partial{background:rgba(201,151,58,0.12);color:var(--goldLt);}
+.status-empty{background:rgba(255,255,255,0.05);color:var(--textDim);}
+.module-name{font-size:14px;font-weight:500;color:var(--white);margin-bottom:4px;}
+.module-desc{font-size:12px;color:var(--textMid);line-height:1.5;}
+.module-items{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px;}
+.module-tag{font-size:10px;padding:3px 8px;border-radius:4px;background:rgba(255,255,255,0.06);color:var(--textMid);}
+.module-tag.filled{background:rgba(13,148,136,0.1);color:var(--tealLt);}
+.section-header{display:flex;align-items:center;gap:14px;margin-bottom:24px;}
+.section-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:var(--white);}
+.section-subtitle{font-size:12px;color:var(--textMid);margin-top:2px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.form-grid.three{grid-template-columns:1fr 1fr 1fr;}
+.form-group{display:flex;flex-direction:column;gap:6px;}
+.form-label{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--textMid);}
+.form-input,.form-select{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;transition:border-color 0.15s;outline:none;-webkit-appearance:none;}
+.form-input:focus,.form-select:focus{border-color:var(--teal);}
+.form-input::placeholder{color:var(--textDim);}
+.form-select option{background:var(--navy2);}
+.form-divider{height:1px;background:var(--border);margin:24px 0;}
+.form-sub-title{font-size:12px;font-weight:500;color:var(--textMid);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:14px;}
+.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+.doc-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;position:relative;}
+.doc-card.expiring{border-color:rgba(201,151,58,0.4);}
+.doc-expiry-flag{position:absolute;top:12px;right:12px;font-size:9px;letter-spacing:0.5px;padding:2px 8px;border-radius:4px;}
+.flag-ok{background:rgba(34,200,138,0.12);color:var(--green);}
+.flag-warn{background:rgba(201,151,58,0.12);color:var(--goldLt);}
+.doc-type{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--textDim);margin-bottom:6px;}
+.doc-name{font-size:14px;font-weight:500;color:var(--white);margin-bottom:4px;}
+.doc-detail{font-size:12px;color:var(--textMid);}
+.loyalty-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+.loyalty-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;}
+.loyalty-airline{font-size:13px;font-weight:500;color:var(--white);margin-bottom:2px;}
+.loyalty-prog{font-size:11px;color:var(--textMid);margin-bottom:10px;}
+.loyalty-number{font-family:'DM Mono',monospace;font-size:12px;color:var(--tealLt);background:rgba(13,148,136,0.08);padding:5px 10px;border-radius:4px;letter-spacing:1px;margin-bottom:8px;}
+.loyalty-tier{font-size:10px;letter-spacing:0.8px;text-transform:uppercase;}
+.tier-gold{color:var(--goldLt);}
+.tier-silver{color:var(--slate);}
+.pref-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.pref-item{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;}
+.pref-label{font-size:13px;color:var(--text);}
+.pref-value{font-size:12px;color:var(--tealLt);}
+.trip-list{display:flex;flex-direction:column;gap:10px;}
+.trip-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;align-items:center;gap:16px;}
+.trip-date{text-align:center;min-width:48px;font-family:'Cormorant Garamond',serif;}
+.trip-date-month{font-size:10px;text-transform:uppercase;color:var(--textMid);}
+.trip-date-day{font-size:28px;font-weight:600;color:var(--white);line-height:1;}
+.trip-divider{width:1px;height:40px;background:var(--border);}
+.trip-route{flex:1;}
+.trip-cities{font-size:15px;font-weight:500;color:var(--white);display:flex;align-items:center;gap:8px;}
+.trip-arrow{color:var(--textDim);font-size:12px;}
+.trip-meta{font-size:11px;color:var(--textMid);margin-top:2px;}
+.trip-badge{font-size:10px;padding:3px 10px;border-radius:10px;flex-shrink:0;}
+.trip-badge.leisure{background:rgba(13,148,136,0.12);color:var(--tealLt);}
+.trip-badge.business{background:rgba(201,151,58,0.12);color:var(--goldLt);}
+.trip-badge.bleisure{background:rgba(120,80,180,0.12);color:#C4A8F0;}
+.family-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+.family-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.family-card:hover{background:var(--cardHov);}
+.family-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto 10px;}
+.family-name{font-size:14px;font-weight:500;color:var(--white);}
+.family-rel{font-size:11px;color:var(--textMid);margin-top:2px;}
+.family-docs{font-size:10px;color:var(--tealLt);margin-top:6px;}
+.add-card{background:transparent;border:1px dashed var(--borderM);border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:120px;color:var(--textDim);font-size:12px;}
+.add-card:hover{border-color:var(--teal);color:var(--tealLt);}
+.add-plus{font-size:24px;margin-bottom:6px;line-height:1;}
+.consent-list{display:flex;flex-direction:column;gap:12px;}
+.consent-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;}
+.consent-platform{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.consent-info{flex:1;}
+.consent-name{font-size:13px;font-weight:500;color:var(--white);}
+.consent-scope{font-size:11px;color:var(--textMid);margin-top:2px;}
+.alerts-bar{background:rgba(201,151,58,0.08);border:1px solid rgba(201,151,58,0.2);border-radius:8px;padding:12px 16px;margin-bottom:24px;display:flex;align-items:center;gap:10px;}
+.alert-icon{font-size:16px;flex-shrink:0;}
+.alert-text{font-size:12px;color:var(--goldLt);flex:1;}
+.alert-action{font-size:11px;color:var(--tealLt);cursor:pointer;text-decoration:underline;}
+.api-status{display:flex;align-items:center;gap:6px;font-size:11px;}
+.api-dot{width:7px;height:7px;border-radius:50%;}
+.api-dot.live{background:var(--green);}
+.api-dot.pending{background:var(--goldLt);}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 </style>
 </head>
 <body>
-
-<!-- NAV -->
-<nav id="nav">
-  <div class="nav-logo" onclick="scrollTo(0,0)">Uni<em>Profile</em></div>
-  <div class="nav-center">
-    <a href="#identity">Identity</a>
-    <a href="#modules">Modules</a>
-    <a href="#infra">Infrastructure</a>
-    <a href="#pricing">Pricing</a>
-    <a href="#about">About</a>
-    <a href="#contact">Contact</a>
-  </div>
-  <div class="nav-right">
-    <button class="nav-login" onclick="document.getElementById('enroll').scrollIntoView({behavior:'smooth'})">Sign in</button>
-    <button class="nav-cta" onclick="document.getElementById('enroll').scrollIntoView({behavior:'smooth'})">Claim UUID →</button>
-  </div>
+<div class="app">
+<aside class="sidebar">
+<div class="sidebar-logo">
+<div class="logo-mark"><div class="logo-circle">U</div><span class="logo-name">UniProfile</span></div>
+<div class="logo-sub">Traveler Identity</div>
+</div>
+<div class="uuid-badge">
+<div class="uuid-label">Your UUID</div>
+<div class="uuid-value">UP-3F7A-9C2E-B841-D6F0</div>
+</div>
+<div class="completeness">
+<div class="comp-header"><span class="comp-label">Profile Complete</span><span class="comp-pct">74%</span></div>
+<div class="comp-bar-track"><div class="comp-bar-fill" style="width:74%"></div></div>
+</div>
+<nav class="nav">
+<div class="nav-section">Overview</div>
+<button class="nav-item active" onclick="showSection('overview',this)"><span class="nav-dot"></span>Dashboard</button>
+<div class="nav-section">Identity Modules</div>
+<button class="nav-item" onclick="showSection('identity',this)"><span class="nav-dot"></span>Identity &amp; Documents<span class="nav-badge">1</span></button>
+<button class="nav-item" onclick="showSection('preferences',this)"><span class="nav-dot"></span>Seat &amp; Cabin Prefs</button>
+<button class="nav-item" onclick="showSection('meals',this)"><span class="nav-dot"></span>Meal &amp; Dietary</button>
+<button class="nav-item" onclick="showSection('loyalty',this)"><span class="nav-dot"></span>Loyalty Programs</button>
+<button class="nav-item" onclick="showSection('payment',this)"><span class="nav-dot"></span>Payment &amp; Policy<span class="nav-alert">corp</span></button>
+<button class="nav-item" onclick="showSection('trips',this)"><span class="nav-dot"></span>Trip History</button>
+<button class="nav-item" onclick="showSection('family',this)"><span class="nav-dot"></span>Family Profiles</button>
+<div class="nav-section">Platform</div>
+<button class="nav-item" onclick="showSection('consent',this)"><span class="nav-dot"></span>Consent &amp; Integrations</button>
+<button class="nav-item" onclick="showSection('api',this)"><span class="nav-dot"></span>API &amp; Webhooks</button>
 </nav>
-
-<!-- HERO -->
-<section class="hero" id="home">
-  <div class="hero-glow"></div>
-  <div class="hero-badge"><span class="hero-badge-dot"></span>IATA OneOrder · NDC Level 4 · AWS Global · Live</div>
-  <h1>One UUID.<br><em>Never re-enter</em><br>your passport <strong>again.</strong></h1>
-  <p class="hero-sub">UniProfile is the portable passenger identity layer — a single UUID that travels with you across every airline, TMC, GDS, and border. Yours forever.</p>
-  <div class="hero-actions">
-    <button class="btn-xl btn-primary" onclick="document.getElementById('enroll').scrollIntoView({behavior:'smooth'})">Claim Your Free UUID →</button>
-    <button class="btn-xl btn-ghost" onclick="document.getElementById('identity').scrollIntoView({behavior:'smooth'})">See How It Works</button>
-  </div>
-  <div>
-    <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">UUID v7 — internal technical key</div>
-    <div class="uuid-strip">
-      <div class="uuid-seg"><div class="uuid-hex" id="hero-uuid-1">01926a3f</div><div class="uuid-lbl">timestamp ms</div></div>
-      <div class="uuid-dash">—</div>
-      <div class="uuid-seg"><div class="uuid-hex" id="hero-uuid-2">7c2e</div><div class="uuid-lbl">sub-ms</div></div>
-      <div class="uuid-dash">—</div>
-      <div class="uuid-seg"><div class="uuid-hex dim">7000</div><div class="uuid-lbl">v7 marker</div></div>
-      <div class="uuid-dash">—</div>
-      <div class="uuid-seg"><div class="uuid-hex dim">8b1d</div><div class="uuid-lbl">bleisure ctx</div></div>
-      <div class="uuid-dash">—</div>
-      <div class="uuid-seg"><div class="uuid-hex dim">4e9f2a0d5c8b</div><div class="uuid-lbl">crypto random</div></div>
-    </div>
-    <div style="font-family:var(--mono);font-size:9px;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;margin-top:14px;">UNI-ID — your human identifier</div>
-    <div class="uni-strip" id="hero-uni">UNI-48291037</div>
-    <div class="hero-id-note">Speakable · Memorable · Shareable · Yours forever</div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- STATS -->
-<div style="padding:0 40px;max-width:1140px;margin:0 auto;">
-  <div class="stat-bar" style="margin:40px 0;">
-    <div class="stat-cell"><div class="stat-n">7</div><div class="stat-l">OneOrder modules</div></div>
-    <div class="stat-cell"><div class="stat-n">3</div><div class="stat-l">Biometric modalities</div></div>
-    <div class="stat-cell"><div class="stat-n">181</div><div class="stat-l">Countries covered</div></div>
-    <div class="stat-cell"><div class="stat-n">99.99%</div><div class="stat-l">Uptime SLA</div></div>
-  </div>
+<div class="sidebar-footer">
+<div class="traveler-row"><div class="traveler-avatar">RP</div><div><div class="traveler-name">Rommel</div><div class="traveler-tier">★ Premium Member</div></div></div>
 </div>
-<div class="divider"></div>
-
-<!-- IDENTITY LAYERS -->
-<section class="section" id="identity">
-  <div class="section-pill">Your identity, simplified</div>
-  <div class="section-h">Four layers. One you.</div>
-  <p class="section-sub">The UUID v7 powers every system under the hood. What you see and share is human — memorable, speakable, scannable.</p>
-  <div class="layers-grid">
-    <div>
-      <div class="digital-card" id="demo-card">
-        <div class="dc-glow1"></div><div class="dc-glow2"></div>
-        <div class="dc-top">
-          <div class="dc-brand">Uni<em>Profile</em></div>
-          <div class="dc-chip"></div>
-        </div>
-        <div class="dc-avatar" id="dc-avatar">RS</div>
-        <div class="dc-name" id="dc-name">Rommel Santos</div>
-        <div class="dc-handle" id="dc-handle">@rommel · Founder & CEO</div>
-        <div class="dc-rows">
-          <div class="dc-row"><div class="dc-rl">UniProfile ID</div><div class="dc-rv uni" id="dc-uni">UNI-48291037</div></div>
-          <div class="dc-row"><div class="dc-rl">Handle</div><div class="dc-rv" id="dc-at" style="font-family:var(--mono);color:var(--violet);">@rommel</div></div>
-          <div class="dc-row"><div class="dc-rl">UUID v7 — technical</div><div class="dc-rv uuid" id="dc-uuid">01926a3f-7c2e-7000-8b1d-4e9f2a0d5c8b</div></div>
-        </div>
-        <div class="dc-footer">
-          <div class="dc-tags"><span class="dc-tag">IATA</span><span class="dc-tag">NDC L4</span><span class="dc-tag">FIDO2</span><span class="dc-tag">SOC2</span><span class="dc-tag">PCI-DSS L1</span></div>
-          <div class="dc-qr" title="QR code / NFC tap">
-            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="2" y="2" width="12" height="12" rx="1" fill="#07070d"/>
-              <rect x="4" y="4" width="8" height="8" fill="#07070d" opacity="0"/>
-              <rect x="4" y="4" width="8" height="8" rx="0.5" fill="#07070d" stroke="#07070d" stroke-width="0"/>
-              <!-- QR pattern simplified -->
-              <rect x="2" y="2" width="12" height="2" fill="#07070d"/>
-              <rect x="2" y="12" width="12" height="2" fill="#07070d"/>
-              <rect x="2" y="2" width="2" height="12" fill="#07070d"/>
-              <rect x="12" y="2" width="2" height="12" fill="#07070d"/>
-              <rect x="5" y="5" width="6" height="6" fill="#07070d"/>
-              <rect x="18" y="2" width="12" height="2" fill="#07070d"/>
-              <rect x="18" y="12" width="12" height="2" fill="#07070d"/>
-              <rect x="18" y="2" width="2" height="12" fill="#07070d"/>
-              <rect x="28" y="2" width="2" height="12" fill="#07070d"/>
-              <rect x="21" y="5" width="6" height="6" fill="#07070d"/>
-              <rect x="2" y="18" width="12" height="2" fill="#07070d"/>
-              <rect x="2" y="28" width="12" height="2" fill="#07070d"/>
-              <rect x="2" y="18" width="2" height="12" fill="#07070d"/>
-              <rect x="12" y="18" width="2" height="12" fill="#07070d"/>
-              <rect x="5" y="21" width="6" height="6" fill="#07070d"/>
-              <rect x="18" y="18" width="2" height="2" fill="#07070d"/>
-              <rect x="22" y="18" width="2" height="2" fill="#07070d"/>
-              <rect x="26" y="18" width="2" height="2" fill="#07070d"/>
-              <rect x="30" y="18" width="2" height="2" fill="#07070d"/>
-              <rect x="20" y="20" width="2" height="2" fill="#07070d"/>
-              <rect x="24" y="20" width="2" height="2" fill="#07070d"/>
-              <rect x="28" y="20" width="2" height="2" fill="#07070d"/>
-              <rect x="18" y="22" width="2" height="2" fill="#07070d"/>
-              <rect x="22" y="22" width="2" height="2" fill="#07070d"/>
-              <rect x="26" y="22" width="2" height="2" fill="#07070d"/>
-              <rect x="30" y="22" width="2" height="2" fill="#07070d"/>
-              <rect x="20" y="24" width="4" height="2" fill="#07070d"/>
-              <rect x="28" y="24" width="4" height="2" fill="#07070d"/>
-              <rect x="18" y="26" width="2" height="4" fill="#07070d"/>
-              <rect x="22" y="26" width="2" height="4" fill="#07070d"/>
-              <rect x="26" y="26" width="2" height="2" fill="#07070d"/>
-              <rect x="30" y="28" width="2" height="2" fill="#07070d"/>
-            </svg>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="layer-cards">
-      <div class="layer-card">
-        <div class="lc-top"><div class="lc-num">Layer 1 — Machine</div><div class="lc-ctx">APIs · Databases · Audit logs</div></div>
-        <div class="lc-label">UUID v7 — internal only, never shown to users</div>
-        <div class="lc-val dim">01926a3f-7c2e-7000-8b1d-4e9f2a0d5c8b</div>
-      </div>
-      <div class="layer-card">
-        <div class="lc-top"><div class="lc-num">Layer 2 — Human verbal</div><div class="lc-ctx">Call centres · Airport agents · Phone</div></div>
-        <div class="lc-label">UniProfile ID — speakable, writable, 8-digit</div>
-        <div class="lc-val accent" id="layer-uni">UNI-48291037</div>
-      </div>
-      <div class="layer-card">
-        <div class="lc-top"><div class="lc-num">Layer 3 — Human social</div><div class="lc-ctx">Sharing · TMC · Employer · Referrals</div></div>
-        <div class="lc-label">Handle — memorable, shareable like @username</div>
-        <div class="lc-val violet" id="layer-handle">@rommel</div>
-      </div>
-      <div class="layer-card">
-        <div class="lc-top"><div class="lc-num">Layer 4 — Physical / digital</div><div class="lc-ctx">Airport gates · Biometric · Hotel · Lounge</div></div>
-        <div class="lc-label">QR code or NFC tap — zero-touch identification</div>
-        <div class="lc-val teal">Tap phone. Walk through. Zero keystrokes.</div>
-      </div>
-      <div style="background:var(--bg3);border:1px dashed var(--border2);border-radius:12px;padding:14px 16px;font-size:12px;color:var(--text3);line-height:1.6;">
-        <span style="color:var(--text2);font-weight:500;">Why this matters:</span> Every year the average business traveler enters their passport number 40+ times across airlines, hotels, and car rentals. UniProfile ends that permanently. Set it once, applied everywhere.
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- HOW IT WORKS -->
-<section class="section">
-  <div class="section-pill">How it works</div>
-  <div class="section-h">From UUID to boarding gate.</div>
-  <p class="section-sub">Five steps, zero friction. Your profile travels with you across every system.</p>
-  <div class="steps-row">
-    <div class="step-col">
-      <div class="step-circle">1</div>
-      <div class="step-title">UUID issued</div>
-      <div class="step-desc">Register in 60 seconds. UUID v7 issued instantly with bleisure dual-context and UNI-ID assigned.</div>
-    </div>
-    <div class="step-col">
-      <div class="step-circle">2</div>
-      <div class="step-title">Consent granted</div>
-      <div class="step-desc">Grant GDPR-compliant consent to airlines, TMCs, and airports. Granular and revocable anytime.</div>
-    </div>
-    <div class="step-col">
-      <div class="step-circle">3</div>
-      <div class="step-title">Offer personalised</div>
-      <div class="step-desc">NDC offers enriched with UUID preferences. Seat, meal, lounge, cabin auto-applied at booking.</div>
-    </div>
-    <div class="step-col">
-      <div class="step-circle">4</div>
-      <div class="step-title">Journey tracked</div>
-      <div class="step-desc">Every touchpoint — check-in, boarding, baggage, disruption — resolved to your UUID in real time.</div>
-    </div>
-    <div class="step-col">
-      <div class="step-circle">5</div>
-      <div class="step-title">Intelligence grows</div>
-      <div class="step-desc">ML learns your preferences over time. Loyalty consolidated. Profile gets smarter with every trip.</div>
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- MODULES -->
-<section class="section" id="modules">
-  <div class="section-pill">IATA OneOrder</div>
-  <div class="section-h">Seven modules. Complete journey.</div>
-  <p class="section-sub">Every touchpoint from offer creation to baggage delivery — anchored to your passenger UUID.</p>
-  <div class="modules-grid">
-    <div class="module-card">
-      <span class="mc-icon">✈️</span>
-      <div class="mc-name">Offer & Order</div>
-      <div class="mc-desc">NDC-native offer creation, OneOrder fulfilment, multi-airline order aggregation and BSP ticketing. UUID enriches every offer request in real time.</div>
-      <div class="mc-tags"><span class="mc-tag">NDC L4</span><span class="mc-tag">OneOrder</span><span class="mc-tag">BSP</span></div>
-    </div>
-    <div class="module-card">
-      <span class="mc-icon">💺</span>
-      <div class="mc-name">Seat & Ancillary</div>
-      <div class="mc-desc">Real-time seat map rendering, EMD-S ancillary management, and a personalised upsell engine powered by passenger preference ML trained on UUID history.</div>
-      <div class="mc-tags"><span class="mc-tag">EMD-S</span><span class="mc-tag">PADIS</span><span class="mc-tag">Preference ML</span></div>
-    </div>
-    <div class="module-card">
-      <span class="mc-icon">⚡</span>
-      <div class="mc-name">Disruption Engine</div>
-      <div class="mc-desc">Chaos-theory recovery engine. Auto-rebooking using passenger preferences stored in UUID. EU261 & DOT compliance built in. Passengers notified before they reach the gate.</div>
-      <div class="mc-tags"><span class="mc-tag teal">EU 261</span><span class="mc-tag teal">DOT</span><span class="mc-tag teal">Auto-Rebook</span></div>
-    </div>
-    <div class="module-card">
-      <span class="mc-icon">⭐</span>
-      <div class="mc-name">Loyalty Aggregation</div>
-      <div class="mc-desc">Multi-program FFP aggregation across all major alliances. Real-time tier status, miles accrual across carriers, and consolidated point balance — one view, one UUID.</div>
-      <div class="mc-tags"><span class="mc-tag">FFP Agg.</span><span class="mc-tag">Multi-Alliance</span><span class="mc-tag">Real-time</span></div>
-    </div>
-    <div class="module-card">
-      <span class="mc-icon">💳</span>
-      <div class="mc-name">Payment (IATA PAX)</div>
-      <div class="mc-desc">Tokenised wallet with BSP settlement, multi-currency support, and lodge card / virtual card integration. PCI-DSS L1 compliant. Payment preference stored in UUID.</div>
-      <div class="mc-tags"><span class="mc-tag violet">IATA PAX</span><span class="mc-tag violet">PCI-DSS L1</span><span class="mc-tag violet">Lodge card</span></div>
-    </div>
-    <div class="module-card">
-      <span class="mc-icon">🧳</span>
-      <div class="mc-name">BagJourney</div>
-      <div class="mc-desc">IATA Resolution 753 RFID tracking integrated with WorldTracer. Mishandling prediction engine flags at-risk bags before loading. UUID links bag to passenger throughout.</div>
-      <div class="mc-tags"><span class="mc-tag">Res. 753</span><span class="mc-tag">RFID</span><span class="mc-tag">WorldTracer</span></div>
-    </div>
-    <div class="module-card">
-      <span class="mc-icon">🪪</span>
-      <div class="mc-name">Profile & Biometrics</div>
-      <div class="mc-desc">Face recognition tokens (ICAO 9303), FIDO2/WebAuthn fingerprint, and NFC ePassport reading. No central biometric database — encrypted tokens only. Consent-gated sharing.</div>
-      <div class="mc-tags"><span class="mc-tag">ICAO 9303</span><span class="mc-tag">WebAuthn</span><span class="mc-tag">FIDO2</span><span class="mc-tag">NFC</span></div>
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- BIOMETRICS -->
-<section class="section">
-  <div class="section-pill">Biometric identity</div>
-  <div class="section-h">Enrolled once. Recognised everywhere.</div>
-  <p class="section-sub">Three modalities, one consent framework. Enrol in UniProfile — airports and airlines request verification through our consent API.</p>
-  <div class="bio-grid">
-    <div class="bio-card">
-      <span class="bio-icon">👁</span>
-      <div class="bio-name">Face Recognition (FRT)</div>
-      <div class="bio-desc">Token-based facial matching for automated boarding, immigration pre-clearance, and lounge access. No central biometric database — encrypted tokens only. Revocable on demand.</div>
-      <div class="bio-tags"><span class="mc-tag">ICAO 9303</span><span class="mc-tag">ISO/IEC 19794-5</span></div>
-    </div>
-    <div class="bio-card">
-      <span class="bio-icon">🔑</span>
-      <div class="bio-name">Fingerprint / FIDO2</div>
-      <div class="bio-desc">WebAuthn-native authentication for app access, payment authorisation, and travel document signing. FIDO Alliance certified, phishing-resistant. Works on any FIDO2-capable device.</div>
-      <div class="bio-tags"><span class="mc-tag">W3C WebAuthn</span><span class="mc-tag">FIDO2</span><span class="mc-tag">UAF</span></div>
-    </div>
-    <div class="bio-card">
-      <span class="bio-icon">📘</span>
-      <div class="bio-name">ePassport NFC</div>
-      <div class="bio-desc">ISO 14443 NFC chip reading for identity verification against ICAO travel documents. BAC and PACE protocols supported. Reads MRZ, photo, and travel history in under 2 seconds.</div>
-      <div class="bio-tags"><span class="mc-tag">ISO 14443</span><span class="mc-tag">ICAO Doc 9303</span><span class="mc-tag">PACE</span></div>
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- ENROLLMENT -->
-<section class="section" id="enroll">
-  <div class="section-pill">Free enrollment</div>
-  <div class="section-h">Claim your UUID.</div>
-  <div class="enroll-wrap">
-    <div>
-      <p class="enroll-aside-sub">Your UUID is issued in under 60 seconds. Set your preferences once — every airline, TMC, and airport applies them automatically on every future booking.</p>
-      <div class="step-tracker" id="step-tracker">
-        <div class="st-item active" data-s="1"><div class="st-dot">1</div><div><div class="st-text-title">Your identity</div><div class="st-text-sub">Name, email, and handle</div></div></div>
-        <div class="st-item" data-s="2"><div class="st-dot">2</div><div><div class="st-text-title">Travel document</div><div class="st-text-sub">Passport + trusted traveler numbers</div></div></div>
-        <div class="st-item" data-s="3"><div class="st-dot">3</div><div><div class="st-text-title">Link loyalty programs</div><div class="st-text-sub">Consolidate miles in one view</div></div></div>
-        <div class="st-item" data-s="4"><div class="st-dot">4</div><div><div class="st-text-title">Travel preferences</div><div class="st-text-sub">Seat, meal, cabin — set once forever</div></div></div>
-        <div class="st-item" data-s="5"><div class="st-dot">5</div><div><div class="st-text-title">Your UniProfile ID</div><div class="st-text-sub">UUID issued. You're live.</div></div></div>
-      </div>
-    </div>
-    <div class="form-card">
-      <div class="form-prog"><div class="form-prog-fill" id="prog" style="width:20%"></div></div>
-
-      <!-- STEP 1 -->
-      <div class="form-step active" id="fs1">
-        <div class="fs-label">Step 1 of 4</div>
-        <div class="fs-title">Your identity</div>
-        <div class="fg-row">
-          <div class="fg"><label>First name</label><input type="text" id="f-first" placeholder="Rommel" autocomplete="given-name"></div>
-          <div class="fg"><label>Last name</label><input type="text" id="f-last" placeholder="Santos" autocomplete="family-name"></div>
-        </div>
-        <div class="fg"><label>Email address</label><input type="email" id="f-email" placeholder="you@company.com" autocomplete="email"></div>
-        <div class="fg">
-          <label>Choose your handle <span>— e.g. @rommel (letters, numbers, underscores)</span></label>
-          <div class="handle-wrap"><span class="handle-prefix">@</span><input type="text" id="f-handle" placeholder="rommel" oninput="onHandle(this)" autocomplete="off" maxlength="24"></div>
-          <div class="handle-avail" id="handle-avail"></div>
-        </div>
-        <div class="fg">
-          <label>I am a</label>
-          <select id="f-role">
-            <option value="">Select role…</option>
-            <option>Frequent business traveler</option>
-            <option>Leisure traveler</option>
-            <option>Corporate travel manager</option>
-            <option>Travel agent / TMC</option>
-            <option>Airline distribution</option>
-            <option>Airport operator</option>
-            <option>Technology partner</option>
-            <option>Investor</option>
-          </select>
-        </div>
-        <div class="form-actions"><button class="btn-next" onclick="goStep(2)">Continue →</button></div>
-      </div>
-
-      <!-- STEP 2 -->
-      <div class="form-step" id="fs2">
-        <div class="fs-label">Step 2 of 4</div>
-        <div class="fs-title">Travel document</div>
-        <div class="fg">
-          <label>Passport nationality</label>
-          <select id="f-nat">
-            <option value="">Select country…</option>
-            <option>United States</option><option>United Kingdom</option><option>Philippines</option>
-            <option>Canada</option><option>Australia</option><option>Germany</option>
-            <option>France</option><option>Singapore</option><option>Japan</option>
-            <option>UAE</option><option>India</option><option>Other</option>
-          </select>
-        </div>
-        <div class="fg-row">
-          <div class="fg"><label>Passport number</label><input type="text" id="f-passport" placeholder="A12345678" autocomplete="off"></div>
-          <div class="fg"><label>Expiry date</label><input type="text" id="f-expiry" placeholder="MM/YYYY" oninput="fmtExpiry(this)"></div>
-        </div>
-        <div class="fg">
-          <label>Date of birth <span>(required for TSA)</span></label>
-          <input type="text" id="f-dob" placeholder="DD/MM/YYYY" oninput="fmtDOB(this)">
-        </div>
-        <div class="fg">
-          <label>TSA PreCheck / Known Traveler Number <span>(optional)</span></label>
-          <input type="text" id="f-ktn" placeholder="123456789">
-          <div class="hint">15M+ US travelers — link your KTN to your UUID for seamless future check-ins.</div>
-        </div>
-        <div class="fg">
-          <label>Global Entry number <span>(optional)</span></label>
-          <input type="text" id="f-ge" placeholder="GE-12345678">
-        </div>
-        <div class="form-actions">
-          <button class="btn-back" onclick="goStep(1)">← Back</button>
-          <button class="btn-next" onclick="goStep(3)">Continue →</button>
-        </div>
-      </div>
-
-      <!-- STEP 3 -->
-      <div class="form-step" id="fs3">
-        <div class="fs-label">Step 3 of 4</div>
-        <div class="fs-title">Link loyalty programs</div>
-        <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6;">Select programs you belong to. We'll consolidate your miles and tier status in one real-time view. Add your member number for each.</p>
-        <div class="loyalty-grid" id="loyalty-grid">
-          <div class="loy-item" onclick="toggleLoy(this)"><div class="loy-code">AA</div><div class="loy-name">AAdvantage</div><div class="loy-num"><input type="text" placeholder="Member #" onclick="e=>e.stopPropagation()" style="display:none"></div></div>
-          <div class="loy-item" onclick="toggleLoy(this)"><div class="loy-code">DL</div><div class="loy-name">SkyMiles</div><div class="loy-num"><input type="text" placeholder="Member #" onclick="e=>e.stopPropagation()" style="display:none"></div></div>
-          <div class="loy-item" onclick="toggleLoy(this)"><div class="loy-code">UA</div><div class="loy-name">MileagePlus</div><div class="loy-num"><input type="text" placeholder="Member #" onclick="e=>e.stopPropagation()" style="display:none"></div></div>
-          <div class="loy-item" onclick="toggleLoy(this)"><div class="loy-code">EK</div><div class="loy-name">Skywards</div><div class="loy-num"><input type="text" placeholder="Member #" onclick="e=>e.stopPropagation()" style="display:none"></div></div>
-          <div class="loy-item" onclick="toggleLoy(this)"><div class="loy-code">QR</div><div class="loy-name">Privilege Club</div><div class="loy-num"><input type="text" placeholder="Member #" onclick="e=>e.stopPropagation()" style="display:none"></div></div>
-          <div class="loy-item" onclick="toggleLoy(this)"><div class="loy-code">BA</div><div class="loy-name">Executive Club</div><div class="loy-num"><input type="text" placeholder="Member #" onclick="e=>e.stopPropagation()" style="display:none"></div></div>
-          <div class="loy-item" onclick="toggleLoy(this)"><div class="loy-code">SQ</div><div class="loy-name">KrisFlyer</div><div class="loy-num"><input type="text" placeholder="Member #" onclick="e=>e.stopPropagation()" style="display:none"></div></div>
-          <div class="loy-item" onclick="toggleLoy(this)"><div class="loy-code">LH</div><div class="loy-name">Miles & More</div><div class="loy-num"><input type="text" placeholder="Member #" onclick="e=>e.stopPropagation()" style="display:none"></div></div>
-          <div class="loy-item" onclick="toggleLoy(this)"><div class="loy-code">AF</div><div class="loy-name">Flying Blue</div><div class="loy-num"><input type="text" placeholder="Member #" onclick="e=>e.stopPropagation()" style="display:none"></div></div>
-          <div class="loy-item" onclick="toggleLoy(this)"><div class="loy-code">CX</div><div class="loy-name">Asia Miles</div><div class="loy-num"><input type="text" placeholder="Member #" onclick="e=>e.stopPropagation()" style="display:none"></div></div>
-        </div>
-        <div class="form-actions" style="margin-top:16px;">
-          <button class="btn-back" onclick="goStep(2)">← Back</button>
-          <button class="btn-next" onclick="goStep(4)">Continue →</button>
-        </div>
-      </div>
-
-      <!-- STEP 4 -->
-      <div class="form-step" id="fs4">
-        <div class="fs-label">Step 4 of 4</div>
-        <div class="fs-title">Travel preferences</div>
-        <p style="font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6;">Set once. Applied automatically on every future booking across all UniProfile-connected airlines and TMCs.</p>
-        <div class="pref-section">
-          <div class="pref-section-label">Preferred seat</div>
-          <div class="pref-pills"><span class="ppill" onclick="pickPref(this,'seat')">Window</span><span class="ppill" onclick="pickPref(this,'seat')">Aisle</span><span class="ppill" onclick="pickPref(this,'seat')">Exit row</span><span class="ppill" onclick="pickPref(this,'seat')">Bulkhead</span><span class="ppill" onclick="pickPref(this,'seat')">No preference</span></div>
-        </div>
-        <div class="pref-section">
-          <div class="pref-section-label">Cabin class</div>
-          <div class="pref-pills"><span class="ppill" onclick="pickPref(this,'cabin')">Economy</span><span class="ppill" onclick="pickPref(this,'cabin')">Premium economy</span><span class="ppill" onclick="pickPref(this,'cabin')">Business</span><span class="ppill" onclick="pickPref(this,'cabin')">First</span></div>
-        </div>
-        <div class="pref-section">
-          <div class="pref-section-label">Meal preference</div>
-          <div class="pref-pills"><span class="ppill" onclick="pickPref(this,'meal')">Standard</span><span class="ppill" onclick="pickPref(this,'meal')">Vegetarian</span><span class="ppill" onclick="pickPref(this,'meal')">Vegan</span><span class="ppill" onclick="pickPref(this,'meal')">Halal</span><span class="ppill" onclick="pickPref(this,'meal')">Kosher</span><span class="ppill" onclick="pickPref(this,'meal')">Gluten-free</span></div>
-        </div>
-        <div class="pref-section">
-          <div class="pref-section-label">Bleisure context</div>
-          <div class="pref-pills"><span class="ppill" onclick="pickPref(this,'bleisure')">Business</span><span class="ppill" onclick="pickPref(this,'bleisure')">Leisure</span><span class="ppill" onclick="pickPref(this,'bleisure')">Bleisure (both)</span></div>
-        </div>
-        <div class="pref-section">
-          <div class="pref-section-label">Lounge access</div>
-          <div class="pref-pills"><span class="ppill" onclick="pickPref(this,'lounge')">Priority Pass</span><span class="ppill" onclick="pickPref(this,'lounge')">Amex Centurion</span><span class="ppill" onclick="pickPref(this,'lounge')">Airline lounge</span><span class="ppill" onclick="pickPref(this,'lounge')">None</span></div>
-        </div>
-        <div class="consent-box">
-          <input type="checkbox" id="consent-gdpr" checked>
-          <label for="consent-gdpr">I consent to UniProfile storing my travel identity data per GDPR Article 7. I understand I can revoke consent and delete my profile at any time. <a href="#">Privacy Policy</a> · <a href="#">Terms of Service</a></label>
-        </div>
-        <div class="form-actions">
-          <button class="btn-back" onclick="goStep(3)">← Back</button>
-          <button class="btn-next" id="btn-issue" onclick="issueUUID()">Issue My UUID →</button>
-        </div>
-      </div>
-
-      <!-- STEP 5 — SUCCESS -->
-      <div class="form-step" id="fs5">
-        <div class="success-wrap">
-          <div class="success-check">✓</div>
-          <div class="success-title">You're live on UniProfile</div>
-          <div class="success-sub">Your portable passenger identity has been issued and is active globally.</div>
-          <div class="success-id-card">
-            <div class="sid-lbl">UniProfile ID — your human identifier</div>
-            <div class="sid-uni" id="s-uni">UNI-48291037</div>
-            <div class="sid-handle" id="s-handle">@rommel</div>
-            <div class="sid-uuid-lbl">UUID v7 — technical identifier (do not share publicly)</div>
-            <div class="sid-uuid" id="s-uuid">01926a3f-7c2e-7000-8b1d-4e9f2a0d5c8b</div>
-            <div class="sid-copy-row">
-              <button class="btn-copy" onclick="copyField('s-uni','UNI-ID')">Copy UNI-ID</button>
-              <button class="btn-copy" onclick="copyField('s-handle','Handle')">Copy handle</button>
-              <button class="btn-copy" onclick="copyField('s-uuid','UUID')">Copy UUID</button>
-            </div>
-          </div>
-          <div class="success-layers">
-            <div class="sl"><span class="sl-badge">Verbal</span><span class="sl-val" id="sl-uni">UNI-48291037</span><span class="sl-use">Tell to airport agents &amp; call centres</span></div>
-            <div class="sl"><span class="sl-badge">Social</span><span class="sl-val" id="sl-handle">@rommel</span><span class="sl-use">Share with TMC &amp; employer</span></div>
-            <div class="sl"><span class="sl-badge">Physical</span><span class="sl-val">QR · NFC tap</span><span class="sl-use">Airport gates &amp; biometric lounges</span></div>
-            <div class="sl"><span class="sl-badge">Machine</span><span class="sl-val" style="font-size:9px;color:var(--text4);" id="sl-uuid">01926a3f-7c2e-7000…</span><span class="sl-use">APIs &amp; audit logs only</span></div>
-          </div>
-          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:14px;">
-            <strong style="color:var(--text2);">What happens next:</strong> Your UUID is now active. Airlines and TMCs connected to UniProfile will automatically apply your preferences on your next booking. You'll receive a confirmation email with your digital identity card.
-          </div>
-          <button class="btn-restart" onclick="resetForm()">Enroll another traveler →</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<div class="divider"></div>
-
-<!-- INFRASTRUCTURE -->
-<section class="section" id="infra">
-  <div class="section-pill">AWS Cloud Infrastructure</div>
-  <div class="section-h">Built for scale. Designed for resilience.</div>
-  <p class="section-sub">Multi-AZ deployment across AWS regions. 99.99% uptime SLA and millions of concurrent passenger sessions.</p>
-  <div class="infra-grid">
-    <div class="infra-layer">
-      <div class="infra-layer-title">Edge Layer</div>
-      <div class="infra-items">
-        <div class="infra-item"><div class="infra-name">CloudFront</div><div class="infra-desc">Global CDN · PoPs</div></div>
-        <div class="infra-item"><div class="infra-name">WAF + Shield</div><div class="infra-desc">DDoS · Rate limit</div></div>
-        <div class="infra-item"><div class="infra-name">API Gateway</div><div class="infra-desc">REST · WebSocket</div></div>
-        <div class="infra-item"><div class="infra-name">Cognito</div><div class="infra-desc">Auth · FIDO2</div></div>
-      </div>
-    </div>
-    <div class="infra-layer">
-      <div class="infra-arrow">↓ EventBridge (UUID-keyed event bus) ↓</div>
-      <div class="infra-layer-title" style="margin-top:10px;">Compute Layer</div>
-      <div class="infra-items">
-        <div class="infra-item"><div class="infra-name">ECS Fargate</div><div class="infra-desc">OneOrder services</div></div>
-        <div class="infra-item"><div class="infra-name">Lambda</div><div class="infra-desc">Event handlers</div></div>
-        <div class="infra-item"><div class="infra-name">Step Functions</div><div class="infra-desc">Workflow orchestration</div></div>
-        <div class="infra-item"><div class="infra-name">SageMaker</div><div class="infra-desc">Preference ML</div></div>
-      </div>
-    </div>
-    <div class="infra-layer">
-      <div class="infra-arrow">↓</div>
-      <div class="infra-layer-title" style="margin-top:10px;">Data Layer</div>
-      <div class="infra-items">
-        <div class="infra-item"><div class="infra-name">Aurora PostgreSQL</div><div class="infra-desc">UUID schema · Multi-AZ</div></div>
-        <div class="infra-item"><div class="infra-name">ElastiCache Redis</div><div class="infra-desc">Session · Consent cache</div></div>
-        <div class="infra-item"><div class="infra-name">OpenSearch</div><div class="infra-desc">Profile search</div></div>
-        <div class="infra-item"><div class="infra-name">S3 + Glacier</div><div class="infra-desc">Audit logs</div></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- SECURITY STRIP -->
-<div class="security-strip">
-  <div class="sec-badge"><span class="sec-dot"></span>SOC 2 Type II</div>
-  <div class="sec-badge"><span class="sec-dot"></span>ISO 27001</div>
-  <div class="sec-badge"><span class="sec-dot"></span>PCI-DSS L1</div>
-  <div class="sec-badge"><span class="sec-dot"></span>GDPR Compliant</div>
-  <div class="sec-badge"><span class="sec-dot"></span>CCPA Compliant</div>
-  <div class="sec-badge"><span class="sec-dot"></span>IATA Res. 787</div>
-  <div class="sec-badge"><span class="sec-dot"></span>IATA OneOrder Certified</div>
+</aside>
+<main class="main">
+<div class="topbar">
+<div class="topbar-title" id="page-title">Dashboard</div>
+<div class="bleisure-toggle">
+<span class="bleisure-label leisure" id="lbl-leisure">Leisure</span>
+<label class="toggle-switch"><input type="checkbox" id="bleisure-input" onchange="toggleBleisure(this)"><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
+<span class="bleisure-label business" id="lbl-business">Business</span>
 </div>
-<div class="divider"></div>
-
-<!-- PRICING -->
-<section class="section" id="pricing">
-  <div class="section-pill">Revenue model</div>
-  <div class="section-h">Three streams. Network-effect pricing.</div>
-  <p class="section-sub">Like Visa — we charge on usage, not seats. The more passengers enrol, the more valuable the network becomes for every participant.</p>
-  <div class="pricing-grid">
-    <div class="pricing-card">
-      <div class="pc-label">TMC SaaS</div>
-      <div class="pc-price">$0.40<span> /UUID</span></div>
-      <div class="pc-per">per month</div>
-      <div class="pc-divider"></div>
-      <div class="pc-features">
-        <div class="pc-feature">Full profile API access</div>
-        <div class="pc-feature">Bleisure dual-context</div>
-        <div class="pc-feature">Consent management dashboard</div>
-        <div class="pc-feature">TMC admin panel</div>
-        <div class="pc-feature">SLA 99.9% uptime</div>
-        <div class="pc-feature">Webhook event stream</div>
-      </div>
-      <button class="pc-cta" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Contact Sales</button>
-    </div>
-    <div class="pricing-card featured">
-      <div class="pc-popular">Most Popular</div>
-      <div class="pc-label">Airline NDC Enrichment</div>
-      <div class="pc-price">$0.02<span> /request</span></div>
-      <div class="pc-per">per NDC offer call</div>
-      <div class="pc-divider"></div>
-      <div class="pc-features">
-        <div class="pc-feature">Preference injection per offer</div>
-        <div class="pc-feature">Real-time UUID resolution</div>
-        <div class="pc-feature">Biometric token exchange</div>
-        <div class="pc-feature">Loyalty tier sync</div>
-        <div class="pc-feature">SLA 99.95% uptime</div>
-        <div class="pc-feature">Sub-50ms p99 latency</div>
-      </div>
-      <button class="pc-cta" onclick="document.getElementById('enroll').scrollIntoView({behavior:'smooth'})">Get Started</button>
-    </div>
-    <div class="pricing-card">
-      <div class="pc-label">Consent Marketplace</div>
-      <div class="pc-price">15%<span> rev share</span></div>
-      <div class="pc-per">on data clean room</div>
-      <div class="pc-divider"></div>
-      <div class="pc-features">
-        <div class="pc-feature">Data clean room access</div>
-        <div class="pc-feature">Anonymised analytics</div>
-        <div class="pc-feature">Consent-gated data APIs</div>
-        <div class="pc-feature">GDPR-compliant export</div>
-        <div class="pc-feature">Custom data products</div>
-        <div class="pc-feature">Real-time segment feeds</div>
-      </div>
-      <button class="pc-cta" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Learn More</button>
-    </div>
-  </div>
+<div class="bleisure-context-pill leisure" id="context-pill">Personal Mode</div>
+<div class="topbar-actions">
+<button class="topbar-btn">Share Profile</button>
+<button class="topbar-btn primary">Save Changes</button>
+</div>
+</div>
+<div class="content">
+<section class="section active" id="section-overview">
+<div class="alerts-bar"><span class="alert-icon">⚠</span><span class="alert-text">Your <strong>US Passport</strong> expires in 142 days. International bookings may be affected.</span><span class="alert-action" onclick="showSection('identity',document.querySelector('[onclick*=identity]'))">Update now →</span></div>
+<div class="overview-hero">
+<div class="hero-stat teal"><div class="stat-value">7</div><div class="stat-label">Identity Modules</div><div class="stat-sub">5 of 7 complete</div></div>
+<div class="hero-stat gold"><div class="stat-value">142</div><div class="stat-label">Days to Passport Expiry</div><div class="stat-sub warn">Renewal recommended</div></div>
+<div class="hero-stat green"><div class="stat-value">12</div><div class="stat-label">Trips This Year</div><div class="stat-sub">Last: IAD → LHR</div></div>
+<div class="hero-stat teal"><div class="stat-value">4</div><div class="stat-label">Active Integrations</div><div class="stat-sub">TripIt, Alaska, Navan +1</div></div>
+</div>
+<div class="form-sub-title">Identity Modules</div>
+<div class="modules-grid">
+<div class="module-card partial" onclick="showSection('identity',document.querySelector('[onclick*=identity]'))"><div class="module-header"><div class="module-icon gold"></div><span class="module-status status-partial">Partial</span></div><div class="module-name">Identity &amp; Documents</div><div class="module-desc">Passport, KTN, TSA PreCheck, visas, and government IDs</div><div class="module-items"><span class="module-tag filled">Passport</span><span class="module-tag filled">KTN</span><span class="module-tag filled">TSA PreCheck</span><span class="module-tag">Visa US B1</span></div></div>
+<div class="module-card complete" onclick="showSection('preferences',document.querySelector('[onclick*=preferences]'))"><div class="module-header"><div class="module-icon teal">💺</div><span class="module-status status-complete">Complete</span></div><div class="module-name">Seat &amp; Cabin Preferences</div><div class="module-desc">Seat position, cabin class, extra legroom, accessibility needs</div><div class="module-items"><span class="module-tag filled">Aisle</span><span class="module-tag filled">Exit Row</span><span class="module-tag filled">Business Class</span></div></div>
+<div class="module-card complete" onclick="showSection('meals',document.querySelector('[onclick*=meals]'))"><div class="module-header"><div class="module-icon green">🍽</div><span class="module-status status-complete">Complete</span></div><div class="module-name">Meal &amp; Dietary</div><div class="module-desc">Meal codes, allergies, dietary restrictions, beverage preferences</div><div class="module-items"><span class="module-tag filled">HNML</span><span class="module-tag filled">No shellfish</span><span class="module-tag filled">Halal option</span></div></div>
+<div class="module-card complete" onclick="showSection('loyalty',document.querySelector('[onclick*=loyalty]'))"><div class="module-header"><div class="module-icon gold">✦</div><span class="module-status status-complete">Complete</span></div><div class="module-name">Loyalty Programs</div><div class="module-desc">Airline, hotel, and car rental loyalty memberships and tiers</div><div class="module-items"><span class="module-tag filled">UA MileagePlus</span><span class="module-tag filled">Marriott Bonvoy</span><span class="module-tag filled">Hertz Gold</span></div></div>
+<div class="module-card partial" onclick="showSection('payment',document.querySelector('[onclick*=payment]'))"><div class="module-header"><div class="module-icon blue">💳</div><span class="module-status status-partial">Partial</span></div><div class="module-name">Payment &amp; Corporate Policy</div><div class="module-desc">Payment preferences, expense policy, cost center, approval flows</div><div class="module-items"><span class="module-tag filled">Chase Sapphire</span><span class="module-tag">Corp Policy</span><span class="module-tag">Cost Center</span></div></div>
+<div class="module-card complete"><div class="module-header"><div class="module-icon purple">⇄</div><span class="module-status status-complete">Active</span></div><div class="module-name">Bleisure Context</div><div class="module-desc">Dual-context UUID — real-time switch between personal and business identity</div><div class="module-items"><span class="module-tag filled">Personal UUID</span><span class="module-tag filled">Corp UUID</span><span class="module-tag filled">Auto-switch</span></div></div>
+<div class="module-card complete" onclick="showSection('trips',document.querySelector('[onclick*=trips]'))"><div class="module-header"><div class="module-icon slate">📋</div><span class="module-status status-complete">Active</span></div><div class="module-name">Trip History &amp; Vault</div><div class="module-desc">All past bookings, PNRs, itinerary records, and transaction history</div><div class="module-items"><span class="module-tag filled">12 trips 2024</span><span class="module-tag filled">PNR vault</span><span class="module-tag filled">Webhook active</span></div></div>
+</div>
 </section>
-
-<div class="divider"></div>
-
-<!-- ABOUT -->
-<section class="section" id="about">
-  <div class="section-pill">Our story</div>
-  <div class="section-h">Built for the IATA OneOrder era.</div>
-  <div class="about-grid">
-    <div>
-      <p style="color:var(--text2);font-size:15px;line-height:1.75;margin-bottom:24px;font-weight:300;">UniProfile was founded on one belief: the passenger should own their identity, and that identity should travel seamlessly across every airline, TMC, and border in the world.</p>
-      <p style="color:var(--text3);font-size:14px;line-height:1.75;margin-bottom:32px;">Just as Visa created a universal payment layer that works across every bank and merchant, UniProfile creates a universal identity layer that works across every airline, GDS, TMC, and airport — without any single entity owning the passenger.</p>
-      <div class="values-list">
-        <div class="value-item"><div class="value-icon">🛂</div><div><div class="value-title">Passenger First</div><div class="value-desc">Every consent is explicit, granular, and revocable. GDPR Article 7 is the floor, not the ceiling. The passenger owns their data — always.</div></div></div>
-        <div class="value-item"><div class="value-icon">🔗</div><div><div class="value-title">Open Standards</div><div class="value-desc">Built on IATA OneOrder, NDC, ICAO 9303, and W3C WebAuthn. UniProfile contributes to open standards rather than creating proprietary lock-in.</div></div></div>
-        <div class="value-item"><div class="value-icon">⚡</div><div><div class="value-title">Chaos Resilience</div><div class="value-desc">Our disruption engine uses chaos theory principles — the passenger UUID is the strange attractor around which every recovery orbit resolves.</div></div></div>
-        <div class="value-item"><div class="value-icon">🌍</div><div><div class="value-title">Global by Design</div><div class="value-desc">Multi-AZ AWS infrastructure, GDPR + CCPA + PDPA compliance, and support for every IATA member airline from day one.</div></div></div>
-      </div>
-    </div>
-    <div>
-      <div class="team-card">
-        <div class="tc-top">
-          <div class="tc-avatar">RS</div>
-          <div><div class="tc-name">Rommel Santos</div><div class="tc-role">Founder & CEO</div></div>
-        </div>
-        <div class="tc-bio">Travel technology entrepreneur with deep expertise in airline distribution, IATA standards, and B2B identity infrastructure. Building the identity layer the industry has needed for 20 years.</div>
-      </div>
-      <div class="team-card">
-        <div class="tc-top">
-          <div class="tc-avatar" style="background:linear-gradient(135deg,var(--teal),#0099ff);">TK</div>
-          <div><div class="tc-name">Technology Partners</div><div class="tc-role">AWS · IATA · SITA</div></div>
-        </div>
-        <div class="tc-bio">UniProfile is built in partnership with AWS, aligned with IATA OneOrder working groups, and integrated with SITA biometric hardware for airport deployments worldwide.</div>
-        <div class="partner-logos">
-          <span class="partner-chip">AWS</span><span class="partner-chip">IATA</span><span class="partner-chip">SITA</span>
-          <span class="partner-chip">Amex GBT</span><span class="partner-chip">Navan</span>
-          <span class="partner-chip">BCD Travel</span><span class="partner-chip">CWT</span>
-          <span class="partner-chip">Spotnana</span><span class="partner-chip">Sabre NDC</span>
-          <span class="partner-chip">Amadeus</span>
-        </div>
-      </div>
-      <div style="background:var(--bg2);border:1px dashed var(--border2);border-radius:12px;padding:18px;text-align:center;">
-        <div style="font-size:13px;font-weight:500;margin-bottom:5px;">We're hiring</div>
-        <div style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.55;">Engineers · Airline distribution specialists · Business development leads</div>
-        <button class="pc-cta" style="max-width:180px;margin:0 auto;display:block;" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">View roles</button>
-      </div>
-    </div>
-  </div>
+<section class="section" id="section-identity">
+<div class="section-header"><div class="section-icon" style="background:rgba(201,151,58,0.1)"></div><div><div class="section-title">Identity &amp; Documents</div><div class="section-subtitle">IATA OneOrder Module 1 — Stored encrypted, consent-gated</div></div></div>
+<div class="alerts-bar"><span class="alert-icon">⚠</span><span class="alert-text">US Passport expires <strong>Sep 2, 2025</strong> — 142 days remaining.</span></div>
+<div class="doc-grid" style="margin-bottom:24px">
+<div class="doc-card expiring"><span class="doc-expiry-flag flag-warn">Expiring Soon</span><div class="doc-type">Passport</div><div class="doc-name">United States</div><div class="doc-detail">No. XXXXXXXXX</div><div style="font-size:11px;color:var(--goldLt);margin-top:8px">Expires: Sep 2, 2025</div></div>
+<div class="doc-card"><span class="doc-expiry-flag flag-ok">Valid</span><div class="doc-type">Known Traveler Number</div><div class="doc-name">TSA PreCheck</div><div class="doc-detail" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--tealLt)">KTN-XXXXXXXX</div><div style="font-size:11px;color:var(--textMid);margin-top:8px">Expires: Mar 15, 2028</div></div>
+<div class="doc-card"><span class="doc-expiry-flag flag-ok">Valid</span><div class="doc-type">Global Entry</div><div class="doc-name">US CBP Program</div><div class="doc-detail" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--tealLt)">GE-XXXXXXXX</div><div style="font-size:11px;color:var(--textMid);margin-top:8px">Expires: Mar 15, 2028</div></div>
+<div class="add-card"><div class="add-plus">+</div>Add Document</div>
+</div>
+<div class="form-divider"></div>
+<div class="form-sub-title">Personal Identity</div>
+<div class="form-grid three">
+<div class="form-group"><label class="form-label">Legal First Name</label><input class="form-input" type="text" value="Rommel" placeholder="As on passport"></div>
+<div class="form-group"><label class="form-label">Legal Middle Name</label><input class="form-input" type="text" placeholder="Optional"></div>
+<div class="form-group"><label class="form-label">Legal Last Name</label><input class="form-input" type="text" placeholder="As on passport"></div>
+</div>
+<div class="form-grid">
+<div class="form-group"><label class="form-label">Date of Birth</label><input class="form-input" type="date"></div>
+<div class="form-group"><label class="form-label">Nationality</label><select class="form-select"><option>United States</option><option>Philippines</option></select></div>
+<div class="form-group"><label class="form-label">Gender (as on travel docs)</label><select class="form-select"><option>Male</option><option>Female</option><option>X / Unspecified</option></select></div>
+<div class="form-group"><label class="form-label">Home Airport</label><input class="form-input" type="text" value="IAD — Washington Dulles"></div>
+</div>
 </section>
-
-<div class="divider"></div>
-
-<!-- CONTACT -->
-<section class="section section-sm" id="contact">
-  <div class="section-pill">Get in touch</div>
-  <div class="section-h">Let's build together.</div>
-  <div class="contact-grid">
-    <div>
-      <p style="color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:20px;font-weight:300;">Whether you're a TMC ready to integrate, an airline exploring NDC enrichment, an airport evaluating biometrics, or an investor — we'd love to hear from you.</p>
-      <div class="contact-info">
-        <div class="ci-item"><div class="ci-label">Email</div><div class="ci-val"><a href="mailto:hello@uniprofile.io">hello@uniprofile.io</a></div></div>
-        <div class="ci-item"><div class="ci-label">Website</div><div class="ci-val"><a href="https://uniprofile.net">uniprofile.net</a></div></div>
-        <div class="ci-item"><div class="ci-label">Platform</div><div class="ci-val">AWS us-east-1 · Global CDN</div></div>
-        <div class="ci-item"><div class="ci-label">Standards</div><div class="ci-val">IATA OneOrder · NDC L4 · ICAO 9303</div></div>
-      </div>
-      <div style="margin-top:16px;">
-        <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-family:var(--mono);letter-spacing:0.08em;text-transform:uppercase;">Integration partners</div>
-        <div class="integration-row">
-          <span class="int-chip">Amex GBT</span><span class="int-chip">Navan</span><span class="int-chip">BCD Travel</span>
-          <span class="int-chip">CWT</span><span class="int-chip">Spotnana</span><span class="int-chip">Sabre NDC</span>
-          <span class="int-chip">Amadeus</span><span class="int-chip">SITA</span>
-        </div>
-      </div>
-    </div>
-    <div class="contact-form-card">
-      <div id="contact-form">
-        <div class="fg-row">
-          <div class="fg"><label>First name</label><input type="text" id="cf-first" placeholder="Rommel"></div>
-          <div class="fg"><label>Last name</label><input type="text" id="cf-last" placeholder="Santos"></div>
-        </div>
-        <div class="fg"><label>Email</label><input type="email" id="cf-email" placeholder="you@company.com"></div>
-        <div class="fg"><label>Organisation</label><input type="text" id="cf-org" placeholder="Acme Airlines"></div>
-        <div class="fg">
-          <label>I am a…</label>
-          <select id="cf-type">
-            <option value="">Select…</option>
-            <option>Airline</option><option>TMC (Travel Management Company)</option>
-            <option>Airport</option><option>Technology Partner</option>
-            <option>Investor</option><option>Other</option>
-          </select>
-        </div>
-        <div class="fg"><label>Message</label><textarea id="cf-msg" placeholder="Tell us about your use case…"></textarea></div>
-        <button class="btn-next" onclick="sendContact()">Send Message →</button>
-      </div>
-      <div class="form-sent" id="form-sent">
-        <div class="form-sent-icon">✉️</div>
-        <div class="form-sent-title">Message sent!</div>
-        <div class="form-sent-sub">We'll be in touch within 24 hours.</div>
-      </div>
-    </div>
-  </div>
+<section class="section" id="section-preferences">
+<div class="section-header"><div class="section-icon" style="background:rgba(13,148,136,0.1)">💺</div><div><div class="section-title">Seat &amp; Cabin Preferences</div><div class="section-subtitle">IATA OneOrder Module 2 — Pre-filled at checkout on integrated platforms</div></div></div>
+<div class="form-sub-title">Cabin &amp; Seat</div>
+<div class="form-grid">
+<div class="form-group"><label class="form-label">Preferred Cabin — Domestic</label><select class="form-select"><option>Economy / Coach</option><option selected>Economy Plus</option><option>First Class</option></select></div>
+<div class="form-group"><label class="form-label">Preferred Cabin — International</label><select class="form-select"><option>Economy</option><option>Premium Economy</option><option selected>Business Class</option><option>First Class</option></select></div>
+<div class="form-group"><label class="form-label">Seat Position</label><select class="form-select"><option selected>Aisle</option><option>Window</option><option>No preference</option></select></div>
+<div class="form-group"><label class="form-label">Row Preference</label><select class="form-select"><option selected>Exit Row / Extra Legroom</option><option>Front of Cabin</option><option>No Preference</option></select></div>
+</div>
+<div class="form-divider"></div>
+<div class="form-sub-title">Special Requirements</div>
+<div class="pref-grid">
+<div class="pref-item"><span class="pref-label">Wheelchair assistance</span><span class="pref-value" style="color:var(--textDim)">Not required</span></div>
+<div class="pref-item"><span class="pref-label">Avoid last row</span><span class="pref-value">Yes</span></div>
+<div class="pref-item"><span class="pref-label">Avoid middle seats</span><span class="pref-value">Always</span></div>
+<div class="pref-item"><span class="pref-label">Bulkhead seat</span><span class="pref-value" style="color:var(--textDim)">No preference</span></div>
+</div>
 </section>
-
-<div class="divider"></div>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-inner">
-    <div>
-      <div class="footer-brand">Uni<em>Profile</em></div>
-      <div class="footer-tagline">The portable passenger identity layer for the IATA OneOrder era. Built on AWS. Open by design.</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;">
-        <span style="font-family:var(--mono);font-size:9px;color:var(--text4);background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;">SOC 2 Type II</span>
-        <span style="font-family:var(--mono);font-size:9px;color:var(--text4);background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;">PCI-DSS L1</span>
-        <span style="font-family:var(--mono);font-size:9px;color:var(--text4);background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;">GDPR</span>
-        <span style="font-family:var(--mono);font-size:9px;color:var(--text4);background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;">IATA OneOrder</span>
-      </div>
-    </div>
-    <div class="footer-links">
-      <div class="footer-col">
-        <div class="footer-col-title">Product</div>
-        <a href="#identity">Identity layers</a>
-        <a href="#modules">Modules</a>
-        <a href="#infra">Infrastructure</a>
-        <a href="#pricing">Pricing</a>
-        <a href="#enroll">Launch App</a>
-      </div>
-      <div class="footer-col">
-        <div class="footer-col-title">Company</div>
-        <a href="#about">About</a>
-        <a href="#contact">Contact</a>
-        <a href="#contact">Careers</a>
-        <a href="#contact">Partners</a>
-        <a href="#contact">Press</a>
-      </div>
-      <div class="footer-col">
-        <div class="footer-col-title">Standards</div>
-        <a href="#">IATA OneOrder</a>
-        <a href="#">NDC Level 4</a>
-        <a href="#">ICAO 9303</a>
-        <a href="#">GDPR / CCPA</a>
-        <a href="#">IATA Res. 787</a>
-      </div>
-      <div class="footer-col">
-        <div class="footer-col-title">Developers</div>
-        <a href="#">API Docs</a>
-        <a href="#">UUID Schema</a>
-        <a href="#">Webhooks</a>
-        <a href="#">SDKs</a>
-        <a href="#">Status</a>
-      </div>
-    </div>
-  </div>
-  <div class="footer-bottom">
-    <div class="footer-copy">© 2026 Uniworld Inc. All rights reserved.</div>
-    <div class="footer-legal">
-      <a href="#">Privacy Policy</a>
-      <a href="#">Terms of Service</a>
-      <a href="#">Cookie Policy</a>
-      <a href="#">GDPR Centre</a>
-    </div>
-  </div>
-</footer>
-
-<div class="toast" id="toast"></div>
-
+<section class="section" id="section-meals">
+<div class="section-header"><div class="section-icon" style="background:rgba(34,200,138,0.1)">🍽</div><div><div class="section-title">Meal &amp; Dietary</div><div class="section-subtitle">IATA OneOrder Module 3 — IATA SSIM meal codes supported</div></div></div>
+<div class="form-sub-title">IATA Meal Code</div>
+<div class="form-grid">
+<div class="form-group"><label class="form-label">Primary Meal Code</label><select class="form-select"><option>AVML — Asian Vegetarian</option><option>GFML — Gluten Free</option><option selected>HNML — Hindu Non-Veg</option><option>KSML — Kosher Meal</option><option>MOML — Muslim Meal</option><option>VGML — Vegan</option><option>VLML — Vegetarian Lacto-Ovo</option></select></div>
+<div class="form-group"><label class="form-label">Beverage Preference</label><select class="form-select"><option selected>Non-alcoholic only</option><option>Alcohol permitted</option><option>No preference</option></select></div>
+</div>
+<div class="form-divider"></div>
+<div class="form-sub-title">Allergies &amp; Restrictions</div>
+<div class="pref-grid">
+<div class="pref-item"><span class="pref-label">Shellfish</span><span class="pref-value" style="color:var(--red)">Allergy</span></div>
+<div class="pref-item"><span class="pref-label">Pork / Lard</span><span class="pref-value" style="color:var(--red)">Avoid</span></div>
+<div class="pref-item"><span class="pref-label">Tree nuts</span><span class="pref-value" style="color:var(--goldLt)">Preference</span></div>
+<div class="pref-item"><span class="pref-label">Alcohol</span><span class="pref-value" style="color:var(--goldLt)">Avoid</span></div>
+</div>
+</section>
+<section class="section" id="section-loyalty">
+<div class="section-header"><div class="section-icon" style="background:rgba(201,151,58,0.1)">✦</div><div><div class="section-title">Loyalty Programs</div><div class="section-subtitle">IATA OneOrder Module 4 — Auto-applied at booking on integrated platforms</div></div></div>
+<div class="form-sub-title">Airlines</div>
+<div class="loyalty-grid" style="margin-bottom:24px">
+<div class="loyalty-card"><div class="loyalty-airline">United Airlines</div><div class="loyalty-prog">MileagePlus</div><div class="loyalty-number">MP-XXXXXXXX</div><div class="loyalty-tier tier-gold">Gold Status</div></div>
+<div class="loyalty-card"><div class="loyalty-airline">American Airlines</div><div class="loyalty-prog">AAdvantage</div><div class="loyalty-number">AA-XXXXXXXX</div><div class="loyalty-tier tier-silver">Member</div></div>
+<div class="loyalty-card"><div class="loyalty-airline">Alaska Airlines</div><div class="loyalty-prog">Mileage Plan</div><div class="loyalty-number">AS-XXXXXXXX</div><div class="loyalty-tier tier-silver">Member</div></div>
+<div class="add-card" style="min-height:90px"><div class="add-plus">+</div>Add Airline</div>
+</div>
+<div class="form-sub-title">Hotels</div>
+<div class="loyalty-grid" style="margin-bottom:24px">
+<div class="loyalty-card"><div class="loyalty-airline">Marriott</div><div class="loyalty-prog">Bonvoy</div><div class="loyalty-number">MR-XXXXXXXX</div><div class="loyalty-tier tier-gold">Gold Elite</div></div>
+<div class="loyalty-card"><div class="loyalty-airline">Hilton</div><div class="loyalty-prog">Honors</div><div class="loyalty-number">HH-XXXXXXXX</div><div class="loyalty-tier tier-silver">Member</div></div>
+<div class="add-card" style="min-height:90px"><div class="add-plus">+</div>Add Hotel</div>
+</div>
+</section>
+<section class="section" id="section-payment">
+<div class="section-header"><div class="section-icon" style="background:rgba(56,99,177,0.1)">💳</div><div><div class="section-title">Payment &amp; Corporate Policy</div><div class="section-subtitle">IATA OneOrder Module 5 — Context-aware: switches with bleisure toggle</div></div></div>
+<div id="payment-personal">
+<div class="form-sub-title">Personal Payment</div>
+<div class="form-grid">
+<div class="form-group"><label class="form-label">Preferred Card</label><input class="form-input" type="text" value="Chase Sapphire Reserve ···· 4521" readonly></div>
+<div class="form-group"><label class="form-label">Airport Membership</label><input class="form-input" type="text" value="CLEAR + TSA PreCheck"></div>
+</div>
+</div>
+<div id="payment-corp" style="display:none">
+<div class="form-sub-title">Corporate Profile</div>
+<div class="form-grid">
+<div class="form-group"><label class="form-label">Company Name</label><input class="form-input" type="text" value="Uniworld Inc."></div>
+<div class="form-group"><label class="form-label">Corporate Card</label><input class="form-input" type="text" placeholder="AMEX Corporate ···· —"></div>
+<div class="form-group"><label class="form-label">Cost Center</label><input class="form-input" type="text" placeholder="e.g. CC-3021"></div>
+<div class="form-group"><label class="form-label">Travel Policy</label><select class="form-select"><option selected>Self-managed (founder)</option><option>Economy only — domestic</option><option>Business class — 6hr+ international</option></select></div>
+</div>
+</div>
+</section>
+<section class="section" id="section-trips">
+<div class="section-header"><div class="section-icon" style="background:rgba(138,151,168,0.1)">📋</div><div><div class="section-title">Trip History &amp; Vault</div><div class="section-subtitle">IATA OneOrder Module 7 — Populated via webhook from integrated platforms</div></div></div>
+<div class="trip-list">
+<div class="trip-card"><div class="trip-date"><div class="trip-date-month">Dec</div><div class="trip-date-day">14</div></div><div class="trip-divider"></div><div class="trip-route"><div class="trip-cities">IAD <span class="trip-arrow">→</span> LHR <span class="trip-arrow">→</span> IAD</div><div class="trip-meta">United Airlines UA-921 · Business · PNR: ABCXYZ</div></div><span class="trip-badge bleisure">Bleisure</span></div>
+<div class="trip-card"><div class="trip-date"><div class="trip-date-month">Nov</div><div class="trip-date-day">08</div></div><div class="trip-divider"></div><div class="trip-route"><div class="trip-cities">IAD <span class="trip-arrow">→</span> ORD</div><div class="trip-meta">American Airlines AA-224 · Economy Plus · PNR: DEFGHI</div></div><span class="trip-badge business">Business</span></div>
+<div class="trip-card"><div class="trip-date"><div class="trip-date-month">Oct</div><div class="trip-date-day">22</div></div><div class="trip-divider"></div><div class="trip-route"><div class="trip-cities">IAD <span class="trip-arrow">→</span> MIA <span class="trip-arrow">→</span> IAD</div><div class="trip-meta">American Airlines AA-771 · Economy · PNR: JKLMNO</div></div><span class="trip-badge leisure">Leisure</span></div>
+</div>
+</section>
+<section class="section" id="section-family">
+<div class="section-header"><div class="section-icon" style="background:rgba(120,80,180,0.1)">👨‍👩‍👧‍👦</div><div><div class="section-title">Family Profiles</div><div class="section-subtitle">Linked traveler identities — consent and documents managed separately</div></div></div>
+<div class="family-grid">
+<div class="family-card"><div class="family-avatar" style="background:rgba(13,148,136,0.15);color:var(--tealLt)">👩</div><div class="family-name">Partner / Spouse</div><div class="family-rel">Primary traveler link</div><div class="family-docs">Passport · KTN linked</div></div>
+<div class="family-card"><div class="family-avatar" style="background:rgba(201,151,58,0.15);color:var(--goldLt)">🧒</div><div class="family-name">Child Profile 1</div><div class="family-rel">Minor — supervised consent</div><div class="family-docs">Passport linked</div></div>
+<div class="add-card"><div class="add-plus">+</div>Link Family Member</div>
+</div>
+</section>
+<section class="section" id="section-consent">
+<div class="section-header"><div class="section-icon" style="background:rgba(13,148,136,0.1)">🔒</div><div><div class="section-title">Consent &amp; Integrations</div><div class="section-subtitle">GDPR-aligned consent engine — you control exactly what each platform sees</div></div></div>
+<div class="consent-list">
+<div class="consent-item"><div class="consent-platform" style="background:rgba(13,148,136,0.1)">✈</div><div class="consent-info"><div class="consent-name">TripIt</div><div class="consent-scope">Reads: Trip history · Writes: Transaction records to vault</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Connected</span></div></div>
+<div class="consent-item"><div class="consent-platform" style="background:rgba(56,99,177,0.1)">🛫</div><div class="consent-info"><div class="consent-name">Alaska Airlines</div><div class="consent-scope">Reads: Seat prefs, meal code, KTN, loyalty · Writes: Booking confirmation webhook</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Connected</span></div></div>
+<div class="consent-item"><div class="consent-platform" style="background:rgba(201,151,58,0.1)">🏢</div><div class="consent-info"><div class="consent-name">Navan (Corp context only)</div><div class="consent-scope">Reads: Business UUID context only — personal data excluded</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Connected</span></div></div>
+<div class="consent-item"><div class="consent-platform" style="background:rgba(120,80,180,0.1)">📱</div><div class="consent-info"><div class="consent-name">App in the Air</div><div class="consent-scope">Reads: Flight preferences, seat, loyalty · No write access</div></div><div class="api-status"><div class="api-dot pending"></div><span style="color:var(--goldLt)">Pending auth</span></div></div>
+</div>
+</section>
+<section class="section" id="section-api">
+<div class="section-header"><div class="section-icon" style="background:rgba(56,99,177,0.1)">⚡</div><div><div class="section-title">API &amp; Webhooks</div><div class="section-subtitle">UUID-anchored REST API · AWS Lambda · Aurora PostgreSQL 16.4</div></div></div>
+<div class="form-sub-title">API Credentials</div>
+<div class="form-grid">
+<div class="form-group"><label class="form-label">API Endpoint</label><input class="form-input" type="text" value="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod" readonly></div>
+<div class="form-group"><label class="form-label">Environment</label><select class="form-select"><option selected>Production</option><option>Staging</option></select></div>
+</div>
+<div class="form-divider"></div>
+<div class="form-sub-title">Live Endpoints</div>
+<div class="consent-list">
+<div class="consent-item"><div class="consent-info"><div class="consent-name" style="font-family:'DM Mono',monospace;font-size:12px">GET /api/v1/profile/{uuid}</div><div class="consent-scope">Full profile payload — traveler or platform access</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Live</span></div></div>
+<div class="consent-item"><div class="consent-info"><div class="consent-name" style="font-family:'DM Mono',monospace;font-size:12px">POST /api/v1/transactions/{uuid}</div><div class="consent-scope">Booking confirmation webhook from integrated platforms</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Live</span></div></div>
+<div class="consent-item"><div class="consent-info"><div class="consent-name" style="font-family:'DM Mono',monospace;font-size:12px">GET/POST /api/v1/profile/{uuid}/bleisure</div><div class="consent-scope">Bleisure context — read and switch active UUID context</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Live</span></div></div>
+<div class="consent-item"><div class="consent-info"><div class="consent-name" style="font-family:'DM Mono',monospace;font-size:12px">GET /health</div><div class="consent-scope">System health check — confirmed operational</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Live</span></div></div>
+</div>
+</section>
+</div>
+</main>
+</div>
 <script>
-/* ─── UUID GENERATION ──────────────────────────────────── */
-function genUUID7(){
-  const now=Date.now();
-  const msHi=Math.floor(now/0x100000000)>>>0;
-  const msLo=now>>>0;
-  const t1=msHi.toString(16).padStart(8,'0');
-  const t2=(msLo>>>16).toString(16).padStart(4,'0');
-  const t3=(((msLo&0xffff)>>>0)|0x7000).toString(16).padStart(4,'0');
-  const r1=((Math.random()*0x4000|0)|0x8000).toString(16).padStart(4,'0');
-  const r2=((Math.random()*0xffffffffffff)|0).toString(16).padStart(12,'0');
-  return `${t1}-${t2}-${t3}-${r1}-${r2}`;
+function showSection(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+  const titles={overview:'Dashboard',identity:'Identity & Documents',preferences:'Seat & Cabin Preferences',meals:'Meal & Dietary',loyalty:'Loyalty Programs',payment:'Payment & Corporate Policy',trips:'Trip History',family:'Family Profiles',consent:'Consent & Integrations',api:'API & Webhooks'};
+  document.getElementById('page-title').textContent=titles[id]||'UniProfile';
+  document.querySelector('.main').scrollTop=0;
 }
-function uuidToUNI(uuid){
-  const hex=uuid.replace(/-/g,'');
-  const num=parseInt(hex.slice(-8),16)%100000000;
-  return 'UNI-'+String(num).padStart(8,'0');
-}
-function uuidShort(uuid){return uuid.slice(0,18)+'…'}
-
-/* ─── FORM STATE ───────────────────────────────────────── */
-let curStep=1;
-const STEPS=5;
-const TAKEN=['admin','support','team','uniprofile','info','api'];
-
-function goStep(n){
-  document.getElementById('fs'+curStep).classList.remove('active');
-  document.getElementById('fs'+n).classList.add('active');
-  // tracker
-  document.querySelectorAll('.st-item').forEach(el=>{
-    const s=+el.dataset.s;
-    el.classList.remove('active','done');
-    const dot=el.querySelector('.st-dot');
-    if(s===n){el.classList.add('active');dot.textContent=s;}
-    else if(s<n){el.classList.add('done');dot.textContent='✓';}
-    else{dot.textContent=s;}
-  });
-  // progress
-  const pct=Math.min(((n-1)/(STEPS-1))*100,100);
-  document.getElementById('prog').style.width=pct+'%';
-  curStep=n;
-  document.querySelector('.form-card').scrollIntoView({behavior:'smooth',block:'nearest'});
-}
-
-/* ─── HANDLE ───────────────────────────────────────────── */
-let handleTimer;
-function onHandle(el){
-  el.value=el.value.toLowerCase().replace(/[^a-z0-9_]/g,'');
-  clearTimeout(handleTimer);
-  const avail=document.getElementById('handle-avail');
-  if(!el.value){avail.textContent='';return;}
-  avail.textContent='Checking…';avail.className='handle-avail';
-  handleTimer=setTimeout(()=>{
-    const taken=TAKEN.includes(el.value)||el.value.length<3;
-    if(taken){avail.textContent='@'+el.value+' is taken — try another';avail.className='handle-avail taken';}
-    else{avail.textContent='@'+el.value+' is available ✓';avail.className='handle-avail ok';}
-  },500);
-}
-
-/* ─── DATE FORMATTING ──────────────────────────────────── */
-function fmtExpiry(el){
-  let v=el.value.replace(/\D/g,'');
-  if(v.length>=2)v=v.slice(0,2)+'/'+v.slice(2);
-  el.value=v.slice(0,7);
-}
-function fmtDOB(el){
-  let v=el.value.replace(/\D/g,'');
-  if(v.length>=2)v=v.slice(0,2)+'/'+v.slice(2);
-  if(v.length>=5)v=v.slice(0,5)+'/'+v.slice(5);
-  el.value=v.slice(0,10);
-}
-
-/* ─── LOYALTY ──────────────────────────────────────────── */
-function toggleLoy(el){
-  el.classList.toggle('selected');
-  const inp=el.querySelector('input');
-  if(el.classList.contains('selected')){
-    inp.style.display='block';
-    inp.onclick=e=>e.stopPropagation();
-  } else {
-    inp.style.display='none';inp.value='';
+function toggleBleisure(input){
+  const pill=document.getElementById('context-pill');
+  const lblL=document.getElementById('lbl-leisure');
+  const lblB=document.getElementById('lbl-business');
+  const personal=document.getElementById('payment-personal');
+  const corp=document.getElementById('payment-corp');
+  if(input.checked){
+    pill.textContent='Business Mode';pill.className='bleisure-context-pill business';
+    lblL.classList.add('inactive');lblL.classList.remove('leisure');
+    lblB.classList.add('active');
+    if(personal)personal.style.display='none';
+    if(corp)corp.style.display='block';
+  }else{
+    pill.textContent='Personal Mode';pill.className='bleisure-context-pill leisure';
+    lblL.classList.remove('inactive');lblL.classList.add('leisure');
+    lblB.classList.remove('active');
+    if(personal)personal.style.display='block';
+    if(corp)corp.style.display='none';
   }
 }
-
-/* ─── PREFS ────────────────────────────────────────────── */
-function pickPref(el,group){
-  el.closest('.pref-pills').querySelectorAll('.ppill').forEach(p=>p.classList.remove('on'));
-  el.classList.add('on');
-}
-
-/* ─── ISSUE UUID ───────────────────────────────────────── */
-function issueUUID(){
-  if(!document.getElementById('consent-gdpr').checked){
-    showToast('Please accept the consent to continue.');return;
-  }
-  const btn=document.getElementById('btn-issue');
-  btn.textContent='Issuing…';btn.classList.add('loading');
-  setTimeout(()=>{
-    const first=document.getElementById('f-first').value.trim()||'Traveler';
-    const last=document.getElementById('f-last').value.trim()||'';
-    const handle=document.getElementById('f-handle').value.trim()||'traveler';
-    const uuid=genUUID7();
-    const uni=uuidToUNI(uuid);
-    const atH='@'+handle;
-    const fullName=(first+' '+last).trim();
-    const initials=(first[0]||'T').toUpperCase()+(last[0]||'').toUpperCase();
-
-    // success fields
-    document.getElementById('s-uni').textContent=uni;
-    document.getElementById('s-handle').textContent=atH;
-    document.getElementById('s-uuid').textContent=uuid;
-    document.getElementById('sl-uni').textContent=uni;
-    document.getElementById('sl-handle').textContent=atH;
-    document.getElementById('sl-uuid').textContent=uuidShort(uuid);
-
-    // update demo card
-    document.getElementById('dc-avatar').textContent=initials;
-    document.getElementById('dc-name').textContent=fullName;
-    document.getElementById('dc-handle').textContent=atH;
-    document.getElementById('dc-uni').textContent=uni;
-    document.getElementById('dc-at').textContent=atH;
-    document.getElementById('dc-uuid').textContent=uuid;
-
-    // update layer panel
-    document.getElementById('layer-uni').textContent=uni;
-    document.getElementById('layer-handle').textContent=atH;
-
-    // update hero
-    document.getElementById('hero-uni').textContent=uni;
-
-    btn.textContent='Issue My UUID →';btn.classList.remove('loading');
-    goStep(5);
-  },900);
-}
-
-/* ─── COPY ─────────────────────────────────────────────── */
-function copyField(id,label){
-  const val=document.getElementById(id).textContent;
-  navigator.clipboard.writeText(val).then(()=>showToast(label+' copied → '+val.slice(0,20)+(val.length>20?'…':'')));
-}
-
-/* ─── TOAST ────────────────────────────────────────────── */
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(t._timer);
-  t._timer=setTimeout(()=>t.classList.remove('show'),2600);
-}
-
-/* ─── RESET ────────────────────────────────────────────── */
-function resetForm(){
-  ['f-first','f-last','f-email','f-handle','f-passport','f-expiry','f-dob','f-ktn','f-ge'].forEach(id=>{
-    const el=document.getElementById(id);if(el)el.value='';
-  });
-  document.getElementById('handle-avail').textContent='';
-  document.querySelectorAll('.loy-item').forEach(el=>{el.classList.remove('selected');const i=el.querySelector('input');i.style.display='none';i.value='';});
-  document.querySelectorAll('.ppill').forEach(el=>el.classList.remove('on'));
-  document.getElementById('consent-gdpr').checked=true;
-  for(let i=1;i<=STEPS;i++){const el=document.getElementById('fs'+i);if(el)el.classList.remove('active');}
-  document.getElementById('fs1').classList.add('active');
-  document.getElementById('prog').style.width='20%';
-  document.querySelectorAll('.st-item').forEach((el,i)=>{el.classList.remove('active','done');if(i===0)el.classList.add('active');el.querySelector('.st-dot').textContent=i+1;});
-  curStep=1;
-}
-
-/* ─── CONTACT FORM ─────────────────────────────────────── */
-function sendContact(){
-  const email=document.getElementById('cf-email').value.trim();
-  if(!email){showToast('Please enter your email.');return;}
-  document.getElementById('contact-form').style.display='none';
-  document.getElementById('form-sent').style.display='block';
-  showToast('Message sent! We\'ll be in touch shortly.');
-}
-
-/* ─── NAV SCROLL EFFECT ────────────────────────────────── */
-window.addEventListener('scroll',()=>{
-  document.getElementById('nav').style.background=
-    window.scrollY>40?'rgba(7,7,13,0.95)':'rgba(7,7,13,0.82)';
-},{ passive:true });
-
-/* ─── HERO UUID ANIMATION ──────────────────────────────── */
-function animHeroUUID(){
-  const uuid=genUUID7();
-  const parts=uuid.split('-');
-  document.getElementById('hero-uuid-1').textContent=parts[0];
-  document.getElementById('hero-uuid-2').textContent=parts[1];
-}
-setInterval(animHeroUUID,4000);
 </script>
 </body>
 </html>
