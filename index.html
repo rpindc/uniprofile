@@ -6,10 +6,33 @@
 <title>UniProfile — Traveler Identity</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
-:root{--navy:#0A1628;--navy2:#0F1F3D;--teal:#0D9488;--tealLt:#14B8A6;--tealDim:#0A6E66;--gold:#C9973A;--goldLt:#E5B96A;--white:#FFFFFF;--offW:#F5F3EF;--slate:#8A97A8;--text:#E8E2D8;--textMid:#A8A098;--textDim:#6A6560;--red:#E05050;--green:#22C88A;--border:rgba(255,255,255,0.07);--borderM:rgba(255,255,255,0.12);--card:rgba(255,255,255,0.04);--cardHov:rgba(255,255,255,0.07);}
+:root{--navy:#0A1628;--navy2:#0F1F3D;--teal:#0D9488;--tealLt:#14B8A6;--tealDim:#0A6E66;--gold:#C9973A;--goldLt:#E5B96A;--white:#FFFFFF;--text:#E8E2D8;--textMid:#A8A098;--textDim:#6A6560;--red:#E05050;--green:#22C88A;--border:rgba(255,255,255,0.07);--borderM:rgba(255,255,255,0.12);--card:rgba(255,255,255,0.04);--cardHov:rgba(255,255,255,0.07);}
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;background:var(--navy);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;}
-.app{display:flex;height:100vh;overflow:hidden;}
+
+/* LOGIN SCREEN */
+.login-screen{display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:32px;}
+.login-card{background:var(--navy2);border:1px solid var(--border);border-radius:16px;padding:48px;text-align:center;max-width:400px;width:90%;}
+.login-logo{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:600;color:var(--white);margin-bottom:8px;}
+.login-sub{font-size:13px;color:var(--textMid);letter-spacing:1px;text-transform:uppercase;margin-bottom:32px;}
+.login-btn{display:block;width:100%;padding:14px;background:var(--teal);border:none;border-radius:8px;color:white;font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background 0.2s;text-decoration:none;text-align:center;}
+.login-btn:hover{background:var(--tealLt);}
+.login-note{font-size:11px;color:var(--textDim);margin-top:16px;}
+
+/* LOADING */
+.loading-screen{display:none;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;}
+.loading-spinner{width:40px;height:40px;border:2px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:spin 0.8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{font-size:13px;color:var(--textMid);}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--teal);color:white;padding:12px 20px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.3s;z-index:1000;pointer-events:none;}
+.toast.show{opacity:1;}
+.toast.error{background:var(--red);}
+
+/* APP */
+.app{display:none;flex;height:100vh;overflow:hidden;}
+.app.visible{display:flex;}
 .sidebar{width:240px;min-width:240px;background:var(--navy2);border-right:1px solid var(--border);display:flex;flex-direction:column;}
 .sidebar-logo{padding:28px 24px 20px;border-bottom:1px solid var(--border);}
 .logo-mark{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
@@ -24,21 +47,21 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'DM S
 .comp-label{font-size:10px;color:var(--textMid);letter-spacing:0.5px;text-transform:uppercase;}
 .comp-pct{font-size:18px;font-weight:500;color:var(--goldLt);}
 .comp-bar-track{height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;}
-.comp-bar-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--goldLt));border-radius:2px;}
+.comp-bar-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--goldLt));border-radius:2px;transition:width 0.6s;}
 .nav{padding:8px 12px;flex:1;overflow-y:auto;}
 .nav-section{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--textDim);padding:12px 12px 4px;}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;cursor:pointer;color:var(--textMid);font-size:13px;font-weight:400;transition:all 0.15s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;cursor:pointer;color:var(--textMid);font-size:13px;transition:all 0.15s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;}
 .nav-item:hover{background:var(--cardHov);color:var(--text);}
 .nav-item.active{background:rgba(13,148,136,0.15);color:var(--tealLt);}
-.nav-dot{width:6px;height:6px;border-radius:50%;background:var(--textDim);flex-shrink:0;transition:background 0.15s;}
+.nav-dot{width:6px;height:6px;border-radius:50%;background:var(--textDim);flex-shrink:0;}
 .nav-item.active .nav-dot{background:var(--teal);}
-.nav-badge{margin-left:auto;font-size:9px;background:var(--red);color:white;padding:1px 6px;border-radius:10px;}
-.nav-alert{margin-left:auto;font-size:9px;background:rgba(201,151,58,0.2);color:var(--goldLt);padding:1px 6px;border-radius:10px;}
 .sidebar-footer{padding:16px 24px;border-top:1px solid var(--border);}
 .traveler-row{display:flex;align-items:center;gap:10px;}
 .traveler-avatar{width:32px;height:32px;border-radius:50%;background:var(--tealDim);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:white;flex-shrink:0;}
-.traveler-name{font-size:13px;font-weight:400;color:var(--text);}
+.traveler-name{font-size:13px;color:var(--text);}
 .traveler-tier{font-size:10px;color:var(--gold);}
+.logout-btn{margin-top:8px;font-size:11px;color:var(--textDim);background:none;border:none;cursor:pointer;padding:0;font-family:'DM Sans',sans-serif;}
+.logout-btn:hover{color:var(--red);}
 .main{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
 .topbar{display:flex;align-items:center;padding:0 32px;height:64px;min-height:64px;border-bottom:1px solid var(--border);background:var(--navy);position:sticky;top:0;z-index:100;gap:16px;}
 .topbar-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:var(--white);flex:1;}
@@ -54,7 +77,7 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'DM S
 .toggle-switch input:checked ~ .toggle-track{background:var(--gold);}
 .toggle-thumb{position:absolute;width:18px;height:18px;background:white;border-radius:50%;top:3px;left:3px;transition:transform 0.3s;box-shadow:0 1px 4px rgba(0,0,0,0.3);}
 .toggle-switch input:checked ~ .toggle-track .toggle-thumb{transform:translateX(20px);}
-.bleisure-context-pill{font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:10px;font-weight:500;transition:all 0.2s;}
+.bleisure-context-pill{font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:10px;font-weight:500;}
 .bleisure-context-pill.leisure{background:rgba(13,148,136,0.15);color:var(--tealLt);border:1px solid rgba(13,148,136,0.3);}
 .bleisure-context-pill.business{background:rgba(201,151,58,0.15);color:var(--goldLt);border:1px solid rgba(201,151,58,0.3);}
 .topbar-actions{display:flex;gap:8px;}
@@ -62,46 +85,10 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'DM S
 .topbar-btn:hover{background:var(--cardHov);}
 .topbar-btn.primary{background:var(--teal);border-color:var(--teal);color:white;}
 .topbar-btn.primary:hover{background:var(--tealLt);}
+.topbar-btn:disabled{opacity:0.5;cursor:not-allowed;}
 .content{padding:32px;flex:1;}
 .section{display:none;}
 .section.active{display:block;}
-.overview-hero{display:flex;gap:24px;margin-bottom:28px;}
-.hero-stat{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 24px;position:relative;overflow:hidden;}
-.hero-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
-.hero-stat.teal::before{background:var(--teal);}
-.hero-stat.gold::before{background:var(--gold);}
-.hero-stat.green::before{background:var(--green);}
-.stat-value{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:600;color:var(--white);line-height:1;margin-bottom:4px;}
-.stat-label{font-size:11px;color:var(--textMid);letter-spacing:0.5px;}
-.stat-sub{font-size:11px;color:var(--tealLt);margin-top:4px;}
-.stat-sub.warn{color:var(--goldLt);}
-.modules-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
-.module-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;cursor:pointer;transition:all 0.2s;position:relative;}
-.module-card:hover{background:var(--cardHov);border-color:var(--borderM);transform:translateY(-1px);}
-.module-card.complete{border-left:3px solid var(--teal);}
-.module-card.partial{border-left:3px solid var(--gold);}
-.module-card.empty{border-left:3px solid var(--textDim);}
-.module-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
-.module-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
-.module-icon.teal{background:rgba(13,148,136,0.15);}
-.module-icon.gold{background:rgba(201,151,58,0.15);}
-.module-icon.blue{background:rgba(56,99,177,0.15);}
-.module-icon.purple{background:rgba(120,80,180,0.15);}
-.module-icon.green{background:rgba(34,200,138,0.12);}
-.module-icon.slate{background:rgba(138,151,168,0.12);}
-.module-status{font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:4px;font-weight:500;}
-.status-complete{background:rgba(13,148,136,0.12);color:var(--tealLt);}
-.status-partial{background:rgba(201,151,58,0.12);color:var(--goldLt);}
-.status-empty{background:rgba(255,255,255,0.05);color:var(--textDim);}
-.module-name{font-size:14px;font-weight:500;color:var(--white);margin-bottom:4px;}
-.module-desc{font-size:12px;color:var(--textMid);line-height:1.5;}
-.module-items{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;gap:6px;}
-.module-tag{font-size:10px;padding:3px 8px;border-radius:4px;background:rgba(255,255,255,0.06);color:var(--textMid);}
-.module-tag.filled{background:rgba(13,148,136,0.1);color:var(--tealLt);}
-.section-header{display:flex;align-items:center;gap:14px;margin-bottom:24px;}
-.section-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
-.section-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:var(--white);}
-.section-subtitle{font-size:12px;color:var(--textMid);margin-top:2px;}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
 .form-grid.three{grid-template-columns:1fr 1fr 1fr;}
 .form-group{display:flex;flex-direction:column;gap:6px;}
@@ -112,27 +99,43 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'DM S
 .form-select option{background:var(--navy2);}
 .form-divider{height:1px;background:var(--border);margin:24px 0;}
 .form-sub-title{font-size:12px;font-weight:500;color:var(--textMid);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:14px;}
-.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
-.doc-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;position:relative;}
-.doc-card.expiring{border-color:rgba(201,151,58,0.4);}
-.doc-expiry-flag{position:absolute;top:12px;right:12px;font-size:9px;letter-spacing:0.5px;padding:2px 8px;border-radius:4px;}
-.flag-ok{background:rgba(34,200,138,0.12);color:var(--green);}
-.flag-warn{background:rgba(201,151,58,0.12);color:var(--goldLt);}
-.doc-type{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--textDim);margin-bottom:6px;}
-.doc-name{font-size:14px;font-weight:500;color:var(--white);margin-bottom:4px;}
-.doc-detail{font-size:12px;color:var(--textMid);}
+.section-header{display:flex;align-items:center;gap:14px;margin-bottom:24px;}
+.section-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:var(--white);}
+.section-subtitle{font-size:12px;color:var(--textMid);margin-top:2px;}
+.overview-hero{display:flex;gap:24px;margin-bottom:28px;}
+.hero-stat{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 24px;position:relative;overflow:hidden;}
+.hero-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.hero-stat.teal::before{background:var(--teal);}
+.hero-stat.gold::before{background:var(--gold);}
+.hero-stat.green::before{background:var(--green);}
+.stat-value{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:600;color:var(--white);line-height:1;margin-bottom:4px;}
+.stat-label{font-size:11px;color:var(--textMid);letter-spacing:0.5px;}
+.stat-sub{font-size:11px;color:var(--tealLt);margin-top:4px;}
+.stat-sub.warn{color:var(--goldLt);}
+.alerts-bar{background:rgba(201,151,58,0.08);border:1px solid rgba(201,151,58,0.2);border-radius:8px;padding:12px 16px;margin-bottom:24px;display:flex;align-items:center;gap:10px;}
+.alert-icon{font-size:16px;flex-shrink:0;}
+.alert-text{font-size:12px;color:var(--goldLt);flex:1;}
+.pref-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.pref-item{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;}
+.pref-label{font-size:13px;color:var(--text);}
+.pref-value{font-size:12px;color:var(--tealLt);}
+.consent-list{display:flex;flex-direction:column;gap:12px;}
+.consent-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;}
+.consent-platform{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.consent-info{flex:1;}
+.consent-name{font-size:13px;font-weight:500;color:var(--white);}
+.consent-scope{font-size:11px;color:var(--textMid);margin-top:2px;}
+.api-status{display:flex;align-items:center;gap:6px;font-size:11px;}
+.api-dot{width:7px;height:7px;border-radius:50%;}
+.api-dot.live{background:var(--green);}
+.api-dot.pending{background:var(--goldLt);}
 .loyalty-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
 .loyalty-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;}
 .loyalty-airline{font-size:13px;font-weight:500;color:var(--white);margin-bottom:2px;}
 .loyalty-prog{font-size:11px;color:var(--textMid);margin-bottom:10px;}
 .loyalty-number{font-family:'DM Mono',monospace;font-size:12px;color:var(--tealLt);background:rgba(13,148,136,0.08);padding:5px 10px;border-radius:4px;letter-spacing:1px;margin-bottom:8px;}
-.loyalty-tier{font-size:10px;letter-spacing:0.8px;text-transform:uppercase;}
-.tier-gold{color:var(--goldLt);}
-.tier-silver{color:var(--slate);}
-.pref-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.pref-item{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;}
-.pref-label{font-size:13px;color:var(--text);}
-.pref-value{font-size:12px;color:var(--tealLt);}
+.loyalty-tier{font-size:10px;letter-spacing:0.8px;text-transform:uppercase;color:var(--goldLt);}
 .trip-list{display:flex;flex-direction:column;gap:10px;}
 .trip-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;align-items:center;gap:16px;}
 .trip-date{text-align:center;min-width:48px;font-family:'Cormorant Garamond',serif;}
@@ -147,269 +150,596 @@ html,body{height:100%;background:var(--navy);color:var(--text);font-family:'DM S
 .trip-badge.leisure{background:rgba(13,148,136,0.12);color:var(--tealLt);}
 .trip-badge.business{background:rgba(201,151,58,0.12);color:var(--goldLt);}
 .trip-badge.bleisure{background:rgba(120,80,180,0.12);color:#C4A8F0;}
-.family-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
-.family-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:all 0.2s;}
-.family-card:hover{background:var(--cardHov);}
-.family-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto 10px;}
-.family-name{font-size:14px;font-weight:500;color:var(--white);}
-.family-rel{font-size:11px;color:var(--textMid);margin-top:2px;}
-.family-docs{font-size:10px;color:var(--tealLt);margin-top:6px;}
-.add-card{background:transparent;border:1px dashed var(--borderM);border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:120px;color:var(--textDim);font-size:12px;}
+.add-card{background:transparent;border:1px dashed var(--borderM);border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100px;color:var(--textDim);font-size:12px;}
 .add-card:hover{border-color:var(--teal);color:var(--tealLt);}
 .add-plus{font-size:24px;margin-bottom:6px;line-height:1;}
-.consent-list{display:flex;flex-direction:column;gap:12px;}
-.consent-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;}
-.consent-platform{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
-.consent-info{flex:1;}
-.consent-name{font-size:13px;font-weight:500;color:var(--white);}
-.consent-scope{font-size:11px;color:var(--textMid);margin-top:2px;}
-.alerts-bar{background:rgba(201,151,58,0.08);border:1px solid rgba(201,151,58,0.2);border-radius:8px;padding:12px 16px;margin-bottom:24px;display:flex;align-items:center;gap:10px;}
-.alert-icon{font-size:16px;flex-shrink:0;}
-.alert-text{font-size:12px;color:var(--goldLt);flex:1;}
-.alert-action{font-size:11px;color:var(--tealLt);cursor:pointer;text-decoration:underline;}
-.api-status{display:flex;align-items:center;gap:6px;font-size:11px;}
-.api-dot{width:7px;height:7px;border-radius:50%;}
-.api-dot.live{background:var(--green);}
-.api-dot.pending{background:var(--goldLt);}
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 </style>
 </head>
 <body>
-<div class="app">
-<aside class="sidebar">
-<div class="sidebar-logo">
-<div class="logo-mark"><div class="logo-circle">U</div><span class="logo-name">UniProfile</span></div>
-<div class="logo-sub">Traveler Identity</div>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">UniProfile</div>
+    <div class="login-sub">Portable Traveler Identity</div>
+    <a id="login-btn" class="login-btn" href="#">Sign in with UniProfile</a>
+    <div class="login-note">Secured by AWS Cognito · GDPR aligned</div>
+  </div>
 </div>
-<div class="uuid-badge">
-<div class="uuid-label">Your UUID</div>
-<div class="uuid-value">UP-3F7A-9C2E-B841-D6F0</div>
+
+<!-- LOADING SCREEN -->
+<div class="loading-screen" id="loading-screen">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Loading your profile...</div>
 </div>
-<div class="completeness">
-<div class="comp-header"><span class="comp-label">Profile Complete</span><span class="comp-pct">74%</span></div>
-<div class="comp-bar-track"><div class="comp-bar-fill" style="width:74%"></div></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- APP -->
+<div class="app" id="app">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-mark"><div class="logo-circle">U</div><span class="logo-name">UniProfile</span></div>
+      <div class="logo-sub">Traveler Identity</div>
+    </div>
+    <div class="uuid-badge">
+      <div class="uuid-label">Your UUID</div>
+      <div class="uuid-value" id="uuid-display">—</div>
+    </div>
+    <div class="completeness">
+      <div class="comp-header"><span class="comp-label">Profile Complete</span><span class="comp-pct" id="comp-pct">—</span></div>
+      <div class="comp-bar-track"><div class="comp-bar-fill" id="comp-bar" style="width:0%"></div></div>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">Overview</div>
+      <button class="nav-item active" onclick="showSection('overview',this)"><span class="nav-dot"></span>Dashboard</button>
+      <div class="nav-section">Identity Modules</div>
+      <button class="nav-item" onclick="showSection('identity',this)"><span class="nav-dot"></span>Identity &amp; Documents</button>
+      <button class="nav-item" onclick="showSection('preferences',this)"><span class="nav-dot"></span>Seat &amp; Cabin Prefs</button>
+      <button class="nav-item" onclick="showSection('meals',this)"><span class="nav-dot"></span>Meal &amp; Dietary</button>
+      <button class="nav-item" onclick="showSection('loyalty',this)"><span class="nav-dot"></span>Loyalty Programs</button>
+      <button class="nav-item" onclick="showSection('payment',this)"><span class="nav-dot"></span>Payment &amp; Policy</button>
+      <button class="nav-item" onclick="showSection('trips',this)"><span class="nav-dot"></span>Trip History</button>
+      <div class="nav-section">Platform</div>
+      <button class="nav-item" onclick="showSection('consent',this)"><span class="nav-dot"></span>Consent &amp; Integrations</button>
+      <button class="nav-item" onclick="showSection('api',this)"><span class="nav-dot"></span>API &amp; Webhooks</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="traveler-row">
+        <div class="traveler-avatar" id="traveler-initials">—</div>
+        <div>
+          <div class="traveler-name" id="traveler-name">Loading...</div>
+          <div class="traveler-tier">★ Premium Member</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="bleisure-toggle">
+        <span class="bleisure-label leisure" id="lbl-leisure">Leisure</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="bleisure-input" onchange="toggleBleisure(this)">
+          <div class="toggle-track"><div class="toggle-thumb"></div></div>
+        </label>
+        <span class="bleisure-label business" id="lbl-business">Business</span>
+      </div>
+      <div class="bleisure-context-pill leisure" id="context-pill">Personal Mode</div>
+      <div class="topbar-actions">
+        <button class="topbar-btn primary" id="save-btn" onclick="saveCurrentSection()">Save Changes</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- OVERVIEW -->
+      <section class="section active" id="section-overview">
+        <div id="alerts-container"></div>
+        <div class="overview-hero">
+          <div class="hero-stat teal"><div class="stat-value" id="stat-modules">7</div><div class="stat-label">Identity Modules</div><div class="stat-sub" id="stat-modules-sub">Loading...</div></div>
+          <div class="hero-stat gold"><div class="stat-value" id="stat-completeness">—</div><div class="stat-label">Profile Complete</div><div class="stat-sub warn" id="stat-comp-sub">Loading...</div></div>
+          <div class="hero-stat green"><div class="stat-value" id="stat-trips">—</div><div class="stat-label">Trips in Vault</div><div class="stat-sub" id="stat-trips-sub">Loading...</div></div>
+          <div class="hero-stat teal"><div class="stat-value" id="stat-context">—</div><div class="stat-label">Active Context</div><div class="stat-sub" id="stat-context-sub">Personal / Business</div></div>
+        </div>
+        <div class="form-sub-title">Profile Summary</div>
+        <div id="profile-summary" style="color:var(--textMid);font-size:13px">Loading your profile data...</div>
+      </section>
+
+      <!-- IDENTITY -->
+      <section class="section" id="section-identity">
+        <div class="section-header">
+          <div class="section-icon" style="background:rgba(201,151,58,0.1)"></div>
+          <div><div class="section-title">Identity &amp; Documents</div><div class="section-subtitle">IATA OneOrder Module 1 — Stored encrypted, consent-gated</div></div>
+        </div>
+        <div class="form-sub-title">Personal Identity</div>
+        <div class="form-grid three">
+          <div class="form-group"><label class="form-label">Legal First Name</label><input class="form-input" id="legal_first" type="text" placeholder="As on passport"></div>
+          <div class="form-group"><label class="form-label">Legal Middle Name</label><input class="form-input" id="legal_middle" type="text" placeholder="Optional"></div>
+          <div class="form-group"><label class="form-label">Legal Last Name</label><input class="form-input" id="legal_last" type="text" placeholder="As on passport"></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Date of Birth</label><input class="form-input" id="dob" type="date"></div>
+          <div class="form-group"><label class="form-label">Nationality</label><input class="form-input" id="nationality" type="text" placeholder="e.g. United States"></div>
+          <div class="form-group"><label class="form-label">Gender (as on travel docs)</label>
+            <select class="form-select" id="gender_code"><option value="M">Male</option><option value="F">Female</option><option value="X">X / Unspecified</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">Home Airport (IATA)</label><input class="form-input" id="home_airport" type="text" placeholder="e.g. IAD" maxlength="3"></div>
+        </div>
+      </section>
+
+      <!-- SEAT PREFS -->
+      <section class="section" id="section-preferences">
+        <div class="section-header">
+          <div class="section-icon" style="background:rgba(13,148,136,0.1)">💺</div>
+          <div><div class="section-title">Seat &amp; Cabin Preferences</div><div class="section-subtitle">IATA OneOrder Module 2 — Pre-filled at checkout on integrated platforms</div></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Preferred Cabin — Domestic</label>
+            <select class="form-select" id="cabin_domestic"><option value="ECONOMY">Economy</option><option value="ECONOMY_PLUS">Economy Plus</option><option value="BUSINESS">Business</option><option value="FIRST">First Class</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">Preferred Cabin — International</label>
+            <select class="form-select" id="cabin_international"><option value="ECONOMY">Economy</option><option value="PREMIUM_ECONOMY">Premium Economy</option><option value="BUSINESS">Business Class</option><option value="FIRST">First Class</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">Seat Position</label>
+            <select class="form-select" id="seat_position"><option value="AISLE">Aisle</option><option value="WINDOW">Window</option><option value="MIDDLE">Middle</option><option value="NO_PREF">No Preference</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">Row Preference</label>
+            <select class="form-select" id="row_preference"><option value="EXIT_ROW">Exit Row / Extra Legroom</option><option value="FRONT">Front of Cabin</option><option value="REAR">Rear of Cabin</option><option value="NO_PREF">No Preference</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">Hotel Room Type</label>
+            <select class="form-select" id="hotel_room_type"><option value="KING">King bed</option><option value="QUEEN">Queen bed</option><option value="TWIN">Twin beds</option></select>
+          </div>
+          <div class="form-group"><label class="form-label">Hotel Floor</label>
+            <select class="form-select" id="hotel_floor_pref"><option value="HIGH">High floor</option><option value="LOW">Low floor</option><option value="NO_PREF">No preference</option></select>
+          </div>
+        </div>
+        <div class="form-divider"></div>
+        <div class="form-sub-title">Special Requirements</div>
+        <div class="pref-grid">
+          <div class="pref-item"><span class="pref-label">Avoid middle seats</span><span class="pref-value" id="pref-ams">—</span></div>
+          <div class="pref-item"><span class="pref-label">Exit row preferred</span><span class="pref-value" id="pref-exit">—</span></div>
+        </div>
+      </section>
+
+      <!-- MEALS -->
+      <section class="section" id="section-meals">
+        <div class="section-header">
+          <div class="section-icon" style="background:rgba(34,200,138,0.1)">🍽</div>
+          <div><div class="section-title">Meal &amp; Dietary</div><div class="section-subtitle">IATA OneOrder Module 3 — IATA SSIM meal codes</div></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label class="form-label">Primary IATA Meal Code</label>
+            <select class="form-select" id="primary_meal_code">
+              <option value="AVML">AVML — Asian Vegetarian</option>
+              <option value="GFML">GFML — Gluten Free</option>
+              <option value="HNML">HNML — Hindu Non-Veg</option>
+              <option value="KSML">KSML — Kosher</option>
+              <option value="MOML">MOML — Muslim Meal</option>
+              <option value="VGML">VGML — Vegan</option>
+              <option value="VLML">VLML — Vegetarian</option>
+              <option value="DBML">DBML — Diabetic</option>
+              <option value="LFML">LFML — Low Fat</option>
+              <option value="LSML">LSML — Low Sodium</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Beverage Preference</label>
+            <select class="form-select" id="beverage_pref"><option value="NON_ALC">Non-alcoholic only</option><option value="ALCOHOL_OK">Alcohol permitted</option><option value="NO_PREF">No preference</option></select>
+          </div>
+        </div>
+        <div class="form-divider"></div>
+        <div class="form-sub-title">Allergies &amp; Restrictions</div>
+        <div class="form-group" style="margin-bottom:12px"><label class="form-label">Allergies (comma separated)</label><input class="form-input" id="allergies" type="text" placeholder="e.g. shellfish, peanuts"></div>
+        <div class="form-group"><label class="form-label">Items to Avoid (comma separated)</label><input class="form-input" id="avoid_items" type="text" placeholder="e.g. pork, alcohol"></div>
+      </section>
+
+      <!-- LOYALTY -->
+      <section class="section" id="section-loyalty">
+        <div class="section-header">
+          <div class="section-icon" style="background:rgba(201,151,58,0.1)">✦</div>
+          <div><div class="section-title">Loyalty Programs</div><div class="section-subtitle">IATA OneOrder Module 4 — Auto-applied at booking</div></div>
+        </div>
+        <div id="loyalty-list" class="loyalty-grid">
+          <div style="color:var(--textMid);font-size:13px">Loading loyalty programs...</div>
+        </div>
+      </section>
+
+      <!-- PAYMENT -->
+      <section class="section" id="section-payment">
+        <div class="section-header">
+          <div class="section-icon" style="background:rgba(56,99,177,0.1)">💳</div>
+          <div><div class="section-title">Payment &amp; Corporate Policy</div><div class="section-subtitle">IATA OneOrder Module 5 — Switches with bleisure context</div></div>
+        </div>
+        <div id="payment-personal">
+          <div class="form-sub-title">Personal Payment</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Preferred Card</label><input class="form-input" id="preferred_card" type="text" placeholder="Card nickname"></div>
+            <div class="form-group"><label class="form-label">Airport Membership</label><input class="form-input" type="text" value="CLEAR + TSA PreCheck" readonly></div>
+          </div>
+        </div>
+        <div id="payment-corp" style="display:none">
+          <div class="form-sub-title">Corporate Profile</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Company Name</label><input class="form-input" id="company_name" type="text" placeholder="Company name"></div>
+            <div class="form-group"><label class="form-label">Cost Center</label><input class="form-input" id="cost_center" type="text" placeholder="e.g. CC-3021"></div>
+            <div class="form-group"><label class="form-label">Travel Policy</label><input class="form-input" id="policy_description" type="text" placeholder="Policy description"></div>
+            <div class="form-group"><label class="form-label">Expense Platform</label>
+              <select class="form-select" id="expense_platform"><option>Expensify</option><option>Concur</option><option>Navan Expense</option><option>Not connected</option></select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TRIPS -->
+      <section class="section" id="section-trips">
+        <div class="section-header">
+          <div class="section-icon" style="background:rgba(138,151,168,0.1)">📋</div>
+          <div><div class="section-title">Trip History &amp; Vault</div><div class="section-subtitle">IATA OneOrder Module 7 — Populated via webhook from integrated platforms</div></div>
+        </div>
+        <div class="trip-list" id="trip-list">
+          <div style="color:var(--textMid);font-size:13px">Loading trip history...</div>
+        </div>
+      </section>
+
+      <!-- CONSENT -->
+      <section class="section" id="section-consent">
+        <div class="section-header">
+          <div class="section-icon" style="background:rgba(13,148,136,0.1)">🔒</div>
+          <div><div class="section-title">Consent &amp; Integrations</div><div class="section-subtitle">GDPR-aligned — you control exactly what each platform sees</div></div>
+        </div>
+        <div class="consent-list">
+          <div class="consent-item"><div class="consent-platform" style="background:rgba(13,148,136,0.1)">✈</div><div class="consent-info"><div class="consent-name">TripIt</div><div class="consent-scope">Reads: Trip history · Writes: Transaction records</div></div><div class="api-status"><div class="api-dot pending"></div><span style="color:var(--goldLt)">Ready to connect</span></div></div>
+          <div class="consent-item"><div class="consent-platform" style="background:rgba(56,99,177,0.1)">🛫</div><div class="consent-info"><div class="consent-name">Alaska Airlines</div><div class="consent-scope">Reads: Seat prefs, meal code, KTN, loyalty</div></div><div class="api-status"><div class="api-dot pending"></div><span style="color:var(--goldLt)">Ready to connect</span></div></div>
+          <div class="consent-item"><div class="consent-platform" style="background:rgba(201,151,58,0.1)">🏢</div><div class="consent-info"><div class="consent-name">Navan (Corp context only)</div><div class="consent-scope">Business UUID context only — personal data excluded</div></div><div class="api-status"><div class="api-dot pending"></div><span style="color:var(--goldLt)">Ready to connect</span></div></div>
+        </div>
+      </section>
+
+      <!-- API -->
+      <section class="section" id="section-api">
+        <div class="section-header">
+          <div class="section-icon" style="background:rgba(56,99,177,0.1)">⚡</div>
+          <div><div class="section-title">API &amp; Webhooks</div><div class="section-subtitle">UUID-anchored REST API · AWS Lambda · Aurora PostgreSQL 16.4</div></div>
+        </div>
+        <div class="form-sub-title">Live Endpoints</div>
+        <div class="consent-list">
+          <div class="consent-item"><div class="consent-info"><div class="consent-name" style="font-family:'DM Mono',monospace;font-size:12px">GET /api/v1/profile/{uuid}</div><div class="consent-scope">Full profile payload</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Live</span></div></div>
+          <div class="consent-item"><div class="consent-info"><div class="consent-name" style="font-family:'DM Mono',monospace;font-size:12px">PUT /api/v1/profile/{uuid}</div><div class="consent-scope">Update any module</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Live</span></div></div>
+          <div class="consent-item"><div class="consent-info"><div class="consent-name" style="font-family:'DM Mono',monospace;font-size:12px">POST /api/v1/transactions/{uuid}</div><div class="consent-scope">Booking confirmation webhook</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Live</span></div></div>
+          <div class="consent-item"><div class="consent-info"><div class="consent-name" style="font-family:'DM Mono',monospace;font-size:12px">GET/POST /api/v1/profile/{uuid}/bleisure</div><div class="consent-scope">Bleisure context switch</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Live</span></div></div>
+        </div>
+        <div class="form-divider"></div>
+        <div class="form-sub-title">Your UUID</div>
+        <div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--tealLt);background:var(--card);padding:12px;border-radius:6px;border:1px solid var(--border)" id="api-uuid-display">—</div>
+      </section>
+
+    </div>
+  </main>
 </div>
-<nav class="nav">
-<div class="nav-section">Overview</div>
-<button class="nav-item active" onclick="showSection('overview',this)"><span class="nav-dot"></span>Dashboard</button>
-<div class="nav-section">Identity Modules</div>
-<button class="nav-item" onclick="showSection('identity',this)"><span class="nav-dot"></span>Identity &amp; Documents<span class="nav-badge">1</span></button>
-<button class="nav-item" onclick="showSection('preferences',this)"><span class="nav-dot"></span>Seat &amp; Cabin Prefs</button>
-<button class="nav-item" onclick="showSection('meals',this)"><span class="nav-dot"></span>Meal &amp; Dietary</button>
-<button class="nav-item" onclick="showSection('loyalty',this)"><span class="nav-dot"></span>Loyalty Programs</button>
-<button class="nav-item" onclick="showSection('payment',this)"><span class="nav-dot"></span>Payment &amp; Policy<span class="nav-alert">corp</span></button>
-<button class="nav-item" onclick="showSection('trips',this)"><span class="nav-dot"></span>Trip History</button>
-<button class="nav-item" onclick="showSection('family',this)"><span class="nav-dot"></span>Family Profiles</button>
-<div class="nav-section">Platform</div>
-<button class="nav-item" onclick="showSection('consent',this)"><span class="nav-dot"></span>Consent &amp; Integrations</button>
-<button class="nav-item" onclick="showSection('api',this)"><span class="nav-dot"></span>API &amp; Webhooks</button>
-</nav>
-<div class="sidebar-footer">
-<div class="traveler-row"><div class="traveler-avatar">RP</div><div><div class="traveler-name">Rommel</div><div class="traveler-tier">★ Premium Member</div></div></div>
-</div>
-</aside>
-<main class="main">
-<div class="topbar">
-<div class="topbar-title" id="page-title">Dashboard</div>
-<div class="bleisure-toggle">
-<span class="bleisure-label leisure" id="lbl-leisure">Leisure</span>
-<label class="toggle-switch"><input type="checkbox" id="bleisure-input" onchange="toggleBleisure(this)"><div class="toggle-track"><div class="toggle-thumb"></div></div></label>
-<span class="bleisure-label business" id="lbl-business">Business</span>
-</div>
-<div class="bleisure-context-pill leisure" id="context-pill">Personal Mode</div>
-<div class="topbar-actions">
-<button class="topbar-btn">Share Profile</button>
-<button class="topbar-btn primary">Save Changes</button>
-</div>
-</div>
-<div class="content">
-<section class="section active" id="section-overview">
-<div class="alerts-bar"><span class="alert-icon">⚠</span><span class="alert-text">Your <strong>US Passport</strong> expires in 142 days. International bookings may be affected.</span><span class="alert-action" onclick="showSection('identity',document.querySelector('[onclick*=identity]'))">Update now →</span></div>
-<div class="overview-hero">
-<div class="hero-stat teal"><div class="stat-value">7</div><div class="stat-label">Identity Modules</div><div class="stat-sub">5 of 7 complete</div></div>
-<div class="hero-stat gold"><div class="stat-value">142</div><div class="stat-label">Days to Passport Expiry</div><div class="stat-sub warn">Renewal recommended</div></div>
-<div class="hero-stat green"><div class="stat-value">12</div><div class="stat-label">Trips This Year</div><div class="stat-sub">Last: IAD → LHR</div></div>
-<div class="hero-stat teal"><div class="stat-value">4</div><div class="stat-label">Active Integrations</div><div class="stat-sub">TripIt, Alaska, Navan +1</div></div>
-</div>
-<div class="form-sub-title">Identity Modules</div>
-<div class="modules-grid">
-<div class="module-card partial" onclick="showSection('identity',document.querySelector('[onclick*=identity]'))"><div class="module-header"><div class="module-icon gold"></div><span class="module-status status-partial">Partial</span></div><div class="module-name">Identity &amp; Documents</div><div class="module-desc">Passport, KTN, TSA PreCheck, visas, and government IDs</div><div class="module-items"><span class="module-tag filled">Passport</span><span class="module-tag filled">KTN</span><span class="module-tag filled">TSA PreCheck</span><span class="module-tag">Visa US B1</span></div></div>
-<div class="module-card complete" onclick="showSection('preferences',document.querySelector('[onclick*=preferences]'))"><div class="module-header"><div class="module-icon teal">💺</div><span class="module-status status-complete">Complete</span></div><div class="module-name">Seat &amp; Cabin Preferences</div><div class="module-desc">Seat position, cabin class, extra legroom, accessibility needs</div><div class="module-items"><span class="module-tag filled">Aisle</span><span class="module-tag filled">Exit Row</span><span class="module-tag filled">Business Class</span></div></div>
-<div class="module-card complete" onclick="showSection('meals',document.querySelector('[onclick*=meals]'))"><div class="module-header"><div class="module-icon green">🍽</div><span class="module-status status-complete">Complete</span></div><div class="module-name">Meal &amp; Dietary</div><div class="module-desc">Meal codes, allergies, dietary restrictions, beverage preferences</div><div class="module-items"><span class="module-tag filled">HNML</span><span class="module-tag filled">No shellfish</span><span class="module-tag filled">Halal option</span></div></div>
-<div class="module-card complete" onclick="showSection('loyalty',document.querySelector('[onclick*=loyalty]'))"><div class="module-header"><div class="module-icon gold">✦</div><span class="module-status status-complete">Complete</span></div><div class="module-name">Loyalty Programs</div><div class="module-desc">Airline, hotel, and car rental loyalty memberships and tiers</div><div class="module-items"><span class="module-tag filled">UA MileagePlus</span><span class="module-tag filled">Marriott Bonvoy</span><span class="module-tag filled">Hertz Gold</span></div></div>
-<div class="module-card partial" onclick="showSection('payment',document.querySelector('[onclick*=payment]'))"><div class="module-header"><div class="module-icon blue">💳</div><span class="module-status status-partial">Partial</span></div><div class="module-name">Payment &amp; Corporate Policy</div><div class="module-desc">Payment preferences, expense policy, cost center, approval flows</div><div class="module-items"><span class="module-tag filled">Chase Sapphire</span><span class="module-tag">Corp Policy</span><span class="module-tag">Cost Center</span></div></div>
-<div class="module-card complete"><div class="module-header"><div class="module-icon purple">⇄</div><span class="module-status status-complete">Active</span></div><div class="module-name">Bleisure Context</div><div class="module-desc">Dual-context UUID — real-time switch between personal and business identity</div><div class="module-items"><span class="module-tag filled">Personal UUID</span><span class="module-tag filled">Corp UUID</span><span class="module-tag filled">Auto-switch</span></div></div>
-<div class="module-card complete" onclick="showSection('trips',document.querySelector('[onclick*=trips]'))"><div class="module-header"><div class="module-icon slate">📋</div><span class="module-status status-complete">Active</span></div><div class="module-name">Trip History &amp; Vault</div><div class="module-desc">All past bookings, PNRs, itinerary records, and transaction history</div><div class="module-items"><span class="module-tag filled">12 trips 2024</span><span class="module-tag filled">PNR vault</span><span class="module-tag filled">Webhook active</span></div></div>
-</div>
-</section>
-<section class="section" id="section-identity">
-<div class="section-header"><div class="section-icon" style="background:rgba(201,151,58,0.1)"></div><div><div class="section-title">Identity &amp; Documents</div><div class="section-subtitle">IATA OneOrder Module 1 — Stored encrypted, consent-gated</div></div></div>
-<div class="alerts-bar"><span class="alert-icon">⚠</span><span class="alert-text">US Passport expires <strong>Sep 2, 2025</strong> — 142 days remaining.</span></div>
-<div class="doc-grid" style="margin-bottom:24px">
-<div class="doc-card expiring"><span class="doc-expiry-flag flag-warn">Expiring Soon</span><div class="doc-type">Passport</div><div class="doc-name">United States</div><div class="doc-detail">No. XXXXXXXXX</div><div style="font-size:11px;color:var(--goldLt);margin-top:8px">Expires: Sep 2, 2025</div></div>
-<div class="doc-card"><span class="doc-expiry-flag flag-ok">Valid</span><div class="doc-type">Known Traveler Number</div><div class="doc-name">TSA PreCheck</div><div class="doc-detail" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--tealLt)">KTN-XXXXXXXX</div><div style="font-size:11px;color:var(--textMid);margin-top:8px">Expires: Mar 15, 2028</div></div>
-<div class="doc-card"><span class="doc-expiry-flag flag-ok">Valid</span><div class="doc-type">Global Entry</div><div class="doc-name">US CBP Program</div><div class="doc-detail" style="font-family:'DM Mono',monospace;font-size:13px;color:var(--tealLt)">GE-XXXXXXXX</div><div style="font-size:11px;color:var(--textMid);margin-top:8px">Expires: Mar 15, 2028</div></div>
-<div class="add-card"><div class="add-plus">+</div>Add Document</div>
-</div>
-<div class="form-divider"></div>
-<div class="form-sub-title">Personal Identity</div>
-<div class="form-grid three">
-<div class="form-group"><label class="form-label">Legal First Name</label><input class="form-input" type="text" value="Rommel" placeholder="As on passport"></div>
-<div class="form-group"><label class="form-label">Legal Middle Name</label><input class="form-input" type="text" placeholder="Optional"></div>
-<div class="form-group"><label class="form-label">Legal Last Name</label><input class="form-input" type="text" placeholder="As on passport"></div>
-</div>
-<div class="form-grid">
-<div class="form-group"><label class="form-label">Date of Birth</label><input class="form-input" type="date"></div>
-<div class="form-group"><label class="form-label">Nationality</label><select class="form-select"><option>United States</option><option>Philippines</option></select></div>
-<div class="form-group"><label class="form-label">Gender (as on travel docs)</label><select class="form-select"><option>Male</option><option>Female</option><option>X / Unspecified</option></select></div>
-<div class="form-group"><label class="form-label">Home Airport</label><input class="form-input" type="text" value="IAD — Washington Dulles"></div>
-</div>
-</section>
-<section class="section" id="section-preferences">
-<div class="section-header"><div class="section-icon" style="background:rgba(13,148,136,0.1)">💺</div><div><div class="section-title">Seat &amp; Cabin Preferences</div><div class="section-subtitle">IATA OneOrder Module 2 — Pre-filled at checkout on integrated platforms</div></div></div>
-<div class="form-sub-title">Cabin &amp; Seat</div>
-<div class="form-grid">
-<div class="form-group"><label class="form-label">Preferred Cabin — Domestic</label><select class="form-select"><option>Economy / Coach</option><option selected>Economy Plus</option><option>First Class</option></select></div>
-<div class="form-group"><label class="form-label">Preferred Cabin — International</label><select class="form-select"><option>Economy</option><option>Premium Economy</option><option selected>Business Class</option><option>First Class</option></select></div>
-<div class="form-group"><label class="form-label">Seat Position</label><select class="form-select"><option selected>Aisle</option><option>Window</option><option>No preference</option></select></div>
-<div class="form-group"><label class="form-label">Row Preference</label><select class="form-select"><option selected>Exit Row / Extra Legroom</option><option>Front of Cabin</option><option>No Preference</option></select></div>
-</div>
-<div class="form-divider"></div>
-<div class="form-sub-title">Special Requirements</div>
-<div class="pref-grid">
-<div class="pref-item"><span class="pref-label">Wheelchair assistance</span><span class="pref-value" style="color:var(--textDim)">Not required</span></div>
-<div class="pref-item"><span class="pref-label">Avoid last row</span><span class="pref-value">Yes</span></div>
-<div class="pref-item"><span class="pref-label">Avoid middle seats</span><span class="pref-value">Always</span></div>
-<div class="pref-item"><span class="pref-label">Bulkhead seat</span><span class="pref-value" style="color:var(--textDim)">No preference</span></div>
-</div>
-</section>
-<section class="section" id="section-meals">
-<div class="section-header"><div class="section-icon" style="background:rgba(34,200,138,0.1)">🍽</div><div><div class="section-title">Meal &amp; Dietary</div><div class="section-subtitle">IATA OneOrder Module 3 — IATA SSIM meal codes supported</div></div></div>
-<div class="form-sub-title">IATA Meal Code</div>
-<div class="form-grid">
-<div class="form-group"><label class="form-label">Primary Meal Code</label><select class="form-select"><option>AVML — Asian Vegetarian</option><option>GFML — Gluten Free</option><option selected>HNML — Hindu Non-Veg</option><option>KSML — Kosher Meal</option><option>MOML — Muslim Meal</option><option>VGML — Vegan</option><option>VLML — Vegetarian Lacto-Ovo</option></select></div>
-<div class="form-group"><label class="form-label">Beverage Preference</label><select class="form-select"><option selected>Non-alcoholic only</option><option>Alcohol permitted</option><option>No preference</option></select></div>
-</div>
-<div class="form-divider"></div>
-<div class="form-sub-title">Allergies &amp; Restrictions</div>
-<div class="pref-grid">
-<div class="pref-item"><span class="pref-label">Shellfish</span><span class="pref-value" style="color:var(--red)">Allergy</span></div>
-<div class="pref-item"><span class="pref-label">Pork / Lard</span><span class="pref-value" style="color:var(--red)">Avoid</span></div>
-<div class="pref-item"><span class="pref-label">Tree nuts</span><span class="pref-value" style="color:var(--goldLt)">Preference</span></div>
-<div class="pref-item"><span class="pref-label">Alcohol</span><span class="pref-value" style="color:var(--goldLt)">Avoid</span></div>
-</div>
-</section>
-<section class="section" id="section-loyalty">
-<div class="section-header"><div class="section-icon" style="background:rgba(201,151,58,0.1)">✦</div><div><div class="section-title">Loyalty Programs</div><div class="section-subtitle">IATA OneOrder Module 4 — Auto-applied at booking on integrated platforms</div></div></div>
-<div class="form-sub-title">Airlines</div>
-<div class="loyalty-grid" style="margin-bottom:24px">
-<div class="loyalty-card"><div class="loyalty-airline">United Airlines</div><div class="loyalty-prog">MileagePlus</div><div class="loyalty-number">MP-XXXXXXXX</div><div class="loyalty-tier tier-gold">Gold Status</div></div>
-<div class="loyalty-card"><div class="loyalty-airline">American Airlines</div><div class="loyalty-prog">AAdvantage</div><div class="loyalty-number">AA-XXXXXXXX</div><div class="loyalty-tier tier-silver">Member</div></div>
-<div class="loyalty-card"><div class="loyalty-airline">Alaska Airlines</div><div class="loyalty-prog">Mileage Plan</div><div class="loyalty-number">AS-XXXXXXXX</div><div class="loyalty-tier tier-silver">Member</div></div>
-<div class="add-card" style="min-height:90px"><div class="add-plus">+</div>Add Airline</div>
-</div>
-<div class="form-sub-title">Hotels</div>
-<div class="loyalty-grid" style="margin-bottom:24px">
-<div class="loyalty-card"><div class="loyalty-airline">Marriott</div><div class="loyalty-prog">Bonvoy</div><div class="loyalty-number">MR-XXXXXXXX</div><div class="loyalty-tier tier-gold">Gold Elite</div></div>
-<div class="loyalty-card"><div class="loyalty-airline">Hilton</div><div class="loyalty-prog">Honors</div><div class="loyalty-number">HH-XXXXXXXX</div><div class="loyalty-tier tier-silver">Member</div></div>
-<div class="add-card" style="min-height:90px"><div class="add-plus">+</div>Add Hotel</div>
-</div>
-</section>
-<section class="section" id="section-payment">
-<div class="section-header"><div class="section-icon" style="background:rgba(56,99,177,0.1)">💳</div><div><div class="section-title">Payment &amp; Corporate Policy</div><div class="section-subtitle">IATA OneOrder Module 5 — Context-aware: switches with bleisure toggle</div></div></div>
-<div id="payment-personal">
-<div class="form-sub-title">Personal Payment</div>
-<div class="form-grid">
-<div class="form-group"><label class="form-label">Preferred Card</label><input class="form-input" type="text" value="Chase Sapphire Reserve ···· 4521" readonly></div>
-<div class="form-group"><label class="form-label">Airport Membership</label><input class="form-input" type="text" value="CLEAR + TSA PreCheck"></div>
-</div>
-</div>
-<div id="payment-corp" style="display:none">
-<div class="form-sub-title">Corporate Profile</div>
-<div class="form-grid">
-<div class="form-group"><label class="form-label">Company Name</label><input class="form-input" type="text" value="Uniworld Inc."></div>
-<div class="form-group"><label class="form-label">Corporate Card</label><input class="form-input" type="text" placeholder="AMEX Corporate ···· —"></div>
-<div class="form-group"><label class="form-label">Cost Center</label><input class="form-input" type="text" placeholder="e.g. CC-3021"></div>
-<div class="form-group"><label class="form-label">Travel Policy</label><select class="form-select"><option selected>Self-managed (founder)</option><option>Economy only — domestic</option><option>Business class — 6hr+ international</option></select></div>
-</div>
-</div>
-</section>
-<section class="section" id="section-trips">
-<div class="section-header"><div class="section-icon" style="background:rgba(138,151,168,0.1)">📋</div><div><div class="section-title">Trip History &amp; Vault</div><div class="section-subtitle">IATA OneOrder Module 7 — Populated via webhook from integrated platforms</div></div></div>
-<div class="trip-list">
-<div class="trip-card"><div class="trip-date"><div class="trip-date-month">Dec</div><div class="trip-date-day">14</div></div><div class="trip-divider"></div><div class="trip-route"><div class="trip-cities">IAD <span class="trip-arrow">→</span> LHR <span class="trip-arrow">→</span> IAD</div><div class="trip-meta">United Airlines UA-921 · Business · PNR: ABCXYZ</div></div><span class="trip-badge bleisure">Bleisure</span></div>
-<div class="trip-card"><div class="trip-date"><div class="trip-date-month">Nov</div><div class="trip-date-day">08</div></div><div class="trip-divider"></div><div class="trip-route"><div class="trip-cities">IAD <span class="trip-arrow">→</span> ORD</div><div class="trip-meta">American Airlines AA-224 · Economy Plus · PNR: DEFGHI</div></div><span class="trip-badge business">Business</span></div>
-<div class="trip-card"><div class="trip-date"><div class="trip-date-month">Oct</div><div class="trip-date-day">22</div></div><div class="trip-divider"></div><div class="trip-route"><div class="trip-cities">IAD <span class="trip-arrow">→</span> MIA <span class="trip-arrow">→</span> IAD</div><div class="trip-meta">American Airlines AA-771 · Economy · PNR: JKLMNO</div></div><span class="trip-badge leisure">Leisure</span></div>
-</div>
-</section>
-<section class="section" id="section-family">
-<div class="section-header"><div class="section-icon" style="background:rgba(120,80,180,0.1)">👨‍👩‍👧‍👦</div><div><div class="section-title">Family Profiles</div><div class="section-subtitle">Linked traveler identities — consent and documents managed separately</div></div></div>
-<div class="family-grid">
-<div class="family-card"><div class="family-avatar" style="background:rgba(13,148,136,0.15);color:var(--tealLt)">👩</div><div class="family-name">Partner / Spouse</div><div class="family-rel">Primary traveler link</div><div class="family-docs">Passport · KTN linked</div></div>
-<div class="family-card"><div class="family-avatar" style="background:rgba(201,151,58,0.15);color:var(--goldLt)">🧒</div><div class="family-name">Child Profile 1</div><div class="family-rel">Minor — supervised consent</div><div class="family-docs">Passport linked</div></div>
-<div class="add-card"><div class="add-plus">+</div>Link Family Member</div>
-</div>
-</section>
-<section class="section" id="section-consent">
-<div class="section-header"><div class="section-icon" style="background:rgba(13,148,136,0.1)">🔒</div><div><div class="section-title">Consent &amp; Integrations</div><div class="section-subtitle">GDPR-aligned consent engine — you control exactly what each platform sees</div></div></div>
-<div class="consent-list">
-<div class="consent-item"><div class="consent-platform" style="background:rgba(13,148,136,0.1)">✈</div><div class="consent-info"><div class="consent-name">TripIt</div><div class="consent-scope">Reads: Trip history · Writes: Transaction records to vault</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Connected</span></div></div>
-<div class="consent-item"><div class="consent-platform" style="background:rgba(56,99,177,0.1)">🛫</div><div class="consent-info"><div class="consent-name">Alaska Airlines</div><div class="consent-scope">Reads: Seat prefs, meal code, KTN, loyalty · Writes: Booking confirmation webhook</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Connected</span></div></div>
-<div class="consent-item"><div class="consent-platform" style="background:rgba(201,151,58,0.1)">🏢</div><div class="consent-info"><div class="consent-name">Navan (Corp context only)</div><div class="consent-scope">Reads: Business UUID context only — personal data excluded</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Connected</span></div></div>
-<div class="consent-item"><div class="consent-platform" style="background:rgba(120,80,180,0.1)">📱</div><div class="consent-info"><div class="consent-name">App in the Air</div><div class="consent-scope">Reads: Flight preferences, seat, loyalty · No write access</div></div><div class="api-status"><div class="api-dot pending"></div><span style="color:var(--goldLt)">Pending auth</span></div></div>
-</div>
-</section>
-<section class="section" id="section-api">
-<div class="section-header"><div class="section-icon" style="background:rgba(56,99,177,0.1)">⚡</div><div><div class="section-title">API &amp; Webhooks</div><div class="section-subtitle">UUID-anchored REST API · AWS Lambda · Aurora PostgreSQL 16.4</div></div></div>
-<div class="form-sub-title">API Credentials</div>
-<div class="form-grid">
-<div class="form-group"><label class="form-label">API Endpoint</label><input class="form-input" type="text" value="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod" readonly></div>
-<div class="form-group"><label class="form-label">Environment</label><select class="form-select"><option selected>Production</option><option>Staging</option></select></div>
-</div>
-<div class="form-divider"></div>
-<div class="form-sub-title">Live Endpoints</div>
-<div class="consent-list">
-<div class="consent-item"><div class="consent-info"><div class="consent-name" style="font-family:'DM Mono',monospace;font-size:12px">GET /api/v1/profile/{uuid}</div><div class="consent-scope">Full profile payload — traveler or platform access</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Live</span></div></div>
-<div class="consent-item"><div class="consent-info"><div class="consent-name" style="font-family:'DM Mono',monospace;font-size:12px">POST /api/v1/transactions/{uuid}</div><div class="consent-scope">Booking confirmation webhook from integrated platforms</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Live</span></div></div>
-<div class="consent-item"><div class="consent-info"><div class="consent-name" style="font-family:'DM Mono',monospace;font-size:12px">GET/POST /api/v1/profile/{uuid}/bleisure</div><div class="consent-scope">Bleisure context — read and switch active UUID context</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Live</span></div></div>
-<div class="consent-item"><div class="consent-info"><div class="consent-name" style="font-family:'DM Mono',monospace;font-size:12px">GET /health</div><div class="consent-scope">System health check — confirmed operational</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Live</span></div></div>
-</div>
-</section>
-</div>
-</main>
-</div>
+
 <script>
-function showSection(id,btn){
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  document.getElementById('section-'+id).classList.add('active');
-  if(btn)btn.classList.add('active');
-  const titles={overview:'Dashboard',identity:'Identity & Documents',preferences:'Seat & Cabin Preferences',meals:'Meal & Dietary',loyalty:'Loyalty Programs',payment:'Payment & Corporate Policy',trips:'Trip History',family:'Family Profiles',consent:'Consent & Integrations',api:'API & Webhooks'};
-  document.getElementById('page-title').textContent=titles[id]||'UniProfile';
-  document.querySelector('.main').scrollTop=0;
+const API = "https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
+const COGNITO_DOMAIN = "https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
+const CLIENT_ID = "2heljmdli4f9cv2i4m0i020mfc";
+const REDIRECT_URI = window.location.origin + window.location.pathname;
+
+let accessToken = null;
+let userUuid = null;
+let profileData = null;
+let currentSection = 'overview';
+
+// ── AUTH ──────────────────────────────────────────────────────
+function getLoginUrl() {
+  return `${COGNITO_DOMAIN}/login?client_id=${CLIENT_ID}&response_type=token&scope=email+openid+profile&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
 }
-function toggleBleisure(input){
-  const pill=document.getElementById('context-pill');
-  const lblL=document.getElementById('lbl-leisure');
-  const lblB=document.getElementById('lbl-business');
-  const personal=document.getElementById('payment-personal');
-  const corp=document.getElementById('payment-corp');
-  if(input.checked){
-    pill.textContent='Business Mode';pill.className='bleisure-context-pill business';
-    lblL.classList.add('inactive');lblL.classList.remove('leisure');
-    lblB.classList.add('active');
-    if(personal)personal.style.display='none';
-    if(corp)corp.style.display='block';
-  }else{
-    pill.textContent='Personal Mode';pill.className='bleisure-context-pill leisure';
-    lblL.classList.remove('inactive');lblL.classList.add('leisure');
-    lblB.classList.remove('active');
-    if(personal)personal.style.display='block';
-    if(corp)corp.style.display='none';
+
+function logout() {
+  localStorage.removeItem('up_token');
+  localStorage.removeItem('up_uuid');
+  accessToken = null;
+  userUuid = null;
+  window.location.href = `${COGNITO_DOMAIN}/logout?client_id=${CLIENT_ID}&logout_uri=${encodeURIComponent(REDIRECT_URI)}`;
+}
+
+function parseTokenFromHash() {
+  const hash = window.location.hash.substring(1);
+  const params = new URLSearchParams(hash);
+  return params.get('access_token');
+}
+
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+// ── API CALLS ──────────────────────────────────────────────────
+async function apiGet(path) {
+  const res = await fetch(`${API}${path}`, {
+    headers: { 'Authorization': `Bearer ${accessToken}` }
+  });
+  return res.json();
+}
+
+async function apiPut(path, body) {
+  const res = await fetch(`${API}${path}`, {
+    method: 'PUT',
+    headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+// ── LOAD PROFILE ───────────────────────────────────────────────
+async function loadProfile() {
+  try {
+    const data = await apiGet(`/api/v1/profile/${userUuid}`);
+    if (data.error) { showToast('Error loading profile: ' + data.error, true); return; }
+    profileData = data;
+    renderProfile(data);
+  } catch(e) {
+    showToast('Network error loading profile', true);
   }
 }
+
+function renderProfile(data) {
+  // UUID and completeness
+  document.getElementById('uuid-display').textContent = data.uuid;
+  document.getElementById('api-uuid-display').textContent = data.uuid;
+  document.getElementById('comp-pct').textContent = data.profile_completeness + '%';
+  document.getElementById('comp-bar').style.width = data.profile_completeness + '%';
+
+  // Overview stats
+  document.getElementById('stat-completeness').textContent = data.profile_completeness + '%';
+  document.getElementById('stat-comp-sub').textContent = data.profile_completeness >= 80 ? 'Profile strong' : 'Add more modules';
+  document.getElementById('stat-trips').textContent = data.trips_count || '0';
+  document.getElementById('stat-trips-sub').textContent = 'In transaction vault';
+  document.getElementById('stat-context').textContent = data.active_context === 'CORPORATE' ? 'Biz' : 'Personal';
+  document.getElementById('stat-context-sub').textContent = data.active_context || 'PERSONAL';
+  document.getElementById('stat-modules-sub').textContent = `${data.profile_completeness >= 80 ? '6' : '4'} of 7 complete`;
+
+  // Profile summary
+  const id = data.identity;
+  if (id) {
+    document.getElementById('profile-summary').innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px">
+          <div style="font-size:10px;color:var(--textMid);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Name</div>
+          <div style="font-size:15px;color:var(--white)">${id.legal_first || '—'} ${id.legal_last || ''}</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px">
+          <div style="font-size:10px;color:var(--textMid);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Home Airport</div>
+          <div style="font-size:15px;color:var(--white)">${id.home_airport || '—'}</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px">
+          <div style="font-size:10px;color:var(--textMid);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Nationality</div>
+          <div style="font-size:15px;color:var(--white)">${id.nationality || '—'}</div>
+        </div>
+      </div>`;
+  }
+
+  // Identity fields
+  if (id) {
+    document.getElementById('legal_first').value = id.legal_first || '';
+    document.getElementById('legal_middle').value = id.legal_middle || '';
+    document.getElementById('legal_last').value = id.legal_last || '';
+    document.getElementById('dob').value = id.dob ? id.dob.split('T')[0] : '';
+    document.getElementById('nationality').value = id.nationality || '';
+    document.getElementById('gender_code').value = id.gender_code || 'M';
+    document.getElementById('home_airport').value = id.home_airport || '';
+  }
+
+  // Seat prefs
+  const seat = data.seat_preferences;
+  if (seat) {
+    document.getElementById('cabin_domestic').value = seat.cabin_domestic || 'ECONOMY';
+    document.getElementById('cabin_international').value = seat.cabin_international || 'ECONOMY';
+    document.getElementById('seat_position').value = seat.seat_position || 'AISLE';
+    document.getElementById('row_preference').value = seat.row_preference || 'NO_PREF';
+    document.getElementById('hotel_room_type').value = seat.hotel_room_type || 'KING';
+    document.getElementById('hotel_floor_pref').value = seat.hotel_floor_pref || 'NO_PREF';
+    document.getElementById('pref-ams').textContent = seat.avoid_middle_seats ? 'Yes' : 'No';
+    document.getElementById('pref-exit').textContent = seat.row_preference === 'EXIT_ROW' ? 'Yes' : 'No';
+  }
+
+  // Meal prefs
+  const meal = data.meal_preferences;
+  if (meal) {
+    document.getElementById('primary_meal_code').value = meal.primary_meal_code || 'HNML';
+    document.getElementById('beverage_pref').value = meal.beverage_pref || 'NON_ALC';
+    const allergies = meal.allergies;
+    document.getElementById('allergies').value = Array.isArray(allergies) ? allergies.join(', ') : '';
+    const avoid = meal.avoid_items;
+    document.getElementById('avoid_items').value = Array.isArray(avoid) ? avoid.join(', ') : '';
+  }
+
+  // Loyalty
+  const loyalty = data.loyalty_programs || [];
+  const loyaltyEl = document.getElementById('loyalty-list');
+  if (loyalty.length > 0) {
+    loyaltyEl.innerHTML = loyalty.map(l => `
+      <div class="loyalty-card">
+        <div class="loyalty-airline">${l.provider_name}</div>
+        <div class="loyalty-prog">${l.program_name || ''}</div>
+        <div class="loyalty-number">${l.member_number}</div>
+        <div class="loyalty-tier">${l.tier_status || 'Member'}</div>
+      </div>`).join('') + `<div class="add-card"><div class="add-plus">+</div>Add Program</div>`;
+  } else {
+    loyaltyEl.innerHTML = `<div class="add-card" style="grid-column:1/-1"><div class="add-plus">+</div>Add your first loyalty program</div>`;
+  }
+
+  // Traveler name in sidebar
+  if (id && id.legal_first) {
+    document.getElementById('traveler-name').textContent = `${id.legal_first} ${id.legal_last || ''}`.trim();
+    document.getElementById('traveler-initials').textContent = (id.legal_first[0] + (id.legal_last ? id.legal_last[0] : '')).toUpperCase();
+  }
+}
+
+// ── SAVE ───────────────────────────────────────────────────────
+async function saveCurrentSection() {
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  let module, data;
+
+  if (currentSection === 'identity') {
+    module = 'identity';
+    data = {
+      legal_first:  document.getElementById('legal_first').value,
+      legal_middle: document.getElementById('legal_middle').value,
+      legal_last:   document.getElementById('legal_last').value,
+      dob:          document.getElementById('dob').value,
+      nationality:  document.getElementById('nationality').value,
+      gender_code:  document.getElementById('gender_code').value,
+      home_airport: document.getElementById('home_airport').value.toUpperCase(),
+    };
+  } else if (currentSection === 'preferences') {
+    module = 'seat_preferences';
+    data = {
+      cabin_domestic:      document.getElementById('cabin_domestic').value,
+      cabin_international: document.getElementById('cabin_international').value,
+      seat_position:       document.getElementById('seat_position').value,
+      row_preference:      document.getElementById('row_preference').value,
+      hotel_room_type:     document.getElementById('hotel_room_type').value,
+      hotel_floor_pref:    document.getElementById('hotel_floor_pref').value,
+      avoid_middle_seats:  true,
+    };
+  } else if (currentSection === 'meals') {
+    module = 'meal_preferences';
+    const allergiesRaw = document.getElementById('allergies').value;
+    const avoidRaw = document.getElementById('avoid_items').value;
+    data = {
+      primary_meal_code: document.getElementById('primary_meal_code').value,
+      beverage_pref:     document.getElementById('beverage_pref').value,
+      allergies:  allergiesRaw ? allergiesRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
+      avoid_items: avoidRaw ? avoidRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
+    };
+  } else {
+    showToast('Switch to Identity, Seat, or Meal tab to save', false);
+    btn.disabled = false;
+    btn.textContent = 'Save Changes';
+    return;
+  }
+
+  try {
+    const result = await apiPut(`/api/v1/profile/${userUuid}`, { module, data });
+    if (result.success) {
+      showToast('Saved successfully');
+      await loadProfile();
+    } else {
+      showToast('Save failed: ' + (result.error || 'unknown error'), true);
+    }
+  } catch(e) {
+    showToast('Network error saving', true);
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Save Changes';
+}
+
+// ── BLEISURE ───────────────────────────────────────────────────
+async function toggleBleisure(input) {
+  const pill = document.getElementById('context-pill');
+  const lblL = document.getElementById('lbl-leisure');
+  const lblB = document.getElementById('lbl-business');
+  const personal = document.getElementById('payment-personal');
+  const corp = document.getElementById('payment-corp');
+  const context = input.checked ? 'CORPORATE' : 'PERSONAL';
+
+  try {
+    await fetch(`${API}/api/v1/profile/${userUuid}/bleisure`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ context })
+    });
+  } catch(e) {}
+
+  if (input.checked) {
+    pill.textContent = 'Business Mode'; pill.className = 'bleisure-context-pill business';
+    lblL.className = 'bleisure-label leisure inactive';
+    lblB.className = 'bleisure-label business active';
+    if (personal) personal.style.display = 'none';
+    if (corp) corp.style.display = 'block';
+  } else {
+    pill.textContent = 'Personal Mode'; pill.className = 'bleisure-context-pill leisure';
+    lblL.className = 'bleisure-label leisure';
+    lblB.className = 'bleisure-label business';
+    if (personal) personal.style.display = 'block';
+    if (corp) corp.style.display = 'none';
+  }
+}
+
+// ── NAV ────────────────────────────────────────────────────────
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  currentSection = id;
+  const titles = { overview:'Dashboard', identity:'Identity & Documents', preferences:'Seat & Cabin Preferences', meals:'Meal & Dietary', loyalty:'Loyalty Programs', payment:'Payment & Corporate Policy', trips:'Trip History', consent:'Consent & Integrations', api:'API & Webhooks' };
+  document.getElementById('page-title').textContent = titles[id] || 'UniProfile';
+  document.querySelector('.main').scrollTop = 0;
+}
+
+// ── INIT ───────────────────────────────────────────────────────
+async function init() {
+  // Set login button URL
+  document.getElementById('login-btn').href = getLoginUrl();
+
+  // Check for token in URL hash (after Cognito redirect)
+  const hashToken = parseTokenFromHash();
+  if (hashToken) {
+    accessToken = hashToken;
+    localStorage.setItem('up_token', hashToken);
+    window.history.replaceState(null, '', window.location.pathname);
+  } else {
+    accessToken = localStorage.getItem('up_token');
+  }
+
+  if (!accessToken) {
+    document.getElementById('login-screen').style.display = 'flex';
+    return;
+  }
+
+  // Show loading
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('loading-screen').style.display = 'flex';
+
+  // Check stored UUID or fetch from API
+  userUuid = localStorage.getItem('up_uuid');
+
+  if (!userUuid) {
+    // Try to get UUID from API using token
+    try {
+      const res = await fetch(`${API}/api/v1/profile/me`, {
+        headers: { 'Authorization': `Bearer ${accessToken}` }
+      });
+      // If no /me endpoint, use known UUID for now
+      userUuid = 'c60b4632-2052-472e-8c6a-6d2e62b2d8f6';
+      localStorage.setItem('up_uuid', userUuid);
+    } catch(e) {
+      userUuid = 'c60b4632-2052-472e-8c6a-6d2e62b2d8f6';
+      localStorage.setItem('up_uuid', userUuid);
+    }
+  }
+
+  // Load profile
+  await loadProfile();
+
+  // Show app
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  document.getElementById('app').classList.add('visible');
+}
+
+init();
 </script>
 </body>
 </html>
