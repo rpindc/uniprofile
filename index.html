@@ -3,742 +3,499 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UniProfile — Traveler Identity</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<title>UniProfile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-:root{--navy:#0A1628;--navy2:#0F1F3D;--teal:#0D9488;--tealLt:#14B8A6;--tealDim:#0A6E66;--gold:#C9973A;--goldLt:#E5B96A;--white:#FFFFFF;--text:#E8E2D8;--textMid:#A8A098;--textDim:#6A6560;--red:#E05050;--green:#22C88A;--border:rgba(255,255,255,0.07);--borderM:rgba(255,255,255,0.12);--card:rgba(255,255,255,0.04);--cardHov:rgba(255,255,255,0.07);}
-*{margin:0;padding:0;box-sizing:border-box;}
-html,body{height:100%;background:var(--navy);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;}
-
-/* LOGIN SCREEN */
-.login-screen{display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:32px;}
-.login-card{background:var(--navy2);border:1px solid var(--border);border-radius:16px;padding:48px;text-align:center;max-width:400px;width:90%;}
-.login-logo{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:600;color:var(--white);margin-bottom:8px;}
-.login-sub{font-size:13px;color:var(--textMid);letter-spacing:1px;text-transform:uppercase;margin-bottom:32px;}
-.login-btn{display:block;width:100%;padding:14px;background:var(--teal);border:none;border-radius:8px;color:white;font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background 0.2s;text-decoration:none;text-align:center;}
-.login-btn:hover{background:var(--tealLt);}
-.login-note{font-size:11px;color:var(--textDim);margin-top:16px;}
-
-/* LOADING */
-.loading-screen{display:none;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px;}
-.loading-spinner{width:40px;height:40px;border:2px solid var(--border);border-top-color:var(--teal);border-radius:50%;animation:spin 0.8s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.loading-text{font-size:13px;color:var(--textMid);}
-
-/* TOAST */
-.toast{position:fixed;bottom:24px;right:24px;background:var(--teal);color:white;padding:12px 20px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.3s;z-index:1000;pointer-events:none;}
-.toast.show{opacity:1;}
-.toast.error{background:var(--red);}
-
-/* APP */
-.app{display:none;flex;height:100vh;overflow:hidden;}
-.app.visible{display:flex;}
-.sidebar{width:240px;min-width:240px;background:var(--navy2);border-right:1px solid var(--border);display:flex;flex-direction:column;}
-.sidebar-logo{padding:28px 24px 20px;border-bottom:1px solid var(--border);}
-.logo-mark{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
-.logo-circle{width:32px;height:32px;background:var(--teal);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:white;}
-.logo-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--white);}
-.logo-sub{font-size:10px;color:var(--textMid);letter-spacing:1.5px;text-transform:uppercase;padding-left:42px;}
-.uuid-badge{margin:16px 24px;background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px 12px;}
-.uuid-label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);margin-bottom:4px;}
-.uuid-value{font-family:'DM Mono',monospace;font-size:10px;color:var(--textMid);word-break:break-all;line-height:1.4;}
-.completeness{margin:0 24px 16px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:6px;}
-.comp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
-.comp-label{font-size:10px;color:var(--textMid);letter-spacing:0.5px;text-transform:uppercase;}
-.comp-pct{font-size:18px;font-weight:500;color:var(--goldLt);}
-.comp-bar-track{height:3px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;}
-.comp-bar-fill{height:100%;background:linear-gradient(90deg,var(--teal),var(--goldLt));border-radius:2px;transition:width 0.6s;}
-.nav{padding:8px 12px;flex:1;overflow-y:auto;}
-.nav-section{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--textDim);padding:12px 12px 4px;}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:6px;cursor:pointer;color:var(--textMid);font-size:13px;transition:all 0.15s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;}
-.nav-item:hover{background:var(--cardHov);color:var(--text);}
-.nav-item.active{background:rgba(13,148,136,0.15);color:var(--tealLt);}
-.nav-dot{width:6px;height:6px;border-radius:50%;background:var(--textDim);flex-shrink:0;}
-.nav-item.active .nav-dot{background:var(--teal);}
-.sidebar-footer{padding:16px 24px;border-top:1px solid var(--border);}
-.traveler-row{display:flex;align-items:center;gap:10px;}
-.traveler-avatar{width:32px;height:32px;border-radius:50%;background:var(--tealDim);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:white;flex-shrink:0;}
-.traveler-name{font-size:13px;color:var(--text);}
-.traveler-tier{font-size:10px;color:var(--gold);}
-.logout-btn{margin-top:8px;font-size:11px;color:var(--textDim);background:none;border:none;cursor:pointer;padding:0;font-family:'DM Sans',sans-serif;}
-.logout-btn:hover{color:var(--red);}
-.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
-.topbar{display:flex;align-items:center;padding:0 32px;height:64px;min-height:64px;border-bottom:1px solid var(--border);background:var(--navy);position:sticky;top:0;z-index:100;gap:16px;}
-.topbar-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;color:var(--white);flex:1;}
-.bleisure-toggle{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 14px;}
-.bleisure-label{font-size:11px;letter-spacing:0.5px;transition:color 0.2s;}
-.bleisure-label.leisure{color:var(--tealLt);}
-.bleisure-label.business{color:var(--textMid);}
-.bleisure-label.business.active{color:var(--goldLt);}
-.bleisure-label.leisure.inactive{color:var(--textMid);}
-.toggle-switch{position:relative;width:44px;height:24px;cursor:pointer;}
-.toggle-switch input{opacity:0;width:0;height:0;position:absolute;}
-.toggle-track{position:absolute;inset:0;background:var(--tealDim);border-radius:12px;transition:background 0.3s;}
-.toggle-switch input:checked ~ .toggle-track{background:var(--gold);}
-.toggle-thumb{position:absolute;width:18px;height:18px;background:white;border-radius:50%;top:3px;left:3px;transition:transform 0.3s;box-shadow:0 1px 4px rgba(0,0,0,0.3);}
-.toggle-switch input:checked ~ .toggle-track .toggle-thumb{transform:translateX(20px);}
-.bleisure-context-pill{font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:10px;font-weight:500;}
-.bleisure-context-pill.leisure{background:rgba(13,148,136,0.15);color:var(--tealLt);border:1px solid rgba(13,148,136,0.3);}
-.bleisure-context-pill.business{background:rgba(201,151,58,0.15);color:var(--goldLt);border:1px solid rgba(201,151,58,0.3);}
-.topbar-actions{display:flex;gap:8px;}
-.topbar-btn{padding:7px 16px;border-radius:6px;font-size:12px;cursor:pointer;border:1px solid var(--borderM);background:var(--card);color:var(--text);transition:all 0.15s;font-family:'DM Sans',sans-serif;}
-.topbar-btn:hover{background:var(--cardHov);}
-.topbar-btn.primary{background:var(--teal);border-color:var(--teal);color:white;}
-.topbar-btn.primary:hover{background:var(--tealLt);}
-.topbar-btn:disabled{opacity:0.5;cursor:not-allowed;}
-.content{padding:32px;flex:1;}
-.section{display:none;}
-.section.active{display:block;}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
-.form-grid.three{grid-template-columns:1fr 1fr 1fr;}
-.form-group{display:flex;flex-direction:column;gap:6px;}
-.form-label{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--textMid);}
-.form-input,.form-select{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;transition:border-color 0.15s;outline:none;-webkit-appearance:none;}
-.form-input:focus,.form-select:focus{border-color:var(--teal);}
-.form-input::placeholder{color:var(--textDim);}
-.form-select option{background:var(--navy2);}
-.form-divider{height:1px;background:var(--border);margin:24px 0;}
-.form-sub-title{font-size:12px;font-weight:500;color:var(--textMid);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:14px;}
-.section-header{display:flex;align-items:center;gap:14px;margin-bottom:24px;}
-.section-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
-.section-title{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;color:var(--white);}
-.section-subtitle{font-size:12px;color:var(--textMid);margin-top:2px;}
-.overview-hero{display:flex;gap:24px;margin-bottom:28px;}
-.hero-stat{flex:1;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 24px;position:relative;overflow:hidden;}
-.hero-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
-.hero-stat.teal::before{background:var(--teal);}
-.hero-stat.gold::before{background:var(--gold);}
-.hero-stat.green::before{background:var(--green);}
-.stat-value{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:600;color:var(--white);line-height:1;margin-bottom:4px;}
-.stat-label{font-size:11px;color:var(--textMid);letter-spacing:0.5px;}
-.stat-sub{font-size:11px;color:var(--tealLt);margin-top:4px;}
-.stat-sub.warn{color:var(--goldLt);}
-.alerts-bar{background:rgba(201,151,58,0.08);border:1px solid rgba(201,151,58,0.2);border-radius:8px;padding:12px 16px;margin-bottom:24px;display:flex;align-items:center;gap:10px;}
-.alert-icon{font-size:16px;flex-shrink:0;}
-.alert-text{font-size:12px;color:var(--goldLt);flex:1;}
-.pref-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.pref-item{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;}
-.pref-label{font-size:13px;color:var(--text);}
-.pref-value{font-size:12px;color:var(--tealLt);}
-.consent-list{display:flex;flex-direction:column;gap:12px;}
-.consent-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:center;gap:14px;}
-.consent-platform{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
-.consent-info{flex:1;}
-.consent-name{font-size:13px;font-weight:500;color:var(--white);}
-.consent-scope{font-size:11px;color:var(--textMid);margin-top:2px;}
-.api-status{display:flex;align-items:center;gap:6px;font-size:11px;}
-.api-dot{width:7px;height:7px;border-radius:50%;}
-.api-dot.live{background:var(--green);}
-.api-dot.pending{background:var(--goldLt);}
-.loyalty-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
-.loyalty-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;}
-.loyalty-airline{font-size:13px;font-weight:500;color:var(--white);margin-bottom:2px;}
-.loyalty-prog{font-size:11px;color:var(--textMid);margin-bottom:10px;}
-.loyalty-number{font-family:'DM Mono',monospace;font-size:12px;color:var(--tealLt);background:rgba(13,148,136,0.08);padding:5px 10px;border-radius:4px;letter-spacing:1px;margin-bottom:8px;}
-.loyalty-tier{font-size:10px;letter-spacing:0.8px;text-transform:uppercase;color:var(--goldLt);}
-.trip-list{display:flex;flex-direction:column;gap:10px;}
-.trip-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;align-items:center;gap:16px;}
-.trip-date{text-align:center;min-width:48px;font-family:'Cormorant Garamond',serif;}
-.trip-date-month{font-size:10px;text-transform:uppercase;color:var(--textMid);}
-.trip-date-day{font-size:28px;font-weight:600;color:var(--white);line-height:1;}
-.trip-divider{width:1px;height:40px;background:var(--border);}
-.trip-route{flex:1;}
-.trip-cities{font-size:15px;font-weight:500;color:var(--white);display:flex;align-items:center;gap:8px;}
-.trip-arrow{color:var(--textDim);font-size:12px;}
-.trip-meta{font-size:11px;color:var(--textMid);margin-top:2px;}
-.trip-badge{font-size:10px;padding:3px 10px;border-radius:10px;flex-shrink:0;}
-.trip-badge.leisure{background:rgba(13,148,136,0.12);color:var(--tealLt);}
-.trip-badge.business{background:rgba(201,151,58,0.12);color:var(--goldLt);}
-.trip-badge.bleisure{background:rgba(120,80,180,0.12);color:#C4A8F0;}
-.add-card{background:transparent;border:1px dashed var(--borderM);border-radius:10px;padding:18px;text-align:center;cursor:pointer;transition:all 0.2s;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100px;color:var(--textDim);font-size:12px;}
-.add-card:hover{border-color:var(--teal);color:var(--tealLt);}
-.add-plus{font-size:24px;margin-bottom:6px;line-height:1;}
-::-webkit-scrollbar{width:4px;}
+:root {
+  --ink:#0C0E14;--ink2:#141720;--ink3:#1C2030;--ink4:#242840;
+  --surface:rgba(255,255,255,0.03);--surface2:rgba(255,255,255,0.06);--surface3:rgba(255,255,255,0.09);
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--border3:rgba(255,255,255,0.2);
+  --gold:#B8955A;--goldLt:#D4AE78;--goldDim:#8A6E3E;--goldGlow:rgba(184,149,90,0.15);
+  --teal:#1AAFA0;--tealLt:#22C9B8;--tealGlow:rgba(26,175,160,0.12);
+  --text:#E4DDD0;--textMid:#9A9080;--textDim:#5A5448;--white:#FFFFFF;
+  --red:#D95F52;--redGlow:rgba(217,95,82,0.12);
+  --green:#2DBE8E;--greenGlow:rgba(45,190,142,0.12);
+  --amber:#D4963A;--amberGlow:rgba(212,150,58,0.12);
+  --radius-sm:6px;--radius-md:10px;--radius-lg:16px;--radius-xl:24px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;font-weight:300;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;}
+::-webkit-scrollbar{width:3px;height:3px;}
 ::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+#screen-login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--ink);z-index:100;}
+.login-wrap{width:100%;max-width:420px;padding:0 24px;animation:fadeUp 0.6s ease forwards;}
+.login-emblem{width:64px;height:64px;background:var(--goldGlow);border:1px solid var(--goldDim);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 28px;font-family:'Playfair Display',serif;font-size:26px;color:var(--goldLt);}
+.login-title{font-family:'Playfair Display',serif;font-size:42px;font-weight:700;color:var(--white);text-align:center;letter-spacing:-0.5px;margin-bottom:8px;}
+.login-sub{text-align:center;font-size:13px;color:var(--textMid);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:48px;}
+.login-cta{display:block;width:100%;padding:16px 24px;background:var(--gold);color:var(--ink);font-family:'Outfit',sans-serif;font-size:15px;font-weight:600;border:none;border-radius:var(--radius-md);cursor:pointer;text-decoration:none;text-align:center;transition:background 0.2s,transform 0.1s;letter-spacing:0.3px;}
+.login-cta:hover{background:var(--goldLt);transform:translateY(-1px);}
+.login-note{text-align:center;font-size:11px;color:var(--textDim);margin-top:20px;letter-spacing:0.3px;}
+.login-features{display:flex;justify-content:center;gap:24px;margin-top:48px;}
+.login-feature{text-align:center;}
+.login-feature-icon{font-size:20px;margin-bottom:6px;}
+.login-feature-label{font-size:11px;color:var(--textDim);letter-spacing:0.5px;}
+#screen-loading{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:20px;background:var(--ink);z-index:100;}
+.loading-ring{width:48px;height:48px;border:1.5px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.9s linear infinite;}
+.loading-label{font-size:12px;color:var(--textMid);letter-spacing:1px;text-transform:uppercase;}
+@keyframes spin{to{transform:rotate(360deg);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:translateX(0);}}
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:var(--ink3);border:1px solid var(--border2);color:var(--text);font-size:13px;padding:12px 24px;border-radius:var(--radius-md);opacity:0;transition:opacity 0.25s;z-index:10000;pointer-events:none;white-space:nowrap;}
+#toast.show{opacity:1;}
+#toast.success{border-color:var(--teal);color:var(--tealLt);}
+#toast.error{border-color:var(--red);color:var(--red);}
+#app{display:none;height:100vh;animation:fadeIn 0.4s ease forwards;}
+#app.visible{display:flex;}
+.sidebar{width:260px;min-width:260px;background:var(--ink2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.sidebar-brand{padding:28px 24px 22px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.brand-row{display:flex;align-items:center;gap:12px;}
+.brand-mark{width:36px;height:36px;background:var(--goldGlow);border:1px solid var(--goldDim);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:18px;color:var(--goldLt);flex-shrink:0;}
+.brand-name{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;color:var(--white);}
+.brand-tagline{font-size:10px;color:var(--textDim);letter-spacing:1.5px;text-transform:uppercase;margin-top:10px;padding-left:48px;}
+.uuid-card{margin:16px 16px 0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 14px;flex-shrink:0;}
+.uuid-eyebrow{font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:var(--gold);margin-bottom:5px;}
+.uuid-val{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--textMid);word-break:break-all;line-height:1.5;}
+.progress-card{margin:12px 16px 0;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px;display:flex;align-items:center;gap:14px;flex-shrink:0;}
+.progress-ring-wrap{position:relative;width:44px;height:44px;flex-shrink:0;}
+.progress-ring{width:44px;height:44px;transform:rotate(-90deg);}
+.ring-track{fill:none;stroke:var(--border2);stroke-width:2.5;}
+.ring-fill{fill:none;stroke:var(--gold);stroke-width:2.5;stroke-linecap:round;stroke-dasharray:113;stroke-dashoffset:113;transition:stroke-dashoffset 1s ease;}
+.ring-fill.danger{stroke:var(--red);}
+.ring-fill.good{stroke:var(--teal);}
+.progress-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--goldLt);}
+.progress-info{flex:1;}
+.progress-label{font-size:11px;color:var(--textMid);}
+.progress-sublabel{font-size:10px;color:var(--textDim);margin-top:2px;}
+.nav{flex:1;padding:16px 10px;overflow-y:auto;}
+.nav-group{margin-bottom:4px;}
+.nav-group-label{font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:var(--textDim);padding:10px 14px 6px;}
+.nav-btn{display:flex;align-items:center;gap:10px;width:100%;padding:9px 14px;background:none;border:none;border-radius:var(--radius-sm);color:var(--textMid);font-size:13px;font-weight:400;font-family:'Outfit',sans-serif;cursor:pointer;text-align:left;transition:all 0.15s;margin-bottom:1px;position:relative;}
+.nav-btn:hover{background:var(--surface2);color:var(--text);}
+.nav-btn.active{background:var(--goldGlow);color:var(--goldLt);}
+.nav-btn.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:2.5px;height:60%;background:var(--gold);border-radius:0 2px 2px 0;}
+.nav-icon{font-size:15px;flex-shrink:0;opacity:0.7;}
+.nav-btn.active .nav-icon{opacity:1;}
+.nav-badge{margin-left:auto;font-size:9px;background:var(--red);color:white;padding:1px 6px;border-radius:10px;font-weight:600;}
+.nav-tag{margin-left:auto;font-size:9px;background:var(--amberGlow);color:var(--amber);padding:1px 7px;border-radius:10px;border:1px solid rgba(212,150,58,0.2);}
+.sidebar-footer{padding:16px;border-top:1px solid var(--border);flex-shrink:0;}
+.traveler-card{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);}
+.traveler-avatar{width:34px;height:34px;background:var(--goldGlow);border:1px solid var(--goldDim);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:13px;color:var(--goldLt);flex-shrink:0;}
+.traveler-info{flex:1;min-width:0;}
+.traveler-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.traveler-tier{font-size:10px;color:var(--gold);margin-top:1px;}
+.logout-btn{background:none;border:none;cursor:pointer;color:var(--textDim);font-size:11px;font-family:'Outfit',sans-serif;padding:6px 0;display:block;width:100%;text-align:center;margin-top:8px;transition:color 0.15s;}
+.logout-btn:hover{color:var(--red);}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:64px;min-height:64px;display:flex;align-items:center;padding:0 32px;gap:16px;border-bottom:1px solid var(--border);background:var(--ink);flex-shrink:0;}
+.topbar-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:400;color:var(--white);flex:1;letter-spacing:0.2px;}
+.bleisure-wrap{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:6px 16px;}
+.bleisure-opt{font-size:11px;letter-spacing:0.5px;color:var(--textDim);transition:color 0.2s;font-weight:400;}
+.bleisure-opt.on{color:var(--text);font-weight:500;}
+.bleisure-opt.teal.on{color:var(--tealLt);}
+.bleisure-opt.gold.on{color:var(--goldLt);}
+.toggle{position:relative;width:40px;height:22px;cursor:pointer;}
+.toggle input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-track{position:absolute;inset:0;background:var(--teal);border-radius:11px;transition:background 0.3s;}
+.toggle input:checked ~ .toggle-track{background:var(--gold);}
+.toggle-knob{position:absolute;top:3px;left:3px;width:16px;height:16px;background:white;border-radius:50%;transition:transform 0.3s;box-shadow:0 1px 3px rgba(0,0,0,0.3);}
+.toggle input:checked ~ .toggle-track .toggle-knob{transform:translateX(18px);}
+.context-pill{font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:4px 12px;border-radius:100px;font-weight:600;}
+.context-pill.personal{background:var(--tealGlow);color:var(--tealLt);border:1px solid rgba(26,175,160,0.25);}
+.context-pill.corporate{background:var(--goldGlow);color:var(--goldLt);border:1px solid rgba(184,149,90,0.25);}
+.save-btn{padding:8px 20px;background:var(--gold);color:var(--ink);border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'Outfit',sans-serif;cursor:pointer;transition:all 0.15s;letter-spacing:0.3px;}
+.save-btn:hover{background:var(--goldLt);}
+.save-btn:disabled{opacity:0.5;cursor:not-allowed;}
+.autosave-indicator{font-size:11px;color:var(--textDim);display:flex;align-items:center;gap:6px;}
+.autosave-dot{width:6px;height:6px;border-radius:50%;background:var(--textDim);}
+.autosave-dot.saving{background:var(--amber);animation:pulse 1s infinite;}
+.autosave-dot.saved{background:var(--green);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.content{flex:1;overflow-y:auto;padding:32px;}
+.section{display:none;animation:slideIn 0.25s ease forwards;}
+.section.active{display:block;}
+.sec-header{display:flex;align-items:flex-start;gap:16px;margin-bottom:32px;}
+.sec-icon{width:44px;height:44px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.sec-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:600;color:var(--white);letter-spacing:-0.3px;}
+.sec-sub{font-size:12px;color:var(--textDim);margin-top:3px;letter-spacing:0.3px;}
+.alert-banner{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:var(--radius-md);margin-bottom:28px;}
+.alert-banner.warn{background:var(--amberGlow);border:1px solid rgba(212,150,58,0.25);}
+.alert-banner.danger{background:var(--redGlow);border:1px solid rgba(217,95,82,0.25);}
+.alert-icon{font-size:16px;flex-shrink:0;}
+.alert-text{font-size:13px;color:var(--text);flex:1;}
+.alert-text strong{color:var(--white);font-weight:500;}
+.alert-link{font-size:11px;color:var(--gold);cursor:pointer;white-space:nowrap;}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px 22px 18px;position:relative;overflow:hidden;transition:border-color 0.2s;}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1.5px;background:var(--gold);opacity:0.5;}
+.stat-card.teal::after{background:var(--teal);}
+.stat-card.green::after{background:var(--green);}
+.stat-card.red::after{background:var(--red);}
+.stat-card:hover{border-color:var(--border2);}
+.stat-num{font-family:'Playfair Display',serif;font-size:44px;font-weight:700;color:var(--white);line-height:1;margin-bottom:6px;}
+.stat-label{font-size:11px;color:var(--textMid);letter-spacing:0.5px;}
+.stat-note{font-size:11px;color:var(--gold);margin-top:4px;}
+.stat-note.teal{color:var(--tealLt);}
+.stat-note.warn{color:var(--amber);}
+.stat-note.danger{color:var(--red);}
+.module-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.module-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden;}
+.module-card:hover{background:var(--surface2);border-color:var(--border2);transform:translateY(-2px);}
+.module-card.complete{border-left:2px solid var(--teal);}
+.module-card.partial{border-left:2px solid var(--gold);}
+.module-card.empty{border-left:2px solid var(--textDim);}
+.module-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+.module-icon-wrap{width:40px;height:40px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:18px;}
+.module-status-pill{font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:100px;font-weight:600;}
+.pill-complete{background:var(--tealGlow);color:var(--tealLt);border:1px solid rgba(26,175,160,0.2);}
+.pill-partial{background:var(--goldGlow);color:var(--goldLt);border:1px solid rgba(184,149,90,0.2);}
+.pill-empty{background:var(--surface2);color:var(--textDim);border:1px solid var(--border);}
+.module-name{font-size:14px;font-weight:500;color:var(--white);margin-bottom:5px;}
+.module-desc{font-size:12px;color:var(--textDim);line-height:1.5;}
+.module-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+.module-tag{font-size:10px;padding:3px 9px;border-radius:100px;background:var(--surface2);color:var(--textDim);}
+.module-tag.filled{background:var(--tealGlow);color:var(--tealLt);}
+.form-section{margin-bottom:32px;}
+.form-section-title{font-size:10px;letter-spacing:1.8px;text-transform:uppercase;color:var(--textDim);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.form-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-grid.cols-3{grid-template-columns:1fr 1fr 1fr;}
+.form-grid.cols-1{grid-template-columns:1fr;}
+.form-field{display:flex;flex-direction:column;gap:7px;}
+.field-label{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--textMid);font-weight:400;}
+.field-input,.field-select{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;color:var(--text);font-size:13px;font-family:'Outfit',sans-serif;font-weight:300;outline:none;transition:border-color 0.15s,background 0.15s;-webkit-appearance:none;}
+.field-input:focus,.field-select:focus{border-color:var(--gold);background:var(--surface2);}
+.field-input::placeholder{color:var(--textDim);}
+.field-select option{background:var(--ink2);}
+.field-hint{font-size:11px;color:var(--textDim);}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);}
+.toggle-row-label{font-size:13px;color:var(--text);}
+.toggle-row-sub{font-size:11px;color:var(--textDim);margin-top:2px;}
+.mini-toggle{position:relative;width:36px;height:20px;cursor:pointer;flex-shrink:0;}
+.mini-toggle input{opacity:0;width:0;height:0;position:absolute;}
+.mini-track{position:absolute;inset:0;background:var(--surface3);border-radius:10px;transition:background 0.25s;border:1px solid var(--border2);}
+.mini-toggle input:checked ~ .mini-track{background:var(--teal);border-color:var(--teal);}
+.mini-knob{position:absolute;top:3px;left:3px;width:12px;height:12px;background:var(--textDim);border-radius:50%;transition:transform 0.25s,background 0.25s;}
+.mini-toggle input:checked ~ .mini-track .mini-knob{transform:translateX(16px);background:white;}
+.doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
+.doc-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;position:relative;overflow:hidden;}
+.doc-card.expiring{border-color:rgba(212,150,58,0.3);}
+.doc-card.expired{border-color:rgba(217,95,82,0.3);}
+.doc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--border2);}
+.doc-card.expiring::before{background:var(--amber);opacity:0.6;}
+.doc-card.expired::before{background:var(--red);opacity:0.6;}
+.doc-card.valid::before{background:var(--teal);opacity:0.4;}
+.doc-status{position:absolute;top:14px;right:14px;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:100px;font-weight:600;}
+.doc-status.valid{background:var(--tealGlow);color:var(--tealLt);}
+.doc-status.expiring{background:var(--amberGlow);color:var(--amber);}
+.doc-status.expired{background:var(--redGlow);color:var(--red);}
+.doc-type{font-size:10px;color:var(--textDim);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.doc-name{font-size:15px;font-weight:500;color:var(--white);margin-bottom:4px;}
+.doc-number{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--teal);margin-bottom:10px;}
+.doc-expiry{font-size:11px;color:var(--textMid);}
+.expiry-countdown{display:flex;align-items:center;gap:6px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+.countdown-bar-wrap{flex:1;height:3px;background:var(--border2);border-radius:2px;overflow:hidden;}
+.countdown-bar{height:100%;border-radius:2px;transition:width 0.5s;}
+.countdown-bar.good{background:var(--teal);}
+.countdown-bar.warning{background:var(--amber);}
+.countdown-bar.critical{background:var(--red);}
+.countdown-days{font-size:10px;color:var(--textDim);white-space:nowrap;}
+.loyalty-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+.loyalty-card{border-radius:var(--radius-lg);padding:20px;position:relative;overflow:hidden;background:linear-gradient(135deg,var(--ink3) 0%,var(--ink4) 100%);border:1px solid var(--border2);}
+.loyalty-card::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:var(--goldGlow);}
+.loyalty-airline{font-size:13px;font-weight:600;color:var(--white);margin-bottom:2px;}
+.loyalty-program{font-size:11px;color:var(--textMid);margin-bottom:14px;}
+.loyalty-number{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--goldLt);letter-spacing:1.5px;margin-bottom:8px;background:var(--goldGlow);padding:5px 10px;border-radius:var(--radius-sm);display:inline-block;}
+.loyalty-tier{font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:600;}
+.loyalty-type-badge{position:absolute;top:14px;right:14px;font-size:9px;color:var(--textDim);letter-spacing:0.5px;text-transform:uppercase;}
+.trip-list{display:flex;flex-direction:column;gap:10px;}
+.trip-row{display:flex;align-items:center;gap:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 20px;transition:border-color 0.15s;}
+.trip-row:hover{border-color:var(--border2);}
+.trip-date-col{text-align:center;min-width:44px;font-family:'Playfair Display',serif;}
+.trip-month{font-size:10px;color:var(--textDim);text-transform:uppercase;}
+.trip-day{font-size:28px;font-weight:700;color:var(--white);line-height:1;}
+.trip-sep{width:1px;height:40px;background:var(--border2);flex-shrink:0;}
+.trip-route{flex:1;}
+.trip-cities{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:500;color:var(--white);}
+.trip-arrow{color:var(--textDim);font-size:14px;}
+.trip-meta{font-size:11px;color:var(--textMid);margin-top:3px;}
+.trip-context{font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:100px;font-weight:600;}
+.ctx-personal{background:var(--tealGlow);color:var(--tealLt);}
+.ctx-corporate{background:var(--goldGlow);color:var(--goldLt);}
+.ctx-bleisure{background:rgba(180,100,200,0.1);color:#C4A0E0;}
+.payment-card-display{background:linear-gradient(135deg,var(--ink3) 0%,var(--ink4) 100%);border:1px solid var(--border2);border-radius:var(--radius-xl);padding:24px 28px;margin-bottom:24px;position:relative;overflow:hidden;min-height:160px;}
+.payment-card-display::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:var(--goldGlow);}
+.card-chip{width:32px;height:24px;background:var(--goldGlow);border:1px solid var(--goldDim);border-radius:4px;margin-bottom:24px;}
+.card-number{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--textMid);letter-spacing:2px;margin-bottom:16px;}
+.card-name{font-size:13px;color:var(--text);font-weight:500;}
+.card-type{position:absolute;top:24px;right:28px;font-size:11px;color:var(--gold);font-weight:600;letter-spacing:0.5px;}
+.integration-list{display:flex;flex-direction:column;gap:10px;}
+.integration-row{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 16px;}
+.integration-icon{width:38px;height:38px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.integration-info{flex:1;}
+.integration-name{font-size:13px;font-weight:500;color:var(--white);}
+.integration-scope{font-size:11px;color:var(--textDim);margin-top:2px;}
+.status-dot-wrap{display:flex;align-items:center;gap:6px;font-size:11px;}
+.status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.dot-live{background:var(--green);box-shadow:0 0 6px var(--green);}
+.dot-pending{background:var(--amber);}
+.add-card{background:transparent;border:1px dashed var(--border2);border-radius:var(--radius-lg);padding:24px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100px;gap:8px;color:var(--textDim);font-size:12px;transition:all 0.2s;}
+.add-card:hover{border-color:var(--gold);color:var(--gold);}
+.add-card-plus{font-size:22px;line-height:1;}
+.empty-state{text-align:center;padding:48px 24px;color:var(--textDim);}
+.empty-icon{font-size:32px;margin-bottom:12px;opacity:0.5;}
+.empty-title{font-size:15px;color:var(--textMid);margin-bottom:6px;font-weight:500;}
+.empty-sub{font-size:12px;}
+@media(max-width:1024px){.stats-row{grid-template-columns:1fr 1fr;}.sidebar{width:220px;min-width:220px;}}
+@media(max-width:768px){.sidebar{display:none;}.stats-row{grid-template-columns:1fr 1fr;}.form-grid.cols-3{grid-template-columns:1fr 1fr;}.topbar{padding:0 16px;}.content{padding:20px;}}
 </style>
 </head>
 <body>
-
-<!-- LOGIN SCREEN -->
-<div class="login-screen" id="login-screen">
-  <div class="login-card">
-    <div class="login-logo">UniProfile</div>
+<div id="screen-login">
+  <div class="login-wrap">
+    <div class="login-emblem">U</div>
+    <div class="login-title">UniProfile</div>
     <div class="login-sub">Portable Traveler Identity</div>
-    <a id="login-btn" class="login-btn" href="#">Sign in with UniProfile</a>
-    <div class="login-note">Secured by AWS Cognito · GDPR aligned</div>
+    <a id="login-btn" class="login-cta" href="#">Sign in to your profile</a>
+    <div class="login-note">Secured by AWS Cognito · GDPR-aligned · SOC 2 compliant</div>
+    <div class="login-features">
+      <div class="login-feature"><div class="login-feature-icon"></div><div class="login-feature-label">Identity Vault</div></div>
+      <div class="login-feature"><div class="login-feature-icon">✈</div><div class="login-feature-label">Any Platform</div></div>
+      <div class="login-feature"><div class="login-feature-icon">🔒</div><div class="login-feature-label">You Control</div></div>
+    </div>
   </div>
 </div>
-
-<!-- LOADING SCREEN -->
-<div class="loading-screen" id="loading-screen">
-  <div class="loading-spinner"></div>
-  <div class="loading-text">Loading your profile...</div>
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
-
-<!-- APP -->
-<div class="app" id="app">
+<div id="screen-loading"><div class="loading-ring"></div><div class="loading-label">Loading your profile</div></div>
+<div id="toast"></div>
+<div id="app">
   <aside class="sidebar">
-    <div class="sidebar-logo">
-      <div class="logo-mark"><div class="logo-circle">U</div><span class="logo-name">UniProfile</span></div>
-      <div class="logo-sub">Traveler Identity</div>
+    <div class="sidebar-brand">
+      <div class="brand-row"><div class="brand-mark">U</div><div class="brand-name">UniProfile</div></div>
+      <div class="brand-tagline">Traveler Identity Platform</div>
     </div>
-    <div class="uuid-badge">
-      <div class="uuid-label">Your UUID</div>
-      <div class="uuid-value" id="uuid-display">—</div>
-    </div>
-    <div class="completeness">
-      <div class="comp-header"><span class="comp-label">Profile Complete</span><span class="comp-pct" id="comp-pct">—</span></div>
-      <div class="comp-bar-track"><div class="comp-bar-fill" id="comp-bar" style="width:0%"></div></div>
+    <div class="uuid-card"><div class="uuid-eyebrow">Traveler UUID</div><div class="uuid-val" id="sid-uuid">—</div></div>
+    <div class="progress-card">
+      <div class="progress-ring-wrap">
+        <svg class="progress-ring" viewBox="0 0 44 44">
+          <circle class="ring-track" cx="22" cy="22" r="18"/>
+          <circle class="ring-fill" id="ring-fill" cx="22" cy="22" r="18"/>
+        </svg>
+        <div class="progress-pct" id="sid-pct">—</div>
+      </div>
+      <div class="progress-info">
+        <div class="progress-label">Profile completeness</div>
+        <div class="progress-sublabel" id="sid-modules">Loading...</div>
+      </div>
     </div>
     <nav class="nav">
-      <div class="nav-section">Overview</div>
-      <button class="nav-item active" onclick="showSection('overview',this)"><span class="nav-dot"></span>Dashboard</button>
-      <div class="nav-section">Identity Modules</div>
-      <button class="nav-item" onclick="showSection('identity',this)"><span class="nav-dot"></span>Identity &amp; Documents</button>
-      <button class="nav-item" onclick="showSection('preferences',this)"><span class="nav-dot"></span>Seat &amp; Cabin Prefs</button>
-      <button class="nav-item" onclick="showSection('meals',this)"><span class="nav-dot"></span>Meal &amp; Dietary</button>
-      <button class="nav-item" onclick="showSection('loyalty',this)"><span class="nav-dot"></span>Loyalty Programs</button>
-      <button class="nav-item" onclick="showSection('payment',this)"><span class="nav-dot"></span>Payment &amp; Policy</button>
-      <button class="nav-item" onclick="showSection('trips',this)"><span class="nav-dot"></span>Trip History</button>
-      <div class="nav-section">Platform</div>
-      <button class="nav-item" onclick="showSection('consent',this)"><span class="nav-dot"></span>Consent &amp; Integrations</button>
-      <button class="nav-item" onclick="showSection('api',this)"><span class="nav-dot"></span>API &amp; Webhooks</button>
+      <div class="nav-group">
+        <div class="nav-group-label">Overview</div>
+        <button class="nav-btn active" onclick="showSection('overview',this)"><span class="nav-icon">◈</span>Dashboard</button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Identity Modules</div>
+        <button class="nav-btn" onclick="showSection('identity',this)"><span class="nav-icon"></span>Identity &amp; Documents<span class="nav-badge" id="badge-identity" style="display:none">!</span></button>
+        <button class="nav-btn" onclick="showSection('preferences',this)"><span class="nav-icon">💺</span>Seat &amp; Cabin</button>
+        <button class="nav-btn" onclick="showSection('meals',this)"><span class="nav-icon">🍽</span>Meal &amp; Dietary</button>
+        <button class="nav-btn" onclick="showSection('loyalty',this)"><span class="nav-icon">✦</span>Loyalty Programs</button>
+        <button class="nav-btn" onclick="showSection('payment',this)"><span class="nav-icon">💳</span>Payment &amp; Policy<span class="nav-tag" id="badge-payment" style="display:none">corp</span></button>
+        <button class="nav-btn" onclick="showSection('trips',this)"><span class="nav-icon">📋</span>Trip History</button>
+        <button class="nav-btn" onclick="showSection('family',this)"><span class="nav-icon">👥</span>Family Profiles</button>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-label">Platform</div>
+        <button class="nav-btn" onclick="showSection('consent',this)"><span class="nav-icon">🔒</span>Consent &amp; Access</button>
+        <button class="nav-btn" onclick="showSection('api',this)"><span class="nav-icon">⚡</span>API &amp; Webhooks</button>
+      </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="traveler-row">
-        <div class="traveler-avatar" id="traveler-initials">—</div>
-        <div>
-          <div class="traveler-name" id="traveler-name">Loading...</div>
-          <div class="traveler-tier">★ Premium Member</div>
+      <div class="traveler-card">
+        <div class="traveler-avatar" id="sid-initials">—</div>
+        <div class="traveler-info">
+          <div class="traveler-name" id="sid-name">Loading...</div>
+          <div class="traveler-tier" id="sid-tier">★ Free</div>
         </div>
       </div>
-      <button class="logout-btn" onclick="logout()">Sign out</button>
+      <button class="logout-btn" onclick="logout()">Sign out of UniProfile</button>
     </div>
   </aside>
-
-  <main class="main">
+  <div class="main">
     <div class="topbar">
       <div class="topbar-title" id="page-title">Dashboard</div>
-      <div class="bleisure-toggle">
-        <span class="bleisure-label leisure" id="lbl-leisure">Leisure</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="bleisure-input" onchange="toggleBleisure(this)">
-          <div class="toggle-track"><div class="toggle-thumb"></div></div>
-        </label>
-        <span class="bleisure-label business" id="lbl-business">Business</span>
+      <div class="bleisure-wrap">
+        <span class="bleisure-opt teal on" id="lbl-personal">Personal</span>
+        <label class="toggle"><input type="checkbox" id="bleisure-toggle" onchange="switchContext(this)"><div class="toggle-track"><div class="toggle-knob"></div></div></label>
+        <span class="bleisure-opt gold" id="lbl-business">Business</span>
       </div>
-      <div class="bleisure-context-pill leisure" id="context-pill">Personal Mode</div>
-      <div class="topbar-actions">
-        <button class="topbar-btn primary" id="save-btn" onclick="saveCurrentSection()">Save Changes</button>
-      </div>
+      <div class="context-pill personal" id="context-pill">Personal Mode</div>
+      <div class="autosave-indicator"><div class="autosave-dot" id="save-dot"></div><span id="save-label" style="font-size:11px;color:var(--textDim)">All changes saved</span></div>
+      <button class="save-btn" id="save-btn" onclick="saveSection()">Save Changes</button>
     </div>
-
     <div class="content">
-
-      <!-- OVERVIEW -->
       <section class="section active" id="section-overview">
-        <div id="alerts-container"></div>
-        <div class="overview-hero">
-          <div class="hero-stat teal"><div class="stat-value" id="stat-modules">7</div><div class="stat-label">Identity Modules</div><div class="stat-sub" id="stat-modules-sub">Loading...</div></div>
-          <div class="hero-stat gold"><div class="stat-value" id="stat-completeness">—</div><div class="stat-label">Profile Complete</div><div class="stat-sub warn" id="stat-comp-sub">Loading...</div></div>
-          <div class="hero-stat green"><div class="stat-value" id="stat-trips">—</div><div class="stat-label">Trips in Vault</div><div class="stat-sub" id="stat-trips-sub">Loading...</div></div>
-          <div class="hero-stat teal"><div class="stat-value" id="stat-context">—</div><div class="stat-label">Active Context</div><div class="stat-sub" id="stat-context-sub">Personal / Business</div></div>
+        <div id="alert-container"></div>
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-num" id="ov-completeness">—</div><div class="stat-label">Profile complete</div><div class="stat-note warn" id="ov-comp-note">Loading</div></div>
+          <div class="stat-card teal"><div class="stat-num" id="ov-trips">—</div><div class="stat-label">Trips in vault</div><div class="stat-note teal">Via webhook</div></div>
+          <div class="stat-card green"><div class="stat-num" id="ov-loyalty">—</div><div class="stat-label">Loyalty programs</div><div class="stat-note teal">Auto-applied</div></div>
+          <div class="stat-card"><div class="stat-num" id="ov-docs">—</div><div class="stat-label">Documents</div><div class="stat-note" id="ov-docs-note">In vault</div></div>
         </div>
-        <div class="form-sub-title">Profile Summary</div>
-        <div id="profile-summary" style="color:var(--textMid);font-size:13px">Loading your profile data...</div>
+        <div class="form-section-title">Identity Modules</div>
+        <div class="module-grid" id="module-grid"></div>
       </section>
-
-      <!-- IDENTITY -->
       <section class="section" id="section-identity">
-        <div class="section-header">
-          <div class="section-icon" style="background:rgba(201,151,58,0.1)"></div>
-          <div><div class="section-title">Identity &amp; Documents</div><div class="section-subtitle">IATA OneOrder Module 1 — Stored encrypted, consent-gated</div></div>
-        </div>
-        <div class="form-sub-title">Personal Identity</div>
-        <div class="form-grid three">
-          <div class="form-group"><label class="form-label">Legal First Name</label><input class="form-input" id="legal_first" type="text" placeholder="As on passport"></div>
-          <div class="form-group"><label class="form-label">Legal Middle Name</label><input class="form-input" id="legal_middle" type="text" placeholder="Optional"></div>
-          <div class="form-group"><label class="form-label">Legal Last Name</label><input class="form-input" id="legal_last" type="text" placeholder="As on passport"></div>
-        </div>
-        <div class="form-grid">
-          <div class="form-group"><label class="form-label">Date of Birth</label><input class="form-input" id="dob" type="date"></div>
-          <div class="form-group"><label class="form-label">Nationality</label><input class="form-input" id="nationality" type="text" placeholder="e.g. United States"></div>
-          <div class="form-group"><label class="form-label">Gender (as on travel docs)</label>
-            <select class="form-select" id="gender_code"><option value="M">Male</option><option value="F">Female</option><option value="X">X / Unspecified</option></select>
+        <div class="sec-header"><div class="sec-icon" style="background:var(--goldGlow)"></div><div><div class="sec-title">Identity &amp; Documents</div><div class="sec-sub">IATA OneOrder Module 1 — Encrypted at rest · Consent-gated access</div></div></div>
+        <div id="doc-alerts"></div>
+        <div class="form-section"><div class="form-section-title">Document Vault</div><div class="doc-grid" id="doc-grid"><div class="add-card"><div class="add-card-plus">+</div>Add Document</div></div></div>
+        <div class="form-section">
+          <div class="form-section-title">Personal Identity</div>
+          <div class="form-grid cols-3">
+            <div class="form-field"><label class="field-label">Legal First Name</label><input class="field-input" id="f-legal_first" type="text" placeholder="As on passport"></div>
+            <div class="form-field"><label class="field-label">Legal Middle Name</label><input class="field-input" id="f-legal_middle" type="text" placeholder="Optional"></div>
+            <div class="form-field"><label class="field-label">Legal Last Name</label><input class="field-input" id="f-legal_last" type="text" placeholder="As on passport"></div>
           </div>
-          <div class="form-group"><label class="form-label">Home Airport (IATA)</label><input class="form-input" id="home_airport" type="text" placeholder="e.g. IAD" maxlength="3"></div>
+          <div class="form-grid" style="margin-top:14px">
+            <div class="form-field"><label class="field-label">Date of Birth</label><input class="field-input" id="f-dob" type="date"></div>
+            <div class="form-field"><label class="field-label">Nationality</label><input class="field-input" id="f-nationality" type="text" placeholder="e.g. United States"></div>
+            <div class="form-field"><label class="field-label">Gender (as on travel docs)</label><select class="field-select" id="f-gender_code"><option value="M">Male</option><option value="F">Female</option><option value="X">X / Unspecified</option></select></div>
+            <div class="form-field"><label class="field-label">Home Airport</label><input class="field-input" id="f-home_airport" type="text" placeholder="IATA code e.g. IAD" maxlength="3"><div class="field-hint">3-letter IATA code</div></div>
+          </div>
         </div>
       </section>
-
-      <!-- SEAT PREFS -->
       <section class="section" id="section-preferences">
-        <div class="section-header">
-          <div class="section-icon" style="background:rgba(13,148,136,0.1)">💺</div>
-          <div><div class="section-title">Seat &amp; Cabin Preferences</div><div class="section-subtitle">IATA OneOrder Module 2 — Pre-filled at checkout on integrated platforms</div></div>
-        </div>
-        <div class="form-grid">
-          <div class="form-group"><label class="form-label">Preferred Cabin — Domestic</label>
-            <select class="form-select" id="cabin_domestic"><option value="ECONOMY">Economy</option><option value="ECONOMY_PLUS">Economy Plus</option><option value="BUSINESS">Business</option><option value="FIRST">First Class</option></select>
-          </div>
-          <div class="form-group"><label class="form-label">Preferred Cabin — International</label>
-            <select class="form-select" id="cabin_international"><option value="ECONOMY">Economy</option><option value="PREMIUM_ECONOMY">Premium Economy</option><option value="BUSINESS">Business Class</option><option value="FIRST">First Class</option></select>
-          </div>
-          <div class="form-group"><label class="form-label">Seat Position</label>
-            <select class="form-select" id="seat_position"><option value="AISLE">Aisle</option><option value="WINDOW">Window</option><option value="MIDDLE">Middle</option><option value="NO_PREF">No Preference</option></select>
-          </div>
-          <div class="form-group"><label class="form-label">Row Preference</label>
-            <select class="form-select" id="row_preference"><option value="EXIT_ROW">Exit Row / Extra Legroom</option><option value="FRONT">Front of Cabin</option><option value="REAR">Rear of Cabin</option><option value="NO_PREF">No Preference</option></select>
-          </div>
-          <div class="form-group"><label class="form-label">Hotel Room Type</label>
-            <select class="form-select" id="hotel_room_type"><option value="KING">King bed</option><option value="QUEEN">Queen bed</option><option value="TWIN">Twin beds</option></select>
-          </div>
-          <div class="form-group"><label class="form-label">Hotel Floor</label>
-            <select class="form-select" id="hotel_floor_pref"><option value="HIGH">High floor</option><option value="LOW">Low floor</option><option value="NO_PREF">No preference</option></select>
+        <div class="sec-header"><div class="sec-icon" style="background:var(--tealGlow)">💺</div><div><div class="sec-title">Seat &amp; Cabin Preferences</div><div class="sec-sub">IATA OneOrder Module 2 — Pre-filled at checkout on integrated platforms</div></div></div>
+        <div class="form-section">
+          <div class="form-section-title">Flight Preferences</div>
+          <div class="form-grid">
+            <div class="form-field"><label class="field-label">Cabin — Domestic</label><select class="field-select" id="f-cabin_domestic"><option value="ECONOMY">Economy</option><option value="ECONOMY_PLUS">Economy Plus</option><option value="BUSINESS">Business</option><option value="FIRST">First Class</option></select></div>
+            <div class="form-field"><label class="field-label">Cabin — International</label><select class="field-select" id="f-cabin_international"><option value="ECONOMY">Economy</option><option value="PREMIUM_ECONOMY">Premium Economy</option><option value="BUSINESS">Business Class</option><option value="FIRST">First Class</option></select></div>
+            <div class="form-field"><label class="field-label">Seat Position</label><select class="field-select" id="f-seat_position"><option value="AISLE">Aisle</option><option value="WINDOW">Window</option><option value="MIDDLE">Middle</option><option value="NO_PREF">No Preference</option></select></div>
+            <div class="form-field"><label class="field-label">Row Preference</label><select class="field-select" id="f-row_preference"><option value="EXIT_ROW">Exit Row / Extra Legroom</option><option value="FRONT">Front of Cabin</option><option value="REAR">Rear of Cabin</option><option value="NO_PREF">No Preference</option></select></div>
           </div>
         </div>
-        <div class="form-divider"></div>
-        <div class="form-sub-title">Special Requirements</div>
-        <div class="pref-grid">
-          <div class="pref-item"><span class="pref-label">Avoid middle seats</span><span class="pref-value" id="pref-ams">—</span></div>
-          <div class="pref-item"><span class="pref-label">Exit row preferred</span><span class="pref-value" id="pref-exit">—</span></div>
+        <div class="form-section">
+          <div class="form-section-title">Special Requirements</div>
+          <div class="form-grid">
+            <div class="toggle-row"><div><div class="toggle-row-label">Avoid middle seats</div><div class="toggle-row-sub">Never place me in a middle seat</div></div><label class="mini-toggle"><input type="checkbox" id="f-avoid_middle_seats"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+            <div class="toggle-row"><div><div class="toggle-row-label">Avoid last row</div><div class="toggle-row-sub">Non-reclining seats at rear</div></div><label class="mini-toggle"><input type="checkbox" id="f-avoid_last_row"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+            <div class="toggle-row"><div><div class="toggle-row-label">Wheelchair assistance</div><div class="toggle-row-sub">Airport mobility support needed</div></div><label class="mini-toggle"><input type="checkbox" id="f-wheelchair_needed"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title">Hotel &amp; Car</div>
+          <div class="form-grid">
+            <div class="form-field"><label class="field-label">Room Type</label><select class="field-select" id="f-hotel_room_type"><option value="KING">King bed</option><option value="QUEEN">Queen bed</option><option value="TWIN">Twin beds</option></select></div>
+            <div class="form-field"><label class="field-label">Floor Preference</label><select class="field-select" id="f-hotel_floor_pref"><option value="HIGH">High floor</option><option value="LOW">Low floor</option><option value="NO_PREF">No preference</option></select></div>
+            <div class="form-field"><label class="field-label">Car Type</label><select class="field-select" id="f-car_type_pref"><option value="COMPACT">Compact</option><option value="MIDSIZE">Midsize</option><option value="FULLSIZE">Full Size</option><option value="SUV">SUV</option><option value="LUXURY">Luxury</option></select></div>
+          </div>
         </div>
       </section>
-
-      <!-- MEALS -->
       <section class="section" id="section-meals">
-        <div class="section-header">
-          <div class="section-icon" style="background:rgba(34,200,138,0.1)">🍽</div>
-          <div><div class="section-title">Meal &amp; Dietary</div><div class="section-subtitle">IATA OneOrder Module 3 — IATA SSIM meal codes</div></div>
-        </div>
-        <div class="form-grid">
-          <div class="form-group"><label class="form-label">Primary IATA Meal Code</label>
-            <select class="form-select" id="primary_meal_code">
-              <option value="AVML">AVML — Asian Vegetarian</option>
-              <option value="GFML">GFML — Gluten Free</option>
-              <option value="HNML">HNML — Hindu Non-Veg</option>
-              <option value="KSML">KSML — Kosher</option>
-              <option value="MOML">MOML — Muslim Meal</option>
-              <option value="VGML">VGML — Vegan</option>
-              <option value="VLML">VLML — Vegetarian</option>
-              <option value="DBML">DBML — Diabetic</option>
-              <option value="LFML">LFML — Low Fat</option>
-              <option value="LSML">LSML — Low Sodium</option>
-            </select>
-          </div>
-          <div class="form-group"><label class="form-label">Beverage Preference</label>
-            <select class="form-select" id="beverage_pref"><option value="NON_ALC">Non-alcoholic only</option><option value="ALCOHOL_OK">Alcohol permitted</option><option value="NO_PREF">No preference</option></select>
+        <div class="sec-header"><div class="sec-icon" style="background:var(--greenGlow)">🍽</div><div><div class="sec-title">Meal &amp; Dietary</div><div class="sec-sub">IATA OneOrder Module 3 — Full SSIM meal code support</div></div></div>
+        <div class="form-section">
+          <div class="form-section-title">IATA Meal Code</div>
+          <div class="form-grid">
+            <div class="form-field"><label class="field-label">Primary Meal Code</label><select class="field-select" id="f-primary_meal_code"><option value="AVML">AVML — Asian Vegetarian</option><option value="BBML">BBML — Baby Meal</option><option value="DBML">DBML — Diabetic</option><option value="FPML">FPML — Fruit Platter</option><option value="GFML">GFML — Gluten Free</option><option value="HNML">HNML — Hindu Non-Veg</option><option value="KSML">KSML — Kosher</option><option value="LCML">LCML — Low Calorie</option><option value="LFML">LFML — Low Fat</option><option value="LSML">LSML — Low Sodium</option><option value="MOML">MOML — Muslim Meal</option><option value="SFML">SFML — Seafood</option><option value="VGML">VGML — Vegan</option><option value="VLML">VLML — Vegetarian</option></select></div>
+            <div class="form-field"><label class="field-label">Beverage Preference</label><select class="field-select" id="f-beverage_pref"><option value="NON_ALC">Non-alcoholic only</option><option value="ALCOHOL_OK">Alcohol permitted</option><option value="NO_PREF">No preference</option></select></div>
           </div>
         </div>
-        <div class="form-divider"></div>
-        <div class="form-sub-title">Allergies &amp; Restrictions</div>
-        <div class="form-group" style="margin-bottom:12px"><label class="form-label">Allergies (comma separated)</label><input class="form-input" id="allergies" type="text" placeholder="e.g. shellfish, peanuts"></div>
-        <div class="form-group"><label class="form-label">Items to Avoid (comma separated)</label><input class="form-input" id="avoid_items" type="text" placeholder="e.g. pork, alcohol"></div>
+        <div class="form-section">
+          <div class="form-section-title">Allergies &amp; Restrictions</div>
+          <div class="form-grid">
+            <div class="form-field"><label class="field-label">Allergies</label><input class="field-input" id="f-allergies" type="text" placeholder="e.g. shellfish, peanuts"><div class="field-hint">Comma-separated</div></div>
+            <div class="form-field"><label class="field-label">Items to Avoid</label><input class="field-input" id="f-avoid_items" type="text" placeholder="e.g. pork, alcohol"><div class="field-hint">Comma-separated</div></div>
+          </div>
+          <div class="form-grid cols-1" style="margin-top:14px"><div class="form-field"><label class="field-label">Additional Dietary Notes</label><input class="field-input" id="f-dietary_notes" type="text" placeholder="Any other dietary requirements for airlines"></div></div>
+        </div>
       </section>
-
-      <!-- LOYALTY -->
       <section class="section" id="section-loyalty">
-        <div class="section-header">
-          <div class="section-icon" style="background:rgba(201,151,58,0.1)">✦</div>
-          <div><div class="section-title">Loyalty Programs</div><div class="section-subtitle">IATA OneOrder Module 4 — Auto-applied at booking</div></div>
-        </div>
-        <div id="loyalty-list" class="loyalty-grid">
-          <div style="color:var(--textMid);font-size:13px">Loading loyalty programs...</div>
-        </div>
+        <div class="sec-header"><div class="sec-icon" style="background:var(--goldGlow)">✦</div><div><div class="sec-title">Loyalty Programs</div><div class="sec-sub">IATA OneOrder Module 4 — Auto-applied at checkout on all integrated platforms</div></div></div>
+        <div class="form-section"><div class="form-section-title">Airlines</div><div class="loyalty-grid" id="loyalty-airlines"><div class="add-card"><div class="add-card-plus">+</div>Add Airline</div></div></div>
+        <div class="form-section"><div class="form-section-title">Hotels</div><div class="loyalty-grid" id="loyalty-hotels"><div class="add-card"><div class="add-card-plus">+</div>Add Hotel</div></div></div>
+        <div class="form-section"><div class="form-section-title">Car Rental &amp; Other</div><div class="loyalty-grid" id="loyalty-other"><div class="add-card"><div class="add-card-plus">+</div>Add Program</div></div></div>
       </section>
-
-      <!-- PAYMENT -->
       <section class="section" id="section-payment">
-        <div class="section-header">
-          <div class="section-icon" style="background:rgba(56,99,177,0.1)">💳</div>
-          <div><div class="section-title">Payment &amp; Corporate Policy</div><div class="section-subtitle">IATA OneOrder Module 5 — Switches with bleisure context</div></div>
+        <div class="sec-header"><div class="sec-icon" style="background:rgba(56,99,177,0.1)">💳</div><div><div class="sec-title">Payment &amp; Policy</div><div class="sec-sub">IATA OneOrder Module 5 — Context-aware switching with bleisure toggle</div></div></div>
+        <div id="pay-personal">
+          <div class="payment-card-display"><div class="card-chip"></div><div class="card-number" id="card-number-display">•••• •••• •••• ————</div><div class="card-name" id="card-name-display">Your Name</div><div class="card-type">Personal</div></div>
+          <div class="form-section"><div class="form-section-title">Personal Payment</div><div class="form-grid"><div class="form-field"><label class="field-label">Preferred Card</label><input class="field-input" id="f-preferred_card" type="text" placeholder="e.g. Chase Sapphire Reserve ···· 4521" oninput="updateCardDisplay(this.value)"></div><div class="form-field"><label class="field-label">Airport Membership</label><input class="field-input" type="text" value="CLEAR + TSA PreCheck" readonly style="opacity:0.6"></div></div></div>
         </div>
-        <div id="payment-personal">
-          <div class="form-sub-title">Personal Payment</div>
-          <div class="form-grid">
-            <div class="form-group"><label class="form-label">Preferred Card</label><input class="form-input" id="preferred_card" type="text" placeholder="Card nickname"></div>
-            <div class="form-group"><label class="form-label">Airport Membership</label><input class="form-input" type="text" value="CLEAR + TSA PreCheck" readonly></div>
-          </div>
-        </div>
-        <div id="payment-corp" style="display:none">
-          <div class="form-sub-title">Corporate Profile</div>
-          <div class="form-grid">
-            <div class="form-group"><label class="form-label">Company Name</label><input class="form-input" id="company_name" type="text" placeholder="Company name"></div>
-            <div class="form-group"><label class="form-label">Cost Center</label><input class="form-input" id="cost_center" type="text" placeholder="e.g. CC-3021"></div>
-            <div class="form-group"><label class="form-label">Travel Policy</label><input class="form-input" id="policy_description" type="text" placeholder="Policy description"></div>
-            <div class="form-group"><label class="form-label">Expense Platform</label>
-              <select class="form-select" id="expense_platform"><option>Expensify</option><option>Concur</option><option>Navan Expense</option><option>Not connected</option></select>
-            </div>
-          </div>
+        <div id="pay-corporate" style="display:none">
+          <div class="payment-card-display" style="background:linear-gradient(135deg,#1C1A2E 0%,#2A2040 100%)"><div class="card-chip" style="background:rgba(184,149,90,0.2);border-color:var(--goldDim)"></div><div class="card-number" id="corp-card-display">Corporate Account</div><div class="card-name" id="corp-name-display">Company</div><div class="card-type" style="color:var(--goldLt)">Corporate</div></div>
+          <div class="form-section"><div class="form-section-title">Corporate Profile</div><div class="form-grid"><div class="form-field"><label class="field-label">Company Name</label><input class="field-input" id="f-company_name" type="text" placeholder="Company name" oninput="document.getElementById('corp-name-display').textContent=this.value||'Company'"></div><div class="form-field"><label class="field-label">Corporate Card</label><input class="field-input" id="f-corporate_card" type="text" placeholder="Corporate card" oninput="document.getElementById('corp-card-display').textContent=this.value||'Corporate Account'"></div><div class="form-field"><label class="field-label">Cost Center</label><input class="field-input" id="f-cost_center" type="text" placeholder="e.g. CC-3021"></div><div class="form-field"><label class="field-label">Travel Policy</label><input class="field-input" id="f-policy_description" type="text" placeholder="Policy description"></div><div class="form-field"><label class="field-label">Expense Platform</label><select class="field-select" id="f-expense_platform"><option>Not connected</option><option>Expensify</option><option>SAP Concur</option><option>Navan Expense</option><option>Brex</option><option>Ramp</option></select></div></div></div>
         </div>
       </section>
-
-      <!-- TRIPS -->
       <section class="section" id="section-trips">
-        <div class="section-header">
-          <div class="section-icon" style="background:rgba(138,151,168,0.1)">📋</div>
-          <div><div class="section-title">Trip History &amp; Vault</div><div class="section-subtitle">IATA OneOrder Module 7 — Populated via webhook from integrated platforms</div></div>
-        </div>
-        <div class="trip-list" id="trip-list">
-          <div style="color:var(--textMid);font-size:13px">Loading trip history...</div>
-        </div>
+        <div class="sec-header"><div class="sec-icon" style="background:var(--surface2)">📋</div><div><div class="sec-title">Trip History &amp; Vault</div><div class="sec-sub">IATA OneOrder Module 7 — Auto-populated via booking confirmation webhooks</div></div></div>
+        <div class="trip-list" id="trip-list"><div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips in vault yet</div><div class="empty-sub">Trips appear here when integrated platforms send booking confirmations</div></div></div>
       </section>
-
-      <!-- CONSENT -->
+      <section class="section" id="section-family">
+        <div class="sec-header"><div class="sec-icon" style="background:var(--surface2)">👥</div><div><div class="sec-title">Family Profiles</div><div class="sec-sub">Linked traveler identities with separate consent and document management</div></div></div>
+        <div class="loyalty-grid"><div class="add-card"><div class="add-card-plus">+</div>Link Family Member</div></div>
+      </section>
       <section class="section" id="section-consent">
-        <div class="section-header">
-          <div class="section-icon" style="background:rgba(13,148,136,0.1)">🔒</div>
-          <div><div class="section-title">Consent &amp; Integrations</div><div class="section-subtitle">GDPR-aligned — you control exactly what each platform sees</div></div>
-        </div>
-        <div class="consent-list">
-          <div class="consent-item"><div class="consent-platform" style="background:rgba(13,148,136,0.1)">✈</div><div class="consent-info"><div class="consent-name">TripIt</div><div class="consent-scope">Reads: Trip history · Writes: Transaction records</div></div><div class="api-status"><div class="api-dot pending"></div><span style="color:var(--goldLt)">Ready to connect</span></div></div>
-          <div class="consent-item"><div class="consent-platform" style="background:rgba(56,99,177,0.1)">🛫</div><div class="consent-info"><div class="consent-name">Alaska Airlines</div><div class="consent-scope">Reads: Seat prefs, meal code, KTN, loyalty</div></div><div class="api-status"><div class="api-dot pending"></div><span style="color:var(--goldLt)">Ready to connect</span></div></div>
-          <div class="consent-item"><div class="consent-platform" style="background:rgba(201,151,58,0.1)">🏢</div><div class="consent-info"><div class="consent-name">Navan (Corp context only)</div><div class="consent-scope">Business UUID context only — personal data excluded</div></div><div class="api-status"><div class="api-dot pending"></div><span style="color:var(--goldLt)">Ready to connect</span></div></div>
-        </div>
+        <div class="sec-header"><div class="sec-icon" style="background:var(--tealGlow)">🔒</div><div><div class="sec-title">Consent &amp; Access</div><div class="sec-sub">GDPR-aligned — you define exactly what each platform can read and write</div></div></div>
+        <div class="form-section"><div class="form-section-title">Connected Platforms</div>
+        <div class="integration-list">
+          <div class="integration-row"><div class="integration-icon" style="background:var(--tealGlow)">✈</div><div class="integration-info"><div class="integration-name">TripIt</div><div class="integration-scope">Reads: Trip history · Writes: Booking records to vault</div></div><div class="status-dot-wrap"><div class="status-dot dot-pending"></div><span style="color:var(--amber)">Ready</span></div></div>
+          <div class="integration-row"><div class="integration-icon" style="background:rgba(56,99,177,0.1)">🛫</div><div class="integration-info"><div class="integration-name">Alaska Airlines</div><div class="integration-scope">Reads: Seat prefs, meal code, KTN, loyalty · Writes: Booking webhook</div></div><div class="status-dot-wrap"><div class="status-dot dot-pending"></div><span style="color:var(--amber)">Ready</span></div></div>
+          <div class="integration-row"><div class="integration-icon" style="background:var(--goldGlow)">🏢</div><div class="integration-info"><div class="integration-name">Navan</div><div class="integration-scope">Business context only — personal data fully excluded</div></div><div class="status-dot-wrap"><div class="status-dot dot-pending"></div><span style="color:var(--amber)">Ready</span></div></div>
+          <div class="integration-row" style="border:1px dashed var(--border2);background:transparent"><div class="integration-icon" style="background:transparent;color:var(--textDim);font-size:22px">+</div><div class="integration-info"><div class="integration-name" style="color:var(--textDim)">Connect a platform</div><div class="integration-scope">Airlines · TMCs · OBTs · Itinerary apps</div></div><button class="save-btn" style="font-size:11px;padding:6px 14px">Browse</button></div>
+        </div></div>
       </section>
-
-      <!-- API -->
       <section class="section" id="section-api">
-        <div class="section-header">
-          <div class="section-icon" style="background:rgba(56,99,177,0.1)">⚡</div>
-          <div><div class="section-title">API &amp; Webhooks</div><div class="section-subtitle">UUID-anchored REST API · AWS Lambda · Aurora PostgreSQL 16.4</div></div>
-        </div>
-        <div class="form-sub-title">Live Endpoints</div>
-        <div class="consent-list">
-          <div class="consent-item"><div class="consent-info"><div class="consent-name" style="font-family:'DM Mono',monospace;font-size:12px">GET /api/v1/profile/{uuid}</div><div class="consent-scope">Full profile payload</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Live</span></div></div>
-          <div class="consent-item"><div class="consent-info"><div class="consent-name" style="font-family:'DM Mono',monospace;font-size:12px">PUT /api/v1/profile/{uuid}</div><div class="consent-scope">Update any module</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Live</span></div></div>
-          <div class="consent-item"><div class="consent-info"><div class="consent-name" style="font-family:'DM Mono',monospace;font-size:12px">POST /api/v1/transactions/{uuid}</div><div class="consent-scope">Booking confirmation webhook</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Live</span></div></div>
-          <div class="consent-item"><div class="consent-info"><div class="consent-name" style="font-family:'DM Mono',monospace;font-size:12px">GET/POST /api/v1/profile/{uuid}/bleisure</div><div class="consent-scope">Bleisure context switch</div></div><div class="api-status"><div class="api-dot live"></div><span style="color:var(--green)">Live</span></div></div>
-        </div>
-        <div class="form-divider"></div>
-        <div class="form-sub-title">Your UUID</div>
-        <div style="font-family:'DM Mono',monospace;font-size:13px;color:var(--tealLt);background:var(--card);padding:12px;border-radius:6px;border:1px solid var(--border)" id="api-uuid-display">—</div>
+        <div class="sec-header"><div class="sec-icon" style="background:rgba(56,99,177,0.1)">⚡</div><div><div class="sec-title">API &amp; Webhooks</div><div class="sec-sub">UUID-anchored REST API · AWS Lambda · Aurora PostgreSQL 16.4</div></div></div>
+        <div class="form-section"><div class="form-section-title">Your Credentials</div><div class="form-grid"><div class="form-field"><label class="field-label">Traveler UUID</label><input class="field-input" id="api-uuid" type="text" readonly style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--goldLt)"></div><div class="form-field"><label class="field-label">API Base URL</label><input class="field-input" type="text" value="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod" readonly style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tealLt)"></div></div></div>
+        <div class="form-section"><div class="form-section-title">Live Endpoints</div>
+        <div class="integration-list">
+          <div class="integration-row"><div class="integration-info"><div class="integration-name" style="font-family:'JetBrains Mono',monospace;font-size:12px">GET /api/v1/me</div><div class="integration-scope">Resolve UUID from JWT — auto-creates traveler on first login</div></div><div class="status-dot-wrap"><div class="status-dot dot-live"></div><span style="color:var(--green)">Live</span></div></div>
+          <div class="integration-row"><div class="integration-info"><div class="integration-name" style="font-family:'JetBrains Mono',monospace;font-size:12px">GET/PUT /api/v1/profile/{uuid}</div><div class="integration-scope">Full profile payload — read and update any module</div></div><div class="status-dot-wrap"><div class="status-dot dot-live"></div><span style="color:var(--green)">Live</span></div></div>
+          <div class="integration-row"><div class="integration-info"><div class="integration-name" style="font-family:'JetBrains Mono',monospace;font-size:12px">POST /api/v1/transactions/{uuid}</div><div class="integration-scope">Booking confirmation webhook from integrated platform</div></div><div class="status-dot-wrap"><div class="status-dot dot-live"></div><span style="color:var(--green)">Live</span></div></div>
+          <div class="integration-row"><div class="integration-info"><div class="integration-name" style="font-family:'JetBrains Mono',monospace;font-size:12px">GET/POST /api/v1/profile/{uuid}/bleisure</div><div class="integration-scope">Bleisure dual-context UUID switch</div></div><div class="status-dot-wrap"><div class="status-dot dot-live"></div><span style="color:var(--green)">Live</span></div></div>
+        </div></div>
       </section>
-
     </div>
-  </main>
+  </div>
 </div>
-
 <script>
-const API = "https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
-const COGNITO_DOMAIN = "https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
-const CLIENT_ID = "2heljmdli4f9cv2i4m0i020mfc";
-const REDIRECT_URI = window.location.origin + window.location.pathname;
-
-let accessToken = null;
-let userUuid = null;
-let profileData = null;
-let currentSection = 'overview';
-
-// ── AUTH ──────────────────────────────────────────────────────
-function getLoginUrl() {
-  return `${COGNITO_DOMAIN}/login?client_id=${CLIENT_ID}&response_type=token&scope=email+openid+profile&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
-}
-
-function logout() {
-  localStorage.removeItem('up_token');
-  localStorage.removeItem('up_uuid');
-  accessToken = null;
-  userUuid = null;
-  window.location.href = `${COGNITO_DOMAIN}/logout?client_id=${CLIENT_ID}&logout_uri=${encodeURIComponent(REDIRECT_URI)}`;
-}
-
-function parseTokenFromHash() {
-  const hash = window.location.hash.substring(1);
-  const params = new URLSearchParams(hash);
-  return params.get('access_token');
-}
-
-function showToast(msg, isError = false) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (isError ? ' error' : '');
-  setTimeout(() => t.className = 'toast', 3000);
-}
-
-// ── API CALLS ──────────────────────────────────────────────────
-async function apiGet(path) {
-  const res = await fetch(`${API}${path}`, {
-    headers: { 'Authorization': `Bearer ${accessToken}` }
-  });
-  return res.json();
-}
-
-async function apiPut(path, body) {
-  const res = await fetch(`${API}${path}`, {
-    method: 'PUT',
-    headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  return res.json();
-}
-
-// ── LOAD PROFILE ───────────────────────────────────────────────
-async function loadProfile() {
-  try {
-    const data = await apiGet(`/api/v1/profile/${userUuid}`);
-    if (data.error) { showToast('Error loading profile: ' + data.error, true); return; }
-    profileData = data;
-    renderProfile(data);
-  } catch(e) {
-    showToast('Network error loading profile', true);
-  }
-}
-
-function renderProfile(data) {
-  // UUID and completeness
-  document.getElementById('uuid-display').textContent = data.uuid;
-  document.getElementById('api-uuid-display').textContent = data.uuid;
-  document.getElementById('comp-pct').textContent = data.profile_completeness + '%';
-  document.getElementById('comp-bar').style.width = data.profile_completeness + '%';
-
-  // Overview stats
-  document.getElementById('stat-completeness').textContent = data.profile_completeness + '%';
-  document.getElementById('stat-comp-sub').textContent = data.profile_completeness >= 80 ? 'Profile strong' : 'Add more modules';
-  document.getElementById('stat-trips').textContent = data.trips_count || '0';
-  document.getElementById('stat-trips-sub').textContent = 'In transaction vault';
-  document.getElementById('stat-context').textContent = data.active_context === 'CORPORATE' ? 'Biz' : 'Personal';
-  document.getElementById('stat-context-sub').textContent = data.active_context || 'PERSONAL';
-  document.getElementById('stat-modules-sub').textContent = `${data.profile_completeness >= 80 ? '6' : '4'} of 7 complete`;
-
-  // Profile summary
-  const id = data.identity;
-  if (id) {
-    document.getElementById('profile-summary').innerHTML = `
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px">
-          <div style="font-size:10px;color:var(--textMid);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Name</div>
-          <div style="font-size:15px;color:var(--white)">${id.legal_first || '—'} ${id.legal_last || ''}</div>
-        </div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px">
-          <div style="font-size:10px;color:var(--textMid);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Home Airport</div>
-          <div style="font-size:15px;color:var(--white)">${id.home_airport || '—'}</div>
-        </div>
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px">
-          <div style="font-size:10px;color:var(--textMid);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Nationality</div>
-          <div style="font-size:15px;color:var(--white)">${id.nationality || '—'}</div>
-        </div>
-      </div>`;
-  }
-
-  // Identity fields
-  if (id) {
-    document.getElementById('legal_first').value = id.legal_first || '';
-    document.getElementById('legal_middle').value = id.legal_middle || '';
-    document.getElementById('legal_last').value = id.legal_last || '';
-    document.getElementById('dob').value = id.dob ? id.dob.split('T')[0] : '';
-    document.getElementById('nationality').value = id.nationality || '';
-    document.getElementById('gender_code').value = id.gender_code || 'M';
-    document.getElementById('home_airport').value = id.home_airport || '';
-  }
-
-  // Seat prefs
-  const seat = data.seat_preferences;
-  if (seat) {
-    document.getElementById('cabin_domestic').value = seat.cabin_domestic || 'ECONOMY';
-    document.getElementById('cabin_international').value = seat.cabin_international || 'ECONOMY';
-    document.getElementById('seat_position').value = seat.seat_position || 'AISLE';
-    document.getElementById('row_preference').value = seat.row_preference || 'NO_PREF';
-    document.getElementById('hotel_room_type').value = seat.hotel_room_type || 'KING';
-    document.getElementById('hotel_floor_pref').value = seat.hotel_floor_pref || 'NO_PREF';
-    document.getElementById('pref-ams').textContent = seat.avoid_middle_seats ? 'Yes' : 'No';
-    document.getElementById('pref-exit').textContent = seat.row_preference === 'EXIT_ROW' ? 'Yes' : 'No';
-  }
-
-  // Meal prefs
-  const meal = data.meal_preferences;
-  if (meal) {
-    document.getElementById('primary_meal_code').value = meal.primary_meal_code || 'HNML';
-    document.getElementById('beverage_pref').value = meal.beverage_pref || 'NON_ALC';
-    const allergies = meal.allergies;
-    document.getElementById('allergies').value = Array.isArray(allergies) ? allergies.join(', ') : '';
-    const avoid = meal.avoid_items;
-    document.getElementById('avoid_items').value = Array.isArray(avoid) ? avoid.join(', ') : '';
-  }
-
-  // Loyalty
-  const loyalty = data.loyalty_programs || [];
-  const loyaltyEl = document.getElementById('loyalty-list');
-  if (loyalty.length > 0) {
-    loyaltyEl.innerHTML = loyalty.map(l => `
-      <div class="loyalty-card">
-        <div class="loyalty-airline">${l.provider_name}</div>
-        <div class="loyalty-prog">${l.program_name || ''}</div>
-        <div class="loyalty-number">${l.member_number}</div>
-        <div class="loyalty-tier">${l.tier_status || 'Member'}</div>
-      </div>`).join('') + `<div class="add-card"><div class="add-plus">+</div>Add Program</div>`;
-  } else {
-    loyaltyEl.innerHTML = `<div class="add-card" style="grid-column:1/-1"><div class="add-plus">+</div>Add your first loyalty program</div>`;
-  }
-
-  // Traveler name in sidebar
-  if (id && id.legal_first) {
-    document.getElementById('traveler-name').textContent = `${id.legal_first} ${id.legal_last || ''}`.trim();
-    document.getElementById('traveler-initials').textContent = (id.legal_first[0] + (id.legal_last ? id.legal_last[0] : '')).toUpperCase();
-  }
-}
-
-// ── SAVE ───────────────────────────────────────────────────────
-async function saveCurrentSection() {
-  const btn = document.getElementById('save-btn');
-  btn.disabled = true;
-  btn.textContent = 'Saving...';
-
-  let module, data;
-
-  if (currentSection === 'identity') {
-    module = 'identity';
-    data = {
-      legal_first:  document.getElementById('legal_first').value,
-      legal_middle: document.getElementById('legal_middle').value,
-      legal_last:   document.getElementById('legal_last').value,
-      dob:          document.getElementById('dob').value,
-      nationality:  document.getElementById('nationality').value,
-      gender_code:  document.getElementById('gender_code').value,
-      home_airport: document.getElementById('home_airport').value.toUpperCase(),
-    };
-  } else if (currentSection === 'preferences') {
-    module = 'seat_preferences';
-    data = {
-      cabin_domestic:      document.getElementById('cabin_domestic').value,
-      cabin_international: document.getElementById('cabin_international').value,
-      seat_position:       document.getElementById('seat_position').value,
-      row_preference:      document.getElementById('row_preference').value,
-      hotel_room_type:     document.getElementById('hotel_room_type').value,
-      hotel_floor_pref:    document.getElementById('hotel_floor_pref').value,
-      avoid_middle_seats:  true,
-    };
-  } else if (currentSection === 'meals') {
-    module = 'meal_preferences';
-    const allergiesRaw = document.getElementById('allergies').value;
-    const avoidRaw = document.getElementById('avoid_items').value;
-    data = {
-      primary_meal_code: document.getElementById('primary_meal_code').value,
-      beverage_pref:     document.getElementById('beverage_pref').value,
-      allergies:  allergiesRaw ? allergiesRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
-      avoid_items: avoidRaw ? avoidRaw.split(',').map(s => s.trim()).filter(Boolean) : [],
-    };
-  } else {
-    showToast('Switch to Identity, Seat, or Meal tab to save', false);
-    btn.disabled = false;
-    btn.textContent = 'Save Changes';
-    return;
-  }
-
-  try {
-    const result = await apiPut(`/api/v1/profile/${userUuid}`, { module, data });
-    if (result.success) {
-      showToast('Saved successfully');
-      await loadProfile();
-    } else {
-      showToast('Save failed: ' + (result.error || 'unknown error'), true);
-    }
-  } catch(e) {
-    showToast('Network error saving', true);
-  }
-
-  btn.disabled = false;
-  btn.textContent = 'Save Changes';
-}
-
-// ── BLEISURE ───────────────────────────────────────────────────
-async function toggleBleisure(input) {
-  const pill = document.getElementById('context-pill');
-  const lblL = document.getElementById('lbl-leisure');
-  const lblB = document.getElementById('lbl-business');
-  const personal = document.getElementById('payment-personal');
-  const corp = document.getElementById('payment-corp');
-  const context = input.checked ? 'CORPORATE' : 'PERSONAL';
-
-  try {
-    await fetch(`${API}/api/v1/profile/${userUuid}/bleisure`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ context })
-    });
-  } catch(e) {}
-
-  if (input.checked) {
-    pill.textContent = 'Business Mode'; pill.className = 'bleisure-context-pill business';
-    lblL.className = 'bleisure-label leisure inactive';
-    lblB.className = 'bleisure-label business active';
-    if (personal) personal.style.display = 'none';
-    if (corp) corp.style.display = 'block';
-  } else {
-    pill.textContent = 'Personal Mode'; pill.className = 'bleisure-context-pill leisure';
-    lblL.className = 'bleisure-label leisure';
-    lblB.className = 'bleisure-label business';
-    if (personal) personal.style.display = 'block';
-    if (corp) corp.style.display = 'none';
-  }
-}
-
-// ── NAV ────────────────────────────────────────────────────────
-function showSection(id, btn) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('section-' + id).classList.add('active');
-  if (btn) btn.classList.add('active');
-  currentSection = id;
-  const titles = { overview:'Dashboard', identity:'Identity & Documents', preferences:'Seat & Cabin Preferences', meals:'Meal & Dietary', loyalty:'Loyalty Programs', payment:'Payment & Corporate Policy', trips:'Trip History', consent:'Consent & Integrations', api:'API & Webhooks' };
-  document.getElementById('page-title').textContent = titles[id] || 'UniProfile';
-  document.querySelector('.main').scrollTop = 0;
-}
-
-// ── INIT ───────────────────────────────────────────────────────
-async function init() {
-  // Set login button URL
-  document.getElementById('login-btn').href = getLoginUrl();
-
-  // Check for token in URL hash (after Cognito redirect)
-  const hashToken = parseTokenFromHash();
-  if (hashToken) {
-    accessToken = hashToken;
-    localStorage.setItem('up_token', hashToken);
-    window.history.replaceState(null, '', window.location.pathname);
-  } else {
-    accessToken = localStorage.getItem('up_token');
-  }
-
-  if (!accessToken) {
-    document.getElementById('login-screen').style.display = 'flex';
-    return;
-  }
-
-  // Show loading
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('loading-screen').style.display = 'flex';
-
-  // Check stored UUID or fetch from API
-  userUuid = localStorage.getItem('up_uuid');
-
-  if (!userUuid) {
-    // Try to get UUID from API using token
-    try {
-      const res = await fetch(`${API}/api/v1/profile/me`, {
-        headers: { 'Authorization': `Bearer ${accessToken}` }
-      });
-      // If no /me endpoint, use known UUID for now
-      userUuid = 'c60b4632-2052-472e-8c6a-6d2e62b2d8f6';
-      localStorage.setItem('up_uuid', userUuid);
-    } catch(e) {
-      userUuid = 'c60b4632-2052-472e-8c6a-6d2e62b2d8f6';
-      localStorage.setItem('up_uuid', userUuid);
-    }
-  }
-
-  // Load profile
-  await loadProfile();
-
-  // Show app
-  document.getElementById('loading-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-  document.getElementById('app').classList.add('visible');
-}
-
+const API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
+const COGNITO_DOMAIN="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
+const CLIENT_ID="2heljmdli4f9cv2i4m0i020mfc";
+const REDIRECT_URI=window.location.origin+"/";
+let token=null,uuid=null,profile=null,section="overview",saving=false,toastTimer;
+function loginUrl(){return `${COGNITO_DOMAIN}/login?client_id=${CLIENT_ID}&response_type=token&scope=email+openid+profile&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;}
+function logout(){localStorage.clear();window.location.href=`${COGNITO_DOMAIN}/logout?client_id=${CLIENT_ID}&logout_uri=${encodeURIComponent(REDIRECT_URI)}`;}
+function parseHash(){return new URLSearchParams(window.location.hash.slice(1)).get("access_token");}
+async function api(method,path,body){const opts={method,headers:{Authorization:`Bearer ${token}`}};if(body){opts.headers["Content-Type"]="application/json";opts.body=JSON.stringify(body);}const r=await fetch(`${API}${path}`,opts);if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json();}
+function toast(msg,type=""){const el=document.getElementById("toast");el.textContent=msg;el.className="toast show"+(type?" "+type:"");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.className="toast",3000);}
+function setSaveState(state){const dot=document.getElementById("save-dot"),lbl=document.getElementById("save-label");if(state==="saving"){dot.className="autosave-dot saving";lbl.textContent="Saving...";}else if(state==="saved"){dot.className="autosave-dot saved";lbl.textContent="All changes saved";setTimeout(()=>dot.className="autosave-dot",3000);}else{dot.className="autosave-dot";lbl.textContent="Unsaved changes";}}
+function showSection(id,btn){document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));document.getElementById("section-"+id).classList.add("active");if(btn)btn.classList.add("active");section=id;const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Seat & Cabin Preferences",meals:"Meal & Dietary",loyalty:"Loyalty Programs",payment:"Payment & Policy",trips:"Trip History",family:"Family Profiles",consent:"Consent & Access",api:"API & Webhooks"};document.getElementById("page-title").textContent=titles[id]||"UniProfile";document.querySelector(".content").scrollTop=0;}
+async function switchContext(el){const ctx=el.checked?"CORPORATE":"PERSONAL";const pill=document.getElementById("context-pill"),lp=document.getElementById("lbl-personal"),lb=document.getElementById("lbl-business"),pp=document.getElementById("pay-personal"),pc=document.getElementById("pay-corporate"),nb=document.getElementById("badge-payment");if(el.checked){pill.textContent="Business Mode";pill.className="context-pill corporate";lp.className="bleisure-opt teal";lb.className="bleisure-opt gold on";if(pp)pp.style.display="none";if(pc)pc.style.display="block";if(nb)nb.style.display="inline";}else{pill.textContent="Personal Mode";pill.className="context-pill personal";lp.className="bleisure-opt teal on";lb.className="bleisure-opt gold";if(pp)pp.style.display="block";if(pc)pc.style.display="none";if(nb)nb.style.display="none";}try{await api("POST",`/api/v1/profile/${uuid}/bleisure`,{context:ctx});}catch(e){}}
+const v=id=>document.getElementById(id)?.value?.trim()||"";
+const cb=id=>document.getElementById(id)?.checked||false;
+const s=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val??"";};
+const sc=(id,val)=>{const el=document.getElementById(id);if(el)el.checked=!!val;};
+const st=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt??"—";};
+async function saveSection(){if(saving)return;const btn=document.getElementById("save-btn");saving=true;btn.disabled=true;btn.textContent="Saving...";setSaveState("saving");let module,data;try{if(section==="identity"){module="identity";data={legal_first:v("f-legal_first"),legal_middle:v("f-legal_middle"),legal_last:v("f-legal_last"),dob:v("f-dob"),nationality:v("f-nationality"),gender_code:v("f-gender_code"),home_airport:v("f-home_airport").toUpperCase().slice(0,3)};}else if(section==="preferences"){module="seat_preferences";data={cabin_domestic:v("f-cabin_domestic"),cabin_international:v("f-cabin_international"),seat_position:v("f-seat_position"),row_preference:v("f-row_preference"),avoid_middle_seats:cb("f-avoid_middle_seats"),avoid_last_row:cb("f-avoid_last_row"),wheelchair_needed:cb("f-wheelchair_needed"),hotel_room_type:v("f-hotel_room_type"),hotel_floor_pref:v("f-hotel_floor_pref"),car_type_pref:v("f-car_type_pref")};}else if(section==="meals"){module="meal_preferences";data={primary_meal_code:v("f-primary_meal_code"),beverage_pref:v("f-beverage_pref"),allergies:v("f-allergies").split(",").map(s=>s.trim()).filter(Boolean),avoid_items:v("f-avoid_items").split(",").map(s=>s.trim()).filter(Boolean),dietary_notes:v("f-dietary_notes")};}else if(section==="payment"){const isCorp=document.getElementById("bleisure-toggle").checked;if(isCorp){module="payment_corporate";data={company_name:v("f-company_name"),corporate_card:v("f-corporate_card"),cost_center:v("f-cost_center"),policy_description:v("f-policy_description"),expense_platform:v("f-expense_platform")};}else{module="payment_personal";data={preferred_card:v("f-preferred_card")};}}else{toast("Navigate to a module tab to save");saving=false;btn.disabled=false;btn.textContent="Save Changes";setSaveState("");return;}const result=await api("PUT",`/api/v1/profile/${uuid}`,{module,data});if(result.success){profile=result.profile;toast("Saved successfully","success");setSaveState("saved");updateSidebar(result.profile);}else{toast("Save failed: "+(result.error||"unknown"),"error");setSaveState("");}}catch(e){toast("Error: "+e.message,"error");setSaveState("");}saving=false;btn.disabled=false;btn.textContent="Save Changes";}
+function updateSidebar(p){st("sid-uuid",p.uuid);st("sid-pct",(p.profile_completeness||0)+"%");st("sid-modules",`${Math.round((p.profile_completeness||0)/100*7)} of 7 modules`);document.getElementById("sid-name").textContent=p.identity?`${p.identity.legal_first||""} ${p.identity.legal_last||""}`.trim()||p.email:p.email||"Traveler";document.getElementById("sid-initials").textContent=p.identity&&p.identity.legal_first?(p.identity.legal_first[0]+(p.identity.legal_last?p.identity.legal_last[0]:"")).toUpperCase():"?";document.getElementById("sid-tier").textContent="★ "+(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1);const pct=p.profile_completeness||0,circumference=2*Math.PI*18,offset=circumference-(pct/100)*circumference;const ring=document.getElementById("ring-fill");if(ring){ring.style.strokeDashoffset=offset;ring.className="ring-fill"+(pct>=80?" good":pct<30?" danger":"");}const expiring=(p.documents||[]).filter(d=>d.days_remaining!==null&&d.days_remaining<=90);const badge=document.getElementById("badge-identity");if(badge)badge.style.display=expiring.length?"inline":"none";}
+function renderProfile(p){profile=p;updateSidebar(p);st("ov-completeness",(p.profile_completeness||0)+"%");st("ov-trips",p.trips_count||0);st("ov-loyalty",(p.loyalty_programs||[]).length);st("ov-docs",(p.documents||[]).length);const compNote=document.getElementById("ov-comp-note");if(compNote){const pct=p.profile_completeness||0;compNote.textContent=pct>=80?"Strong profile":pct>=50?"Almost complete":"Add more modules";compNote.className="stat-note "+(pct>=80?"teal":pct>=50?"":"warn");}
+const expiring=(p.documents||[]).filter(d=>d.days_remaining!==null&&d.days_remaining<=180);const ac=document.getElementById("alert-container");if(ac&&expiring.length){ac.innerHTML=expiring.map(d=>`<div class="alert-banner ${d.days_remaining<0?"danger":"warn"}"><span class="alert-icon">${d.days_remaining<0?"⛔":"⚠"}</span><span class="alert-text">Your <strong>${d.doc_type}</strong> ${d.days_remaining<0?"has expired":`expires in ${d.days_remaining} days`}.</span><span class="alert-link" onclick="showSection('identity',document.querySelectorAll('.nav-btn')[1])">Update →</span></div>`).join("");}
+const modules=[{id:"identity",icon:"",iconBg:"var(--goldGlow)",name:"Identity & Documents",desc:"Passport, KTN, TSA PreCheck, visas and government IDs",status:p.identity?"complete":"empty",tags:(p.documents||[]).map(d=>({label:d.doc_type.replace(/_/g," "),filled:true}))},{id:"preferences",icon:"💺",iconBg:"var(--tealGlow)",name:"Seat & Cabin Preferences",desc:"Seat position, cabin class, extra legroom, hotel and car preferences",status:p.seat_preferences?"complete":"empty",tags:p.seat_preferences?[{label:p.seat_preferences.seat_position,filled:true},{label:p.seat_preferences.cabin_international,filled:true}]:[]},{id:"meals",icon:"🍽",iconBg:"var(--greenGlow)",name:"Meal & Dietary",desc:"IATA meal codes, allergies and dietary restrictions",status:p.meal_preferences?"complete":"empty",tags:p.meal_preferences?[{label:p.meal_preferences.primary_meal_code,filled:true},...(p.meal_preferences.allergies||[]).map(a=>({label:a,filled:false}))]:[],},{id:"loyalty",icon:"✦",iconBg:"var(--goldGlow)",name:"Loyalty Programs",desc:"Airline, hotel and car memberships — auto-applied at checkout",status:(p.loyalty_programs||[]).length>0?"complete":"empty",tags:(p.loyalty_programs||[]).slice(0,3).map(l=>({label:l.provider_name,filled:true}))},{id:"payment",icon:"💳",iconBg:"rgba(56,99,177,0.1)",name:"Payment & Policy",desc:"Personal and corporate payment profiles with context-aware switching",status:(p.payment_profiles||[]).length>0?"partial":"empty",tags:(p.payment_profiles||[]).map(pp=>({label:pp.context,filled:true}))},{id:"trips",icon:"📋",iconBg:"var(--surface2)",name:"Trip History & Vault",desc:"All bookings and PNRs — populated via webhook",status:(p.trips||[]).length>0?"complete":"empty",tags:[{label:(p.trips_count||0)+" trips",filled:(p.trips_count||0)>0}]},];
+const mg=document.getElementById("module-grid");if(mg)mg.innerHTML=modules.map((m,i)=>`<div class="module-card ${m.status}" onclick="showSection('${m.id}',document.querySelectorAll('.nav-btn')[${i+1}])"><div class="module-top"><div class="module-icon-wrap" style="background:${m.iconBg}">${m.icon}</div><div class="module-status-pill pill-${m.status}">${m.status==="complete"?"Complete":m.status==="partial"?"Partial":"Empty"}</div></div><div class="module-name">${m.name}</div><div class="module-desc">${m.desc}</div>${m.tags.length?`<div class="module-tags">${m.tags.slice(0,4).map(t=>`<span class="module-tag${t.filled?" filled":""}">${t.label}</span>`).join("")}</div>`:""}</div>`).join("");
+if(p.identity){s("f-legal_first",p.identity.legal_first);s("f-legal_middle",p.identity.legal_middle);s("f-legal_last",p.identity.legal_last);s("f-dob",p.identity.dob?p.identity.dob.split("T")[0]:"");s("f-nationality",p.identity.nationality);s("f-gender_code",p.identity.gender_code||"M");s("f-home_airport",p.identity.home_airport);}
+renderDocuments(p.documents||[]);
+if(p.seat_preferences){s("f-cabin_domestic",p.seat_preferences.cabin_domestic);s("f-cabin_international",p.seat_preferences.cabin_international);s("f-seat_position",p.seat_preferences.seat_position);s("f-row_preference",p.seat_preferences.row_preference);s("f-hotel_room_type",p.seat_preferences.hotel_room_type);s("f-hotel_floor_pref",p.seat_preferences.hotel_floor_pref);s("f-car_type_pref",p.seat_preferences.car_type_pref||"MIDSIZE");sc("f-avoid_middle_seats",p.seat_preferences.avoid_middle_seats);sc("f-avoid_last_row",p.seat_preferences.avoid_last_row);sc("f-wheelchair_needed",p.seat_preferences.wheelchair_needed);}
+if(p.meal_preferences){s("f-primary_meal_code",p.meal_preferences.primary_meal_code);s("f-beverage_pref",p.meal_preferences.beverage_pref);s("f-allergies",(p.meal_preferences.allergies||[]).join(", "));s("f-avoid_items",(p.meal_preferences.avoid_items||[]).join(", "));s("f-dietary_notes",p.meal_preferences.dietary_notes);}
+renderLoyalty(p.loyalty_programs||[]);renderPayment(p.payment_profiles||[],p.identity);renderTrips(p.trips||[]);s("api-uuid",p.uuid);}
+function renderDocuments(docs){const grid=document.getElementById("doc-grid"),alerts=document.getElementById("doc-alerts");if(!grid)return;const critical=docs.filter(d=>d.days_remaining!==null&&d.days_remaining<=90);if(alerts&&critical.length)alerts.innerHTML=critical.map(d=>`<div class="alert-banner ${d.days_remaining<0?"danger":"warn"}" style="margin-bottom:20px"><span class="alert-icon">${d.days_remaining<0?"⛔":"⚠"}</span><span class="alert-text"><strong>${d.doc_type}</strong> ${d.days_remaining<0?"expired":`expires in ${d.days_remaining} days`}</span></div>`).join("");if(!docs.length){grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1;padding:24px"><div class="empty-icon">📄</div><div class="empty-title">No documents added yet</div><div class="empty-sub">Add your passport, KTN, or Global Entry</div></div><div class="add-card"><div class="add-card-plus">+</div>Add Document</div>`;return;}grid.innerHTML=docs.map(d=>{const sc=d.days_remaining===null?"valid":d.days_remaining<0?"expired":d.days_remaining<=90?"expiring":"valid";const sl=d.days_remaining===null?"Valid":d.days_remaining<0?"Expired":d.days_remaining<=90?"Expiring":"Valid";const bp=d.days_remaining===null?100:Math.max(0,Math.min(100,(d.days_remaining/365)*100));const bc=d.days_remaining===null?"good":d.days_remaining<=90?"critical":d.days_remaining<=180?"warning":"good";return `<div class="doc-card ${sc}"><span class="doc-status ${sc}">${sl}</span><div class="doc-type">${d.doc_type.replace(/_/g," ")}</div><div class="doc-name">${d.issuing_country||"—"}</div><div class="doc-number">••• ••• •••</div>${d.expiry_date?`<div class="doc-expiry">Expires ${new Date(d.expiry_date).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</div><div class="expiry-countdown"><div class="countdown-bar-wrap"><div class="countdown-bar ${bc}" style="width:${bp}%"></div></div><div class="countdown-days">${d.days_remaining<0?"Expired":d.days_remaining+"d"}</div></div>`:""}</div>`;}).join("")+`<div class="add-card"><div class="add-card-plus">+</div>Add Document</div>`;}
+function renderLoyalty(programs){const airlines=programs.filter(p=>p.program_type==="AIRLINE"),hotels=programs.filter(p=>p.program_type==="HOTEL"),other=programs.filter(p=>!["AIRLINE","HOTEL"].includes(p.program_type));const rc=l=>`<div class="loyalty-card"><div class="loyalty-type-badge">${l.program_type}</div><div class="loyalty-airline">${l.provider_name}</div><div class="loyalty-program">${l.program_name||""}</div><div class="loyalty-number">${l.member_number}</div><div class="loyalty-tier" style="color:${l.tier_status?.toLowerCase().includes("gold")?"var(--goldLt)":l.tier_status?.toLowerCase().includes("plat")?"#C4B0F0":"var(--textMid)"}">${l.tier_status||"Member"}</div></div>`;const el=id=>document.getElementById(id);if(el("loyalty-airlines"))el("loyalty-airlines").innerHTML=airlines.map(rc).join("")+`<div class="add-card"><div class="add-card-plus">+</div>Add Airline</div>`;if(el("loyalty-hotels"))el("loyalty-hotels").innerHTML=hotels.map(rc).join("")+`<div class="add-card"><div class="add-card-plus">+</div>Add Hotel</div>`;if(el("loyalty-other"))el("loyalty-other").innerHTML=other.map(rc).join("")+`<div class="add-card"><div class="add-card-plus">+</div>Add Program</div>`;}
+function renderPayment(profiles,identity){const personal=profiles.find(p=>p.context==="PERSONAL"),corporate=profiles.find(p=>p.context==="CORPORATE");if(personal){s("f-preferred_card",personal.preferred_card);updateCardDisplay(personal.preferred_card||"");if(identity)document.getElementById("card-name-display").textContent=`${identity.legal_first||""} ${identity.legal_last||""}`.trim()||"Your Name";}if(corporate){s("f-company_name",corporate.company_name);s("f-corporate_card",corporate.corporate_card);s("f-cost_center",corporate.cost_center);s("f-policy_description",corporate.policy_description);s("f-expense_platform",corporate.expense_platform||"Not connected");document.getElementById("corp-name-display").textContent=corporate.company_name||"Company";document.getElementById("corp-card-display").textContent=corporate.corporate_card||"Corporate Account";}const nb=document.getElementById("badge-payment");if(nb)nb.style.display=corporate?"inline":"none";}
+function renderTrips(trips){const list=document.getElementById("trip-list");if(!list)return;if(!trips.length){list.innerHTML=`<div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips in vault yet</div><div class="empty-sub">Trips appear automatically when integrated platforms send booking confirmations</div></div>`;return;}const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];list.innerHTML=trips.map(t=>{const d=t.departure_date?new Date(t.departure_date):null;const cc=t.trip_context==="CORPORATE"?"ctx-corporate":t.trip_context==="BLEISURE"?"ctx-bleisure":"ctx-personal";return `<div class="trip-row"><div class="trip-date-col"><div class="trip-month">${d?months[d.getMonth()]:"—"}</div><div class="trip-day">${d?d.getDate():"—"}</div></div><div class="trip-sep"></div><div class="trip-route"><div class="trip-cities">${t.origin_iata||"—"} <span class="trip-arrow">→</span> ${t.destination_iata||"—"}</div><div class="trip-meta">${[t.carrier,t.flight_number,t.cabin_class,t.pnr?"PNR: "+t.pnr:""].filter(Boolean).join(" · ")}</div></div><span class="trip-context ${cc}">${t.trip_context||"Personal"}</span></div>`;}).join("");}
+function updateCardDisplay(val){const el=document.getElementById("card-number-display");if(!el)return;const parts=val.split("····").map(s=>s.trim());el.textContent=parts.length>1?`•••• •••• •••• ${parts[1]}`:"•••• •••• •••• ————";}
+async function init(){document.getElementById("login-btn").href=loginUrl();const hashToken=parseHash();if(hashToken){token=hashToken;localStorage.setItem("up_token",token);window.history.replaceState(null,"","/");}else{token=localStorage.getItem("up_token");}if(!token){document.getElementById("screen-login").style.display="flex";return;}document.getElementById("screen-login").style.display="none";document.getElementById("screen-loading").style.display="flex";try{const data=await api("GET","/api/v1/me");if(data.error)throw new Error(data.error);uuid=data.uuid;localStorage.setItem("up_uuid",uuid);renderProfile(data);document.getElementById("screen-loading").style.display="none";document.getElementById("app").style.display="flex";document.getElementById("app").classList.add("visible");}catch(e){console.error("Init error:",e);if(e.message.includes("401")||e.message.includes("token")){localStorage.clear();document.getElementById("screen-loading").style.display="none";document.getElementById("screen-login").style.display="flex";}else{document.getElementById("screen-loading").innerHTML=`<div style="text-align:center;color:var(--red);font-size:14px">Error: ${e.message}<br><button onclick="localStorage.clear();location.reload()" style="margin-top:16px;padding:8px 16px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:6px;cursor:pointer;font-family:inherit">Sign in again</button></div>`;}}}
 init();
 </script>
 </body>
