@@ -536,73 +536,96 @@ function applyTripFilter(filter){
   else if(["CORPORATE","PERSONAL","BLEISURE"].includes(filter))filtered=allTrips.filter(t=>t.trip_context===filter);
   if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips found</div><div class="empty-sub">Try a different filter</div></div>';return;}
   const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  list.innerHTML=filtered.map((t,i)=>{
+  list.innerHTML=filtered.map(function(t,i){
     const d=t.departure_date?new Date(t.departure_date):null;
     const r=t.return_date?new Date(t.return_date):null;
     const cc=t.trip_context==="CORPORATE"?"ctx-corporate":t.trip_context==="BLEISURE"?"ctx-bleisure":"ctx-personal";
     const cClass=t.status==="upcoming"?"upcoming":t.status==="in-progress"?"inprogress":"completed";
     const cText=t.status==="in-progress"?"In Progress":t.status==="upcoming"&&t.days_until!==null?(t.days_until===0?"Today":t.days_until===1?"Tomorrow":"In "+t.days_until+"d"):"Completed";
-    const nights=t.duration_nights?t.duration_nights+"n":"";
-    const needsPassport=PASSPORT_REQUIRED.includes(t.destination_iata);
-    const passportDoc=profile&&profile.documents?profile.documents.find(x=>x.doc_type==="PASSPORT"):null;
+    const segs=t.segments||[];
+    const pax=t.passengers||[];
+    const firstSeg=segs[0]||{};
+    const needsPassport=["LHR","CDG","NRT","HND","SIN","DXB","SYD","GRU","JNB","DEL","PEK","ICN","BKK","KUL","DOH","AMS","FRA","ZRH","FCO","MAD","BCN","KIX","ITM","OSA"].includes(t.destination_iata);
+    const passportDoc=profile&&profile.documents?profile.documents.find(function(x){return x.doc_type==="PASSPORT";}):null;
     const passportDays=passportDoc?passportDoc.days_remaining:null;
     const docOk=!needsPassport||(passportDays!==null&&passportDays>180);
-    const meta=[t.carrier,t.flight_number,t.cabin_class?t.cabin_class.replace(/_/g," "):"",t.pnr?"PNR: "+t.pnr:""].filter(Boolean).join(" · ");
-    return '<div class="trip-card-full" id="trip-'+i+'">'+
-      '<div class="trip-card-header" onclick="toggleTrip('+i+')">'+
-        '<div style="display:flex;align-items:center;gap:10px;min-width:60px">'+
-          '<div class="trip-airline-dot" style="background:'+airlineColor(t.carrier)+'"></div>'+
-          '<div style="text-align:center;font-family:Playfair Display,serif">'+
-            '<div style="font-size:10px;color:var(--textDim);text-transform:uppercase">'+(d?months[d.getMonth()]:"")+'</div>'+
-            '<div style="font-size:24px;font-weight:700;color:var(--white);line-height:1">'+(d?d.getDate():"")+'</div>'+
-          '</div>'+
-        '</div>'+
-        '<div style="width:1px;height:36px;background:var(--border2);flex-shrink:0"></div>'+
-        '<div style="flex:1">'+
-          '<div style="font-size:16px;font-weight:500;color:var(--white)">'+(t.origin_iata||"")+" → "+(t.destination_iata||"")+(nights?' <span style="font-size:11px;color:var(--textDim)">'+nights+'</span>':'')+
-          '</div>'+
-          '<div style="font-size:11px;color:var(--textMid);margin-top:3px">'+(t.trip_name||meta||"Unknown trip")+'</div>'+
-        '</div>'+
-        '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'+
-          (!docOk?'<span style="font-size:14px">⚠️</span>':'')+
-          '<span class="trip-context '+cc+'">'+(t.trip_context||"Personal")+'</span>'+
-          '<span class="trip-countdown '+cClass+'">'+cText+'</span>'+
-          '<span style="color:var(--textDim);font-size:12px">›</span>'+
-        '</div>'+
-      '</div>'+
-      '<div class="trip-card-body" id="trip-body-'+i+'">'+
-        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px">'+
-          '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Departure</div><div style="font-size:13px;color:var(--text)">'+(d?d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):"")+'</div></div>'+
-          '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Return</div><div style="font-size:13px;color:var(--text)">'+(r?r.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):"")+'</div></div>'+
-          '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">PNR / Locator</div><div style="font-size:13px;color:var(--goldLt);font-family:JetBrains Mono,monospace">'+(t.trip_locator||"")+'</div></div>'+
-          '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Passengers</div><div style="font-size:13px;color:var(--text)">'+(t.passengers&&t.passengers.length?t.passengers.map(function(p){return p.name}).join(", "):"")+'</div></div>'+
-          '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Fare</div><div style="font-size:13px;color:var(--text)">'+(t.total_fare?t.currency+" "+Number(t.total_fare).toLocaleString():"")+'</div></div>'+
-          '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Source</div><div style="font-size:13px;color:var(--text)">'+(t.source_platform||"Manual")+'</div></div>'+
-        '</div>'+
-        (t.segments&&t.segments.length?'<div style="margin-top:16px"><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Flight Segments</div>'+
-          t.segments.map(function(s){return '<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:6px">'+
-            '<div style="width:8px;height:8px;border-radius:50%;background:'+airlineColor(s.carrier)+';flex-shrink:0"></div>'+
-            '<div style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--goldLt);min-width:60px">'+(s.carrier||"")+" "+(s.flight_number||"")+'</div>'+
-            '<div style="font-size:13px;color:var(--white);flex:1">'+(s.origin||"")+" → "+(s.destination||"")+'</div>'+
-            '<div style="font-size:11px;color:var(--textMid)">'+(s.cabin?s.cabin.replace(/_/g," "):"")+'</div>'+
-            '<div style="font-size:11px;color:var(--textDim)">'+(s.seat||"")+'</div>'+
-            '<div style="font-size:11px;color:var(--textDim)">'+(s.duration?Math.floor(s.duration/60)+"h "+(s.duration%60)+"m":"")+'</div>'+
-          '</div>';}).join("")+
-        '</div>':'""')+
-        (needsPassport?'<div class="trip-doc-check" style="margin-top:14px"><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Document Check</div>'+
-          '<div class="trip-doc-item"><span class="trip-doc-icon">'+(docOk?"✅":"⚠️")+'</span><span>Passport '+(passportDays===null?"not on file":passportDays<0?"expired":passportDays<180?"expires in "+passportDays+"d (may be insufficient)":"valid "+passportDays+"d remaining")+'</span></div>'+
-          '<div class="trip-doc-item"><span class="trip-doc-icon">ℹ</span><span>International destination — passport required</span></div></div>':"")+
-        (t.notes?'<div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);font-size:12px;color:var(--textMid)">'+t.notes+'</div>':"")+
-        '<div class="trip-action-row">'+
-          '<select class="trip-action-btn" data-tripid="+t.id+" data-uuid="+uuid+" onchange="onCtxChange(this)" style="cursor:pointer">'+
-            '<option value="PERSONAL"'+(t.trip_context==="PERSONAL"?" selected":"")+'>Personal</option>'+
-            '<option value="CORPORATE"'+(t.trip_context==="CORPORATE"?" selected":"")+'>Business</option>'+
-            '<option value="BLEISURE"'+(t.trip_context==="BLEISURE"?" selected":"")+'>Bleisure</option>'+
-          '</select>'+
-          '<button class="trip-action-btn gold" onclick="exportSingleTrip('+i+')">⬇ Export</button>'+
-        '</div>'+
-      '</div>'+
-    '</div>';
+    var html='<div class="trip-card-full" id="trip-'+i+'">';
+    html+='<div class="trip-card-header" onclick="toggleTrip('+i+')">';
+    html+='<div style="display:flex;align-items:center;gap:10px;min-width:60px">';
+    html+='<div class="trip-airline-dot" style="background:'+airlineColor(firstSeg.carrier||t.origin_iata)+'"></div>';
+    html+='<div style="text-align:center;font-family:Playfair Display,serif">';
+    html+='<div style="font-size:10px;color:var(--textDim);text-transform:uppercase">'+(d?months[d.getMonth()]:"")+"</div>";
+    html+='<div style="font-size:24px;font-weight:700;color:var(--white);line-height:1">'+(d?d.getDate():"")+"</div>";
+    html+="</div></div>";
+    html+='<div style="width:1px;height:36px;background:var(--border2);flex-shrink:0"></div>';
+    html+='<div style="flex:1">';
+    html+='<div style="font-size:16px;font-weight:500;color:var(--white)">'+(t.origin_iata||"")+" → "+(t.destination_iata||"");
+    if(segs.length>1)html+=' <span style="font-size:11px;color:var(--textDim)">'+segs.length+" flights</span>";
+    html+="</div>";
+    html+='<div style="font-size:11px;color:var(--textMid);margin-top:3px">'+(t.trip_name||"")+(t.trip_locator?' · PNR: <span style="font-family:JetBrains Mono,monospace;color:var(--goldLt)">'+t.trip_locator+"</span>":"")+"</div>";
+    html+="</div>";
+    html+='<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">';
+    if(!docOk)html+='<span style="font-size:14px">⚠️</span>';
+    html+='<span class="trip-context '+cc+'">'+(t.trip_context||"Personal")+"</span>";
+    html+='<span class="trip-countdown '+cClass+'">'+cText+"</span>";
+    html+='<span style="color:var(--textDim);font-size:12px">›</span>';
+    html+="</div></div>";
+    // Body
+    html+='<div class="trip-card-body" id="trip-body-'+i+'">';
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px">';
+    html+='<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Departure</div><div style="font-size:13px;color:var(--text)">'+(d?d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):"")+"</div></div>";
+    html+='<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Return</div><div style="font-size:13px;color:var(--text)">'+(r?r.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):"")+"</div></div>";
+    html+='<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">PNR</div><div style="font-size:13px;font-family:JetBrains Mono,monospace;color:var(--goldLt)">'+(t.trip_locator||"")+"</div></div>";
+    html+='<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Passengers</div><div style="font-size:12px;color:var(--text)">'+pax.map(function(p){return p.passenger_name;}).join(", ")+"</div></div>";
+    html+='<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Fare</div><div style="font-size:13px;color:var(--text)">'+(t.total_fare?t.currency+" "+Number(t.total_fare).toLocaleString():"")+"</div></div>";
+    html+='<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Source</div><div style="font-size:13px;color:var(--text)">'+(t.source_platform||"Manual")+"</div></div>";
+    html+="</div>";
+    // Segments
+    if(segs.length){
+      html+='<div style="margin-top:16px">';
+      html+='<div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Flight Segments</div>';
+      segs.forEach(function(s){
+        var dep=s.departure_datetime?new Date(s.departure_datetime):null;
+        var arr=s.arrival_datetime?new Date(s.arrival_datetime):null;
+        var dur=s.duration_minutes?Math.floor(s.duration_minutes/60)+"h "+(s.duration_minutes%60)+"m":"";
+        html+='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:6px;flex-wrap:wrap">';
+        html+='<div style="width:8px;height:8px;border-radius:50%;background:'+airlineColor(s.carrier)+';flex-shrink:0"></div>';
+        html+='<div style="font-family:JetBrains Mono,monospace;font-size:12px;color:var(--goldLt);min-width:70px;font-weight:500">'+(s.carrier||"")+" "+(s.flight_number||"")+"</div>";
+        html+='<div style="font-size:14px;font-weight:500;color:var(--white);min-width:80px">'+(s.origin_iata||"")+" → "+(s.destination_iata||"")+"</div>";
+        html+='<div style="font-size:11px;color:var(--textMid);flex:1">';
+        if(dep)html+=dep.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",timeZoneName:"short"});
+        if(arr)html+=" → "+arr.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",timeZoneName:"short"});
+        html+="</div>";
+        html+='<div style="font-size:11px;color:var(--textDim)">'+(s.cabin_class?s.cabin_class.replace(/_/g," "):"")+"</div>";
+        html+='<div style="font-size:11px;color:var(--tealLt);font-family:JetBrains Mono,monospace">Seat '+(s.seat_number||"--")+"</div>";
+        if(dur)html+='<div style="font-size:11px;color:var(--textDim)">'+dur+"</div>";
+        if(s.aircraft_type)html+='<div style="font-size:10px;color:var(--textDim)">'+s.aircraft_type+"</div>";
+        html+="</div>";
+      });
+      html+="</div>";
+    }
+    // Doc check
+    if(needsPassport){
+      html+='<div class="trip-doc-check" style="margin-top:14px">';
+      html+='<div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Document Check — '+t.destination_iata+"</div>";
+      html+='<div class="trip-doc-item"><span class="trip-doc-icon">'+(docOk?"✅":"⚠️")+"</span>";
+      html+="<span>Passport — "+(passportDays===null?"not on file":passportDays<0?"EXPIRED":passportDays<180?"expires in "+passportDays+"d — may be insufficient":"valid — "+passportDays+"d remaining")+"</span></div>";
+      html+='<div class="trip-doc-item"><span class="trip-doc-icon">ℹ️</span><span>International destination — passport required, 6 months validity recommended</span></div>';
+      html+="</div>";
+    }
+    // Notes
+    if(t.notes)html+='<div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);font-size:12px;color:var(--textMid)">'+t.notes+"</div>";
+    // Actions
+    html+='<div class="trip-action-row">';
+    html+='<select class="trip-action-btn" data-tripid="'+t.id+'" data-uuid="'+uuid+'" onchange="onCtxChange(this)" style="cursor:pointer">';
+    html+='<option value="PERSONAL"'+(t.trip_context==="PERSONAL"?" selected":"")+'">Personal</option>';
+    html+='<option value="CORPORATE"'+(t.trip_context==="CORPORATE"?" selected":"")+'">Business</option>';
+    html+='<option value="BLEISURE"'+(t.trip_context==="BLEISURE"?" selected":"")+'">Bleisure</option>';
+    html+="</select>";
+    html+='<button class="trip-action-btn gold" onclick="exportSingleTrip('+i+')">⬇ Export</button>';
+    html+="</div>";
+    html+="</div></div>";
+    return html;
   }).join("");
 }
 function toggleTrip(i){const b=document.getElementById("trip-body-"+i);if(b)b.classList.toggle("open");}
