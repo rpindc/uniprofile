@@ -618,9 +618,9 @@ function applyTripFilter(filter){
     // Actions
     html+='<div class="trip-action-row">';
     html+='<select class="trip-action-btn" data-tripid="'+t.id+'" data-uuid="'+uuid+'" onchange="onCtxChange(this)" style="cursor:pointer">';
-    html+='<option value="PERSONAL"'+(t.trip_context==="PERSONAL"?" selected":"")+'">Personal</option>';
-    html+='<option value="CORPORATE"'+(t.trip_context==="CORPORATE"?" selected":"")+'">Business</option>';
-    html+='<option value="BLEISURE"'+(t.trip_context==="BLEISURE"?" selected":"")+'">Bleisure</option>';
+    html+='<option value="PERSONAL"'+(t.trip_context==="PERSONAL"?' selected':'')+'>Personal</option>';
+    html+='<option value="CORPORATE"'+(t.trip_context==="CORPORATE"?' selected':'')+'>Business</option>';
+    html+='<option value="BLEISURE"'+(t.trip_context==="BLEISURE"?' selected':'')+'>Bleisure</option>';
     html+="</select>";
     html+='<button class="trip-action-btn gold" onclick="exportSingleTrip('+i+')">⬇ Export</button>';
     html+="</div>";
