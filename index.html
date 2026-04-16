@@ -250,6 +250,26 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
 .empty-title{font-size:15px;color:var(--textMid);margin-bottom:6px;font-weight:500;}
 .empty-sub{font-size:12px;}
 @media(max-width:1024px){.stats-row{grid-template-columns:1fr 1fr;}.sidebar{width:220px;min-width:220px;}}
+.trip-filter-btn{padding:7px 16px;border-radius:100px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--surface);color:var(--textMid);font-family:'Outfit',sans-serif;transition:all 0.15s;white-space:nowrap;}
+.trip-filter-btn:hover{color:var(--text);border-color:var(--border3);}
+.trip-filter-btn.active{background:var(--goldGlow);color:var(--goldLt);border-color:rgba(184,149,90,0.3);}
+.trip-card-full{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:border-color 0.15s;margin-bottom:12px;}
+.trip-card-full:hover{border-color:var(--border2);}
+.trip-card-header{display:flex;align-items:center;gap:16px;padding:18px 20px;cursor:pointer;}
+.trip-card-body{padding:0 20px 18px;border-top:1px solid var(--border);display:none;}
+.trip-card-body.open{display:block;}
+.trip-airline-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.trip-countdown{font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px;}
+.trip-countdown.upcoming{background:var(--tealGlow);color:var(--tealLt);}
+.trip-countdown.inprogress{background:var(--greenGlow);color:var(--green);}
+.trip-countdown.completed{background:var(--surface2);color:var(--textDim);}
+.trip-action-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+.trip-action-btn{padding:6px 14px;border-radius:var(--radius-sm);font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--surface2);color:var(--textMid);font-family:'Outfit',sans-serif;transition:all 0.15s;}
+.trip-action-btn:hover{color:var(--text);border-color:var(--border3);}
+.trip-action-btn.gold{background:var(--goldGlow);color:var(--goldLt);border-color:rgba(184,149,90,0.3);}
+.trip-doc-check{margin-top:12px;padding:12px 14px;background:var(--surface2);border-radius:var(--radius-sm);font-size:12px;}
+.trip-doc-item{display:flex;align-items:center;gap:8px;padding:4px 0;color:var(--textMid);}
+.trip-doc-icon{font-size:13px;}
 @media(max-width:768px){.sidebar{display:none;}.stats-row{grid-template-columns:1fr 1fr;}.form-grid.cols-3{grid-template-columns:1fr 1fr;}.topbar{padding:0 16px;}.content{padding:20px;}}
 </style>
 </head>
@@ -429,7 +449,16 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
         </div>
       </section>
       <section class="section" id="section-trips">
-        <div class="sec-header"><div class="sec-icon" style="background:var(--surface2)">📋</div><div><div class="sec-title">Trip History &amp; Vault</div><div class="sec-sub">IATA OneOrder Module 7 — Auto-populated via booking confirmation webhooks</div></div></div>
+        <div class="sec-header"><div class="sec-icon" style="background:var(--surface2)">📋</div><div><div class="sec-title">Trip Vault</div><div class="sec-sub">IATA OneOrder Module 7 — Webhook-driven · Bleisure-tagged · Exportable</div></div></div>
+        <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap" id="trip-filters">
+          <button class="trip-filter-btn active" onclick="filterTrips('all',this)">All</button>
+          <button class="trip-filter-btn" onclick="filterTrips('upcoming',this)">Upcoming</button>
+          <button class="trip-filter-btn" onclick="filterTrips('completed',this)">Past</button>
+          <button class="trip-filter-btn" onclick="filterTrips('CORPORATE',this)">Business</button>
+          <button class="trip-filter-btn" onclick="filterTrips('PERSONAL',this)">Personal</button>
+          <button class="trip-filter-btn" onclick="filterTrips('BLEISURE',this)">Bleisure</button>
+          <button class="trip-filter-btn" style="margin-left:auto;background:var(--goldGlow);color:var(--goldLt);border-color:rgba(184,149,90,0.3)" onclick="exportTrips()">⬇ Export CSV</button>
+        </div>
         <div class="trip-list" id="trip-list"><div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips in vault yet</div><div class="empty-sub">Trips appear here when integrated platforms send booking confirmations</div></div></div>
       </section>
       <section class="section" id="section-family">
@@ -493,7 +522,98 @@ renderLoyalty(p.loyalty_programs||[]);renderPayment(p.payment_profiles||[],p.ide
 function renderDocuments(docs){const grid=document.getElementById("doc-grid"),alerts=document.getElementById("doc-alerts");if(!grid)return;const critical=docs.filter(d=>d.days_remaining!==null&&d.days_remaining<=90);if(alerts&&critical.length)alerts.innerHTML=critical.map(d=>`<div class="alert-banner ${d.days_remaining<0?"danger":"warn"}" style="margin-bottom:20px"><span class="alert-icon">${d.days_remaining<0?"⛔":"⚠"}</span><span class="alert-text"><strong>${d.doc_type}</strong> ${d.days_remaining<0?"expired":`expires in ${d.days_remaining} days`}</span></div>`).join("");if(!docs.length){grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1;padding:24px"><div class="empty-icon">📄</div><div class="empty-title">No documents added yet</div><div class="empty-sub">Add your passport, KTN, or Global Entry</div></div><div class="add-card"><div class="add-card-plus">+</div>Add Document</div>`;return;}grid.innerHTML=docs.map(d=>{const sc=d.days_remaining===null?"valid":d.days_remaining<0?"expired":d.days_remaining<=90?"expiring":"valid";const sl=d.days_remaining===null?"Valid":d.days_remaining<0?"Expired":d.days_remaining<=90?"Expiring":"Valid";const bp=d.days_remaining===null?100:Math.max(0,Math.min(100,(d.days_remaining/365)*100));const bc=d.days_remaining===null?"good":d.days_remaining<=90?"critical":d.days_remaining<=180?"warning":"good";return `<div class="doc-card ${sc}"><span class="doc-status ${sc}">${sl}</span><div class="doc-type">${d.doc_type.replace(/_/g," ")}</div><div class="doc-name">${d.issuing_country||"—"}</div><div class="doc-number">••• ••• •••</div>${d.expiry_date?`<div class="doc-expiry">Expires ${new Date(d.expiry_date).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</div><div class="expiry-countdown"><div class="countdown-bar-wrap"><div class="countdown-bar ${bc}" style="width:${bp}%"></div></div><div class="countdown-days">${d.days_remaining<0?"Expired":d.days_remaining+"d"}</div></div>`:""}</div>`;}).join("")+`<div class="add-card"><div class="add-card-plus">+</div>Add Document</div>`;}
 function renderLoyalty(programs){const airlines=programs.filter(p=>p.program_type==="AIRLINE"),hotels=programs.filter(p=>p.program_type==="HOTEL"),other=programs.filter(p=>!["AIRLINE","HOTEL"].includes(p.program_type));const rc=l=>`<div class="loyalty-card"><div class="loyalty-type-badge">${l.program_type}</div><div class="loyalty-airline">${l.provider_name}</div><div class="loyalty-program">${l.program_name||""}</div><div class="loyalty-number">${l.member_number}</div><div class="loyalty-tier" style="color:${l.tier_status?.toLowerCase().includes("gold")?"var(--goldLt)":l.tier_status?.toLowerCase().includes("plat")?"#C4B0F0":"var(--textMid)"}">${l.tier_status||"Member"}</div></div>`;const el=id=>document.getElementById(id);if(el("loyalty-airlines"))el("loyalty-airlines").innerHTML=airlines.map(rc).join("")+`<div class="add-card"><div class="add-card-plus">+</div>Add Airline</div>`;if(el("loyalty-hotels"))el("loyalty-hotels").innerHTML=hotels.map(rc).join("")+`<div class="add-card"><div class="add-card-plus">+</div>Add Hotel</div>`;if(el("loyalty-other"))el("loyalty-other").innerHTML=other.map(rc).join("")+`<div class="add-card"><div class="add-card-plus">+</div>Add Program</div>`;}
 function renderPayment(profiles,identity){const personal=profiles.find(p=>p.context==="PERSONAL"),corporate=profiles.find(p=>p.context==="CORPORATE");if(personal){s("f-preferred_card",personal.preferred_card);updateCardDisplay(personal.preferred_card||"");if(identity)document.getElementById("card-name-display").textContent=`${identity.legal_first||""} ${identity.legal_last||""}`.trim()||"Your Name";}if(corporate){s("f-company_name",corporate.company_name);s("f-corporate_card",corporate.corporate_card);s("f-cost_center",corporate.cost_center);s("f-policy_description",corporate.policy_description);s("f-expense_platform",corporate.expense_platform||"Not connected");document.getElementById("corp-name-display").textContent=corporate.company_name||"Company";document.getElementById("corp-card-display").textContent=corporate.corporate_card||"Corporate Account";}const nb=document.getElementById("badge-payment");if(nb)nb.style.display=corporate?"inline":"none";}
-function renderTrips(trips){const list=document.getElementById("trip-list");if(!list)return;if(!trips.length){list.innerHTML=`<div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips in vault yet</div><div class="empty-sub">Trips appear automatically when integrated platforms send booking confirmations</div></div>`;return;}const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];list.innerHTML=trips.map(t=>{const d=t.departure_date?new Date(t.departure_date):null;const cc=t.trip_context==="CORPORATE"?"ctx-corporate":t.trip_context==="BLEISURE"?"ctx-bleisure":"ctx-personal";return `<div class="trip-row"><div class="trip-date-col"><div class="trip-month">${d?months[d.getMonth()]:"—"}</div><div class="trip-day">${d?d.getDate():"—"}</div></div><div class="trip-sep"></div><div class="trip-route"><div class="trip-cities">${t.origin_iata||"—"} <span class="trip-arrow">→</span> ${t.destination_iata||"—"}</div><div class="trip-meta">${[t.carrier,t.flight_number,t.cabin_class,t.pnr?"PNR: "+t.pnr:""].filter(Boolean).join(" · ")}</div></div><span class="trip-context ${cc}">${t.trip_context||"Personal"}</span></div>`;}).join("");}
+let allTrips=[];let activeFilter="all";
+const AIRLINE_COLORS={"UA":"#0066CC","AA":"#CC0000","DL":"#9B2335","AS":"#00693E","WN":"#304CB2","default":"var(--textDim)"};
+const PASSPORT_REQUIRED=["LHR","CDG","NRT","SIN","DXB","SYD","GRU","JNB","DEL","PEK","ICN","BKK","KUL","DOH","AMS","FRA","ZRH","FCO","MAD","BCN"];
+function airlineColor(c){return AIRLINE_COLORS[c]||AIRLINE_COLORS.default;}
+function renderTrips(trips){allTrips=trips;applyTripFilter(activeFilter);}
+function filterTrips(filter,btn){document.querySelectorAll(".trip-filter-btn").forEach(b=>b.classList.remove("active"));if(btn)btn.classList.add("active");activeFilter=filter;applyTripFilter(filter);}
+function applyTripFilter(filter){
+  const list=document.getElementById("trip-list");if(!list)return;
+  let filtered=allTrips;
+  if(filter==="upcoming")filtered=allTrips.filter(t=>t.status==="upcoming"||t.status==="in-progress");
+  else if(filter==="completed")filtered=allTrips.filter(t=>t.status==="completed");
+  else if(["CORPORATE","PERSONAL","BLEISURE"].includes(filter))filtered=allTrips.filter(t=>t.trip_context===filter);
+  if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">\u2708</div><div class="empty-title">No trips found</div><div class="empty-sub">Try a different filter</div></div>';return;}
+  const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  list.innerHTML=filtered.map((t,i)=>{
+    const d=t.departure_date?new Date(t.departure_date):null;
+    const r=t.return_date?new Date(t.return_date):null;
+    const cc=t.trip_context==="CORPORATE"?"ctx-corporate":t.trip_context==="BLEISURE"?"ctx-bleisure":"ctx-personal";
+    const cClass=t.status==="upcoming"?"upcoming":t.status==="in-progress"?"inprogress":"completed";
+    const cText=t.status==="in-progress"?"In Progress":t.status==="upcoming"&&t.days_until!==null?(t.days_until===0?"Today":t.days_until===1?"Tomorrow":"In "+t.days_until+"d"):"Completed";
+    const nights=t.duration_nights?t.duration_nights+"n":"";
+    const needsPassport=PASSPORT_REQUIRED.includes(t.destination_iata);
+    const passportDoc=profile&&profile.documents?profile.documents.find(x=>x.doc_type==="PASSPORT"):null;
+    const passportDays=passportDoc?passportDoc.days_remaining:null;
+    const docOk=!needsPassport||(passportDays!==null&&passportDays>180);
+    const meta=[t.carrier,t.flight_number,t.cabin_class?t.cabin_class.replace(/_/g," "):"",t.pnr?"PNR: "+t.pnr:""].filter(Boolean).join(" \u00B7 ");
+    return '<div class="trip-card-full" id="trip-'+i+'">'+
+      '<div class="trip-card-header" onclick="toggleTrip('+i+')">'+
+        '<div style="display:flex;align-items:center;gap:10px;min-width:60px">'+
+          '<div class="trip-airline-dot" style="background:'+airlineColor(t.carrier)+'"></div>'+
+          '<div style="text-align:center;font-family:Playfair Display,serif">'+
+            '<div style="font-size:10px;color:var(--textDim);text-transform:uppercase">'+(d?months[d.getMonth()]:"")+'</div>'+
+            '<div style="font-size:24px;font-weight:700;color:var(--white);line-height:1">'+(d?d.getDate():"")+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="width:1px;height:36px;background:var(--border2);flex-shrink:0"></div>'+
+        '<div style="flex:1">'+
+          '<div style="font-size:16px;font-weight:500;color:var(--white)">'+(t.origin_iata||"")+" \u2192 "+(t.destination_iata||"")+(nights?' <span style="font-size:11px;color:var(--textDim)">'+nights+'</span>':'')+
+          '</div>'+
+          '<div style="font-size:11px;color:var(--textMid);margin-top:3px">'+(t.trip_name||meta||"Unknown trip")+'</div>'+
+        '</div>'+
+        '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'+
+          (!docOk?'<span style="font-size:14px">\u26A0\uFE0F</span>':'')+
+          '<span class="trip-context '+cc+'">'+(t.trip_context||"Personal")+'</span>'+
+          '<span class="trip-countdown '+cClass+'">'+cText+'</span>'+
+          '<span style="color:var(--textDim);font-size:12px">\u203A</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="trip-card-body" id="trip-body-'+i+'">'+
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px">'+
+          '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Departure</div><div style="font-size:13px;color:var(--text)">'+(d?d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):"")+'</div></div>'+
+          '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Return</div><div style="font-size:13px;color:var(--text)">'+(r?r.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):"")+'</div></div>'+
+          '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Duration</div><div style="font-size:13px;color:var(--text)">'+(t.duration_nights?t.duration_nights+" nights":"")+'</div></div>'+
+          '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Carrier</div><div style="font-size:13px;color:var(--text)">'+(t.carrier||"")+" "+(t.flight_number||"")+'</div></div>'+
+          '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Cabin</div><div style="font-size:13px;color:var(--text)">'+(t.cabin_class?t.cabin_class.replace(/_/g," "):"")+'</div></div>'+
+          '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Source</div><div style="font-size:13px;color:var(--text)">'+(t.source_platform||"Manual")+'</div></div>'+
+        '</div>'+
+        (needsPassport?'<div class="trip-doc-check" style="margin-top:14px"><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Document Check</div>'+
+          '<div class="trip-doc-item"><span class="trip-doc-icon">'+(docOk?"\u2705":"\u26A0\uFE0F")+'</span><span>Passport '+(passportDays===null?"not on file":passportDays<0?"expired":passportDays<180?"expires in "+passportDays+"d (may be insufficient)":"valid "+passportDays+"d remaining")+'</span></div>'+
+          '<div class="trip-doc-item"><span class="trip-doc-icon">\u2139\uFE0F</span><span>International destination \u2014 passport required</span></div></div>':"")+
+        (t.notes?'<div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);font-size:12px;color:var(--textMid)">'+t.notes+'</div>':"")+
+        '<div class="trip-action-row">'+
+          '<select class="trip-action-btn" onchange="changeContext(''+t.id+'',''+uuid+'',this.value)" style="cursor:pointer">'+
+            '<option value="PERSONAL"'+(t.trip_context==="PERSONAL"?" selected":"")+'>Personal</option>'+
+            '<option value="CORPORATE"'+(t.trip_context==="CORPORATE"?" selected":"")+'>Business</option>'+
+            '<option value="BLEISURE"'+(t.trip_context==="BLEISURE"?" selected":"")+'>Bleisure</option>'+
+          '</select>'+
+          '<button class="trip-action-btn gold" onclick="exportSingleTrip('+i+')">\u2B07 Export</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+  }).join("");
+}
+function toggleTrip(i){const b=document.getElementById("trip-body-"+i);if(b)b.classList.toggle("open");}
+async function changeContext(tripId,travelerUuid,newCtx){
+  try{await api("PUT","/api/v1/profile/"+travelerUuid,{module:"trip_context",data:{trip_id:tripId,context:newCtx}});const data=await api("GET","/api/v1/me");if(data.uuid){renderTrips(data.trips||[]);}toast("Context updated","success");}
+  catch(e){toast("Error","error");}
+}
+function exportSingleTrip(i){
+  const filtered=activeFilter==="all"?allTrips:activeFilter==="upcoming"?allTrips.filter(t=>t.status==="upcoming"||t.status==="in-progress"):activeFilter==="completed"?allTrips.filter(t=>t.status==="completed"):allTrips.filter(t=>t.trip_context===activeFilter);
+  const t=filtered[i];if(!t)return;
+  const csv="PNR,Trip Name,Origin,Destination,Departure,Return,Carrier,Flight,Cabin,Context,Nights,Source\n"+[t.pnr||"",t.trip_name||"",t.origin_iata||"",t.destination_iata||"",t.departure_date||"",t.return_date||"",t.carrier||"",t.flight_number||"",t.cabin_class||"",t.trip_context||"",t.duration_nights||"",t.source_platform||""].join(",");
+  dlFile(csv,"UniProfile-trip-"+(t.pnr||"export")+".csv");
+}
+function exportTrips(){
+  const filtered=activeFilter==="all"?allTrips:activeFilter==="upcoming"?allTrips.filter(t=>t.status==="upcoming"||t.status==="in-progress"):activeFilter==="completed"?allTrips.filter(t=>t.status==="completed"):allTrips.filter(t=>t.trip_context===activeFilter);
+  const hdr="PNR,Trip Name,Origin,Destination,Departure,Return,Carrier,Flight,Cabin,Context,Nights,Source\n";
+  const rows=filtered.map(t=>[t.pnr||"",t.trip_name||"",t.origin_iata||"",t.destination_iata||"",t.departure_date||"",t.return_date||"",t.carrier||"",t.flight_number||"",t.cabin_class||"",t.trip_context||"",t.duration_nights||"",t.source_platform||""].join(",")).join("\n");
+  dlFile(hdr+rows,"UniProfile-trips.csv");
+  toast("Exported "+filtered.length+" trips","success");
+}
+function dlFile(content,filename){const a=document.createElement("a");a.href="data:text/csv;charset=utf-8,"+encodeURIComponent(content);a.download=filename;a.click();}
 function updateCardDisplay(val){const el=document.getElementById("card-number-display");if(!el)return;const parts=val.split("····").map(s=>s.trim());el.textContent=parts.length>1?`•••• •••• •••• ${parts[1]}`:"•••• •••• •••• ————";}
 async function init(){document.getElementById("login-btn").href=loginUrl();const hashToken=parseHash();if(hashToken){token=hashToken;localStorage.setItem("up_token",token);window.history.replaceState(null,"","/");}else{token=localStorage.getItem("up_token");}if(!token){document.getElementById("screen-login").style.display="flex";return;}document.getElementById("screen-login").style.display="none";document.getElementById("screen-loading").style.display="flex";try{const data=await api("GET","/api/v1/me");if(data.error)throw new Error(data.error);uuid=data.uuid;localStorage.setItem("up_uuid",uuid);renderProfile(data);document.getElementById("screen-loading").style.display="none";document.getElementById("app").style.display="flex";document.getElementById("app").classList.add("visible");}catch(e){console.error("Init error:",e);if(e.message.includes("401")||e.message.includes("token")){localStorage.clear();document.getElementById("screen-loading").style.display="none";document.getElementById("screen-login").style.display="flex";}else{document.getElementById("screen-loading").innerHTML=`<div style="text-align:center;color:var(--red);font-size:14px">Error: ${e.message}<br><button onclick="localStorage.clear();location.reload()" style="margin-top:16px;padding:8px 16px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:6px;cursor:pointer;font-family:inherit">Sign in again</button></div>`;}}}
 init();
