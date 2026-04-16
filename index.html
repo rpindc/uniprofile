@@ -574,11 +574,21 @@ function applyTripFilter(filter){
         '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px">'+
           '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Departure</div><div style="font-size:13px;color:var(--text)">'+(d?d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):"")+'</div></div>'+
           '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Return</div><div style="font-size:13px;color:var(--text)">'+(r?r.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):"")+'</div></div>'+
-          '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Duration</div><div style="font-size:13px;color:var(--text)">'+(t.duration_nights?t.duration_nights+" nights":"")+'</div></div>'+
-          '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Carrier</div><div style="font-size:13px;color:var(--text)">'+(t.carrier||"")+" "+(t.flight_number||"")+'</div></div>'+
-          '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Cabin</div><div style="font-size:13px;color:var(--text)">'+(t.cabin_class?t.cabin_class.replace(/_/g," "):"")+'</div></div>'+
+          '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">PNR / Locator</div><div style="font-size:13px;color:var(--goldLt);font-family:JetBrains Mono,monospace">'+(t.trip_locator||"")+'</div></div>'+
+          '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Passengers</div><div style="font-size:13px;color:var(--text)">'+(t.passengers&&t.passengers.length?t.passengers.map(function(p){return p.name}).join(", "):"")+'</div></div>'+
+          '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Fare</div><div style="font-size:13px;color:var(--text)">'+(t.total_fare?t.currency+" "+Number(t.total_fare).toLocaleString():"")+'</div></div>'+
           '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Source</div><div style="font-size:13px;color:var(--text)">'+(t.source_platform||"Manual")+'</div></div>'+
         '</div>'+
+        (t.segments&&t.segments.length?'<div style="margin-top:16px"><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Flight Segments</div>'+
+          t.segments.map(function(s){return '<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:6px">'+
+            '<div style="width:8px;height:8px;border-radius:50%;background:'+airlineColor(s.carrier)+';flex-shrink:0"></div>'+
+            '<div style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--goldLt);min-width:60px">'+(s.carrier||"")+" "+(s.flight_number||"")+'</div>'+
+            '<div style="font-size:13px;color:var(--white);flex:1">'+(s.origin||"")+" → "+(s.destination||"")+'</div>'+
+            '<div style="font-size:11px;color:var(--textMid)">'+(s.cabin?s.cabin.replace(/_/g," "):"")+'</div>'+
+            '<div style="font-size:11px;color:var(--textDim)">'+(s.seat||"")+'</div>'+
+            '<div style="font-size:11px;color:var(--textDim)">'+(s.duration?Math.floor(s.duration/60)+"h "+(s.duration%60)+"m":"")+'</div>'+
+          '</div>';}).join("")+
+        '</div>':'""')+
         (needsPassport?'<div class="trip-doc-check" style="margin-top:14px"><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Document Check</div>'+
           '<div class="trip-doc-item"><span class="trip-doc-icon">'+(docOk?"✅":"⚠️")+'</span><span>Passport '+(passportDays===null?"not on file":passportDays<0?"expired":passportDays<180?"expires in "+passportDays+"d (may be insufficient)":"valid "+passportDays+"d remaining")+'</span></div>'+
           '<div class="trip-doc-item"><span class="trip-doc-icon">ℹ</span><span>International destination — passport required</span></div></div>':"")+
