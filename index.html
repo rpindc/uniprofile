@@ -584,7 +584,7 @@ function applyTripFilter(filter){
           '<div class="trip-doc-item"><span class="trip-doc-icon">ℹ</span><span>International destination — passport required</span></div></div>':"")+
         (t.notes?'<div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);font-size:12px;color:var(--textMid)">'+t.notes+'</div>':"")+
         '<div class="trip-action-row">'+
-          '<select class="trip-action-btn" onchange="changeContext(''+t.id+'',''+uuid+'',this.value)" style="cursor:pointer">'+
+          '<select class="trip-action-btn" data-tripid="+t.id+" data-uuid="+uuid+" onchange="onCtxChange(this)" style="cursor:pointer">'+
             '<option value="PERSONAL"'+(t.trip_context==="PERSONAL"?" selected":"")+'>Personal</option>'+
             '<option value="CORPORATE"'+(t.trip_context==="CORPORATE"?" selected":"")+'>Business</option>'+
             '<option value="BLEISURE"'+(t.trip_context==="BLEISURE"?" selected":"")+'>Bleisure</option>'+
@@ -596,6 +596,7 @@ function applyTripFilter(filter){
   }).join("");
 }
 function toggleTrip(i){const b=document.getElementById("trip-body-"+i);if(b)b.classList.toggle("open");}
+function onCtxChange(sel){const tripId=sel.getAttribute("data-tripid");const travelerUuid=sel.getAttribute("data-uuid");changeContext(tripId,travelerUuid,sel.value);}
 async function changeContext(tripId,travelerUuid,newCtx){
   try{await api("PUT","/api/v1/profile/"+travelerUuid,{module:"trip_context",data:{trip_id:tripId,context:newCtx}});const data=await api("GET","/api/v1/me");if(data.uuid){renderTrips(data.trips||[]);}toast("Context updated","success");}
   catch(e){toast("Error","error");}
