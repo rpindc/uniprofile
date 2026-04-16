@@ -534,7 +534,7 @@ function applyTripFilter(filter){
   if(filter==="upcoming")filtered=allTrips.filter(t=>t.status==="upcoming"||t.status==="in-progress");
   else if(filter==="completed")filtered=allTrips.filter(t=>t.status==="completed");
   else if(["CORPORATE","PERSONAL","BLEISURE"].includes(filter))filtered=allTrips.filter(t=>t.trip_context===filter);
-  if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">\u2708</div><div class="empty-title">No trips found</div><div class="empty-sub">Try a different filter</div></div>';return;}
+  if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips found</div><div class="empty-sub">Try a different filter</div></div>';return;}
   const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   list.innerHTML=filtered.map((t,i)=>{
     const d=t.departure_date?new Date(t.departure_date):null;
@@ -547,7 +547,7 @@ function applyTripFilter(filter){
     const passportDoc=profile&&profile.documents?profile.documents.find(x=>x.doc_type==="PASSPORT"):null;
     const passportDays=passportDoc?passportDoc.days_remaining:null;
     const docOk=!needsPassport||(passportDays!==null&&passportDays>180);
-    const meta=[t.carrier,t.flight_number,t.cabin_class?t.cabin_class.replace(/_/g," "):"",t.pnr?"PNR: "+t.pnr:""].filter(Boolean).join(" \u00B7 ");
+    const meta=[t.carrier,t.flight_number,t.cabin_class?t.cabin_class.replace(/_/g," "):"",t.pnr?"PNR: "+t.pnr:""].filter(Boolean).join(" · ");
     return '<div class="trip-card-full" id="trip-'+i+'">'+
       '<div class="trip-card-header" onclick="toggleTrip('+i+')">'+
         '<div style="display:flex;align-items:center;gap:10px;min-width:60px">'+
@@ -559,15 +559,15 @@ function applyTripFilter(filter){
         '</div>'+
         '<div style="width:1px;height:36px;background:var(--border2);flex-shrink:0"></div>'+
         '<div style="flex:1">'+
-          '<div style="font-size:16px;font-weight:500;color:var(--white)">'+(t.origin_iata||"")+" \u2192 "+(t.destination_iata||"")+(nights?' <span style="font-size:11px;color:var(--textDim)">'+nights+'</span>':'')+
+          '<div style="font-size:16px;font-weight:500;color:var(--white)">'+(t.origin_iata||"")+" → "+(t.destination_iata||"")+(nights?' <span style="font-size:11px;color:var(--textDim)">'+nights+'</span>':'')+
           '</div>'+
           '<div style="font-size:11px;color:var(--textMid);margin-top:3px">'+(t.trip_name||meta||"Unknown trip")+'</div>'+
         '</div>'+
         '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'+
-          (!docOk?'<span style="font-size:14px">\u26A0\uFE0F</span>':'')+
+          (!docOk?'<span style="font-size:14px">⚠️</span>':'')+
           '<span class="trip-context '+cc+'">'+(t.trip_context||"Personal")+'</span>'+
           '<span class="trip-countdown '+cClass+'">'+cText+'</span>'+
-          '<span style="color:var(--textDim);font-size:12px">\u203A</span>'+
+          '<span style="color:var(--textDim);font-size:12px">›</span>'+
         '</div>'+
       '</div>'+
       '<div class="trip-card-body" id="trip-body-'+i+'">'+
@@ -580,8 +580,8 @@ function applyTripFilter(filter){
           '<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Source</div><div style="font-size:13px;color:var(--text)">'+(t.source_platform||"Manual")+'</div></div>'+
         '</div>'+
         (needsPassport?'<div class="trip-doc-check" style="margin-top:14px"><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Document Check</div>'+
-          '<div class="trip-doc-item"><span class="trip-doc-icon">'+(docOk?"\u2705":"\u26A0\uFE0F")+'</span><span>Passport '+(passportDays===null?"not on file":passportDays<0?"expired":passportDays<180?"expires in "+passportDays+"d (may be insufficient)":"valid "+passportDays+"d remaining")+'</span></div>'+
-          '<div class="trip-doc-item"><span class="trip-doc-icon">\u2139\uFE0F</span><span>International destination \u2014 passport required</span></div></div>':"")+
+          '<div class="trip-doc-item"><span class="trip-doc-icon">'+(docOk?"✅":"⚠️")+'</span><span>Passport '+(passportDays===null?"not on file":passportDays<0?"expired":passportDays<180?"expires in "+passportDays+"d (may be insufficient)":"valid "+passportDays+"d remaining")+'</span></div>'+
+          '<div class="trip-doc-item"><span class="trip-doc-icon">ℹ</span><span>International destination — passport required</span></div></div>':"")+
         (t.notes?'<div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);font-size:12px;color:var(--textMid)">'+t.notes+'</div>':"")+
         '<div class="trip-action-row">'+
           '<select class="trip-action-btn" onchange="changeContext(''+t.id+'',''+uuid+'',this.value)" style="cursor:pointer">'+
@@ -589,7 +589,7 @@ function applyTripFilter(filter){
             '<option value="CORPORATE"'+(t.trip_context==="CORPORATE"?" selected":"")+'>Business</option>'+
             '<option value="BLEISURE"'+(t.trip_context==="BLEISURE"?" selected":"")+'>Bleisure</option>'+
           '</select>'+
-          '<button class="trip-action-btn gold" onclick="exportSingleTrip('+i+')">\u2B07 Export</button>'+
+          '<button class="trip-action-btn gold" onclick="exportSingleTrip('+i+')">⬇ Export</button>'+
         '</div>'+
       '</div>'+
     '</div>';
