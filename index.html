@@ -1123,10 +1123,12 @@ function renderDocumentVault(docs){
     var name=d.given_names&&d.surname?d.given_names+" "+d.surname:(d.given_names||d.surname||"");
     var expDate=d.expiry_date||d.valid_until;
     var issFlag=(typeof countryFlag==="function")?countryFlag(d.issuing_country||d.nationality||""):"";
-    return '<div class="doc-card '+sc+'" onclick="openEditDoc(this.dataset.id)" data-id="'+d.id+'" style="cursor:pointer;position:relative">'+
-      '<span class="doc-status '+sc+'">'+sl+'</span>'+
-      (issFlag?'<div style="position:absolute;bottom:12px;right:12px;font-size:24px;line-height:1">'+issFlag+'</div>':'')+
-      '<div class="doc-type">'+d.doc_type.replace(/_/g," ")+'</div>'+
+    return '<div class="doc-card '+sc+'" onclick="openEditDoc(this.dataset.id)" data-id="'+d.id+'" style="cursor:pointer">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'+
+        '<span class="doc-status '+sc+'" style="position:static">'+sl+'</span>'+
+        (issFlag?'<span style="font-size:22px">'+issFlag+'</span>':'<span></span>')+
+      '</div>'+
+      '<div class="doc-type" style="margin-bottom:6px">'+d.doc_type.replace(/_/g," ")+'</div>'+
       (name?'<div class="doc-name">'+name+'</div>':'')+
       (d.doc_number?'<div class="doc-number">···· '+d.doc_number.slice(-4)+'</div>':'')+
       (d.issuing_country?'<div class="doc-expiry" style="margin-bottom:4px">Issued by: '+d.issuing_country+'</div>':'')+
