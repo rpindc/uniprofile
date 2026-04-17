@@ -851,11 +851,11 @@ function renderDocumentVault(docs){
     var bc=d.days_remaining===null?"good":d.days_remaining<=90?"critical":d.days_remaining<=180?"warning":"good";
     var name=d.given_names&&d.surname?d.given_names+" "+d.surname:(d.given_names||d.surname||"");
     var expDate=d.expiry_date||d.valid_until;
-    var issFlag=countryFlag(d.issuing_country||d.nationality||"");
-    return '<div class="doc-card '+sc+'" onclick="openEditDoc(this.dataset.id)" data-id="'+d.id+'" style="cursor:pointer">'+
+    var issFlag=(typeof countryFlag==="function")?countryFlag(d.issuing_country||d.nationality||""):"";
+    return '<div class="doc-card '+sc+'" onclick="openEditDoc(this.dataset.id)" data-id="'+d.id+'" style="cursor:pointer;position:relative">'+
       '<span class="doc-status '+sc+'">'+sl+'</span>'+
-      (issFlag?'<div style="position:absolute;top:14px;left:14px;font-size:22px">'+issFlag+'</div>':'')+
-      '<div class="doc-type" style="'+(issFlag?'padding-left:32px':'')+'">'+d.doc_type.replace(/_/g," ")+'</div>'+
+      (issFlag?'<div style="position:absolute;bottom:12px;right:12px;font-size:24px;line-height:1">'+issFlag+'</div>':'')+
+      '<div class="doc-type">'+d.doc_type.replace(/_/g," ")+'</div>'+
       (name?'<div class="doc-name">'+name+'</div>':'')+
       (d.doc_number?'<div class="doc-number">···· '+d.doc_number.slice(-4)+'</div>':'')+
       (d.issuing_country?'<div class="doc-expiry" style="margin-bottom:4px">Issued by: '+d.issuing_country+'</div>':'')+
