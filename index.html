@@ -181,7 +181,7 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
 .mini-knob{position:absolute;top:3px;left:3px;width:12px;height:12px;background:var(--textDim);border-radius:50%;transition:transform 0.25s,background 0.25s;}
 .mini-toggle input:checked ~ .mini-track .mini-knob{transform:translateX(16px);background:white;}
 .doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;}
-.doc-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;position:relative;overflow:hidden;}
+.doc-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;position:relative;overflow:visible;}
 .doc-card.expiring{border-color:rgba(212,150,58,0.3);}
 .doc-card.expired{border-color:rgba(217,95,82,0.3);}
 .doc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--border2);}
