@@ -835,7 +835,7 @@ function renderDocumentVault(docs){
     var bc=d.days_remaining===null?"good":d.days_remaining<=90?"critical":d.days_remaining<=180?"warning":"good";
     var name=d.given_names&&d.surname?d.given_names+" "+d.surname:(d.given_names||d.surname||"");
     var expDate=d.expiry_date||d.valid_until;
-    return '<div class="doc-card '+sc+'" onclick="openEditDoc(\"'+d.id+'\");" style="cursor:pointer">'+
+    return '<div class="doc-card '+sc+'" onclick="openEditDoc(this.dataset.id)" data-id="'+d.id+'" style="cursor:pointer">'+
       '<span class="doc-status '+sc+'">'+sl+'</span>'+
       '<div class="doc-type">'+d.doc_type.replace(/_/g," ")+'</div>'+
       (name?'<div class="doc-name">'+name+'</div>':'')+
