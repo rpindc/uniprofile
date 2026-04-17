@@ -367,9 +367,45 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
         <div class="module-grid" id="module-grid"></div>
       </section>
       <section class="section" id="section-identity">
-        <div class="sec-header"><div class="sec-icon" style="background:var(--goldGlow)"></div><div><div class="sec-title">Identity &amp; Documents</div><div class="sec-sub">IATA OneOrder Module 1 — Encrypted at rest · Consent-gated access</div></div></div>
+        <div class="sec-header"><div class="sec-icon" style="background:var(--goldGlow)"></div><div><div class="sec-title">Identity &amp; Documents</div><div class="sec-sub">IATA OneOrder Module 1 — Encrypted at rest · Consent-gated · Timatic-ready</div></div></div>
         <div id="doc-alerts"></div>
-        <div class="form-section"><div class="form-section-title">Document Vault</div><div class="doc-grid" id="doc-grid"><div class="add-card"><div class="add-card-plus">+</div>Add Document</div></div></div>
+
+        <!-- Document Vault -->
+        <div class="form-section">
+          <div class="form-section-title">Document Vault</div>
+          <div id="doc-vault-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-bottom:16px"></div>
+          <button class="save-btn" style="background:transparent;border:1px dashed var(--border2);color:var(--textMid);padding:10px 20px;font-size:12px" onclick="openAddDoc()">+ Add Document</button>
+        </div>
+
+        <!-- Add / Edit Document Modal -->
+        <div id="doc-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
+          <div style="background:var(--ink2);border:1px solid var(--border2);border-radius:var(--radius-xl);padding:32px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;margin:20px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+              <div style="font-family:Playfair Display,serif;font-size:22px;color:var(--white)" id="modal-title">Add Document</div>
+              <button onclick="closeDocModal()" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:20px">✕</button>
+            </div>
+
+            <!-- Doc Type Selector -->
+            <div class="form-field" style="margin-bottom:20px">
+              <label class="field-label">Document Type</label>
+              <select class="field-select" id="modal-doc-type" onchange="onDocTypeChange(this.value)">
+                <option value="">— Select document type —</option>
+              </select>
+            </div>
+
+            <!-- Dynamic Fields -->
+            <div id="modal-fields"></div>
+
+            <!-- Actions -->
+            <div style="display:flex;gap:10px;margin-top:24px">
+              <button class="save-btn" onclick="saveDocument()" id="modal-save-btn">Save Document</button>
+              <button onclick="closeDocModal()" style="padding:8px 20px;background:transparent;border:1px solid var(--border2);color:var(--textMid);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:Outfit,sans-serif">Cancel</button>
+              <button id="modal-delete-btn" onclick="deleteDocument()" style="display:none;padding:8px 20px;background:var(--redGlow);border:1px solid rgba(217,95,82,0.3);color:var(--red);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:Outfit,sans-serif;margin-left:auto">Delete</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Personal Identity -->
         <div class="form-section">
           <div class="form-section-title">Personal Identity</div>
           <div class="form-grid cols-3">
@@ -515,7 +551,7 @@ const expiring=(p.documents||[]).filter(d=>d.days_remaining!==null&&d.days_remai
 const modules=[{id:"identity",icon:"",iconBg:"var(--goldGlow)",name:"Identity & Documents",desc:"Passport, KTN, TSA PreCheck, visas and government IDs",status:p.identity?"complete":"empty",tags:(p.documents||[]).map(d=>({label:d.doc_type.replace(/_/g," "),filled:true}))},{id:"preferences",icon:"💺",iconBg:"var(--tealGlow)",name:"Seat & Cabin Preferences",desc:"Seat position, cabin class, extra legroom, hotel and car preferences",status:p.seat_preferences?"complete":"empty",tags:p.seat_preferences?[{label:p.seat_preferences.seat_position,filled:true},{label:p.seat_preferences.cabin_international,filled:true}]:[]},{id:"meals",icon:"🍽",iconBg:"var(--greenGlow)",name:"Meal & Dietary",desc:"IATA meal codes, allergies and dietary restrictions",status:p.meal_preferences?"complete":"empty",tags:p.meal_preferences?[{label:p.meal_preferences.primary_meal_code,filled:true},...(p.meal_preferences.allergies||[]).map(a=>({label:a,filled:false}))]:[],},{id:"loyalty",icon:"✦",iconBg:"var(--goldGlow)",name:"Loyalty Programs",desc:"Airline, hotel and car memberships — auto-applied at checkout",status:(p.loyalty_programs||[]).length>0?"complete":"empty",tags:(p.loyalty_programs||[]).slice(0,3).map(l=>({label:l.provider_name,filled:true}))},{id:"payment",icon:"💳",iconBg:"rgba(56,99,177,0.1)",name:"Payment & Policy",desc:"Personal and corporate payment profiles with context-aware switching",status:(p.payment_profiles||[]).length>0?"partial":"empty",tags:(p.payment_profiles||[]).map(pp=>({label:pp.context,filled:true}))},{id:"trips",icon:"📋",iconBg:"var(--surface2)",name:"Trip History & Vault",desc:"All bookings and PNRs — populated via webhook",status:(p.trips||[]).length>0?"complete":"empty",tags:[{label:(p.trips_count||0)+" trips",filled:(p.trips_count||0)>0}]},];
 const mg=document.getElementById("module-grid");if(mg)mg.innerHTML=modules.map((m,i)=>`<div class="module-card ${m.status}" onclick="showSection('${m.id}',document.querySelectorAll('.nav-btn')[${i+1}])"><div class="module-top"><div class="module-icon-wrap" style="background:${m.iconBg}">${m.icon}</div><div class="module-status-pill pill-${m.status}">${m.status==="complete"?"Complete":m.status==="partial"?"Partial":"Empty"}</div></div><div class="module-name">${m.name}</div><div class="module-desc">${m.desc}</div>${m.tags.length?`<div class="module-tags">${m.tags.slice(0,4).map(t=>`<span class="module-tag${t.filled?" filled":""}">${t.label}</span>`).join("")}</div>`:""}</div>`).join("");
 if(p.identity){s("f-legal_first",p.identity.legal_first);s("f-legal_middle",p.identity.legal_middle);s("f-legal_last",p.identity.legal_last);s("f-dob",p.identity.dob?p.identity.dob.split("T")[0]:"");s("f-nationality",p.identity.nationality);s("f-gender_code",p.identity.gender_code||"M");s("f-home_airport",p.identity.home_airport);}
-renderDocuments(p.documents||[]);
+renderDocumentVault(p.documents||[]);if(p.document_types)populateDocTypeDropdown(p.document_types);
 if(p.seat_preferences){s("f-cabin_domestic",p.seat_preferences.cabin_domestic);s("f-cabin_international",p.seat_preferences.cabin_international);s("f-seat_position",p.seat_preferences.seat_position);s("f-row_preference",p.seat_preferences.row_preference);s("f-hotel_room_type",p.seat_preferences.hotel_room_type);s("f-hotel_floor_pref",p.seat_preferences.hotel_floor_pref);s("f-car_type_pref",p.seat_preferences.car_type_pref||"MIDSIZE");sc("f-avoid_middle_seats",p.seat_preferences.avoid_middle_seats);sc("f-avoid_last_row",p.seat_preferences.avoid_last_row);sc("f-wheelchair_needed",p.seat_preferences.wheelchair_needed);}
 if(p.meal_preferences){s("f-primary_meal_code",p.meal_preferences.primary_meal_code);s("f-beverage_pref",p.meal_preferences.beverage_pref);s("f-allergies",(p.meal_preferences.allergies||[]).join(", "));s("f-avoid_items",(p.meal_preferences.avoid_items||[]).join(", "));s("f-dietary_notes",p.meal_preferences.dietary_notes);}
 renderLoyalty(p.loyalty_programs||[]);renderPayment(p.payment_profiles||[],p.identity);renderTrips(p.trips||[]);s("api-uuid",p.uuid);}
@@ -649,6 +685,171 @@ function exportTrips(){
 }
 function dlFile(content,filename){const a=document.createElement("a");a.href="data:text/csv;charset=utf-8,"+encodeURIComponent(content);a.download=filename;a.click();}
 function updateCardDisplay(val){const el=document.getElementById("card-number-display");if(!el)return;const parts=val.split("····").map(s=>s.trim());el.textContent=parts.length>1?`•••• •••• •••• ${parts[1]}`:"•••• •••• •••• ————";}
+
+let docTypes={};
+let editingDocId=null;
+const FIELD_LABELS={given_names:"Given Names (as on document)",surname:"Surname",doc_number:"Document Number",nationality:"Nationality (3-letter e.g. USA)",issuing_country:"Issuing Country (3-letter e.g. USA)",destination_country:"Destination Country (3-letter)",dob:"Date of Birth",gender_code:"Gender",issue_date:"Issue Date",expiry_date:"Expiry Date",valid_from:"Valid From",valid_until:"Valid Until",place_of_birth:"Place of Birth",mrz_line1:"MRZ Line 1",mrz_line2:"MRZ Line 2",visa_type:"Visa Type / Category",entries:"Number of Entries",port_of_entry:"Port of Entry Restriction",pr_category:"PR Category",pr_conditions:"PR Conditions",esta_application_number:"Application / Authorization Number",esta_status:"Status",doc_notes:"Notes"};
+const FIELD_TYPES={dob:"date",issue_date:"date",expiry_date:"date",valid_from:"date",valid_until:"date",gender_code:"select_gender",entries:"select_entries",esta_status:"select_esta_status",pr_category:"select_pr_category",pr_conditions:"select_pr_conditions"};
+const SELECT_OPTIONS={select_gender:["M|Male","F|Female","X|Unspecified"],select_entries:["SINGLE|Single Entry","DOUBLE|Double Entry","MULTIPLE|Multiple Entry"],select_esta_status:["APPROVED|Approved","PENDING|Pending","EXPIRED|Expired","DENIED|Denied"],select_pr_category:["EB1|EB-1 Priority Workers","EB2|EB-2 Advanced Degree","EB3|EB-3 Skilled Workers","EB4|EB-4 Special Immigrants","EB5|EB-5 Investor","IR1|IR-1 Immediate Relative","CR1|CR-1 Conditional Resident","F1|F-1 Family Preference","F2A|F-2A Spouse of PR","F2B|F-2B Unmarried Child of PR","F3|F-3 Married Child of USC","F4|F-4 Sibling of USC","DV|DV Diversity Visa","ASYLUM|Asylum","REFUGEE|Refugee","OTHER|Other"],select_pr_conditions:["UNCONDITIONAL|Unconditional","CONDITIONAL|Conditional (2-year)"]};
+
+function populateDocTypeDropdown(types){
+  docTypes=types;
+  var sel=document.getElementById("modal-doc-type");
+  if(!sel)return;
+  var order=["PRIMARY","RESIDENCE","COUNTRY_SPECIFIC","ETA","VISA","TRUSTED_TRAVELER","HEALTH"];
+  var labels={PRIMARY:"Primary Travel Documents",RESIDENCE:"Residence Documents",COUNTRY_SPECIFIC:"Country-Specific Entry",ETA:"Electronic Travel Authorizations",VISA:"Visas",TRUSTED_TRAVELER:"Trusted Traveler Programs",HEALTH:"Health Documents"};
+  sel.innerHTML='<option value="">-- Select document type --</option>';
+  order.forEach(function(cat){
+    if(!types[cat])return;
+    var grp=document.createElement("optgroup");
+    grp.label=labels[cat]||cat;
+    types[cat].forEach(function(dt){
+      var opt=document.createElement("option");
+      opt.value=dt.code;
+      opt.textContent=dt.label;
+      grp.appendChild(opt);
+    });
+    sel.appendChild(grp);
+  });
+}
+
+function onDocTypeChange(code){
+  var container=document.getElementById("modal-fields");
+  if(!container)return;
+  if(!code){container.innerHTML="";return;}
+  var dt=null;
+  Object.values(docTypes).forEach(function(arr){arr.forEach(function(d){if(d.code===code)dt=d;});});
+  if(!dt)return;
+  var html="";
+  var allFields=(dt.fields_required||[]).concat(dt.fields_optional||[]);
+  allFields.forEach(function(field){
+    var label=FIELD_LABELS[field]||field;
+    var required=(dt.fields_required||[]).indexOf(field)>-1;
+    var ftype=FIELD_TYPES[field]||"text";
+    html+='<div class="form-field" style="margin-bottom:14px">';
+    html+='<label class="field-label">'+label+(required?' <span style="color:var(--gold)">*</span>':'')+'</label>';
+    if(ftype==="date"){
+      html+='<input class="field-input" type="date" id="df-'+field+'">';
+    }else if(ftype.startsWith("select_")){
+      html+='<select class="field-select" id="df-'+field+'"><option value="">-- Select --</option>';
+      (SELECT_OPTIONS[ftype]||[]).forEach(function(o){var p=o.split("|");html+='<option value="'+p[0]+'">'+p[1]+'</option>';});
+      html+='</select>';
+    }else{
+      html+='<input class="field-input" type="text" id="df-'+field+'" placeholder="'+label+'">';
+    }
+    html+='</div>';
+  });
+  html+='<div class="form-field" style="margin-bottom:14px;display:flex;align-items:center;gap:10px"><input type="checkbox" id="df-is_primary" style="width:14px;height:14px"><label class="field-label" for="df-is_primary" style="margin:0;cursor:pointer">Set as primary document</label></div>';
+  container.innerHTML=html;
+}
+
+function openAddDoc(){
+  editingDocId=null;
+  document.getElementById("modal-title").textContent="Add Document";
+  document.getElementById("modal-delete-btn").style.display="none";
+  document.getElementById("modal-doc-type").value="";
+  document.getElementById("modal-doc-type").disabled=false;
+  document.getElementById("modal-fields").innerHTML="";
+  document.getElementById("doc-modal").style.display="flex";
+}
+
+function openEditDoc(docId){
+  if(!profile||!profile.documents)return;
+  var doc=profile.documents.find(function(d){return d.id===docId;});
+  if(!doc)return;
+  editingDocId=docId;
+  document.getElementById("modal-title").textContent="Edit Document";
+  document.getElementById("modal-delete-btn").style.display="block";
+  document.getElementById("modal-doc-type").value=doc.doc_type;
+  document.getElementById("modal-doc-type").disabled=true;
+  onDocTypeChange(doc.doc_type);
+  setTimeout(function(){
+    var fields=["doc_number","given_names","surname","issuing_country","nationality","dob","gender_code","issue_date","expiry_date","place_of_birth","mrz_line1","mrz_line2","visa_type","destination_country","entries","valid_from","valid_until","port_of_entry","pr_category","pr_conditions","esta_application_number","esta_status","doc_notes"];
+    fields.forEach(function(f){
+      var el=document.getElementById("df-"+f);
+      if(el&&doc[f])el.value=typeof doc[f]==="string"&&doc[f].includes("T")?doc[f].split("T")[0]:doc[f];
+    });
+    var pri=document.getElementById("df-is_primary");
+    if(pri)pri.checked=!!doc.is_primary;
+  },50);
+  document.getElementById("doc-modal").style.display="flex";
+}
+
+function closeDocModal(){
+  document.getElementById("doc-modal").style.display="none";
+  editingDocId=null;
+}
+
+async function saveDocument(){
+  var docType=document.getElementById("modal-doc-type").value;
+  if(!docType){toast("Please select a document type","error");return;}
+  var data={doc_type:docType};
+  var fields=["doc_number","given_names","surname","issuing_country","nationality","dob","gender_code","issue_date","expiry_date","place_of_birth","mrz_line1","mrz_line2","visa_type","destination_country","entries","valid_from","valid_until","port_of_entry","pr_category","pr_conditions","esta_application_number","esta_status","doc_notes"];
+  fields.forEach(function(f){var el=document.getElementById("df-"+f);if(el)data[f]=el.value||null;});
+  var pri=document.getElementById("df-is_primary");
+  data.is_primary=pri?pri.checked:false;
+  if(editingDocId)data.doc_id=editingDocId;
+  var btn=document.getElementById("modal-save-btn");
+  btn.textContent="Saving...";btn.disabled=true;
+  try{
+    var module=editingDocId?"document_update":"document_add";
+    var result=await api("PUT","/api/v1/profile/"+uuid,{module:module,data:data});
+    if(result.success){
+      profile=result.profile;
+      renderDocumentVault(result.profile.documents||[]);
+      if(result.profile.document_types)populateDocTypeDropdown(result.profile.document_types);
+      closeDocModal();
+      toast("Document saved","success");
+    }else{toast("Error: "+(result.error||"unknown"),"error");}
+  }catch(e){toast("Error saving: "+e.message,"error");}
+  btn.textContent="Save Document";btn.disabled=false;
+}
+
+async function deleteDocument(){
+  if(!editingDocId)return;
+  if(!confirm("Delete this document?"))return;
+  try{
+    var result=await api("PUT","/api/v1/profile/"+uuid,{module:"document_delete",data:{doc_id:editingDocId}});
+    if(result.success){profile=result.profile;renderDocumentVault(result.profile.documents||[]);closeDocModal();toast("Document deleted","success");}
+  }catch(e){toast("Error deleting","error");}
+}
+
+function renderDocumentVault(docs){
+  var grid=document.getElementById("doc-vault-grid");
+  if(!grid)return;
+  var alerts=document.getElementById("doc-alerts");
+  var critical=docs.filter(function(d){return d.days_remaining!==null&&d.days_remaining<=90;});
+  if(alerts&&critical.length){
+    alerts.innerHTML=critical.map(function(d){
+      return '<div class="alert-banner '+(d.days_remaining<0?"danger":"warn")+'" style="margin-bottom:16px"><span class="alert-icon">'+(d.days_remaining<0?"⛔":"⚠️")+'</span><span class="alert-text"><strong>'+d.doc_type.replace(/_/g," ")+'</strong> '+(d.days_remaining<0?"has expired":"expires in "+d.days_remaining+" days")+'</span></div>';
+    }).join("");
+  }else if(alerts){alerts.innerHTML="";}
+  if(!docs.length){
+    grid.innerHTML='<div class="empty-state" style="grid-column:1/-1;padding:24px"><div class="empty-icon">📄</div><div class="empty-title">No documents added yet</div><div class="empty-sub">Add your passport, visas, ESTA, OCI and other travel documents</div></div>';
+    return;
+  }
+  grid.innerHTML=docs.map(function(d){
+    var sc=d.days_remaining===null?"valid":d.days_remaining<0?"expired":d.days_remaining<=90?"expiring":"valid";
+    var sl=d.days_remaining===null?"Valid":d.days_remaining<0?"Expired":d.days_remaining<=90?"Expiring":"Valid";
+    var bp=d.days_remaining===null?100:Math.max(0,Math.min(100,(d.days_remaining/365)*100));
+    var bc=d.days_remaining===null?"good":d.days_remaining<=90?"critical":d.days_remaining<=180?"warning":"good";
+    var name=d.given_names&&d.surname?d.given_names+" "+d.surname:(d.given_names||d.surname||"");
+    var expDate=d.expiry_date||d.valid_until;
+    return '<div class="doc-card '+sc+'" onclick="openEditDoc(\"'+d.id+'\");" style="cursor:pointer">'+
+      '<span class="doc-status '+sc+'">'+sl+'</span>'+
+      '<div class="doc-type">'+d.doc_type.replace(/_/g," ")+'</div>'+
+      (name?'<div class="doc-name">'+name+'</div>':'')+
+      (d.doc_number?'<div class="doc-number">···· '+d.doc_number.slice(-4)+'</div>':'')+
+      (d.issuing_country?'<div class="doc-expiry" style="margin-bottom:4px">Issued by: '+d.issuing_country+'</div>':'')+
+      (d.destination_country?'<div class="doc-expiry" style="margin-bottom:4px">For: '+d.destination_country+'</div>':'')+
+      (d.esta_status?'<div class="doc-expiry" style="margin-bottom:4px">Status: '+d.esta_status+'</div>':'')+
+      (expDate?'<div class="doc-expiry">Expires '+new Date(expDate).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})+'</div>':'')+
+      (expDate&&d.days_remaining!==null?'<div class="expiry-countdown"><div class="countdown-bar-wrap"><div class="countdown-bar '+bc+'" style="width:'+bp+'%"></div></div><div class="countdown-days">'+(d.days_remaining<0?"Expired":d.days_remaining+"d")+'</div></div>':'')+
+      (d.is_primary?'<div style="margin-top:8px;font-size:9px;color:var(--gold);letter-spacing:1px;text-transform:uppercase">&#9733; Primary</div>':'')+
+      '</div>';
+  }).join("");
+}
+
 async function init(){document.getElementById("login-btn").href=loginUrl();const hashToken=parseHash();if(hashToken){token=hashToken;localStorage.setItem("up_token",token);window.history.replaceState(null,"","/");}else{token=localStorage.getItem("up_token");}if(!token){document.getElementById("screen-login").style.display="flex";return;}document.getElementById("screen-login").style.display="none";document.getElementById("screen-loading").style.display="flex";try{const data=await api("GET","/api/v1/me");if(data.error)throw new Error(data.error);uuid=data.uuid;localStorage.setItem("up_uuid",uuid);renderProfile(data);document.getElementById("screen-loading").style.display="none";document.getElementById("app").style.display="flex";document.getElementById("app").classList.add("visible");}catch(e){console.error("Init error:",e);if(e.message.includes("401")||e.message.includes("token")){localStorage.clear();document.getElementById("screen-loading").style.display="none";document.getElementById("screen-login").style.display="flex";}else{document.getElementById("screen-loading").innerHTML=`<div style="text-align:center;color:var(--red);font-size:14px">Error: ${e.message}<br><button onclick="localStorage.clear();location.reload()" style="margin-top:16px;padding:8px 16px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:6px;cursor:pointer;font-family:inherit">Sign in again</button></div>`;}}}
 init();
 </script>
