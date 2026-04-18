@@ -469,9 +469,75 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
       </section>
       <section class="section" id="section-loyalty">
         <div class="sec-header"><div class="sec-icon" style="background:var(--goldGlow)">✦</div><div><div class="sec-title">Loyalty Programs</div><div class="sec-sub">IATA OneOrder Module 4 — Auto-applied at checkout on all integrated platforms</div></div></div>
-        <div class="form-section"><div class="form-section-title">Airlines</div><div class="loyalty-grid" id="loyalty-airlines"><div class="add-card"><div class="add-card-plus">+</div>Add Airline</div></div></div>
-        <div class="form-section"><div class="form-section-title">Hotels</div><div class="loyalty-grid" id="loyalty-hotels"><div class="add-card"><div class="add-card-plus">+</div>Add Hotel</div></div></div>
-        <div class="form-section"><div class="form-section-title">Car Rental &amp; Other</div><div class="loyalty-grid" id="loyalty-other"><div class="add-card"><div class="add-card-plus">+</div>Add Program</div></div></div>
+
+        <!-- Loyalty Modal -->
+        <div id="loyalty-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
+          <div style="background:var(--ink2);border:1px solid var(--border2);border-radius:var(--radius-xl);padding:32px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;margin:20px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+              <div style="font-family:Playfair Display,serif;font-size:22px;color:var(--white)" id="loyalty-modal-title">Add Program</div>
+              <button onclick="closeLoyaltyModal()" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:20px">✕</button>
+            </div>
+            <div class="form-grid" style="margin-bottom:14px">
+              <div class="form-field"><label class="field-label">Program Type</label>
+                <select class="field-select" id="lf-program_type">
+                  <option value="AIRLINE">Airline</option>
+                  <option value="HOTEL">Hotel</option>
+                  <option value="CAR">Car Rental</option>
+                  <option value="RAIL">Rail</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+              <div class="form-field"><label class="field-label">Provider / Airline</label>
+                <input class="field-input" id="lf-provider_name" type="text" placeholder="e.g. United Airlines">
+              </div>
+            </div>
+            <div class="form-grid" style="margin-bottom:14px">
+              <div class="form-field"><label class="field-label">Program Name</label>
+                <input class="field-input" id="lf-program_name" type="text" placeholder="e.g. MileagePlus">
+              </div>
+              <div class="form-field"><label class="field-label">Member Number</label>
+                <input class="field-input" id="lf-member_number" type="text" placeholder="e.g. MP12345678">
+              </div>
+            </div>
+            <div class="form-grid" style="margin-bottom:14px">
+              <div class="form-field"><label class="field-label">Tier Status</label>
+                <input class="field-input" id="lf-tier_status" type="text" placeholder="e.g. Gold, Platinum, Member">
+              </div>
+              <div class="form-field"><label class="field-label">Tier Expiry</label>
+                <input class="field-input" id="lf-tier_expires" type="date">
+              </div>
+            </div>
+            <div class="form-grid" style="margin-bottom:14px">
+              <div class="form-field"><label class="field-label">Points Balance</label>
+                <input class="field-input" id="lf-points_balance" type="number" placeholder="e.g. 85000">
+              </div>
+              <div class="form-field"><label class="field-label">Linked Card Type</label>
+                <input class="field-input" id="lf-linked_card_type" type="text" placeholder="e.g. Citi AAdvantage Platinum">
+              </div>
+            </div>
+            <div class="form-grid" style="margin-bottom:14px">
+              <div class="form-field"><label class="field-label">Linked Card Last 4</label>
+                <input class="field-input" id="lf-linked_card_last4" type="text" placeholder="e.g. 4521" maxlength="4">
+              </div>
+              <div class="form-field"><label class="field-label">Notes</label>
+                <input class="field-input" id="lf-notes" type="text" placeholder="Optional notes">
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding:12px 14px;background:var(--surface);border-radius:var(--radius-sm)">
+              <input type="checkbox" id="lf-auto_apply" checked style="width:14px;height:14px">
+              <label for="lf-auto_apply" style="font-size:13px;color:var(--text);cursor:pointer">Auto-apply at checkout on integrated platforms</label>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="save-btn" onclick="saveLoyalty()" id="loyalty-save-btn">Save Program</button>
+              <button onclick="closeLoyaltyModal()" style="padding:8px 20px;background:transparent;border:1px solid var(--border2);color:var(--textMid);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:Outfit,sans-serif">Cancel</button>
+              <button id="loyalty-delete-btn" onclick="deleteLoyalty()" style="display:none;padding:8px 20px;background:var(--redGlow);border:1px solid rgba(217,95,82,0.3);color:var(--red);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:Outfit,sans-serif;margin-left:auto">Delete</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section"><div class="form-section-title">Airlines</div><div class="loyalty-grid" id="loyalty-airlines"></div></div>
+        <div class="form-section"><div class="form-section-title">Hotels</div><div class="loyalty-grid" id="loyalty-hotels"></div></div>
+        <div class="form-section"><div class="form-section-title">Car Rental &amp; Other</div><div class="loyalty-grid" id="loyalty-other"></div></div>
       </section>
       <section class="section" id="section-payment">
         <div class="sec-header"><div class="sec-icon" style="background:rgba(56,99,177,0.1)">💳</div><div><div class="sec-title">Payment &amp; Policy</div><div class="sec-sub">IATA OneOrder Module 5 — Context-aware switching with bleisure toggle</div></div></div>
@@ -826,7 +892,142 @@ renderDocumentVault(p.documents||[]);if(p.document_types)populateDocTypeDropdown
 if(p.seat_preferences){s("f-cabin_domestic",p.seat_preferences.cabin_domestic);s("f-cabin_international",p.seat_preferences.cabin_international);s("f-seat_position",p.seat_preferences.seat_position);s("f-row_preference",p.seat_preferences.row_preference);s("f-hotel_room_type",p.seat_preferences.hotel_room_type);s("f-hotel_floor_pref",p.seat_preferences.hotel_floor_pref);s("f-car_type_pref",p.seat_preferences.car_type_pref||"MIDSIZE");sc("f-avoid_middle_seats",p.seat_preferences.avoid_middle_seats);sc("f-avoid_last_row",p.seat_preferences.avoid_last_row);sc("f-wheelchair_needed",p.seat_preferences.wheelchair_needed);}
 if(p.meal_preferences){s("f-primary_meal_code",p.meal_preferences.primary_meal_code);s("f-beverage_pref",p.meal_preferences.beverage_pref);s("f-allergies",(p.meal_preferences.allergies||[]).join(", "));s("f-avoid_items",(p.meal_preferences.avoid_items||[]).join(", "));s("f-dietary_notes",p.meal_preferences.dietary_notes);}
 renderLoyalty(p.loyalty_programs||[]);renderPayment(p.payment_profiles||[],p.identity);renderTrips(p.trips||[]);s("api-uuid",p.uuid);}
-function renderLoyalty(programs){const airlines=programs.filter(p=>p.program_type==="AIRLINE"),hotels=programs.filter(p=>p.program_type==="HOTEL"),other=programs.filter(p=>!["AIRLINE","HOTEL"].includes(p.program_type));const rc=l=>`<div class="loyalty-card"><div class="loyalty-type-badge">${l.program_type}</div><div class="loyalty-airline">${l.provider_name}</div><div class="loyalty-program">${l.program_name||""}</div><div class="loyalty-number">${l.member_number}</div><div class="loyalty-tier" style="color:${l.tier_status?.toLowerCase().includes("gold")?"var(--goldLt)":l.tier_status?.toLowerCase().includes("plat")?"#C4B0F0":"var(--textMid)"}">${l.tier_status||"Member"}</div></div>`;const el=id=>document.getElementById(id);if(el("loyalty-airlines"))el("loyalty-airlines").innerHTML=airlines.map(rc).join("")+`<div class="add-card"><div class="add-card-plus">+</div>Add Airline</div>`;if(el("loyalty-hotels"))el("loyalty-hotels").innerHTML=hotels.map(rc).join("")+`<div class="add-card"><div class="add-card-plus">+</div>Add Hotel</div>`;if(el("loyalty-other"))el("loyalty-other").innerHTML=other.map(rc).join("")+`<div class="add-card"><div class="add-card-plus">+</div>Add Program</div>`;}
+
+let editingLoyaltyId = null;
+
+function openAddLoyalty(type) {
+  editingLoyaltyId = null;
+  document.getElementById("loyalty-modal-title").textContent = "Add Program";
+  document.getElementById("loyalty-delete-btn").style.display = "none";
+  document.getElementById("lf-program_type").value = type || "AIRLINE";
+  ["provider_name","program_name","member_number","tier_status","tier_expires","points_balance","linked_card_type","linked_card_last4","notes"].forEach(function(f){
+    var el = document.getElementById("lf-"+f);
+    if(el) el.value = "";
+  });
+  document.getElementById("lf-auto_apply").checked = true;
+  document.getElementById("loyalty-modal").style.display = "flex";
+}
+
+function openEditLoyalty(loyaltyId) {
+  if(!profile||!profile.loyalty_programs) return;
+  var prog = profile.loyalty_programs.find(function(p){return p.id===loyaltyId;});
+  if(!prog) return;
+  editingLoyaltyId = loyaltyId;
+  document.getElementById("loyalty-modal-title").textContent = "Edit Program";
+  document.getElementById("loyalty-delete-btn").style.display = "block";
+  var fields = {
+    program_type: prog.program_type,
+    provider_name: prog.provider_name,
+    program_name: prog.program_name,
+    member_number: prog.member_number,
+    tier_status: prog.tier_status,
+    tier_expires: prog.tier_expires ? prog.tier_expires.split("T")[0] : "",
+    points_balance: prog.points_balance || "",
+    linked_card_type: prog.linked_card_type || "",
+    linked_card_last4: prog.linked_card_last4 || "",
+    notes: prog.notes || ""
+  };
+  Object.keys(fields).forEach(function(f) {
+    var el = document.getElementById("lf-"+f);
+    if(el) el.value = fields[f] || "";
+  });
+  document.getElementById("lf-auto_apply").checked = prog.auto_apply !== false;
+  document.getElementById("loyalty-modal").style.display = "flex";
+}
+
+function closeLoyaltyModal() {
+  document.getElementById("loyalty-modal").style.display = "none";
+  editingLoyaltyId = null;
+}
+
+async function saveLoyalty() {
+  var btn = document.getElementById("loyalty-save-btn");
+  btn.textContent = "Saving..."; btn.disabled = true;
+  var data = {
+    program_type: document.getElementById("lf-program_type").value,
+    provider_name: document.getElementById("lf-provider_name").value,
+    program_name: document.getElementById("lf-program_name").value,
+    member_number: document.getElementById("lf-member_number").value,
+    tier_status: document.getElementById("lf-tier_status").value || null,
+    tier_expires: document.getElementById("lf-tier_expires").value || null,
+    points_balance: document.getElementById("lf-points_balance").value || null,
+    linked_card_type: document.getElementById("lf-linked_card_type").value || null,
+    linked_card_last4: document.getElementById("lf-linked_card_last4").value || null,
+    notes: document.getElementById("lf-notes").value || null,
+    auto_apply: document.getElementById("lf-auto_apply").checked
+  };
+  if(!data.provider_name || !data.member_number) {
+    toast("Provider and member number are required", "error");
+    btn.textContent = "Save Program"; btn.disabled = false;
+    return;
+  }
+  if(editingLoyaltyId) data.loyalty_id = editingLoyaltyId;
+  try {
+    var module = editingLoyaltyId ? "loyalty_update" : "loyalty_add";
+    var result = await api("PUT", "/api/v1/profile/"+uuid, {module:module, data:data});
+    if(result.success) {
+      profile = result.profile;
+      renderLoyalty(result.profile.loyalty_programs||[]);
+      closeLoyaltyModal();
+      toast("Program saved", "success");
+    } else {
+      toast("Error: "+(result.error||"unknown"), "error");
+    }
+  } catch(e) {
+    toast("Error: "+e.message, "error");
+  }
+  btn.textContent = "Save Program"; btn.disabled = false;
+}
+
+async function deleteLoyalty() {
+  if(!editingLoyaltyId) return;
+  if(!confirm("Remove this loyalty program?")) return;
+  try {
+    var result = await api("PUT", "/api/v1/profile/"+uuid, {module:"loyalty_delete", data:{loyalty_id:editingLoyaltyId}});
+    if(result.success) {
+      profile = result.profile;
+      renderLoyalty(result.profile.loyalty_programs||[]);
+      closeLoyaltyModal();
+      toast("Program removed", "success");
+    }
+  } catch(e) {
+    toast("Error removing program", "error");
+  }
+}
+
+function renderLoyalty(programs){
+  var airlines=programs.filter(function(p){return p.program_type==="AIRLINE";});
+  var hotels=programs.filter(function(p){return p.program_type==="HOTEL";});
+  var other=programs.filter(function(p){return p.program_type!=="AIRLINE"&&p.program_type!=="HOTEL";});
+
+  function renderCard(l){
+    var tierColor=l.tier_status&&l.tier_status.toLowerCase().includes("gold")?"var(--goldLt)":l.tier_status&&(l.tier_status.toLowerCase().includes("plat")||l.tier_status.toLowerCase().includes("diamond"))?"#C4B0F0":l.tier_status&&l.tier_status.toLowerCase().includes("silver")?"#C0C0C0":"var(--textMid)";
+    return '<div class="loyalty-card" onclick="openEditLoyalty(this.dataset.lid)" data-lid="'+l.id+'" style="cursor:pointer">'+
+      '<div class="loyalty-type-badge">'+l.program_type+'</div>'+
+      '<div class="loyalty-airline">'+l.provider_name+'</div>'+
+      '<div class="loyalty-program">'+(l.program_name||"")+'</div>'+
+      '<div class="loyalty-number">'+(l.member_number||"")+'</div>'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">'+
+        '<div class="loyalty-tier" style="color:'+tierColor+'">'+(l.tier_status||"Member")+'</div>'+
+        (l.points_balance?'<div style="font-size:10px;color:var(--goldLt);font-family:JetBrains Mono,monospace">'+Number(l.points_balance).toLocaleString()+'pts</div>':'')+
+      '</div>'+
+      (l.linked_card_type?'<div style="margin-top:8px;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:4px;font-size:10px;color:var(--textMid)">'+
+        '💳 '+l.linked_card_type+(l.linked_card_last4?' ···· '+l.linked_card_last4:'')+'</div>':'')+
+    '</div>';
+  }
+
+  function addBtn(type){
+    return '<div class="add-card" onclick="openAddLoyalty(this.dataset.type)" data-type="'+type+'"><div class="add-card-plus">+</div>Add</div>';
+  }
+
+  var ea=document.getElementById("loyalty-airlines");
+  var eh=document.getElementById("loyalty-hotels");
+  var eo=document.getElementById("loyalty-other");
+  if(ea) ea.innerHTML=airlines.map(renderCard).join("")+addBtn("AIRLINE");
+  if(eh) eh.innerHTML=hotels.map(renderCard).join("")+addBtn("HOTEL");
+  if(eo) eo.innerHTML=other.map(renderCard).join("")+addBtn("OTHER");
+}
+
 function renderPayment(profiles,identity){const personal=profiles.find(p=>p.context==="PERSONAL"),corporate=profiles.find(p=>p.context==="CORPORATE");if(personal){s("f-preferred_card",personal.preferred_card);updateCardDisplay(personal.preferred_card||"");if(identity)document.getElementById("card-name-display").textContent=`${identity.legal_first||""} ${identity.legal_last||""}`.trim()||"Your Name";}if(corporate){s("f-company_name",corporate.company_name);s("f-corporate_card",corporate.corporate_card);s("f-cost_center",corporate.cost_center);s("f-policy_description",corporate.policy_description);s("f-expense_platform",corporate.expense_platform||"Not connected");document.getElementById("corp-name-display").textContent=corporate.company_name||"Company";document.getElementById("corp-card-display").textContent=corporate.corporate_card||"Corporate Account";}const nb=document.getElementById("badge-payment");if(nb)nb.style.display=corporate?"inline":"none";}
 let allTrips=[];let activeFilter="all";
 const AIRLINE_COLORS={"UA":"#0066CC","AA":"#CC0000","DL":"#9B2335","AS":"#00693E","WN":"#304CB2","default":"var(--textDim)"};
