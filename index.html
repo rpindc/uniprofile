@@ -572,6 +572,15 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
           <button class="trip-filter-btn" onclick="filterTrips('BLEISURE',this)">Bleisure</button>
           <button class="trip-filter-btn" style="margin-left:auto;background:var(--goldGlow);color:var(--goldLt);border-color:rgba(184,149,90,0.3)" onclick="exportTrips()">⬇ Export CSV</button>
         </div>
+        <div style="background:rgba(26,71,49,0.08);border:1px solid rgba(26,71,49,0.2);border-radius:var(--radius-md);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px">
+          <div style="font-size:24px">&#128231;</div>
+          <div style="flex:1">
+            <div style="font-size:12px;font-weight:500;color:#1A4731;margin-bottom:4px">Add trips instantly — forward any booking confirmation email</div>
+            <div style="font-size:13px;color:#1a1a2e;font-family:JetBrains Mono,monospace;background:rgba(255,255,255,0.8);display:inline-block;padding:4px 10px;border-radius:4px;border:1px solid rgba(180,160,120,0.3)">trips@uniprofile.net</div>
+            <div style="font-size:11px;color:#6b6050;margin-top:6px">Flights, hotels, car rentals from any airline or booking platform — parsed automatically</div>
+          </div>
+          <button onclick="navigator.clipboard.writeText('trips@uniprofile.net').then(function(){toast('Copied!','success')})" style="padding:8px 14px;background:#0C1A2E;color:#C4A862;border:none;border-radius:4px;font-size:11px;cursor:pointer;white-space:nowrap;font-family:Outfit,sans-serif">Copy Address</button>
+        </div>
         <div class="trip-list" id="trip-list"><div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips in vault yet</div><div class="empty-sub">Trips appear here when integrated platforms send booking confirmations</div></div></div>
       </section>
       <section class="section" id="section-family">
