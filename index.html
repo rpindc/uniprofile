@@ -264,6 +264,17 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
 .trip-countdown.inprogress{background:var(--greenGlow);color:var(--green);}
 .trip-countdown.completed{background:var(--surface2);color:var(--textDim);}
 .trip-action-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+.doccheck-panel{margin-top:16px;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border2);}
+.doccheck-header{padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:12px;font-weight:600;letter-spacing:0.5px;}
+.doccheck-header.GREEN{background:var(--greenGlow);color:var(--green);}
+.doccheck-header.AMBER{background:var(--amberGlow);color:var(--amber);}
+.doccheck-header.RED{background:var(--redGlow);color:var(--red);}
+.doccheck-header.LOADING{background:var(--surface2);color:var(--textMid);}
+.doccheck-item{display:flex;gap:12px;padding:10px 16px;border-top:1px solid var(--border);background:rgba(255,255,255,0.03);}
+.doccheck-icon{font-size:16px;flex-shrink:0;margin-top:1px;}
+.doccheck-label{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--textDim);margin-bottom:3px;}
+.doccheck-note{font-size:12px;color:var(--text);line-height:1.5;}
+.doccheck-link{font-size:11px;color:var(--gold);text-decoration:none;margin-top:4px;display:inline-block;}
 .trip-action-btn{padding:6px 14px;border-radius:var(--radius-sm);font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--surface2);color:var(--textMid);font-family:'Outfit',sans-serif;transition:all 0.15s;}
 .trip-action-btn:hover{color:var(--text);border-color:var(--border3);}
 .trip-action-btn.gold{background:var(--goldGlow);color:var(--goldLt);border-color:rgba(184,149,90,0.3);}
@@ -1130,6 +1141,8 @@ function applyTripFilter(filter){
     html+='<option value="BLEISURE"'+(t.trip_context==="BLEISURE"?' selected':'')+'>Bleisure</option>';
     html+="</select>";
     html+='<button class="trip-action-btn gold" onclick="exportSingleTrip('+i+')">⬇ Export</button>';
+    html+='<button class="trip-action-btn" data-idx="'+i+'" data-dest="'+t.destination_iata+'" data-orig="'+t.origin_iata+'" data-date="'+(t.departure_date||"")+'" onclick="runDocCheck(parseInt(this.dataset.idx),this.dataset.dest,this.dataset.orig,this.dataset.date)" style="background:var(--tealGlow);color:var(--tealLt);border-color:rgba(26,175,160,0.3)">Doc Check</button>';
+    html+='<div id="doccheck-'+i+'" style="display:none;margin-top:12px"></div>';
     html+="</div>";
     html+="</div></div>";
     return html;
@@ -1153,6 +1166,38 @@ function exportTrips(){
   const rows=filtered.map(t=>[t.pnr||"",t.trip_name||"",t.origin_iata||"",t.destination_iata||"",t.departure_date||"",t.return_date||"",t.carrier||"",t.flight_number||"",t.cabin_class||"",t.trip_context||"",t.duration_nights||"",t.source_platform||""].join(",")).join("\n");
   dlFile(hdr+rows,"UniProfile-trips.csv");
   toast("Exported "+filtered.length+" trips","success");
+}
+async function runDocCheck(idx,destination,origin,travelDate){
+  var panel=document.getElementById("doccheck-"+idx);
+  if(!panel)return;
+  panel.style.display="block";
+  panel.innerHTML='<div class="doccheck-panel"><div class="doccheck-header LOADING">Checking document requirements...</div></div>';
+  try{
+    var result=await api("POST","/api/v1/profile/"+uuid+"/doccheck",{destination_iata:destination,origin_iata:origin,travel_date:travelDate,transit_iatas:[]});
+    if(!result.success){panel.innerHTML='<div class="doccheck-panel"><div class="doccheck-header RED">Error: '+(result.error||"unknown")+'</div></div>';return;}
+    var r=result.result;
+    var overallIcon=r.overall==="GREEN"?"OK":r.overall==="RED"?"ACTION REQUIRED":"REVIEW";
+    var html='<div class="doccheck-panel">';
+    html+='<div class="doccheck-header '+r.overall+'">'+overallIcon+' — '+destination+'</div>';
+    var visaIcon=r.visa.status==="NOT_REQUIRED"?"[OK]":r.visa.status==="CHECK_REQUIRED"?"[CHECK]":"[REQUIRED]";
+    html+='<div class="doccheck-item"><div class="doccheck-icon">'+visaIcon+'</div><div><div class="doccheck-label">Visa Requirement</div><div class="doccheck-note">'+r.visa.note+'</div></div></div>';
+    var ppIcon=r.passport.status==="OK"?"[OK]":r.passport.status==="WARNING"?"[WARN]":"[EXPIRED]";
+    html+='<div class="doccheck-item"><div class="doccheck-icon">'+ppIcon+'</div><div><div class="doccheck-label">Passport Validity</div><div class="doccheck-note">'+r.passport.note+'</div></div></div>';
+    r.eta.forEach(function(e){
+      html+='<div class="doccheck-item"><div class="doccheck-icon">[ETA]</div><div><div class="doccheck-label">'+e.type+'</div><div class="doccheck-note">'+e.note+'</div></div></div>';
+    });
+    r.health.forEach(function(h){
+      html+='<div class="doccheck-item"><div class="doccheck-icon">[HLT]</div><div><div class="doccheck-label">Health</div><div class="doccheck-note">'+h.note+'</div></div></div>';
+    });
+    r.pre_registration.forEach(function(p){
+      html+='<div class="doccheck-item"><div class="doccheck-icon">[REG]</div><div><div class="doccheck-label">'+p.name+'</div><div class="doccheck-note">'+p.note+'</div><a class="doccheck-link" href="'+p.url+'" target="_blank">Register now</a></div></div>';
+    });
+    html+='<div style="padding:10px 16px;border-top:1px solid var(--border);font-size:10px;color:var(--textDim)">UniProfile Rules Engine. Verify with official sources. Live Timatic coming soon.</div>';
+    html+='</div>';
+    panel.innerHTML=html;
+  }catch(e){
+    panel.innerHTML='<div class="doccheck-panel"><div class="doccheck-header RED">Error: '+e.message+'</div></div>';
+  }
 }
 function dlFile(content,filename){const a=document.createElement("a");a.href="data:text/csv;charset=utf-8,"+encodeURIComponent(content);a.download=filename;a.click();}
 function updateCardDisplay(val){const el=document.getElementById("card-number-display");if(!el)return;const parts=val.split("····").map(s=>s.trim());el.textContent=parts.length>1?`•••• •••• •••• ${parts[1]}`:"•••• •••• •••• ————";}
