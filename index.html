@@ -1082,14 +1082,14 @@ function applyTripFilter(filter){
     html+='<div class="trip-airline-dot" style="background:'+airlineColor(firstSeg.carrier||t.origin_iata)+'"></div>';
     html+='<div style="text-align:center;font-family:Playfair Display,serif">';
     html+='<div style="font-size:10px;color:var(--textDim);text-transform:uppercase">'+(d?months[d.getMonth()]:"")+"</div>";
-    html+='<div style="font-size:24px;font-weight:700;color:var(--white);line-height:1">'+(d?d.getDate():"")+"</div>";
+    html+='<div style="font-size:24px;font-weight:700;color:#1a1a2e;line-height:1">'+(d?d.getDate():"")+"</div>";
     html+="</div></div>";
     html+='<div style="width:1px;height:36px;background:var(--border2);flex-shrink:0"></div>';
     html+='<div style="flex:1">';
     html+='<div style="font-size:16px;font-weight:500;color:var(--white)">'+(t.origin_iata||"")+" → "+(t.destination_iata||"");
     if(segs.length>1)html+=' <span style="font-size:11px;color:var(--textDim)">'+segs.length+" flights</span>";
     html+="</div>";
-    html+='<div style="font-size:11px;color:var(--textMid);margin-top:3px">'+(t.trip_name||"")+(t.trip_locator?' · PNR: <span style="font-family:JetBrains Mono,monospace;color:var(--goldLt)">'+t.trip_locator+"</span>":"")+"</div>";
+    html+='<div style="font-size:11px;color:#6b6050;margin-top:3px">'+(t.trip_name||"")+(t.trip_locator?' · PNR: <span style="font-family:JetBrains Mono,monospace;color:var(--goldLt)">'+t.trip_locator+"</span>":"")+"</div>";
     html+="</div>";
     html+='<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">';
     if(!docOk)html+='<span style="font-size:14px">⚠️</span>';
@@ -1100,25 +1100,25 @@ function applyTripFilter(filter){
     // Body
     html+='<div class="trip-card-body" id="trip-body-'+i+'">';
     html+='<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px">';
-    html+='<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Departure</div><div style="font-size:13px;color:var(--text)">'+(d?d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):"")+"</div></div>";
-    html+='<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Return</div><div style="font-size:13px;color:var(--text)">'+(r?r.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):"")+"</div></div>";
-    html+='<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">PNR</div><div style="font-size:13px;font-family:JetBrains Mono,monospace;color:var(--goldLt)">'+(t.trip_locator||"")+"</div></div>";
-    html+='<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Passengers</div><div style="font-size:12px;color:var(--text)">'+pax.map(function(p){return p.passenger_name;}).join(", ")+"</div></div>";
-    html+='<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Fare</div><div style="font-size:13px;color:var(--text)">'+(t.total_fare?t.currency+" "+Number(t.total_fare).toLocaleString():"")+"</div></div>";
-    html+='<div><div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Source</div><div style="font-size:13px;color:var(--text)">'+(t.source_platform||"Manual")+"</div></div>";
+    html+='<div><div style="font-size:10px;color:#8a7a5a;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Departure</div><div style="font-size:13px;color:var(--text)">'+(d?d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):"")+"</div></div>";
+    html+='<div><div style="font-size:10px;color:#8a7a5a;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Return</div><div style="font-size:13px;color:var(--text)">'+(r?r.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"}):"")+"</div></div>";
+    html+='<div><div style="font-size:10px;color:#8a7a5a;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">PNR</div><div style="font-size:13px;font-family:JetBrains Mono,monospace;color:var(--goldLt)">'+(t.trip_locator||"")+"</div></div>";
+    html+='<div><div style="font-size:10px;color:#8a7a5a;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Passengers</div><div style="font-size:12px;color:var(--text)">'+pax.map(function(p){return p.passenger_name;}).join(", ")+"</div></div>";
+    html+='<div><div style="font-size:10px;color:#8a7a5a;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Fare</div><div style="font-size:13px;color:var(--text)">'+(t.total_fare?t.currency+" "+Number(t.total_fare).toLocaleString():"")+"</div></div>";
+    html+='<div><div style="font-size:10px;color:#8a7a5a;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Source</div><div style="font-size:13px;color:var(--text)">'+(t.source_platform||"Manual")+"</div></div>";
     html+="</div>";
     // Segments
     if(segs.length){
       html+='<div style="margin-top:16px">';
-      html+='<div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Flight Segments</div>';
+      html+='<div style="font-size:10px;color:#8a7a5a;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Flight Segments</div>';
       segs.forEach(function(s){
         var dep=s.departure_datetime?new Date(s.departure_datetime):null;
         var arr=s.arrival_datetime?new Date(s.arrival_datetime):null;
         var dur=s.duration_minutes?Math.floor(s.duration_minutes/60)+"h "+(s.duration_minutes%60)+"m":"";
-        html+='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:6px;flex-wrap:wrap">';
+        html+='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(255,255,255,0.9);border:0.5px solid rgba(180,160,120,0.2);border-radius:var(--radius-sm);margin-bottom:6px;flex-wrap:wrap">';
         html+='<div style="width:8px;height:8px;border-radius:50%;background:'+airlineColor(s.carrier)+';flex-shrink:0"></div>';
         html+='<div style="font-family:JetBrains Mono,monospace;font-size:12px;color:var(--goldLt);min-width:70px;font-weight:500">'+(s.carrier||"")+" "+(s.flight_number||"")+"</div>";
-        html+='<div style="font-size:14px;font-weight:500;color:var(--white);min-width:80px">'+(s.origin_iata||"")+" → "+(s.destination_iata||"")+"</div>";
+        html+='<div style="font-size:14px;font-weight:500;color:#1a1a2e;min-width:80px">'+(s.origin_iata||"")+" → "+(s.destination_iata||"")+"</div>";
         html+='<div style="font-size:11px;color:var(--textMid);flex:1">';
         if(dep)html+=dep.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",timeZoneName:"short"});
         if(arr)html+=" → "+arr.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",timeZoneName:"short"});
@@ -1134,14 +1134,14 @@ function applyTripFilter(filter){
     // Doc check
     if(needsPassport){
       html+='<div class="trip-doc-check" style="margin-top:14px">';
-      html+='<div style="font-size:10px;color:var(--textDim);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Document Check — '+t.destination_iata+"</div>";
+      html+='<div style="font-size:10px;color:#8a7a5a;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Document Check — '+t.destination_iata+"</div>";
       html+='<div class="trip-doc-item"><span class="trip-doc-icon">'+(docOk?"✅":"⚠️")+"</span>";
       html+="<span>Passport — "+(passportDays===null?"not on file":passportDays<0?"EXPIRED":passportDays<180?"expires in "+passportDays+"d — may be insufficient":"valid — "+passportDays+"d remaining")+"</span></div>";
       html+='<div class="trip-doc-item"><span class="trip-doc-icon">ℹ️</span><span>International destination — passport required, 6 months validity recommended</span></div>';
       html+="</div>";
     }
     // Notes
-    if(t.notes)html+='<div style="margin-top:12px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);font-size:12px;color:var(--textMid)">'+t.notes+"</div>";
+    if(t.notes)html+='<div style="margin-top:12px;padding:10px 12px;background:rgba(255,255,255,0.8);border:0.5px solid rgba(180,160,120,0.2);border-radius:var(--radius-sm);font-size:12px;color:#6b6050">'+t.notes+"</div>";
     // Actions
     html+='<div class="trip-action-row">';
     html+='<select class="trip-action-btn" data-tripid="'+t.id+'" data-uuid="'+uuid+'" onchange="onCtxChange(this)" style="cursor:pointer">';
@@ -1149,7 +1149,8 @@ function applyTripFilter(filter){
     html+='<option value="CORPORATE"'+(t.trip_context==="CORPORATE"?' selected':'')+'>Business</option>';
     html+='<option value="BLEISURE"'+(t.trip_context==="BLEISURE"?' selected':'')+'>Bleisure</option>';
     html+="</select>";
-    html+='<button class="trip-action-btn gold" onclick="exportSingleTrip('+i+')">⬇ Export</button>';
+    html+='<button class="trip-action-btn gold" onclick="exportSingleTrip('+i+')">Export</button>';
+    html+='<button class="trip-action-btn" onclick="deleteTrip(\"'+t.id+'\")" style="background:var(--redGlow);color:var(--red);border-color:rgba(217,95,82,0.3);margin-left:auto">Delete</button>';
     html+='<button class="trip-action-btn" data-idx="'+i+'" data-dest="'+t.destination_iata+'" data-orig="'+t.origin_iata+'" data-date="'+(t.departure_date||"")+'" onclick="runDocCheck(parseInt(this.dataset.idx),this.dataset.dest,this.dataset.orig,this.dataset.date)" style="background:var(--tealGlow);color:var(--tealLt);border-color:rgba(26,175,160,0.3)">Doc Check</button>';
     html+='<div id="doccheck-'+i+'" style="display:none;margin-top:12px"></div>';
     html+="</div>";
@@ -1396,6 +1397,14 @@ function renderDocumentVault(docs){
   }).join("");
 }
 
+async function deleteTrip(tripId){
+  if(!confirm("Delete this trip from your vault?"))return;
+  try{
+    const result=await api("PUT","/api/v1/profile/"+uuid,{module:"trip_delete",data:{trip_id:tripId}});
+    if(result.success){profile=result.profile;renderTrips(result.profile.trips||[]);toast("Trip deleted","success");}
+    else{toast("Error: "+(result.error||"unknown"),"error");}
+  }catch(e){toast("Error deleting trip","error");}
+}
 async function init(){document.getElementById("login-btn").href=loginUrl();const hashToken=parseHash();if(hashToken){token=hashToken;localStorage.setItem("up_token",token);window.history.replaceState(null,"","/");}else{token=localStorage.getItem("up_token");}if(!token){document.getElementById("screen-login").style.display="flex";return;}document.getElementById("screen-login").style.display="none";document.getElementById("screen-loading").style.display="flex";try{const data=await api("GET","/api/v1/me");if(data.error)throw new Error(data.error);uuid=data.uuid;localStorage.setItem("up_uuid",uuid);renderProfile(data);document.getElementById("screen-loading").style.display="none";document.getElementById("app").style.display="flex";document.getElementById("app").classList.add("visible");}catch(e){console.error("Init error:",e);if(e.message.includes("401")||e.message.includes("token")){localStorage.clear();document.getElementById("screen-loading").style.display="none";document.getElementById("screen-login").style.display="flex";}else{document.getElementById("screen-loading").innerHTML=`<div style="text-align:center;color:var(--red);font-size:14px">Error: ${e.message}<br><button onclick="localStorage.clear();location.reload()" style="margin-top:16px;padding:8px 16px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:6px;cursor:pointer;font-family:inherit">Sign in again</button></div>`;}}}
 init();
 </script>
