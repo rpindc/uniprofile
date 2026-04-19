@@ -2051,7 +2051,39 @@ async function deleteTour(id){
   toast("Tour removed","success");
 }
 
-async function init(){document.getElementById("login-btn").href=loginUrl();const hashToken=parseHash();if(hashToken){token=hashToken;localStorage.setItem("up_token",token);window.history.replaceState(null,"","/");}else{token=localStorage.getItem("up_token");}if(!token){document.getElementById("screen-login").style.display="flex";return;}document.getElementById("screen-login").style.display="none";document.getElementById("screen-loading").style.display="flex";try{const data=await api("GET","/api/v1/me");if(data.error)throw new Error(data.error);uuid=data.uuid;localStorage.setItem("up_uuid",uuid);renderProfile(data);renderFamily();document.getElementById("screen-loading").style.display="none";document.getElementById("app").style.display="flex";document.getElementById("app").classList.add("visible");}catch(e){console.error("Init error:",e);if(e.message.includes("401")||e.message.includes("token")){localStorage.clear();document.getElementById("screen-loading").style.display="none";document.getElementById("screen-login").style.display="flex";}else{document.getElementById("screen-loading").innerHTML=`<div style="text-align:center;color:var(--red);font-size:14px">Error: ${e.message}<br><button onclick="localStorage.clear();location.reload()" style="margin-top:16px;padding:8px 16px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:6px;cursor:pointer;font-family:inherit">Sign in again</button></div>`;}}}
+function parseInviteHash(){var h=window.location.hash||"";var m=h.match(/[#&]invite=([a-f0-9-]+)/i);return m?m[1]:null;}
+async function init(){
+  document.getElementById("login-btn").href=loginUrl();
+  const pendingInvite=parseInviteHash();
+  if(pendingInvite)localStorage.setItem("up_pending_invite",pendingInvite);
+  const hashToken=parseHash();
+  if(hashToken){token=hashToken;localStorage.setItem("up_token",token);window.history.replaceState(null,"","/");}
+  else{token=localStorage.getItem("up_token");}
+  if(!token){document.getElementById("screen-login").style.display="flex";return;}
+  document.getElementById("screen-login").style.display="none";
+  document.getElementById("screen-loading").style.display="flex";
+  try{
+    const data=await api("GET","/api/v1/me");
+    if(data.error)throw new Error(data.error);
+    uuid=data.uuid;localStorage.setItem("up_uuid",uuid);
+    renderProfile(data);renderFamily();
+    document.getElementById("screen-loading").style.display="none";
+    document.getElementById("app").style.display="flex";
+    document.getElementById("app").classList.add("visible");
+    // Deep-link to family section if arriving via invite link
+    const savedInvite=localStorage.getItem("up_pending_invite");
+    if(savedInvite){
+      localStorage.removeItem("up_pending_invite");
+      var famBtn=document.querySelector(".nav-btn[onclick*=\"'family'\"]");
+      showSection("family",famBtn);
+      toast("You have a pending family link request","success");
+    }
+  }catch(e){
+    console.error("Init error:",e);
+    if(e.message.includes("401")||e.message.includes("token")){localStorage.clear();document.getElementById("screen-loading").style.display="none";document.getElementById("screen-login").style.display="flex";}
+    else{document.getElementById("screen-loading").innerHTML=`<div style="text-align:center;color:var(--red);font-size:14px">Error: ${e.message}<br><button onclick="localStorage.clear();location.reload()" style="margin-top:16px;padding:8px 16px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:6px;cursor:pointer;font-family:inherit">Sign in again</button></div>`;}
+  }
+}
 init();
 </script>
 </body>
