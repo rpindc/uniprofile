@@ -284,6 +284,14 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
 .trip-doc-item{display:flex;align-items:center;gap:8px;padding:4px 0;color:var(--textMid);}
 .trip-doc-icon{font-size:13px;}
 @media(max-width:768px){.sidebar{display:none;}.stats-row{grid-template-columns:1fr 1fr;}.form-grid.cols-3{grid-template-columns:1fr 1fr;}.topbar{padding:0 16px;}.content{padding:20px;}}
+.fam-member-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;transition:border-color 0.15s;}
+.fam-member-card:hover{border-color:var(--border2);}
+.fam-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;flex-shrink:0;letter-spacing:0.5px;}
+.fam-avatar.blue{background:#EFF6FF;color:#2563EB;}.fam-avatar.green{background:#F0FDF4;color:#059669;}.fam-avatar.purple{background:#F5F3FF;color:#7C3AED;}.fam-avatar.teal{background:#F0F9FF;color:#0891B2;}.fam-avatar.amber{background:#FFFBEB;color:#D97706;}
+.consent-chip{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-size:10px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--surface2);color:var(--textDim);transition:all 0.15s;user-select:none;}
+.consent-chip.on{background:var(--accentLt);color:var(--accent);border-color:var(--accentBorder);}
+.fam-feed-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 16px;transition:border-color 0.12s;}
+.fam-feed-card:hover{border-color:var(--border2);}
 </style>
 </head>
 <body>
@@ -586,9 +594,48 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
         <div class="trip-list" id="trip-list"><div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips in vault yet</div><div class="empty-sub">Trips appear here when integrated platforms send booking confirmations</div></div></div>
       </section>
       <section class="section" id="section-family">
-        <div class="sec-header"><div class="sec-icon" style="background:var(--surface2)">👥</div><div><div class="sec-title">Family Profiles</div><div class="sec-sub">Linked traveler identities with separate consent and document management</div></div></div>
-        <div class="loyalty-grid"><div class="add-card"><div class="add-card-plus">+</div>Link Family Member</div></div>
+        <div class="sec-header">
+          <div class="sec-icon" style="background:#EFF6FF">👥</div>
+          <div style="flex:1"><div class="sec-title">Family Profiles</div><div class="sec-sub">Cross-linked UniProfiles — share PNR, trips, insurance and tour details with consent</div></div>
+          <button class="save-btn" style="font-size:12px;padding:8px 18px;margin-top:4px" onclick="openFamilyInviteModal()">+ Link Member</button>
+        </div>
+        <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
+          <div class="stat-card"><div class="stat-num" id="fam-stat-linked">0</div><div class="stat-label">Linked Members</div><div class="stat-note teal">Active connections</div></div>
+          <div class="stat-card"><div class="stat-num" id="fam-stat-pending">0</div><div class="stat-label">Pending Invites</div><div class="stat-note warn" id="fam-pending-note"></div></div>
+          <div class="stat-card teal"><div class="stat-num" id="fam-stat-trips">0</div><div class="stat-label">Shared Trips</div><div class="stat-note teal">Upcoming across family</div></div>
+        </div>
+        <div id="fam-pending-received"></div>
+        <div id="fam-pending-sent"></div>
+        <div class="form-section-title">Linked Members</div>
+        <div id="fam-members-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:32px"></div>
+        <div class="form-section-title">Shared Travel Feed</div>
+        <div id="fam-feed" style="display:flex;flex-direction:column;gap:10px"></div>
       </section>
+
+      <!-- Family Invite Modal -->
+      <div id="fam-invite-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center">
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-xl);padding:32px;width:100%;max-width:480px;margin:20px;box-shadow:0 20px 60px rgba(0,0,0,0.12)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <div style="font-size:18px;font-weight:600;color:var(--text)">Link a Family Member</div>
+            <button onclick="closeFamilyInviteModal()" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:20px;line-height:1">✕</button>
+          </div>
+          <div style="font-size:12px;color:var(--accent);background:var(--accentLt);border:1px solid var(--accentBorder);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:20px;line-height:1.7">
+            Enter their email or UniProfile ID. They'll receive a link request and choose what travel data to share — like a GDS linking PAX on a shared PNR.
+          </div>
+          <div class="form-field" style="margin-bottom:16px">
+            <label class="field-label">Email or UniProfile ID</label>
+            <input class="field-input" id="fi-email" type="text" placeholder="email@example.com or UP-XXXXXXXX" style="width:100%">
+          </div>
+          <div class="form-field" style="margin-bottom:24px">
+            <label class="field-label">Personal message (optional)</label>
+            <input class="field-input" id="fi-message" type="text" placeholder="e.g. Let's link for our Paris trip!">
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="save-btn" id="fi-send-btn" onclick="sendFamilyInvite()">Send Link Request</button>
+            <button onclick="closeFamilyInviteModal()" style="padding:8px 20px;background:transparent;border:1px solid var(--border2);color:var(--textMid);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:DM Sans,sans-serif">Cancel</button>
+          </div>
+        </div>
+      </div>
       <section class="section" id="section-consent">
         <div class="sec-header"><div class="sec-icon" style="background:var(--tealGlow)">🔒</div><div><div class="sec-title">Consent &amp; Access</div><div class="sec-sub">GDPR-aligned — you define exactly what each platform can read and write</div></div></div>
         <div class="form-section"><div class="form-section-title">Connected Platforms</div>
@@ -1536,7 +1583,167 @@ async function deleteTrip(tripId){
     else{toast("Error: "+(result.error||"unknown"),"error");}
   }catch(e){toast("Error deleting trip","error");}
 }
-async function init(){document.getElementById("login-btn").href=loginUrl();const hashToken=parseHash();if(hashToken){token=hashToken;localStorage.setItem("up_token",token);window.history.replaceState(null,"","/");}else{token=localStorage.getItem("up_token");}if(!token){document.getElementById("screen-login").style.display="flex";return;}document.getElementById("screen-login").style.display="none";document.getElementById("screen-loading").style.display="flex";try{const data=await api("GET","/api/v1/me");if(data.error)throw new Error(data.error);uuid=data.uuid;localStorage.setItem("up_uuid",uuid);renderProfile(data);document.getElementById("screen-loading").style.display="none";document.getElementById("app").style.display="flex";document.getElementById("app").classList.add("visible");}catch(e){console.error("Init error:",e);if(e.message.includes("401")||e.message.includes("token")){localStorage.clear();document.getElementById("screen-loading").style.display="none";document.getElementById("screen-login").style.display="flex";}else{document.getElementById("screen-loading").innerHTML=`<div style="text-align:center;color:var(--red);font-size:14px">Error: ${e.message}<br><button onclick="localStorage.clear();location.reload()" style="margin-top:16px;padding:8px 16px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:6px;cursor:pointer;font-family:inherit">Sign in again</button></div>`;}}}
+// ── Family Profiles ───────────────────────────────────────────────────────────
+const FAM_COLORS=["blue","green","purple","teal","amber"];
+let familyState={
+  linked:[
+    {id:"fam-001",name:"Sarah Patel",email:"sarah.patel@example.com",initials:"SP",color:"blue",
+     consent:{trips:true,pnr:true,insurance:false,tours:false},
+     trips:[{locator:"ABC123",origin:"IAD",dest:"LHR",date:"2026-05-10",carrier:"UA",status:"upcoming"}]},
+    {id:"fam-002",name:"James Patel",email:"james.patel@example.com",initials:"JP",color:"green",
+     consent:{trips:true,pnr:false,insurance:false,tours:true},
+     trips:[{locator:"XYZ789",origin:"IAD",dest:"CDG",date:"2026-05-10",carrier:"AA",status:"upcoming"}]}
+  ],
+  received:[
+    {id:"inv-r-001",from_name:"Emma Rodriguez",from_email:"emma.r@example.com",initials:"ER",color:"purple",
+     sent_at:"2026-04-18",message:"Let's link profiles for our Paris trip!"}
+  ],
+  sent:[
+    {id:"inv-s-001",to_name:"David Chen",to_email:"david.c@example.com",initials:"DC",color:"teal",sent_at:"2026-04-17"}
+  ]
+};
+
+function renderFamily(){
+  var fs=familyState;
+  var el=function(id){return document.getElementById(id);};
+  var totalTrips=fs.linked.reduce(function(n,m){return n+(m.trips||[]).filter(function(t){return t.status==="upcoming";}).length;},0);
+  if(el("fam-stat-linked"))el("fam-stat-linked").textContent=fs.linked.length;
+  if(el("fam-stat-pending"))el("fam-stat-pending").textContent=fs.received.length+fs.sent.length;
+  if(el("fam-pending-note"))el("fam-pending-note").textContent=fs.received.length?fs.received.length+" awaiting your response":fs.sent.length?fs.sent.length+" sent":"";
+  if(el("fam-stat-trips"))el("fam-stat-trips").textContent=totalTrips;
+  var pr=el("fam-pending-received");
+  if(pr)pr.innerHTML=fs.received.length?'<div class="form-section-title">Pending — Awaiting Your Response</div>'+fs.received.map(function(inv){
+    return '<div style="background:var(--amberGlow);border:1px solid rgba(217,119,6,0.25);border-radius:var(--radius-md);padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:10px">'+
+      '<div class="fam-avatar '+inv.color+'">'+inv.initials+'</div>'+
+      '<div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--text)">'+inv.from_name+'</div>'+
+      '<div style="font-size:11px;color:var(--textDim)">'+inv.from_email+'</div>'+
+      (inv.message?'<div style="font-size:12px;color:var(--textMid);margin-top:4px;font-style:italic">"'+inv.message+'"</div>':'')+
+      '</div><div style="display:flex;gap:8px">'+
+      '<button onclick="respondFamilyInvite(\''+inv.id+'\',\'accept\')" class="save-btn" style="font-size:11px;padding:6px 14px">Accept</button>'+
+      '<button onclick="respondFamilyInvite(\''+inv.id+'\',\'decline\')" style="font-size:11px;padding:6px 14px;background:transparent;border:1px solid var(--border2);color:var(--textMid);border-radius:var(--radius-sm);cursor:pointer;font-family:DM Sans,sans-serif">Decline</button>'+
+      '</div></div>';
+  }).join(""):"";
+  var ps=el("fam-pending-sent");
+  if(ps)ps.innerHTML=fs.sent.length?'<div class="form-section-title">Pending — Sent</div>'+fs.sent.map(function(inv){
+    return '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:10px">'+
+      '<div class="fam-avatar '+inv.color+'">'+inv.initials+'</div>'+
+      '<div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--text)">'+inv.to_name+'</div>'+
+      '<div style="font-size:11px;color:var(--textDim)">'+inv.to_email+'</div></div>'+
+      '<span style="font-size:10px;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;border-radius:100px;background:var(--amberGlow);color:var(--amber);border:1px solid rgba(217,119,6,0.2)">Pending</span>'+
+      '<button onclick="cancelFamilyInvite(\''+inv.id+'\')" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:20px;line-height:1;padding:0 4px" title="Cancel">×</button>'+
+      '</div>';
+  }).join(""):"";
+  var mg=el("fam-members-grid");
+  if(mg){
+    if(!fs.linked.length){
+      mg.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">👥</div><div class="empty-title">No family members linked yet</div><div class="empty-sub">Invite a family member to link UniProfiles and share travel plans</div></div>';
+    }else{
+      mg.innerHTML=fs.linked.map(function(m){
+        var chips=[{key:"trips",label:"✈ Trips"},{key:"pnr",label:"📋 PNR"},{key:"insurance",label:"🛡 Insurance"},{key:"tours",label:"🗺 Tours"}].map(function(c){
+          return '<span class="consent-chip'+(m.consent[c.key]?" on":"")+'" onclick="toggleFamilyConsent(\''+m.id+'\',\''+c.key+'\')" title="'+(m.consent[c.key]?"Sharing — click to stop":"Not sharing — click to share")+'">'+c.label+'</span>';
+        }).join(" ");
+        var sc=(m.trips||[]).filter(function(t){return t.status==="upcoming";}).length;
+        return '<div class="fam-member-card">'+
+          '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">'+
+            '<div class="fam-avatar '+m.color+'">'+m.initials+'</div>'+
+            '<div style="flex:1"><div style="font-size:14px;font-weight:500;color:var(--text)">'+m.name+'</div>'+
+            '<div style="font-size:11px;color:var(--textDim)">'+m.email+'</div></div>'+
+            (sc?'<span style="font-size:10px;background:var(--accentLt);color:var(--accent);border:1px solid var(--accentBorder);padding:2px 8px;border-radius:100px;font-weight:500">'+sc+' trip'+(sc>1?"s":"")+'</span>':'')+
+          '</div>'+
+          '<div style="font-size:10px;color:var(--textHint);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px">They share with you</div>'+
+          '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px">'+chips+'</div>'+
+          '<div style="display:flex;justify-content:flex-end;border-top:1px solid var(--border);padding-top:12px">'+
+            '<button onclick="unlinkFamilyMember(\''+m.id+'\')" style="font-size:11px;color:var(--textDim);background:none;border:none;cursor:pointer;font-family:DM Sans,sans-serif;transition:color 0.15s" onmouseover="this.style.color=\'var(--red)\'" onmouseout="this.style.color=\'var(--textDim)\'">Unlink</button>'+
+          '</div></div>';
+      }).join("")+'<div class="add-card" onclick="openFamilyInviteModal()"><div class="add-card-plus">+</div>Link Member</div>';
+    }
+  }
+  renderFamilyFeed();
+}
+
+function renderFamilyFeed(){
+  var feed=document.getElementById("fam-feed");
+  if(!feed)return;
+  var months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var items=[];
+  familyState.linked.forEach(function(m){if(m.consent.trips)(m.trips||[]).forEach(function(t){items.push({member:m,trip:t});});});
+  if(!items.length){feed.innerHTML='<div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No shared trips yet</div><div class="empty-sub">Linked members\' upcoming trips appear here once they share their trips with you</div></div>';return;}
+  feed.innerHTML=items.map(function(item){
+    var m=item.member,t=item.trip;
+    var d=t.date?new Date(t.date):null;
+    var mon=d?months[d.getMonth()]:"",day=d?d.getDate():"";
+    var daysUntil=d?Math.floor((d-new Date())/86400000):null;
+    var cdTxt=daysUntil===null?"":daysUntil===0?"Today":daysUntil===1?"Tomorrow":daysUntil>0?"In "+daysUntil+"d":"Past";
+    var cdCls=daysUntil!==null&&daysUntil<=7?"upcoming":"completed";
+    return '<div class="fam-feed-card"><div style="display:flex;align-items:center;gap:12px">'+
+      '<div style="display:flex;flex-direction:column;align-items:center;min-width:36px">'+
+        '<div style="font-size:9px;color:var(--textHint);text-transform:uppercase;font-weight:600">'+mon+'</div>'+
+        '<div style="font-size:22px;font-weight:600;color:var(--text);line-height:1">'+day+'</div>'+
+      '</div>'+
+      '<div style="width:1px;height:36px;background:var(--border2)"></div>'+
+      '<div class="fam-avatar '+m.color+'" style="width:28px;height:28px;font-size:10px">'+m.initials+'</div>'+
+      '<div style="flex:1">'+
+        '<div style="display:flex;align-items:center;gap:8px">'+
+          '<span style="font-size:16px;font-weight:500;color:var(--text)">'+t.origin+'</span>'+
+          '<span style="color:var(--textDim)">→</span>'+
+          '<span style="font-size:16px;font-weight:500;color:var(--text)">'+t.dest+'</span>'+
+        '</div>'+
+        '<div style="font-size:11px;color:var(--textDim);margin-top:2px">'+m.name+(t.carrier?" · "+t.carrier:"")+(m.consent.pnr&&t.locator?" · PNR: "+t.locator:"")+'</div>'+
+      '</div>'+
+      (daysUntil!==null?'<span class="trip-countdown '+cdCls+'">'+cdTxt+'</span>':'')+
+      (m.consent.pnr?'<span style="font-size:10px;background:var(--accentLt);color:var(--accent);border:1px solid var(--accentBorder);padding:2px 8px;border-radius:100px;font-weight:500;margin-left:4px">PNR</span>':'')+
+    '</div></div>';
+  }).join("");
+}
+
+function openFamilyInviteModal(){document.getElementById("fam-invite-modal").style.display="flex";document.getElementById("fi-email").value="";document.getElementById("fi-message").value="";}
+function closeFamilyInviteModal(){document.getElementById("fam-invite-modal").style.display="none";}
+async function sendFamilyInvite(){
+  var email=document.getElementById("fi-email").value.trim();
+  var msg=document.getElementById("fi-message").value.trim();
+  if(!email){toast("Enter an email or UniProfile ID","error");return;}
+  var btn=document.getElementById("fi-send-btn");
+  btn.textContent="Sending...";btn.disabled=true;
+  // API → POST /api/v1/family/{uuid}/invite  body:{to:email,message:msg}
+  await new Promise(function(r){setTimeout(r,700);});
+  var initials=email.split("@")[0].replace(/[^a-zA-Z]/g," ").trim().split(/\s+/).map(function(w){return w[0]||"";}).join("").slice(0,2).toUpperCase()||email.slice(0,2).toUpperCase();
+  var name=email.split("@")[0].replace(/[._]/g," ").replace(/\b\w/g,function(l){return l.toUpperCase();});
+  familyState.sent.push({id:"inv-s-"+Date.now(),to_name:name,to_email:email,initials:initials,color:FAM_COLORS[familyState.sent.length%FAM_COLORS.length],sent_at:new Date().toISOString().split("T")[0]});
+  renderFamily();closeFamilyInviteModal();
+  toast("Invite sent to "+email,"success");
+  btn.textContent="Send Link Request";btn.disabled=false;
+}
+function respondFamilyInvite(id,action){
+  var inv=familyState.received.find(function(i){return i.id===id;});if(!inv)return;
+  // API → POST /api/v1/family/{uuid}/respond  body:{invite_id:id,action:action}
+  familyState.received=familyState.received.filter(function(i){return i.id!==id;});
+  if(action==="accept"){
+    familyState.linked.push({id:"fam-"+Date.now(),name:inv.from_name,email:inv.from_email,initials:inv.initials,color:inv.color,consent:{trips:true,pnr:false,insurance:false,tours:false},trips:[]});
+    toast(inv.from_name+" linked to your profile","success");
+  }else{toast("Invite declined","success");}
+  renderFamily();
+}
+function cancelFamilyInvite(id){
+  familyState.sent=familyState.sent.filter(function(i){return i.id!==id;});
+  // API → DELETE /api/v1/family/{uuid}/invite/{id}
+  renderFamily();toast("Invite cancelled","success");
+}
+function toggleFamilyConsent(memberId,type){
+  var m=familyState.linked.find(function(x){return x.id===memberId;});if(!m)return;
+  m.consent[type]=!m.consent[type];
+  // API → PUT /api/v1/family/{uuid}/consent  body:{member_id:memberId,type:type,value:m.consent[type]}
+  renderFamily();
+  toast((m.consent[type]?"Now sharing":"Stopped sharing")+" "+type+" with "+m.name,"success");
+}
+function unlinkFamilyMember(memberId){
+  var m=familyState.linked.find(function(x){return x.id===memberId;});if(!m)return;
+  if(!confirm("Unlink "+m.name+"? They'll no longer see your shared travel data."))return;
+  familyState.linked=familyState.linked.filter(function(x){return x.id!==memberId;});
+  // API → DELETE /api/v1/family/{uuid}/{memberId}
+  renderFamily();toast(m.name+" unlinked","success");
+}
+
+async function init(){document.getElementById("login-btn").href=loginUrl();const hashToken=parseHash();if(hashToken){token=hashToken;localStorage.setItem("up_token",token);window.history.replaceState(null,"","/");}else{token=localStorage.getItem("up_token");}if(!token){document.getElementById("screen-login").style.display="flex";return;}document.getElementById("screen-login").style.display="none";document.getElementById("screen-loading").style.display="flex";try{const data=await api("GET","/api/v1/me");if(data.error)throw new Error(data.error);uuid=data.uuid;localStorage.setItem("up_uuid",uuid);renderProfile(data);renderFamily();document.getElementById("screen-loading").style.display="none";document.getElementById("app").style.display="flex";document.getElementById("app").classList.add("visible");}catch(e){console.error("Init error:",e);if(e.message.includes("401")||e.message.includes("token")){localStorage.clear();document.getElementById("screen-loading").style.display="none";document.getElementById("screen-login").style.display="flex";}else{document.getElementById("screen-loading").innerHTML=`<div style="text-align:center;color:var(--red);font-size:14px">Error: ${e.message}<br><button onclick="localStorage.clear();location.reload()" style="margin-top:16px;padding:8px 16px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:6px;cursor:pointer;font-family:inherit">Sign in again</button></div>`;}}}
 init();
 </script>
 </body>
