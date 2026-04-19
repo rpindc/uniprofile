@@ -190,6 +190,7 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
 .doc-card.expiring::before{background:var(--amber);opacity:0.6;}
 .doc-card.expired::before{background:var(--red);opacity:0.6;}
 .doc-card.valid::before{background:var(--teal);opacity:0.4;}
+.doc-card.selected{border-color:var(--accent);box-shadow:0 0 0 2px var(--accentLt);}
 .doc-status{position:absolute;top:14px;right:14px;font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:2px 8px;border-radius:100px;font-weight:600;}
 .doc-status.valid{background:var(--tealGlow);color:var(--tealLt);}
 .doc-status.expiring{background:var(--amberGlow);color:var(--amber);}
@@ -396,6 +397,17 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
         <div class="form-section">
           <div class="form-section-title">Document Vault</div>
           <div id="doc-vault-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-bottom:16px"></div>
+          <div id="doc-detail-panel" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:16px;animation:fadeIn 0.2s">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+              <div id="ddp-title" style="font-size:15px;font-weight:600;color:var(--text)"></div>
+              <button onclick="closeDocDetail()" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:18px;line-height:1">✕</button>
+            </div>
+            <div id="ddp-fields" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px 24px;margin-bottom:24px"></div>
+            <div style="display:flex;gap:10px;padding-top:16px;border-top:1px solid var(--border)">
+              <button class="save-btn" id="ddp-edit-btn" onclick="openEditDocFromDetail()">Edit Document</button>
+              <button id="ddp-delete-btn" onclick="deleteDocFromDetail()" style="padding:8px 20px;background:var(--redGlow);border:1px solid var(--redBorder);color:var(--red);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:DM Sans,sans-serif;margin-left:auto">Delete</button>
+            </div>
+          </div>
           <button class="save-btn" style="background:transparent;border:1px dashed var(--border2);color:var(--textMid);padding:10px 20px;font-size:12px" onclick="openAddDoc()">+ Add Document</button>
         </div>
 
@@ -1636,7 +1648,7 @@ function renderDocumentVault(docs){
     var name=d.given_names&&d.surname?d.given_names+" "+d.surname:(d.given_names||d.surname||"");
     var expDate=d.expiry_date||d.valid_until;
     var issFlag=(typeof countryFlag==="function")?countryFlag(d.issuing_country||d.nationality||""):"";
-    return '<div class="doc-card '+sc+'" onclick="openEditDoc(this.dataset.id)" data-id="'+d.id+'" style="cursor:pointer">'+
+    return '<div class="doc-card '+sc+'" onclick="showDocDetail(this.dataset.id)" data-id="'+d.id+'" style="cursor:pointer">'+
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">'+
         '<span class="doc-status '+sc+'" style="position:static">'+sl+'</span>'+
         (issFlag?'<span style="font-size:22px">'+issFlag+'</span>':'<span></span>')+
@@ -1654,6 +1666,72 @@ function renderDocumentVault(docs){
   }).join("");
 }
 
+var _selectedDocId=null;
+function showDocDetail(id){
+  var doc=profile&&(profile.documents||[]).find(function(d){return d.id===id;});
+  if(!doc)return;
+  _selectedDocId=id;
+  // Highlight selected card
+  document.querySelectorAll(".doc-card").forEach(function(c){c.classList.remove("selected");});
+  var card=document.querySelector('.doc-card[data-id="'+id+'"]');
+  if(card)card.classList.add("selected");
+  // Build field rows
+  var fmtDate=function(ds){if(!ds)return"—";try{return new Date(ds).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"});}catch(e){return ds;}};
+  var fields=[
+    {label:"Document Type",val:doc.doc_type?doc.doc_type.replace(/_/g," "):""},
+    {label:"Given Names",val:doc.given_names||""},
+    {label:"Surname",val:doc.surname||""},
+    {label:"Document Number",val:doc.doc_number||"",mono:true},
+    {label:"Issuing Country",val:doc.issuing_country||""},
+    {label:"Nationality",val:doc.nationality||""},
+    {label:"Date of Birth",val:fmtDate(doc.dob)},
+    {label:"Gender",val:doc.gender_code==="M"?"Male":doc.gender_code==="F"?"Female":doc.gender_code||""},
+    {label:"Issue Date",val:fmtDate(doc.issue_date)},
+    {label:"Expiry Date",val:fmtDate(doc.expiry_date)},
+    {label:"Place of Birth",val:doc.place_of_birth||""},
+    {label:"Visa Type",val:doc.visa_type||""},
+    {label:"Destination Country",val:doc.destination_country||""},
+    {label:"Entries",val:doc.entries||""},
+    {label:"Valid From",val:fmtDate(doc.valid_from)},
+    {label:"Valid Until",val:fmtDate(doc.valid_until)},
+    {label:"Port of Entry",val:doc.port_of_entry||""},
+    {label:"ESTA Status",val:doc.esta_status||""},
+    {label:"Notes",val:doc.doc_notes||""},
+  ].filter(function(f){return f.val&&f.val!=="—"&&f.val!==""&&f.val!=="Invalid Date";});
+  var panel=document.getElementById("doc-detail-panel");
+  var title=document.getElementById("ddp-title");
+  var fieldsEl=document.getElementById("ddp-fields");
+  if(!panel||!title||!fieldsEl)return;
+  title.textContent=(doc.doc_type||"Document").replace(/_/g," ")+(doc.is_primary?" · Primary":"");
+  fieldsEl.innerHTML=fields.map(function(f){
+    return '<div><div style="font-size:10px;color:var(--textHint);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">'+f.label+'</div>'+
+      '<div style="font-size:13px;color:var(--text);font-weight:500'+(f.mono?";font-family:'JetBrains Mono',monospace":"")+'">'+f.val+'</div></div>';
+  }).join("");
+  if(doc.days_remaining!==null&&doc.days_remaining!==undefined){
+    var status=doc.days_remaining<0?"Expired":doc.days_remaining<=90?"Expiring soon":"Valid";
+    var color=doc.days_remaining<0?"var(--red)":doc.days_remaining<=90?"var(--amber)":"var(--green)";
+    fieldsEl.innerHTML+='<div style="grid-column:1/-1"><div style="font-size:10px;color:var(--textHint);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">Status</div>'+
+      '<div style="font-size:13px;font-weight:500;color:'+color+'">'+status+(doc.days_remaining>=0?" · "+doc.days_remaining+"d remaining":"")+'</div></div>';
+  }
+  panel.style.display="block";
+  panel.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+function closeDocDetail(){
+  _selectedDocId=null;
+  document.querySelectorAll(".doc-card").forEach(function(c){c.classList.remove("selected");});
+  document.getElementById("doc-detail-panel").style.display="none";
+}
+function openEditDocFromDetail(){if(_selectedDocId)openEditDoc(_selectedDocId);}
+async function deleteDocFromDetail(){
+  if(!_selectedDocId)return;
+  var doc=profile&&(profile.documents||[]).find(function(d){return d.id===_selectedDocId;});
+  if(!confirm("Delete this "+(doc?doc.doc_type.replace(/_/g," "):"document")+"?"))return;
+  try{
+    var result=await api("PUT","/api/v1/profile/"+uuid,{module:"document_delete",data:{doc_id:_selectedDocId}});
+    if(result.success){profile=result.profile;renderDocumentVault(result.profile.documents||[]);closeDocDetail();toast("Document deleted","success");}
+    else{toast("Error: "+(result.error||"unknown"),"error");}
+  }catch(e){toast("Error deleting document","error");}
+}
 async function deleteTrip(tripId){
   if(!confirm("Delete this trip from your vault?"))return;
   try{
