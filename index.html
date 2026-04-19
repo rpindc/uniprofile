@@ -1175,7 +1175,38 @@ function applyTripFilter(filter){
     var cdText=daysUntil===null?"":daysUntil>0?daysUntil+"d away":daysUntil===0?"Today":Math.abs(daysUntil)+"d ago";
     var cdColor=daysUntil!==null&&daysUntil<=7&&daysUntil>=0?"#D97706":daysUntil!==null&&daysUntil<0?"#9CA3AF":"#059669";
 
-    return'<div class="trip-card-full" id="trip-'+i+'">'+
+
+    // Timeline strip
+        var timelineHtml='';
+        if(segs.length){
+          var totalDur=segs.reduce(function(a,s){return a+(s.duration_minutes||0);},0)||1;
+          timelineHtml='<div style="margin-bottom:16px">';
+          timelineHtml+='<div style="display:flex;align-items:center;gap:0;height:28px">';
+          segs.forEach(function(s,si){
+            var pct=Math.max(8,Math.round(((s.duration_minutes||60)/totalDur)*100));
+            timelineHtml+='<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#9CA3AF;padding-right:3px;flex-shrink:0;white-space:nowrap">'+(s.origin_iata||"")+'</div>';
+            timelineHtml+='<div style="flex:'+pct+';height:6px;background:#2563EB;border-radius:3px;position:relative;min-width:20px">'+
+              '<div style="position:absolute;left:50%;transform:translateX(-50%);top:-14px;font-family:JetBrains Mono,monospace;font-size:8px;color:#2563EB;white-space:nowrap;font-weight:500">'+(s.carrier||"")+" "+(s.flight_number||"")+'</div>'+
+              '<div style="position:absolute;left:50%;transform:translateX(-50%);bottom:-13px;font-size:8px;color:#9CA3AF;white-space:nowrap">'+fmtDur(s.duration_minutes)+'</div>'+
+            '</div>';
+            if(si<segs.length-1){
+              timelineHtml+='<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#374151;padding:0 3px;flex-shrink:0;white-space:nowrap">'+(s.destination_iata||"")+'</div>';
+            }
+          });
+          timelineHtml+='<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#9CA3AF;padding-left:3px;flex-shrink:0">'+(segs[segs.length-1]?segs[segs.length-1].destination_iata:"")+'</div>';
+          timelineHtml+='</div>';
+          // Time labels below
+          timelineHtml+='<div style="display:flex;justify-content:space-between;margin-top:18px;padding:0 0">';
+          timelineHtml+='<span style="font-size:9px;color:#9CA3AF">'+fmtDate(t.departure_date)+'</span>';
+          if(segs.length>1){
+            timelineHtml+='<span style="font-size:9px;color:#6B7280;font-weight:500">'+segs.length+' segments · '+(totalDur>0?Math.floor(totalDur/60)+"h "+(totalDur%60)+"m total flight time":"")+'</span>';
+          }
+          timelineHtml+='<span style="font-size:9px;color:#9CA3AF">'+fmtDate(t.return_date)+'</span>';
+          timelineHtml+='</div>';
+          timelineHtml+='</div>';
+        }
+
+        return'<div class="trip-card-full" id="trip-'+i+'">'+
       '<div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:'+statusColor+';border-radius:10px 0 0 10px"></div>'+
       '<div style="padding:20px 22px 20px 26px">'+
 
@@ -1205,8 +1236,8 @@ function applyTripFilter(filter){
             '<div style="font-size:11px;font-weight:500;color:'+cdColor+';margin-top:4px">'+cdText+'</div>'+
           '</div>'+
         '</div>'+
-
         // Segment table
+        timelineHtml+
         '<table style="width:100%;border-collapse:collapse;margin-bottom:4px">'+
           '<thead><tr style="border-bottom:1.5px solid #F3F4F6">'+
             '<th style="font-size:9px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.6px;padding:0 8px 6px 0;text-align:left">Flight</th>'+
