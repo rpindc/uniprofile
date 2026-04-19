@@ -344,7 +344,7 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
         <button class="nav-btn" onclick="showSection('loyalty',this)"><span class="nav-icon">✦</span>Loyalty Programs</button>
         <button class="nav-btn" onclick="showSection('payment',this)"><span class="nav-icon">💳</span>Payment &amp; Policy<span class="nav-tag" id="badge-payment" style="display:none">corp</span></button>
         <button class="nav-btn" onclick="showSection('trips',this)"><span class="nav-icon">📋</span>Trip History</button>
-        <button class="nav-btn" onclick="showSection('family',this)"><span class="nav-icon">👥</span>Family Profiles</button>
+        <button class="nav-btn" onclick="showSection('family',this)"><span class="nav-icon">👥</span>Family Profiles<span class="nav-badge" id="fam-nav-badge" style="display:none">0</span></button>
       </div>
       <div class="nav-group">
         <div class="nav-group-label">Platform</div>
@@ -943,7 +943,7 @@ function parseHash(){return new URLSearchParams(window.location.hash.slice(1)).g
 async function api(method,path,body){const opts={method,headers:{Authorization:`Bearer ${token}`}};if(body){opts.headers["Content-Type"]="application/json";opts.body=JSON.stringify(body);}const r=await fetch(`${API}${path}`,opts);if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json();}
 function toast(msg,type=""){const el=document.getElementById("toast");el.textContent=msg;el.className="toast show"+(type?" "+type:"");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.className="toast",3000);}
 function setSaveState(state){const dot=document.getElementById("save-dot"),lbl=document.getElementById("save-label");if(state==="saving"){dot.className="autosave-dot saving";lbl.textContent="Saving...";}else if(state==="saved"){dot.className="autosave-dot saved";lbl.textContent="All changes saved";setTimeout(()=>dot.className="autosave-dot",3000);}else{dot.className="autosave-dot";lbl.textContent="Unsaved changes";}}
-function showSection(id,btn){document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));document.getElementById("section-"+id).classList.add("active");if(btn)btn.classList.add("active");section=id;const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Seat & Cabin Preferences",meals:"Meal & Dietary",loyalty:"Loyalty Programs",payment:"Payment & Policy",trips:"Trip History",family:"Family Profiles",consent:"Consent & Access",api:"API & Webhooks"};document.getElementById("page-title").textContent=titles[id]||"UniProfile";document.querySelector(".content").scrollTop=0;}
+function showSection(id,btn){document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));document.getElementById("section-"+id).classList.add("active");if(btn)btn.classList.add("active");section=id;const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Seat & Cabin Preferences",meals:"Meal & Dietary",loyalty:"Loyalty Programs",payment:"Payment & Policy",trips:"Trip History",family:"Family Profiles",consent:"Consent & Access",api:"API & Webhooks"};document.getElementById("page-title").textContent=titles[id]||"UniProfile";document.querySelector(".content").scrollTop=0;if(id==="family")loadFamilyData();}
 async function switchContext(el){const ctx=el.checked?"CORPORATE":"PERSONAL";const pill=document.getElementById("context-pill"),lp=document.getElementById("lbl-personal"),lb=document.getElementById("lbl-business"),pp=document.getElementById("pay-personal"),pc=document.getElementById("pay-corporate"),nb=document.getElementById("badge-payment");if(el.checked){pill.textContent="Business Mode";pill.className="context-pill corporate";lp.className="bleisure-opt teal";lb.className="bleisure-opt gold on";if(pp)pp.style.display="none";if(pc)pc.style.display="block";if(nb)nb.style.display="inline";}else{pill.textContent="Personal Mode";pill.className="context-pill personal";lp.className="bleisure-opt teal on";lb.className="bleisure-opt gold";if(pp)pp.style.display="block";if(pc)pc.style.display="none";if(nb)nb.style.display="none";}try{await api("POST",`/api/v1/profile/${uuid}/bleisure`,{context:ctx});}catch(e){}}
 const v=id=>document.getElementById(id)?.value?.trim()||"";
 const cb=id=>document.getElementById(id)?.checked||false;
@@ -1585,28 +1585,47 @@ async function deleteTrip(tripId){
 }
 // ── Family Profiles ───────────────────────────────────────────────────────────
 const FAM_COLORS=["blue","green","purple","teal","amber"];
+function nameInitials(s){if(!s)return"?";var p=(s||"").split(/[\s._@]+/).filter(Boolean);return p.length>=2?(p[0][0]+(p[1][0]||"")).toUpperCase():s.slice(0,2).toUpperCase();}
 let familyState={
   linked:[
     {id:"fam-001",name:"Sarah Patel",email:"sarah.patel@example.com",initials:"SP",color:"blue",
-     consent:{trips:true,pnr:true,insurance:false,tours:false},
-     trips:[{locator:"ABC123",origin:"IAD",dest:"LHR",date:"2026-05-10",carrier:"UA",status:"upcoming"}]},
+     my_consent:{trips:true,pnr:true,insurance:false,tours:false},
+     their_consent:{trips:true,pnr:true,insurance:true,tours:false},
+     shared_trips:[{id:"t-sp-1",locator:"ABC123",origin:"IAD",dest:"LHR",date:"2026-05-10",carrier:"UA",flight_number:"UA901",status:"upcoming",cabin:"BUSINESS",seat:"2A",
+       segments:[{flight:"UA901",origin:"IAD",dest:"LHR",dep:"2026-05-10T19:30",arr:"2026-05-11T07:45",seat:"2A",cabin:"Business",duration_mins:435}]}],
+     shared_insurance:[{provider:"Allianz Travel",policy_number:"ATI-2026-88421",coverage:"Comprehensive — Trip Cancellation, Medical, Baggage",valid_until:"2026-05-20",emergency_phone:"+1-800-555-0199"}],
+     shared_tours:[]},
     {id:"fam-002",name:"James Patel",email:"james.patel@example.com",initials:"JP",color:"green",
-     consent:{trips:true,pnr:false,insurance:false,tours:true},
-     trips:[{locator:"XYZ789",origin:"IAD",dest:"CDG",date:"2026-05-10",carrier:"AA",status:"upcoming"}]}
+     my_consent:{trips:true,pnr:false,insurance:false,tours:true},
+     their_consent:{trips:true,pnr:false,insurance:false,tours:true},
+     shared_trips:[{id:"t-jp-1",locator:"XYZ789",origin:"IAD",dest:"CDG",date:"2026-05-10",carrier:"AA",flight_number:"AA750",status:"upcoming",cabin:"ECONOMY",seat:"24C",
+       segments:[{flight:"AA750",origin:"IAD",dest:"CDG",dep:"2026-05-10T22:15",arr:"2026-05-11T12:30",seat:"24C",cabin:"Economy",duration_mins:555}]}],
+     shared_insurance:[],
+     shared_tours:[{operator:"GetYourGuide",name:"Paris City & Eiffel Tower Guided Tour",date:"2026-05-12",duration:"4 hours",reference:"GYG-2026-44891",meeting_point:"Trocadéro Gardens"}]}
   ],
-  received:[
-    {id:"inv-r-001",from_name:"Emma Rodriguez",from_email:"emma.r@example.com",initials:"ER",color:"purple",
-     sent_at:"2026-04-18",message:"Let's link profiles for our Paris trip!"}
-  ],
-  sent:[
-    {id:"inv-s-001",to_name:"David Chen",to_email:"david.c@example.com",initials:"DC",color:"teal",sent_at:"2026-04-17"}
-  ]
+  received:[{id:"inv-r-001",from_name:"Emma Rodriguez",from_email:"emma.r@example.com",initials:"ER",color:"purple",sent_at:"2026-04-18",message:"Let's link profiles for our Paris trip!"}],
+  sent:[{id:"inv-s-001",to_name:"David Chen",to_email:"david.c@example.com",initials:"DC",color:"teal",sent_at:"2026-04-17"}]
 };
 
+async function loadFamilyData(){
+  if(!uuid){renderFamily();return;}
+  try{
+    var data=await api("GET","/api/v1/family/"+uuid);
+    if(data&&data.success!==false){
+      familyState={
+        linked:(data.linked||[]).map(function(m,i){return Object.assign({initials:nameInitials(m.name||m.email),color:FAM_COLORS[i%FAM_COLORS.length]},m);}),
+        received:(data.pending_received||[]).map(function(inv,i){return Object.assign({initials:nameInitials(inv.from_name||inv.from_email),color:FAM_COLORS[i%FAM_COLORS.length]},inv);}),
+        sent:data.pending_sent||[]
+      };
+    }
+  }catch(e){/* API not live — using mock state */}
+  renderFamily();updateFamilyNavBadge();
+}
+function updateFamilyNavBadge(){var b=document.getElementById("fam-nav-badge");var n=familyState.received.length;if(b){b.textContent=n;b.style.display=n?"inline":"none";}}
+
 function renderFamily(){
-  var fs=familyState;
-  var el=function(id){return document.getElementById(id);};
-  var totalTrips=fs.linked.reduce(function(n,m){return n+(m.trips||[]).filter(function(t){return t.status==="upcoming";}).length;},0);
+  var fs=familyState,el=function(id){return document.getElementById(id);};
+  var totalTrips=fs.linked.reduce(function(n,m){return n+(m.shared_trips||[]).filter(function(t){return t.status==="upcoming";}).length;},0);
   if(el("fam-stat-linked"))el("fam-stat-linked").textContent=fs.linked.length;
   if(el("fam-stat-pending"))el("fam-stat-pending").textContent=fs.received.length+fs.sent.length;
   if(el("fam-pending-note"))el("fam-pending-note").textContent=fs.received.length?fs.received.length+" awaiting your response":fs.sent.length?fs.sent.length+" sent":"";
@@ -1639,19 +1658,28 @@ function renderFamily(){
       mg.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">👥</div><div class="empty-title">No family members linked yet</div><div class="empty-sub">Invite a family member to link UniProfiles and share travel plans</div></div>';
     }else{
       mg.innerHTML=fs.linked.map(function(m){
-        var chips=[{key:"trips",label:"✈ Trips"},{key:"pnr",label:"📋 PNR"},{key:"insurance",label:"🛡 Insurance"},{key:"tours",label:"🗺 Tours"}].map(function(c){
-          return '<span class="consent-chip'+(m.consent[c.key]?" on":"")+'" onclick="toggleFamilyConsent(\''+m.id+'\',\''+c.key+'\')" title="'+(m.consent[c.key]?"Sharing — click to stop":"Not sharing — click to share")+'">'+c.label+'</span>';
+        var myChips=[{key:"trips",label:"✈ Trips"},{key:"pnr",label:"📋 PNR"},{key:"insurance",label:"🛡 Insurance"},{key:"tours",label:"🗺 Tours"}].map(function(c){
+          return '<span class="consent-chip'+(m.my_consent[c.key]?" on":"")+'" onclick="toggleMyConsent(\''+m.id+'\',\''+c.key+'\')" title="'+(m.my_consent[c.key]?"You\'re sharing — click to stop":"Not sharing — click to share")+'">'+c.label+'</span>';
         }).join(" ");
-        var sc=(m.trips||[]).filter(function(t){return t.status==="upcoming";}).length;
+        var theirDots=[{key:"trips",label:"✈"},{key:"pnr",label:"📋"},{key:"insurance",label:"🛡"},{key:"tours",label:"🗺"}].map(function(c){
+          return '<span style="font-size:11px;color:'+(m.their_consent[c.key]?"var(--green)":"var(--border2)")+'" title="'+(m.their_consent[c.key]?"Sharing with you":"Not sharing")+'">'+c.label+(m.their_consent[c.key]?" ✓":" –")+'</span>';
+        }).join('<span style="color:var(--border2);margin:0 4px">·</span>');
+        var sc=(m.shared_trips||[]).filter(function(t){return t.status==="upcoming";}).length;
+        var ic=(m.shared_insurance||[]).length,tc=(m.shared_tours||[]).length;
         return '<div class="fam-member-card">'+
-          '<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">'+
+          '<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">'+
             '<div class="fam-avatar '+m.color+'">'+m.initials+'</div>'+
             '<div style="flex:1"><div style="font-size:14px;font-weight:500;color:var(--text)">'+m.name+'</div>'+
             '<div style="font-size:11px;color:var(--textDim)">'+m.email+'</div></div>'+
-            (sc?'<span style="font-size:10px;background:var(--accentLt);color:var(--accent);border:1px solid var(--accentBorder);padding:2px 8px;border-radius:100px;font-weight:500">'+sc+' trip'+(sc>1?"s":"")+'</span>':'')+
-          '</div>'+
-          '<div style="font-size:10px;color:var(--textHint);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:8px">They share with you</div>'+
-          '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px">'+chips+'</div>'+
+            '<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">'+
+            (sc?'<span style="font-size:10px;background:var(--accentLt);color:var(--accent);border:1px solid var(--accentBorder);padding:2px 7px;border-radius:100px">'+sc+' trip'+(sc>1?"s":"")+'</span>':'')+
+            (ic?'<span style="font-size:10px;background:var(--greenGlow);color:var(--green);border:1px solid var(--greenBorder);padding:2px 7px;border-radius:100px">🛡 Ins</span>':'')+
+            (tc?'<span style="font-size:10px;background:var(--tealGlow);color:var(--tealLt);border:1px solid rgba(8,145,178,0.2);padding:2px 7px;border-radius:100px">🗺 Tour</span>':'')+
+            '</div></div>'+
+          '<div style="font-size:10px;color:var(--textHint);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:7px">You share with them</div>'+
+          '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px">'+myChips+'</div>'+
+          '<div style="font-size:10px;color:var(--textHint);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:7px">They share with you</div>'+
+          '<div style="display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:14px">'+theirDots+'</div>'+
           '<div style="display:flex;justify-content:flex-end;border-top:1px solid var(--border);padding-top:12px">'+
             '<button onclick="unlinkFamilyMember(\''+m.id+'\')" style="font-size:11px;color:var(--textDim);background:none;border:none;cursor:pointer;font-family:DM Sans,sans-serif;transition:color 0.15s" onmouseover="this.style.color=\'var(--red)\'" onmouseout="this.style.color=\'var(--textDim)\'">Unlink</button>'+
           '</div></div>';
@@ -1662,84 +1690,156 @@ function renderFamily(){
 }
 
 function renderFamilyFeed(){
-  var feed=document.getElementById("fam-feed");
-  if(!feed)return;
+  var feed=document.getElementById("fam-feed");if(!feed)return;
   var months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   var items=[];
-  familyState.linked.forEach(function(m){if(m.consent.trips)(m.trips||[]).forEach(function(t){items.push({member:m,trip:t});});});
-  if(!items.length){feed.innerHTML='<div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No shared trips yet</div><div class="empty-sub">Linked members\' upcoming trips appear here once they share their trips with you</div></div>';return;}
-  feed.innerHTML=items.map(function(item){
-    var m=item.member,t=item.trip;
-    var d=t.date?new Date(t.date):null;
-    var mon=d?months[d.getMonth()]:"",day=d?d.getDate():"";
-    var daysUntil=d?Math.floor((d-new Date())/86400000):null;
-    var cdTxt=daysUntil===null?"":daysUntil===0?"Today":daysUntil===1?"Tomorrow":daysUntil>0?"In "+daysUntil+"d":"Past";
-    var cdCls=daysUntil!==null&&daysUntil<=7?"upcoming":"completed";
-    return '<div class="fam-feed-card"><div style="display:flex;align-items:center;gap:12px">'+
-      '<div style="display:flex;flex-direction:column;align-items:center;min-width:36px">'+
-        '<div style="font-size:9px;color:var(--textHint);text-transform:uppercase;font-weight:600">'+mon+'</div>'+
-        '<div style="font-size:22px;font-weight:600;color:var(--text);line-height:1">'+day+'</div>'+
-      '</div>'+
-      '<div style="width:1px;height:36px;background:var(--border2)"></div>'+
-      '<div class="fam-avatar '+m.color+'" style="width:28px;height:28px;font-size:10px">'+m.initials+'</div>'+
-      '<div style="flex:1">'+
-        '<div style="display:flex;align-items:center;gap:8px">'+
-          '<span style="font-size:16px;font-weight:500;color:var(--text)">'+t.origin+'</span>'+
-          '<span style="color:var(--textDim)">→</span>'+
-          '<span style="font-size:16px;font-weight:500;color:var(--text)">'+t.dest+'</span>'+
-        '</div>'+
-        '<div style="font-size:11px;color:var(--textDim);margin-top:2px">'+m.name+(t.carrier?" · "+t.carrier:"")+(m.consent.pnr&&t.locator?" · PNR: "+t.locator:"")+'</div>'+
-      '</div>'+
-      (daysUntil!==null?'<span class="trip-countdown '+cdCls+'">'+cdTxt+'</span>':'')+
-      (m.consent.pnr?'<span style="font-size:10px;background:var(--accentLt);color:var(--accent);border:1px solid var(--accentBorder);padding:2px 8px;border-radius:100px;font-weight:500;margin-left:4px">PNR</span>':'')+
-    '</div></div>';
+  familyState.linked.forEach(function(m){
+    if(m.their_consent.trips)(m.shared_trips||[]).forEach(function(t){items.push({member:m,type:"trip",data:t});});
+    if(m.their_consent.insurance)(m.shared_insurance||[]).forEach(function(ins){items.push({member:m,type:"insurance",data:ins});});
+    if(m.their_consent.tours)(m.shared_tours||[]).forEach(function(tour){items.push({member:m,type:"tour",data:tour});});
+  });
+  if(!items.length){feed.innerHTML='<div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No shared travel data yet</div><div class="empty-sub">Linked members\' trips, insurance and tours appear here based on their sharing settings</div></div>';return;}
+  var fmtT=function(ds){if(!ds)return"";var d=new Date(ds);return d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:false});};
+  var fmtDur=function(m){return m?Math.floor(m/60)+"h "+(m%60)+"m":"";};
+  feed.innerHTML=items.map(function(item,idx){
+    var m=item.member;
+    if(item.type==="trip"){
+      var t=item.data;
+      var d=t.date?new Date(t.date):null;
+      var mon=d?months[d.getMonth()]:"",day=d?d.getDate():"";
+      var daysUntil=d?Math.floor((d-new Date())/86400000):null;
+      var cdTxt=daysUntil===null?"":daysUntil===0?"Today":daysUntil===1?"Tomorrow":daysUntil>0?"In "+daysUntil+"d":"Past";
+      var cdCls=daysUntil!==null&&daysUntil<=7?"upcoming":"completed";
+      var hasPnr=m.their_consent.pnr&&t.segments&&t.segments.length;
+      var detId="fam-det-"+idx;
+      var segHtml=hasPnr?'<div id="'+detId+'" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);animation:fadeIn 0.2s">'+
+        '<div style="font-size:10px;color:var(--textHint);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;font-family:JetBrains Mono,monospace">PNR: '+t.locator+' · '+(t.carrier||"")+(t.flight_number?" "+t.flight_number:"")+'</div>'+
+        (t.segments||[]).map(function(s){
+          return '<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:6px">'+
+            '<div style="font-size:11px;font-weight:600;color:var(--accent);font-family:JetBrains Mono,monospace;min-width:60px">'+s.flight+'</div>'+
+            '<div style="flex:1">'+
+              '<div style="display:flex;align-items:center;gap:6px">'+
+                '<span style="font-size:13px;font-weight:600;color:var(--text)">'+s.origin+'</span>'+
+                '<span style="font-size:10px;color:var(--textDim)">'+fmtT(s.dep)+'</span>'+
+                '<span style="flex:1;height:1px;background:var(--border2)"></span>'+
+                '<span style="font-size:10px;color:var(--textDim)">'+fmtT(s.arr)+'</span>'+
+                '<span style="font-size:13px;font-weight:600;color:var(--text)">'+s.dest+'</span>'+
+              '</div>'+
+              '<div style="font-size:10px;color:var(--textDim);margin-top:3px">'+s.cabin+' · Seat '+s.seat+(s.duration_mins?" · "+fmtDur(s.duration_mins):"")+'</div>'+
+            '</div></div>';
+        }).join("")+'</div>':"";
+      return '<div class="fam-feed-card">'+
+        '<div style="display:flex;align-items:center;gap:12px">'+
+          '<div style="display:flex;flex-direction:column;align-items:center;min-width:36px">'+
+            '<div style="font-size:9px;color:var(--textHint);text-transform:uppercase;font-weight:600">'+mon+'</div>'+
+            '<div style="font-size:22px;font-weight:600;color:var(--text);line-height:1">'+day+'</div>'+
+          '</div>'+
+          '<div style="width:1px;height:36px;background:var(--border2)"></div>'+
+          '<div class="fam-avatar '+m.color+'" style="width:28px;height:28px;font-size:10px">'+m.initials+'</div>'+
+          '<div style="flex:1">'+
+            '<div style="display:flex;align-items:center;gap:8px">'+
+              '<span style="font-size:15px;font-weight:500;color:var(--text)">'+t.origin+'</span>'+
+              '<span style="color:var(--textDim)">→</span>'+
+              '<span style="font-size:15px;font-weight:500;color:var(--text)">'+t.dest+'</span>'+
+            '</div>'+
+            '<div style="font-size:11px;color:var(--textDim);margin-top:2px">'+m.name+(t.carrier?" · "+t.carrier+(t.flight_number?" "+t.flight_number:""):"")+'</div>'+
+          '</div>'+
+          (daysUntil!==null?'<span class="trip-countdown '+cdCls+'">'+cdTxt+'</span>':'')+
+          (hasPnr?'<button onclick="toggleFamDetail(\''+detId+'\')" style="font-size:11px;background:var(--accentLt);color:var(--accent);border:1px solid var(--accentBorder);padding:3px 10px;border-radius:100px;cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500;margin-left:6px">PNR ▾</button>':'')+
+        '</div>'+segHtml+'</div>';
+    }else if(item.type==="insurance"){
+      var ins=item.data;
+      return '<div class="fam-feed-card" style="border-left:2px solid var(--green)">'+
+        '<div style="display:flex;align-items:center;gap:12px">'+
+          '<div style="font-size:22px">🛡</div>'+
+          '<div class="fam-avatar '+m.color+'" style="width:28px;height:28px;font-size:10px">'+m.initials+'</div>'+
+          '<div style="flex:1">'+
+            '<div style="font-size:13px;font-weight:500;color:var(--text)">'+ins.provider+'</div>'+
+            '<div style="font-size:11px;color:var(--textDim);margin-top:2px">'+m.name+' · '+ins.coverage+'</div>'+
+          '</div>'+
+          '<div style="text-align:right;flex-shrink:0">'+
+            '<div style="font-size:10px;font-family:JetBrains Mono,monospace;color:var(--green)">'+ins.policy_number+'</div>'+
+            '<div style="font-size:10px;color:var(--textDim);margin-top:2px">Valid to '+new Date(ins.valid_until).toLocaleDateString("en-US",{month:"short",day:"numeric"})+'</div>'+
+            (ins.emergency_phone?'<div style="font-size:10px;color:var(--textDim);margin-top:2px">☎ '+ins.emergency_phone+'</div>':'')+
+          '</div></div></div>';
+    }else if(item.type==="tour"){
+      var tour=item.data;
+      var td=tour.date?new Date(tour.date):null;
+      var tmon=td?months[td.getMonth()]:"",tday=td?td.getDate():"";
+      return '<div class="fam-feed-card" style="border-left:2px solid var(--tealLt)">'+
+        '<div style="display:flex;align-items:center;gap:12px">'+
+          '<div style="display:flex;flex-direction:column;align-items:center;min-width:36px">'+
+            '<div style="font-size:9px;color:var(--textHint);text-transform:uppercase;font-weight:600">'+tmon+'</div>'+
+            '<div style="font-size:22px;font-weight:600;color:var(--text);line-height:1">'+tday+'</div>'+
+          '</div>'+
+          '<div style="width:1px;height:36px;background:var(--border2)"></div>'+
+          '<div style="font-size:20px">🗺</div>'+
+          '<div class="fam-avatar '+m.color+'" style="width:28px;height:28px;font-size:10px">'+m.initials+'</div>'+
+          '<div style="flex:1">'+
+            '<div style="font-size:13px;font-weight:500;color:var(--text)">'+tour.name+'</div>'+
+            '<div style="font-size:11px;color:var(--textDim);margin-top:2px">'+m.name+' · '+tour.operator+(tour.duration?" · "+tour.duration:"")+'</div>'+
+            (tour.meeting_point?'<div style="font-size:11px;color:var(--textDim)">📍 '+tour.meeting_point+'</div>':'')+
+          '</div>'+
+          '<div style="font-size:10px;font-family:JetBrains Mono,monospace;color:var(--tealLt);flex-shrink:0">'+tour.reference+'</div>'+
+        '</div></div>';
+    }
+    return "";
   }).join("");
 }
 
+function toggleFamDetail(id){var el=document.getElementById(id);if(el){var open=el.style.display!=="none";el.style.display=open?"none":"block";var btn=el.previousElementSibling&&el.previousElementSibling.querySelector("button[onclick*='"+id+"']");}}
 function openFamilyInviteModal(){document.getElementById("fam-invite-modal").style.display="flex";document.getElementById("fi-email").value="";document.getElementById("fi-message").value="";}
 function closeFamilyInviteModal(){document.getElementById("fam-invite-modal").style.display="none";}
 async function sendFamilyInvite(){
   var email=document.getElementById("fi-email").value.trim();
   var msg=document.getElementById("fi-message").value.trim();
   if(!email){toast("Enter an email or UniProfile ID","error");return;}
-  var btn=document.getElementById("fi-send-btn");
-  btn.textContent="Sending...";btn.disabled=true;
-  // API → POST /api/v1/family/{uuid}/invite  body:{to:email,message:msg}
-  await new Promise(function(r){setTimeout(r,700);});
-  var initials=email.split("@")[0].replace(/[^a-zA-Z]/g," ").trim().split(/\s+/).map(function(w){return w[0]||"";}).join("").slice(0,2).toUpperCase()||email.slice(0,2).toUpperCase();
-  var name=email.split("@")[0].replace(/[._]/g," ").replace(/\b\w/g,function(l){return l.toUpperCase();});
-  familyState.sent.push({id:"inv-s-"+Date.now(),to_name:name,to_email:email,initials:initials,color:FAM_COLORS[familyState.sent.length%FAM_COLORS.length],sent_at:new Date().toISOString().split("T")[0]});
-  renderFamily();closeFamilyInviteModal();
-  toast("Invite sent to "+email,"success");
+  var btn=document.getElementById("fi-send-btn");btn.textContent="Sending...";btn.disabled=true;
+  try{
+    await api("POST","/api/v1/family/"+uuid+"/invite",{to:email,message:msg});
+    await loadFamilyData();
+  }catch(e){
+    var parts=email.split("@")[0].split(/[._-]+/);
+    var name=parts.map(function(w){return w.charAt(0).toUpperCase()+w.slice(1);}).join(" ");
+    familyState.sent.push({id:"inv-s-"+Date.now(),to_name:name,to_email:email,initials:nameInitials(email),color:FAM_COLORS[familyState.sent.length%FAM_COLORS.length],sent_at:new Date().toISOString().split("T")[0]});
+    renderFamily();
+  }
+  closeFamilyInviteModal();toast("Invite sent to "+email,"success");
   btn.textContent="Send Link Request";btn.disabled=false;
 }
-function respondFamilyInvite(id,action){
+async function respondFamilyInvite(id,action){
   var inv=familyState.received.find(function(i){return i.id===id;});if(!inv)return;
-  // API → POST /api/v1/family/{uuid}/respond  body:{invite_id:id,action:action}
+  try{
+    await api("POST","/api/v1/family/"+uuid+"/respond",{invite_id:id,action:action});
+    await loadFamilyData();return;
+  }catch(e){}
   familyState.received=familyState.received.filter(function(i){return i.id!==id;});
   if(action==="accept"){
-    familyState.linked.push({id:"fam-"+Date.now(),name:inv.from_name,email:inv.from_email,initials:inv.initials,color:inv.color,consent:{trips:true,pnr:false,insurance:false,tours:false},trips:[]});
+    familyState.linked.push({id:"fam-"+Date.now(),name:inv.from_name,email:inv.from_email,initials:inv.initials,color:inv.color,
+      my_consent:{trips:true,pnr:false,insurance:false,tours:false},
+      their_consent:{trips:false,pnr:false,insurance:false,tours:false},
+      shared_trips:[],shared_insurance:[],shared_tours:[]});
     toast(inv.from_name+" linked to your profile","success");
   }else{toast("Invite declined","success");}
-  renderFamily();
+  renderFamily();updateFamilyNavBadge();
 }
-function cancelFamilyInvite(id){
+async function cancelFamilyInvite(id){
+  try{await api("DELETE","/api/v1/family/"+uuid+"/invite/"+id);}catch(e){}
   familyState.sent=familyState.sent.filter(function(i){return i.id!==id;});
-  // API → DELETE /api/v1/family/{uuid}/invite/{id}
   renderFamily();toast("Invite cancelled","success");
 }
-function toggleFamilyConsent(memberId,type){
+async function toggleMyConsent(memberId,type){
   var m=familyState.linked.find(function(x){return x.id===memberId;});if(!m)return;
-  m.consent[type]=!m.consent[type];
-  // API → PUT /api/v1/family/{uuid}/consent  body:{member_id:memberId,type:type,value:m.consent[type]}
+  m.my_consent[type]=!m.my_consent[type];
+  try{await api("PUT","/api/v1/family/"+uuid+"/consent",{member_id:memberId,type:type,value:m.my_consent[type]});}catch(e){}
   renderFamily();
-  toast((m.consent[type]?"Now sharing":"Stopped sharing")+" "+type+" with "+m.name,"success");
+  toast((m.my_consent[type]?"Now sharing":"Stopped sharing")+" "+type+" with "+m.name,"success");
 }
-function unlinkFamilyMember(memberId){
+async function unlinkFamilyMember(memberId){
   var m=familyState.linked.find(function(x){return x.id===memberId;});if(!m)return;
   if(!confirm("Unlink "+m.name+"? They'll no longer see your shared travel data."))return;
+  try{await api("DELETE","/api/v1/family/"+uuid+"/"+memberId);}catch(e){}
   familyState.linked=familyState.linked.filter(function(x){return x.id!==memberId;});
-  // API → DELETE /api/v1/family/{uuid}/{memberId}
   renderFamily();toast(m.name+" unlinked","success");
 }
 
