@@ -347,6 +347,7 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
         <button class="nav-btn" onclick="showSection('trips',this)"><span class="nav-icon">📋</span>Trip History</button>
         <button class="nav-btn" onclick="showSection('family',this)"><span class="nav-icon">👥</span>Family Profiles<span class="nav-badge" id="fam-nav-badge" style="display:none">0</span></button>
         <button class="nav-btn" onclick="showSection('insurance',this)"><span class="nav-icon">🛡</span>Insurance &amp; Tours</button>
+        <button class="nav-btn" onclick="showSection('cruise',this)"><span class="nav-icon">🚢</span>Cruise Profile</button>
       </div>
       <div class="nav-group">
         <div class="nav-group-label">Platform</div>
@@ -723,6 +724,163 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
           </div>
         </div>
       </div>
+      <section class="section" id="section-cruise">
+        <div class="sec-header">
+          <div class="sec-icon" style="background:#F0F9FF">🚢</div>
+          <div style="flex:1"><div class="sec-title">Cruise Profile</div><div class="sec-sub">Cruise bookings, cabin preferences and shore excursions</div></div>
+        </div>
+
+        <!-- Cruise Preferences -->
+        <div class="form-section">
+          <div class="form-section-title">Cruise Preferences</div>
+          <div class="form-grid">
+            <div class="form-field"><label class="field-label">Cabin Type</label>
+              <select class="field-select" id="cr-cabin-type">
+                <option value="">No preference</option>
+                <option value="INTERIOR">Interior</option>
+                <option value="OCEAN_VIEW">Ocean View</option>
+                <option value="BALCONY">Balcony</option>
+                <option value="MINI_SUITE">Mini Suite</option>
+                <option value="SUITE">Suite</option>
+              </select></div>
+            <div class="form-field"><label class="field-label">Deck Preference</label>
+              <select class="field-select" id="cr-deck-pref">
+                <option value="">No preference</option>
+                <option value="HIGH">High Deck</option>
+                <option value="MID">Mid Ship</option>
+                <option value="LOW">Low Deck</option>
+              </select></div>
+            <div class="form-field"><label class="field-label">Bed Configuration</label>
+              <select class="field-select" id="cr-bed-config">
+                <option value="">No preference</option>
+                <option value="KING">King</option>
+                <option value="TWIN">Twin / Two Singles</option>
+                <option value="DOUBLE">Double</option>
+              </select></div>
+            <div class="form-field"><label class="field-label">Dining Seating</label>
+              <select class="field-select" id="cr-dining-seating">
+                <option value="">No preference</option>
+                <option value="EARLY">Early Seating</option>
+                <option value="LATE">Late Seating</option>
+                <option value="ANYTIME">Anytime / My Time</option>
+                <option value="SPECIALTY">Specialty Dining</option>
+              </select></div>
+            <div class="form-field"><label class="field-label">Dining Table Size</label>
+              <select class="field-select" id="cr-dining-table">
+                <option value="">No preference</option>
+                <option value="PRIVATE">Private Table</option>
+                <option value="SMALL">Small (2–4)</option>
+                <option value="LARGE">Large (6–8+)</option>
+              </select></div>
+            <div class="form-field"><label class="field-label">Accessibility Needs</label>
+              <input class="field-input" id="cr-accessibility" placeholder="e.g. Wheelchair accessible cabin"></div>
+          </div>
+          <div class="form-field" style="margin-top:12px"><label class="field-label">Notes</label>
+            <input class="field-input" id="cr-pref-notes" placeholder="Any additional preferences..." style="width:100%"></div>
+          <div style="margin-top:16px"><button class="save-btn" onclick="saveCruisePreferences()">Save Preferences</button></div>
+        </div>
+
+        <!-- My Cruises -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="form-section-title" style="margin:0">My Cruises</div>
+          <button class="save-btn" style="font-size:11px;padding:6px 14px" onclick="openAddCruiseModal()">+ Add Cruise</button>
+        </div>
+        <div id="cruise-bookings-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px"></div>
+
+        <!-- Shore Excursions -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="form-section-title" style="margin:0">Shore Excursions</div>
+          <button class="save-btn" style="font-size:11px;padding:6px 14px" onclick="openAddExcursionModal()">+ Add Excursion</button>
+        </div>
+        <div id="cruise-excursions-list" style="display:flex;flex-direction:column;gap:8px"></div>
+      </section>
+
+      <!-- Add Cruise Modal -->
+      <div id="add-cruise-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center">
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-xl);padding:32px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;margin:20px;box-shadow:0 20px 60px rgba(0,0,0,0.12)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <div style="font-size:18px;font-weight:600;color:var(--text)">Add Cruise Booking</div>
+            <button onclick="closeAddCruiseModal()" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:20px;line-height:1">✕</button>
+          </div>
+          <div class="form-grid">
+            <div class="form-field"><label class="field-label">Cruise Line *</label><input class="field-input" id="cm-cruise-line" placeholder="e.g. Royal Caribbean" style="width:100%"></div>
+            <div class="form-field"><label class="field-label">Ship Name</label><input class="field-input" id="cm-ship-name" placeholder="e.g. Wonder of the Seas" style="width:100%"></div>
+          </div>
+          <div class="form-grid" style="margin-top:12px">
+            <div class="form-field"><label class="field-label">Booking Reference</label><input class="field-input" id="cm-booking-ref" placeholder="e.g. RC-2026-88421" style="width:100%"></div>
+            <div class="form-field"><label class="field-label">Voyage Number</label><input class="field-input" id="cm-voyage-number" placeholder="e.g. V1234" style="width:100%"></div>
+          </div>
+          <div class="form-grid" style="margin-top:12px">
+            <div class="form-field"><label class="field-label">Sail Date</label><input class="field-input" id="cm-sail-date" type="date" style="width:100%"></div>
+            <div class="form-field"><label class="field-label">Return Date</label><input class="field-input" id="cm-return-date" type="date" style="width:100%"></div>
+            <div class="form-field"><label class="field-label">Nights</label><input class="field-input" id="cm-nights" type="number" min="1" max="120" placeholder="7" style="width:100%"></div>
+          </div>
+          <div class="form-grid" style="margin-top:12px">
+            <div class="form-field"><label class="field-label">Embarkation Port</label><input class="field-input" id="cm-embark-port" placeholder="e.g. Miami, FL" style="width:100%"></div>
+            <div class="form-field"><label class="field-label">Disembarkation Port</label><input class="field-input" id="cm-disembark-port" placeholder="e.g. Rome (Civitavecchia)" style="width:100%"></div>
+          </div>
+          <div class="form-grid" style="margin-top:12px">
+            <div class="form-field"><label class="field-label">Cabin Number</label><input class="field-input" id="cm-cabin-number" placeholder="e.g. 8142" style="width:100%"></div>
+            <div class="form-field"><label class="field-label">Cabin Category</label>
+              <select class="field-select" id="cm-cabin-category" style="width:100%">
+                <option value="">— Select —</option>
+                <option value="INTERIOR">Interior</option>
+                <option value="OCEAN_VIEW">Ocean View</option>
+                <option value="BALCONY">Balcony</option>
+                <option value="MINI_SUITE">Mini Suite</option>
+                <option value="SUITE">Suite</option>
+                <option value="OTHER">Other</option>
+              </select></div>
+            <div class="form-field"><label class="field-label">Deck</label><input class="field-input" id="cm-deck" placeholder="e.g. Deck 8" style="width:100%"></div>
+          </div>
+          <div class="form-grid" style="margin-top:12px">
+            <div class="form-field"><label class="field-label">Dining Preference</label>
+              <select class="field-select" id="cm-dining-pref" style="width:100%">
+                <option value="">— Select —</option>
+                <option value="EARLY">Early Seating</option>
+                <option value="LATE">Late Seating</option>
+                <option value="ANYTIME">Anytime / My Time</option>
+                <option value="SPECIALTY">Specialty Dining</option>
+              </select></div>
+            <div class="form-field"><label class="field-label">Muster Station</label><input class="field-input" id="cm-muster" placeholder="e.g. Station C" style="width:100%"></div>
+          </div>
+          <div class="form-field" style="margin-top:12px"><label class="field-label">Ports of Call (comma separated)</label><input class="field-input" id="cm-ports" placeholder="e.g. Nassau, Cozumel, Grand Cayman" style="width:100%"></div>
+          <div class="form-field" style="margin-top:12px;margin-bottom:24px"><label class="field-label">Notes</label><input class="field-input" id="cm-notes" placeholder="Any notes about this voyage" style="width:100%"></div>
+          <div style="display:flex;gap:10px">
+            <button class="save-btn" id="cm-save-btn" onclick="saveCruiseBooking()">Save Cruise</button>
+            <button onclick="closeAddCruiseModal()" style="padding:8px 20px;background:transparent;border:1px solid var(--border2);color:var(--textMid);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:DM Sans,sans-serif">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add Shore Excursion Modal -->
+      <div id="add-excursion-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center">
+        <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-xl);padding:32px;width:100%;max-width:480px;margin:20px;box-shadow:0 20px 60px rgba(0,0,0,0.12)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+            <div style="font-size:18px;font-weight:600;color:var(--text)">Add Shore Excursion</div>
+            <button onclick="closeAddExcursionModal()" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:20px;line-height:1">✕</button>
+          </div>
+          <div class="form-grid">
+            <div class="form-field"><label class="field-label">Port *</label><input class="field-input" id="ex-port" placeholder="e.g. Nassau, Bahamas" style="width:100%"></div>
+            <div class="form-field"><label class="field-label">Excursion Name *</label><input class="field-input" id="ex-name" placeholder="e.g. Blue Lagoon Island" style="width:100%"></div>
+          </div>
+          <div class="form-grid" style="margin-top:12px">
+            <div class="form-field"><label class="field-label">Operator</label><input class="field-input" id="ex-operator" placeholder="e.g. Royal Caribbean" style="width:100%"></div>
+            <div class="form-field"><label class="field-label">Booking Reference</label><input class="field-input" id="ex-ref" placeholder="e.g. EX-882341" style="width:100%"></div>
+          </div>
+          <div class="form-grid" style="margin-top:12px">
+            <div class="form-field"><label class="field-label">Date</label><input class="field-input" id="ex-date" type="date" style="width:100%"></div>
+            <div class="form-field"><label class="field-label">Time</label><input class="field-input" id="ex-time" type="time" style="width:100%"></div>
+            <div class="form-field"><label class="field-label">Duration</label><input class="field-input" id="ex-duration" placeholder="e.g. 4 hours" style="width:100%"></div>
+          </div>
+          <div class="form-field" style="margin-top:12px;margin-bottom:24px"><label class="field-label">Meeting Point</label><input class="field-input" id="ex-meeting" placeholder="e.g. Pier 1, Deck 4 gangway" style="width:100%"></div>
+          <div style="display:flex;gap:10px">
+            <button class="save-btn" id="ex-save-btn" onclick="saveExcursion()">Save Excursion</button>
+            <button onclick="closeAddExcursionModal()" style="padding:8px 20px;background:transparent;border:1px solid var(--border2);color:var(--textMid);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:DM Sans,sans-serif">Cancel</button>
+          </div>
+        </div>
+      </div>
+
       <section class="section" id="section-consent">
         <div class="sec-header"><div class="sec-icon" style="background:var(--tealGlow)">🔒</div><div><div class="sec-title">Consent &amp; Access</div><div class="sec-sub">GDPR-aligned — you define exactly what each platform can read and write</div></div></div>
         <div class="form-section"><div class="form-section-title">Connected Platforms</div>
@@ -1030,8 +1188,9 @@ function parseHash(){return new URLSearchParams(window.location.hash.slice(1)).g
 async function api(method,path,body){const opts={method,headers:{Authorization:`Bearer ${token}`}};if(body){opts.headers["Content-Type"]="application/json";opts.body=JSON.stringify(body);}const r=await fetch(`${API}${path}`,opts);if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json();}
 function toast(msg,type=""){const el=document.getElementById("toast");el.textContent=msg;el.className="toast show"+(type?" "+type:"");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.className="toast",3000);}
 function setSaveState(state){const dot=document.getElementById("save-dot"),lbl=document.getElementById("save-label");if(state==="saving"){dot.className="autosave-dot saving";lbl.textContent="Saving...";}else if(state==="saved"){dot.className="autosave-dot saved";lbl.textContent="All changes saved";setTimeout(()=>dot.className="autosave-dot",3000);}else{dot.className="autosave-dot";lbl.textContent="Unsaved changes";}}
-function showSection(id,btn){document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));document.getElementById("section-"+id).classList.add("active");if(btn)btn.classList.add("active");section=id;const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Seat & Cabin Preferences",meals:"Meal & Dietary",loyalty:"Loyalty Programs",payment:"Payment & Policy",trips:"Trip History",family:"Family Profiles",insurance:"Insurance & Tours",consent:"Consent & Access",api:"API & Webhooks"};document.getElementById("page-title").textContent=titles[id]||"UniProfile";document.querySelector(".content").scrollTop=0;if(id==="family")loadFamilyData();
-if(id==="insurance"){renderMyInsurance();renderMyTours();}}
+function showSection(id,btn){document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));document.getElementById("section-"+id).classList.add("active");if(btn)btn.classList.add("active");section=id;const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Seat & Cabin Preferences",meals:"Meal & Dietary",loyalty:"Loyalty Programs",payment:"Payment & Policy",trips:"Trip History",family:"Family Profiles",insurance:"Insurance & Tours",cruise:"Cruise Profile",consent:"Consent & Access",api:"API & Webhooks"};document.getElementById("page-title").textContent=titles[id]||"UniProfile";document.querySelector(".content").scrollTop=0;if(id==="family")loadFamilyData();
+if(id==="insurance"){renderMyInsurance();renderMyTours();}
+if(id==="cruise"){loadCruiseData();}}
 async function switchContext(el){const ctx=el.checked?"CORPORATE":"PERSONAL";const pill=document.getElementById("context-pill"),lp=document.getElementById("lbl-personal"),lb=document.getElementById("lbl-business"),pp=document.getElementById("pay-personal"),pc=document.getElementById("pay-corporate"),nb=document.getElementById("badge-payment");if(el.checked){pill.textContent="Business Mode";pill.className="context-pill corporate";lp.className="bleisure-opt teal";lb.className="bleisure-opt gold on";if(pp)pp.style.display="none";if(pc)pc.style.display="block";if(nb)nb.style.display="inline";}else{pill.textContent="Personal Mode";pill.className="context-pill personal";lp.className="bleisure-opt teal on";lb.className="bleisure-opt gold";if(pp)pp.style.display="block";if(pc)pc.style.display="none";if(nb)nb.style.display="none";}try{await api("POST",`/api/v1/profile/${uuid}/bleisure`,{context:ctx});}catch(e){}}
 const v=id=>document.getElementById(id)?.value?.trim()||"";
 const cb=id=>document.getElementById(id)?.checked||false;
@@ -2130,6 +2289,207 @@ async function deleteTour(id){
   myTours=myTours.filter(function(x){return x.id!==id;});
   renderMyTours();
   toast("Tour removed","success");
+}
+
+// ── Cruise Profile ────────────────────────────────────────────────────────
+let cruiseState={bookings:[],preferences:null,excursions:[]};
+
+async function loadCruiseData(){
+  if(!uuid){renderCruiseBookings();renderCruiseExcursions();return;}
+  try{
+    var data=await api("GET","/api/v1/cruise/"+uuid);
+    if(data){
+      cruiseState.bookings=data.bookings||[];
+      cruiseState.preferences=data.preferences||null;
+      cruiseState.excursions=data.excursions||[];
+      populateCruisePrefsForm(cruiseState.preferences);
+    }
+  }catch(e){/* use empty state */}
+  renderCruiseBookings();
+  renderCruiseExcursions();
+}
+
+function populateCruisePrefsForm(p){
+  if(!p)return;
+  s("cr-cabin-type",p.cabin_type);
+  s("cr-deck-pref",p.deck_preference);
+  s("cr-bed-config",p.bed_config);
+  s("cr-dining-seating",p.dining_seating);
+  s("cr-dining-table",p.dining_table_size);
+  s("cr-accessibility",p.accessibility_needs);
+  s("cr-pref-notes",p.notes);
+}
+
+function renderCruiseBookings(){
+  var el=document.getElementById("cruise-bookings-list");
+  if(!cruiseState.bookings.length){
+    el.innerHTML='<div style="text-align:center;padding:32px;color:var(--textDim);font-size:13px">No cruises added yet</div>';
+    return;
+  }
+  el.innerHTML=cruiseState.bookings.map(function(b){
+    var sailDate=b.sail_date?new Date(b.sail_date).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
+    var statusColor=b.status==="CONFIRMED"?"var(--green)":b.status==="COMPLETED"?"var(--textDim)":"var(--amber)";
+    var daysLabel="";
+    if(b.days_until!=null&&b.status==="CONFIRMED"){
+      daysLabel=b.days_until===0?" · <span style='color:var(--green)'>Today!</span>":
+                b.days_until>0?" · <span style='color:var(--tealLt)'>"+b.days_until+" days away</span>":
+                " · <span style='color:var(--textDim)'>Completed</span>";
+    }
+    return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 20px">'+
+      '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">'+
+      '<div style="flex:1">'+
+      '<div style="font-size:15px;font-weight:600;color:var(--text)">'+esc(b.cruise_line)+(b.ship_name?' · <span style="font-weight:400;color:var(--textMid)">'+esc(b.ship_name)+'</span>':'')+'</div>'+
+      '<div style="font-size:12px;color:var(--textDim);margin-top:4px">'+
+        (sailDate?'<span>'+sailDate+'</span>':'')+
+        (b.nights?' · '+b.nights+' nights':'')+
+        daysLabel+
+      '</div>'+
+      (b.embarkation_port||b.disembarkation_port?'<div style="font-size:12px;color:var(--textDim);margin-top:2px">'+
+        (b.embarkation_port?esc(b.embarkation_port):'')+(b.disembarkation_port?' → '+esc(b.disembarkation_port):'')+'</div>':'')+
+      (b.cabin_number||b.cabin_category?'<div style="font-size:12px;color:var(--textDim);margin-top:2px">'+
+        (b.cabin_number?'Cabin '+esc(b.cabin_number):'')+
+        (b.cabin_category?' · '+esc(b.cabin_category):'')+'</div>':'')+
+      (b.booking_reference?'<div style="font-size:11px;color:var(--textHint);margin-top:6px;font-family:JetBrains Mono,monospace">'+esc(b.booking_reference)+'</div>':'')+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">'+
+      '<span style="font-size:11px;padding:2px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:'+statusColor+'">'+esc(b.status||"CONFIRMED")+'</span>'+
+      '<button onclick="deleteCruise(\''+b.id+'\')" style="background:none;border:none;color:var(--textHint);cursor:pointer;font-size:12px;padding:2px 4px" title="Delete">✕</button>'+
+      '</div></div></div>';
+  }).join("");
+}
+
+function renderCruiseExcursions(){
+  var el=document.getElementById("cruise-excursions-list");
+  if(!cruiseState.excursions.length){
+    el.innerHTML='<div style="text-align:center;padding:24px;color:var(--textDim);font-size:13px">No shore excursions added yet</div>';
+    return;
+  }
+  el.innerHTML=cruiseState.excursions.map(function(x){
+    var dt=x.excursion_date?new Date(x.excursion_date).toLocaleDateString("en-US",{month:"short",day:"numeric"}):"";
+    return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px">'+
+      '<div style="flex:1">'+
+      '<div style="font-size:13px;font-weight:500;color:var(--text)">'+esc(x.excursion_name)+'</div>'+
+      '<div style="font-size:12px;color:var(--textDim);margin-top:2px">'+esc(x.port)+
+        (dt?' · '+dt:'')+
+        (x.excursion_time?' at '+x.excursion_time:'')+
+        (x.duration?' · '+esc(x.duration):'')+
+      '</div>'+
+      (x.operator?'<div style="font-size:11px;color:var(--textHint);margin-top:2px">'+esc(x.operator)+'</div>':'')+
+      '</div>'+
+      '<button onclick="deleteExcursion(\''+x.id+'\')" style="background:none;border:none;color:var(--textHint);cursor:pointer;font-size:12px;padding:2px 6px" title="Delete">✕</button>'+
+      '</div>';
+  }).join("");
+}
+
+async function saveCruisePreferences(){
+  if(!uuid){toast("Not signed in","error");return;}
+  var payload={
+    cabin_type:v("cr-cabin-type"),
+    deck_preference:v("cr-deck-pref"),
+    bed_config:v("cr-bed-config"),
+    dining_seating:v("cr-dining-seating"),
+    dining_table_size:v("cr-dining-table"),
+    accessibility_needs:v("cr-accessibility"),
+    notes:v("cr-pref-notes")
+  };
+  try{
+    await api("PUT","/api/v1/cruise/"+uuid+"/preferences",payload);
+    cruiseState.preferences=payload;
+    toast("Cruise preferences saved","success");
+  }catch(e){toast("Save failed","error");}
+}
+
+function openAddCruiseModal(){
+  ["cm-cruise-line","cm-ship-name","cm-booking-ref","cm-voyage-number","cm-sail-date","cm-return-date","cm-nights","cm-embark-port","cm-disembark-port","cm-cabin-number","cm-deck","cm-muster","cm-ports","cm-notes"].forEach(function(id){s(id,"");});
+  s("cm-cabin-category","");s("cm-dining-pref","");
+  var m=document.getElementById("add-cruise-modal");
+  m.style.display="flex";
+}
+function closeAddCruiseModal(){document.getElementById("add-cruise-modal").style.display="none";}
+
+async function saveCruiseBooking(){
+  var cruiseLine=v("cm-cruise-line");
+  if(!cruiseLine){toast("Cruise line is required","error");return;}
+  var btn=document.getElementById("cm-save-btn");
+  btn.textContent="Saving…";btn.disabled=true;
+  var portsRaw=v("cm-ports");
+  var portsArr=portsRaw?portsRaw.split(",").map(function(p){return p.trim();}).filter(Boolean):[];
+  var payload={
+    cruise_line:cruiseLine,
+    ship_name:v("cm-ship-name"),
+    booking_reference:v("cm-booking-ref"),
+    voyage_number:v("cm-voyage-number"),
+    sail_date:v("cm-sail-date")||null,
+    return_date:v("cm-return-date")||null,
+    nights:v("cm-nights")?parseInt(v("cm-nights")):null,
+    embarkation_port:v("cm-embark-port"),
+    disembarkation_port:v("cm-disembark-port"),
+    cabin_number:v("cm-cabin-number"),
+    cabin_category:v("cm-cabin-category"),
+    deck:v("cm-deck"),
+    dining_preference:v("cm-dining-pref"),
+    muster_station:v("cm-muster"),
+    ports_of_call:portsArr,
+    notes:v("cm-notes"),
+    status:"CONFIRMED"
+  };
+  try{
+    var res=await api("POST","/api/v1/cruise/"+uuid+"/booking",payload);
+    payload.id=res.id||("cr-"+Date.now());
+  }catch(e){payload.id="cr-"+Date.now();}
+  cruiseState.bookings.unshift(payload);
+  renderCruiseBookings();
+  closeAddCruiseModal();
+  toast("Cruise booking saved","success");
+  btn.textContent="Save Cruise";btn.disabled=false;
+}
+
+function openAddExcursionModal(){
+  ["ex-port","ex-name","ex-operator","ex-ref","ex-date","ex-time","ex-duration","ex-meeting"].forEach(function(id){s(id,"");});
+  document.getElementById("add-excursion-modal").style.display="flex";
+}
+function closeAddExcursionModal(){document.getElementById("add-excursion-modal").style.display="none";}
+
+async function saveExcursion(){
+  var port=v("ex-port"),name=v("ex-name");
+  if(!port||!name){toast("Port and excursion name are required","error");return;}
+  var btn=document.getElementById("ex-save-btn");
+  btn.textContent="Saving…";btn.disabled=true;
+  var payload={
+    port:port,
+    excursion_name:name,
+    operator:v("ex-operator"),
+    booking_reference:v("ex-ref"),
+    excursion_date:v("ex-date")||null,
+    excursion_time:v("ex-time")||null,
+    duration:v("ex-duration"),
+    meeting_point:v("ex-meeting")
+  };
+  try{
+    var res=await api("POST","/api/v1/cruise/"+uuid+"/excursion",payload);
+    payload.id=res.id||("ex-"+Date.now());
+  }catch(e){payload.id="ex-"+Date.now();}
+  cruiseState.excursions.unshift(payload);
+  renderCruiseExcursions();
+  closeAddExcursionModal();
+  toast("Excursion saved","success");
+  btn.textContent="Save Excursion";btn.disabled=false;
+}
+
+async function deleteCruise(id){
+  if(!confirm("Delete this cruise booking?"))return;
+  try{await api("DELETE","/api/v1/cruise/"+uuid+"/booking/"+id);}catch(e){}
+  cruiseState.bookings=cruiseState.bookings.filter(function(x){return x.id!==id;});
+  renderCruiseBookings();
+  toast("Cruise removed","success");
+}
+
+async function deleteExcursion(id){
+  if(!confirm("Delete this excursion?"))return;
+  try{await api("DELETE","/api/v1/cruise/"+uuid+"/excursion/"+id);}catch(e){}
+  cruiseState.excursions=cruiseState.excursions.filter(function(x){return x.id!==id;});
+  renderCruiseExcursions();
+  toast("Excursion removed","success");
 }
 
 function parseInviteHash(){var h=window.location.hash||"";var m=h.match(/[#&]invite=([a-f0-9-]+)/i);return m?m[1]:null;}
