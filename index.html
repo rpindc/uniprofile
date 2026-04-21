@@ -586,7 +586,7 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
         </div>
       </section>
       <section class="section" id="section-trips">
-        <div class="sec-header"><div class="sec-icon" style="background:var(--surface2)">📋</div><div><div class="sec-title">Trip Vault</div><div class="sec-sub">IATA OneOrder Module 6 — Webhook-driven · Bleisure-tagged · Exportable</div></div></div>
+        <div class="sec-header"><div class="sec-icon" style="background:var(--surface2)">📋</div><div><div class="sec-title">Trip Vault</div><div class="sec-sub">IATA OneOrder Module 7 — Webhook-driven · Bleisure-tagged · Exportable</div></div></div>
         <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap" id="trip-filters">
           <button class="trip-filter-btn active" onclick="filterTrips('all',this)">All</button>
           <button class="trip-filter-btn" onclick="filterTrips('upcoming',this)">Upcoming</button>
@@ -885,10 +885,12 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
         <div class="sec-header"><div class="sec-icon" style="background:var(--tealGlow)">🔒</div><div><div class="sec-title">Consent &amp; Access</div><div class="sec-sub">GDPR-aligned — you define exactly what each platform can read and write</div></div></div>
         <div class="form-section"><div class="form-section-title">Connected Platforms</div>
         <div class="integration-list">
-          <div class="integration-row"><div class="integration-icon" style="background:var(--tealGlow)">✈</div><div class="integration-info"><div class="integration-name">TripIt</div><div class="integration-scope">Reads: Trip history · Writes: Booking records to vault</div></div><div class="status-dot-wrap"><div class="status-dot dot-pending"></div><span style="color:var(--amber)">Ready</span></div></div>
-          <div class="integration-row"><div class="integration-icon" style="background:rgba(56,99,177,0.1)">🛫</div><div class="integration-info"><div class="integration-name">Alaska Airlines</div><div class="integration-scope">Reads: Seat prefs, meal code, KTN, loyalty · Writes: Booking webhook</div></div><div class="status-dot-wrap"><div class="status-dot dot-pending"></div><span style="color:var(--amber)">Ready</span></div></div>
-          <div class="integration-row"><div class="integration-icon" style="background:var(--goldGlow)">🏢</div><div class="integration-info"><div class="integration-name">Navan</div><div class="integration-scope">Business context only — personal data fully excluded</div></div><div class="status-dot-wrap"><div class="status-dot dot-pending"></div><span style="color:var(--amber)">Ready</span></div></div>
-          <div class="integration-row" style="border:1px dashed var(--border2);background:transparent"><div class="integration-icon" style="background:transparent;color:var(--textDim);font-size:22px">+</div><div class="integration-info"><div class="integration-name" style="color:var(--textDim)">Connect a platform</div><div class="integration-scope">Airlines · TMCs · OBTs · Itinerary apps</div></div><button class="save-btn" style="font-size:11px;padding:6px 14px">Browse</button></div>
+          <div style="text-align:center;padding:32px 16px;border:1px dashed var(--border2);border-radius:var(--radius-md)">
+            <div style="font-size:28px;margin-bottom:12px">🔌</div>
+            <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px">No platforms connected yet</div>
+            <div style="font-size:12px;color:var(--textDim);margin-bottom:16px">Connect your first platform to start sharing your profile automatically.</div>
+            <button class="save-btn">Connect a Platform</button>
+          </div>
         </div></div>
       </section>
       <section class="section" id="section-api">
