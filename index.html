@@ -2087,7 +2087,8 @@ function renderFamily(){
   var mg=el("fam-members-grid");
   if(mg){
     if(!fs.linked.length){
-      mg.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">👥</div><div class="empty-title">No family members linked yet</div><div class="empty-sub">Invite a family member to link UniProfiles and share travel plans</div></div>';
+      mg.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">👥</div><div class="empty-title">No family members linked yet</div><div class="empty-sub">Link your family members so you share upcoming trips automatically, coordinate travel together, and your respective preferences travel with each booking — like linking passengers on a shared PNR.</div><div style="font-size:12px;color:var(--textDim);margin-top:8px">Each family member controls exactly what they share with you.</div></div>
+';
     }else{
       mg.innerHTML=fs.linked.map(function(m){
         var myChips=[{key:"trips",label:"✈ Trips"},{key:"pnr",label:"📋 PNR"},{key:"insurance",label:"🛡 Insurance"},{key:"tours",label:"🗺 Tours"}].map(function(c){
