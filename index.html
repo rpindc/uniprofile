@@ -40,7 +40,7 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
 .login-feature{text-align:center;}
 .login-feature-icon{font-size:20px;margin-bottom:6px;}
 .login-feature-label{font-size:11px;color:var(--textDim);letter-spacing:0.5px;}
-#screen-landing{position:fixed;inset:0;display:none;background:#0D0D0D;overflow-y:auto;z-index:100;}
+#screen-landing{position:fixed;inset:0;display:flex;background:#0D0D0D;overflow-y:auto;z-index:100;}
 .land-wrap{max-width:920px;margin:0 auto;padding:0 24px 80px;}
 .land-nav{display:flex;align-items:center;justify-content:space-between;padding:22px 0;border-bottom:1px solid rgba(255,255,255,0.07);}
 .land-logo{font-family:"Playfair Display",serif;font-size:19px;color:#ffffff;display:flex;align-items:center;gap:10px;}
@@ -2634,7 +2634,7 @@ async function init(){
   if(hashToken){token=hashToken;localStorage.setItem("up_token",token);window.history.replaceState(null,"","/");}
   else{token=localStorage.getItem("up_token");}
   if(!token){document.getElementById("screen-landing").style.display="flex";["land-signup-btn","land-signup-btn2","land-signin-btn","land-signin-link"].forEach(function(id){var el=document.getElementById(id);if(el)el.href=loginUrl();});return;}
-  document.getElementById("screen-login").style.display="none";
+  document.getElementById("screen-landing").style.display="none";document.getElementById("screen-login").style.display="none";
   document.getElementById("screen-loading").style.display="flex";
   try{
     const data=await api("GET","/api/v1/me");
