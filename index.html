@@ -971,9 +971,11 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
             <div style="text-align:center;padding:32px 16px;border:1px dashed var(--border2);border-radius:var(--radius-md)">
               <div style="font-size:28px;margin-bottom:12px">🔌</div>
               <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px">No platforms connected yet</div>
-              <div style="font-size:12px;color:var(--textDim);margin-bottom:16px">Connect your first platform to start sharing your profile automatically.</div>
-              <button class="save-btn">Connect a Platform</button>
+              <div style="font-size:12px;color:var(--textDim);margin-bottom:4px">Connect your first platform to start sharing your profile automatically.</div>
+              <div style="font-size:12px;color:var(--textHint);margin-bottom:16px">Don&#39;t see your airline, TMC, or booking tool? Request it and we will prioritise based on demand.</div>
+              <button class="save-btn" onclick="openIntegrationModal()">Request an integration</button>
             </div>
+
           </div>
         </div>
         <div class="form-section" style="margin-top:24px"><div class="form-section-title">Privacy &amp; Data</div>
@@ -983,7 +985,24 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
             <div style="font-size:11px;color:var(--textDim);margin-top:2px">Download a copy of all your UniProfile data. <span style="color:var(--textHint)">GDPR Art. 20 &mdash; Right to Data Portability</span></div>
           </div>
           <button id="export-data-btn" onclick="exportMyData()" style="flex-shrink:0;padding:7px 16px;background:transparent;border:1px solid var(--border2);color:var(--textMid);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:DM Sans,sans-serif;white-space:nowrap">Export My Data</button>
-        </div></div></div>
+        </div></div></div>      <div id="integration-request-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-xl);padding:28px;width:100%;max-width:440px;margin:20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div style="font-size:16px;font-weight:600;color:var(--text)">Request a Platform Integration</div>
+            <button onclick="closeIntegrationModal()" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:20px;line-height:1">&#x2715;</button>
+          </div>
+          <p style="font-size:13px;color:var(--textDim);margin-bottom:20px;line-height:1.6">Tell us which platform you want UniProfile to connect with. We prioritise integrations based on demand.</p>
+          <label style="font-size:10px;letter-spacing:0.8px;text-transform:uppercase;color:var(--textHint);font-weight:600;display:block;margin-bottom:4px">Platform or tool name</label>
+          <input id="int-req-platform" class="field-input" type="text" placeholder="e.g. Amadeus, Concur, easyJet" style="width:100%;margin-bottom:14px">
+          <label style="font-size:10px;letter-spacing:0.8px;text-transform:uppercase;color:var(--textHint);font-weight:600;display:block;margin-bottom:4px">Your email</label>
+          <input id="int-req-email" class="field-input" type="email" placeholder="you@example.com" style="width:100%;margin-bottom:20px">
+          <div style="display:flex;gap:10px">
+            <button id="int-req-btn" class="save-btn" onclick="submitIntegrationRequest()">Submit Request</button>
+            <button onclick="closeIntegrationModal()" style="padding:8px 20px;background:transparent;border:1px solid var(--border2);color:var(--textMid);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:DM Sans,sans-serif">Cancel</button>
+          </div>
+        </div>
+      </div>
+
       </section>
       <section class="section" id="section-api">
         <div class="sec-header"><div class="sec-icon" style="background:rgba(56,99,177,0.1)">⚡</div><div><div class="sec-title">API &amp; Webhooks</div><div class="sec-sub">UUID-anchored REST API · AWS Lambda · Aurora PostgreSQL 16.4</div></div></div>
@@ -2300,7 +2319,7 @@ function renderMyInsurance(){
       '<button onclick="deleteInsurance(\''+ins.id+'\')" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:18px;padding:0 2px;flex-shrink:0" title="Delete">×</button>'+
     '</div>';
   }).join(""):
-  '<div class="empty-state" style="padding:24px 0"><div class="empty-icon">🛡</div><div class="empty-title">No insurance policies</div><div class="empty-sub">Add a policy to share with family members</div></div>';
+  '<div class="empty-state" style="padding:24px 0"><div class="empty-icon">🛡</div><div class="empty-title">No insurance policies yet</div><div class="empty-sub">Add your travel insurance policies and tour bookings here. Linked family members can see and reference them for emergency contacts and shared itineraries.</div></div>';
   if(listEl)listEl.innerHTML=html;
   if(secEl)secEl.innerHTML=html;
 }
@@ -2325,7 +2344,7 @@ function renderMyTours(){
       '<button onclick="deleteTour(\''+tour.id+'\')" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:18px;padding:0 2px;flex-shrink:0" title="Delete">×</button>'+
     '</div>';
   }).join(""):
-  '<div class="empty-state" style="padding:24px 0"><div class="empty-icon">🗺</div><div class="empty-title">No tours or activities</div><div class="empty-sub">Add a tour booking to share with family members</div></div>';
+  '<div class="empty-state" style="padding:24px 0"><div class="empty-icon">🗺</div><div class="empty-title">No tours or activities yet</div><div class="empty-sub">Log a tour or activity booking to share the details with linked family members travelling with you.</div></div>';
   if(listEl)listEl.innerHTML=html;
   if(secEl)secEl.innerHTML=html;
 }
@@ -2715,6 +2734,10 @@ async function obStep1Save(){var first=(document.getElementById('ob-first').valu
 function obOpenDoc(){document.getElementById('ob-overlay').style.display='none';openAddDoc();var dm=document.getElementById('doc-modal');function h(e){if(e.target===dm){document.getElementById('ob-overlay').style.display='flex';dm.removeEventListener('click',h);}}dm.addEventListener('click',h);}
 function obOpenLoyalty(){openAddLoyalty('airline');var lm=document.getElementById('loyalty-modal');function h(e){if(e.target===lm){obNext();lm.removeEventListener('click',h);}}lm.addEventListener('click',h);}
 function obCopyEmail(){navigator.clipboard.writeText('trips@uniprofile.net').then(function(){var b=document.getElementById('ob-copy-btn');if(b){b.textContent='Copied!';b.style.color='var(--green)';setTimeout(function(){b.textContent='Copy';b.style.color='';},2000);}}).catch(function(){});}
+function openIntegrationModal(){var m=document.getElementById("integration-request-modal");if(!m)return;document.getElementById("int-req-platform").value="";document.getElementById("int-req-email").value=profile&&profile.email?profile.email:"";m.style.display="flex";}
+function closeIntegrationModal(){var m=document.getElementById("integration-request-modal");if(m)m.style.display="none";}
+async function submitIntegrationRequest(){var platform=(document.getElementById("int-req-platform").value||"").trim();var email=(document.getElementById("int-req-email").value||"").trim();if(!platform){toast("Please enter a platform name","error");return;}var btn=document.getElementById("int-req-btn");if(btn){btn.disabled=true;btn.textContent="Submitting...";}try{await api("POST","/api/v1/integration-request",{platform_name:platform,email:email,uuid:uuid});}catch(e){}closeIntegrationModal();if(btn){btn.disabled=false;btn.textContent="Submit Request";}toast("Request received \u2014 we\u2019ll prioritise based on demand.","success");}
+
 init();
 </script>
 </body>
