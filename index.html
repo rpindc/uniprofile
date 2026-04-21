@@ -20,6 +20,7 @@
   --amber:#D97706;--amberGlow:#FFFBEB;--amberBorder:#FDE68A;
   --tealLt:#0891B2;--tealGlow:#F0F9FF;
   --radius-sm:6px;--radius-md:8px;--radius-lg:10px;--radius-xl:14px;
+  --ink:#0D0D0D;--ink2:#161616;--ink3:#1E1E1E;--ink4:#252525;--goldDim:#92400E;
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;}
@@ -39,6 +40,40 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
 .login-feature{text-align:center;}
 .login-feature-icon{font-size:20px;margin-bottom:6px;}
 .login-feature-label{font-size:11px;color:var(--textDim);letter-spacing:0.5px;}
+#screen-landing{position:fixed;inset:0;display:none;background:#0D0D0D;overflow-y:auto;z-index:100;}
+.land-wrap{max-width:920px;margin:0 auto;padding:0 24px 80px;}
+.land-nav{display:flex;align-items:center;justify-content:space-between;padding:22px 0;border-bottom:1px solid rgba(255,255,255,0.07);}
+.land-logo{font-family:"Playfair Display",serif;font-size:19px;color:#ffffff;display:flex;align-items:center;gap:10px;}
+.land-logo-mark{width:32px;height:32px;background:#FEF3C7;border:1px solid #92400E;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:"Playfair Display",serif;font-size:15px;color:#92400E;}
+.land-nav-signin{font-size:13px;color:#6B7280;text-decoration:none;padding:7px 14px;border:1px solid rgba(255,255,255,0.12);border-radius:6px;transition:color 0.2s,border-color 0.2s;}
+.land-nav-signin:hover{color:#ffffff;border-color:rgba(255,255,255,0.28);}
+.land-hero{text-align:center;padding:72px 0 60px;}
+.land-emblem{width:72px;height:72px;background:#FEF3C7;border:1px solid #92400E;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 32px;font-family:"Playfair Display",serif;font-size:30px;color:#92400E;}
+.land-headline{font-family:"Playfair Display",serif;font-size:50px;font-weight:700;color:#ffffff;line-height:1.15;letter-spacing:-1px;margin-bottom:18px;}
+.land-sub{font-size:16px;color:#6B7280;max-width:460px;margin:0 auto 40px;line-height:1.7;}
+.land-ctas{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:28px;flex-wrap:wrap;}
+.land-cta-primary{display:inline-block;padding:13px 28px;background:#B45309;color:#0D0D0D;font-family:"Outfit",sans-serif;font-size:14px;font-weight:600;border-radius:8px;text-decoration:none;transition:background 0.2s,transform 0.1s;}
+.land-cta-primary:hover{background:#92400E;transform:translateY(-1px);}
+.land-cta-secondary{display:inline-block;padding:13px 18px;color:#9CA3AF;font-size:14px;text-decoration:none;transition:color 0.2s;font-family:"Outfit",sans-serif;}
+.land-cta-secondary:hover{color:#ffffff;}
+.land-trust{font-size:11px;color:#4B5563;letter-spacing:0.4px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.land-trust-dot{color:#374151;}
+.land-props{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:64px;}
+.land-prop{background:#161616;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:28px 22px;}
+.land-prop-icon{font-size:22px;margin-bottom:12px;}
+.land-prop-title{font-family:"Playfair Display",serif;font-size:15px;color:#ffffff;margin-bottom:8px;font-weight:600;}
+.land-prop-body{font-size:12px;color:#6B7280;line-height:1.75;}
+.land-how{margin-bottom:64px;}
+.land-section-title{font-family:"Playfair Display",serif;font-size:26px;color:#ffffff;text-align:center;margin-bottom:36px;font-weight:600;}
+.land-steps{display:flex;align-items:flex-start;gap:12px;}
+.land-step{flex:1;background:#161616;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:26px 22px;}
+.land-step-arrow{font-size:18px;color:#374151;margin-top:38px;flex-shrink:0;}
+.land-step-num{width:30px;height:30px;background:rgba(180,83,9,0.12);border:1px solid rgba(180,83,9,0.28);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Playfair Display",serif;font-size:13px;color:#B45309;margin-bottom:12px;font-weight:600;}
+.land-step-title{font-size:13px;font-weight:600;color:#ffffff;margin-bottom:7px;font-family:"Outfit",sans-serif;}
+.land-step-body{font-size:12px;color:#6B7280;line-height:1.75;}
+.land-bottom{text-align:center;padding-top:4px;}
+@media(max-width:680px){.land-headline{font-size:34px;}.land-props{grid-template-columns:1fr;}.land-steps{flex-direction:column;}.land-step-arrow{display:none;}}
+
 #screen-loading{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:20px;background:var(--ink);z-index:100;}
 .loading-ring{width:48px;height:48px;border:1.5px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.9s linear infinite;}
 .loading-label{font-size:12px;color:var(--textMid);letter-spacing:1px;text-transform:uppercase;}
@@ -306,6 +341,42 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
 </style>
 </head>
 <body>
+<div id="screen-landing">
+<div class="land-wrap">
+<nav class="land-nav">
+<div class="land-logo"><div class="land-logo-mark">U</div>UniProfile</div>
+<a id="land-signin-link" class="land-nav-signin" href="#">Sign In</a>
+</nav>
+<div class="land-hero">
+<div class="land-emblem">U</div>
+<h1 class="land-headline">Your travel identity.<br>Finally yours.</h1>
+<p class="land-sub">One profile. Every airline, hotel and car rental. Auto-filled, every time.</p>
+<div class="land-ctas">
+<a id="land-signup-btn" class="land-cta-primary" href="#">Create free account</a>
+<a id="land-signin-btn" class="land-cta-secondary" href="#">Sign in &rarr;</a>
+</div>
+<div class="land-trust">
+<span>&#128274; AWS Cognito</span><span class="land-trust-dot">&middot;</span><span>GDPR-aligned</span><span class="land-trust-dot">&middot;</span><span>SOC&nbsp;2 compliant</span>
+</div>
+</div>
+<div class="land-props">
+<div class="land-prop"><div class="land-prop-icon">&#128273;</div><div class="land-prop-title">Own your preferences</div><div class="land-prop-body">Your seat, meal, and loyalty data lives with you &mdash; not scattered across dozens of booking platforms.</div></div>
+<div class="land-prop"><div class="land-prop-icon">&#9889;</div><div class="land-prop-title">Connect once, book everywhere</div><div class="land-prop-body">Link UniProfile to any integrated airline or hotel and your details auto-fill at checkout, every time.</div></div>
+<div class="land-prop"><div class="land-prop-icon">&#128737;</div><div class="land-prop-title">Your data is never sold</div><div class="land-prop-body">We earn from integrations, not advertising. Export or delete your profile at any time &mdash; no lock-in.</div></div>
+</div>
+<div class="land-how">
+<h2 class="land-section-title">How it works</h2>
+<div class="land-steps">
+<div class="land-step"><div class="land-step-num">1</div><div class="land-step-title">Add your identity</div><div class="land-step-body">Enter your name, date of birth and nationality. Optionally add a passport or ID for document expiry alerts and seat pre-fill.</div></div>
+<div class="land-step-arrow">&#8594;</div>
+<div class="land-step"><div class="land-step-num">2</div><div class="land-step-title">Add a loyalty programme</div><div class="land-step-body">Your frequent flyer and hotel loyalty numbers auto-apply at checkout on every integrated airline, hotel and car rental.</div></div>
+<div class="land-step-arrow">&#8594;</div>
+<div class="land-step"><div class="land-step-num">3</div><div class="land-step-title">Forward a booking</div><div class="land-step-body">Email any confirmation to trips&#64;uniprofile.net and it lands in your Trip Vault automatically.</div></div>
+</div>
+</div>
+<div class="land-bottom"><a id="land-signup-btn2" class="land-cta-primary" href="#">Get started free &#8594;</a></div>
+</div>
+</div>
 <div id="screen-login">
   <div class="login-wrap">
     <div class="login-emblem">U</div>
@@ -2540,7 +2611,7 @@ async function init(){
   const hashToken=parseHash();
   if(hashToken){token=hashToken;localStorage.setItem("up_token",token);window.history.replaceState(null,"","/");}
   else{token=localStorage.getItem("up_token");}
-  if(!token){document.getElementById("screen-login").style.display="flex";return;}
+  if(!token){document.getElementById("screen-landing").style.display="flex";["land-signup-btn","land-signup-btn2","land-signin-btn","land-signin-link"].forEach(function(id){var el=document.getElementById(id);if(el)el.href=loginUrl();});return;}
   document.getElementById("screen-login").style.display="none";
   document.getElementById("screen-loading").style.display="flex";
   try{
