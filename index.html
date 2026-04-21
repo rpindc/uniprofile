@@ -81,7 +81,7 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
 .nav-btn.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:2.5px;height:60%;background:var(--gold);border-radius:0 2px 2px 0;}
 .nav-icon{font-size:15px;flex-shrink:0;opacity:0.7;}
 .nav-btn.active .nav-icon{opacity:1;}
-.nav-badge{margin-left:auto;font-size:9px;background:var(--red);color:white;padding:1px 6px;border-radius:10px;font-weight:600;}.nav-badge:empty{padding:0;width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.nav-badge{margin-left:auto;font-size:9px;background:var(--red);color:white;padding:1px 6px;border-radius:10px;font-weight:600;}
 .nav-tag{margin-left:auto;font-size:9px;background:var(--amberGlow);color:var(--amber);padding:1px 7px;border-radius:10px;border:1px solid rgba(212,150,58,0.2);}
 .sidebar-footer{padding:16px;border-top:1px solid var(--border);flex-shrink:0;}
 .traveler-card{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);}
@@ -339,7 +339,7 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
       </div>
       <div class="nav-group">
         <div class="nav-group-label">Identity Modules</div>
-        <button class="nav-btn" onclick="showSection('identity',this)"><span class="nav-icon"></span>Identity &amp; Documents<span class="nav-badge" id="badge-identity" style="display:none"></span></button>
+        <button class="nav-btn" onclick="showSection('identity',this)"><span class="nav-icon"></span>Identity &amp; Documents<span class="nav-badge" id="badge-identity" style="display:none">!</span></button>
         <button class="nav-btn" onclick="showSection('preferences',this)"><span class="nav-icon">💺</span>Seat &amp; Cabin</button>
         <button class="nav-btn" onclick="showSection('meals',this)"><span class="nav-icon">🍽</span>Meal &amp; Dietary</button>
         <button class="nav-btn" onclick="showSection('loyalty',this)"><span class="nav-icon">✦</span>Loyalty Programs</button>
@@ -586,7 +586,7 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
         </div>
       </section>
       <section class="section" id="section-trips">
-        <div class="sec-header"><div class="sec-icon" style="background:var(--surface2)">📋</div><div><div class="sec-title">Trip Vault</div><div class="sec-sub">IATA OneOrder Module 7 — Webhook-driven · Bleisure-tagged · Exportable</div></div></div>
+        <div class="sec-header"><div class="sec-icon" style="background:var(--surface2)">📋</div><div><div class="sec-title">Trip Vault</div><div class="sec-sub">IATA OneOrder Module 6 — Webhook-driven · Bleisure-tagged · Exportable</div></div></div>
         <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap" id="trip-filters">
           <button class="trip-filter-btn active" onclick="filterTrips('all',this)">All</button>
           <button class="trip-filter-btn" onclick="filterTrips('upcoming',this)">Upcoming</button>
