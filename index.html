@@ -330,7 +330,35 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
 .trip-doc-check{margin-top:12px;padding:12px 14px;background:var(--surface2);border-radius:var(--radius-sm);font-size:12px;}
 .trip-doc-item{display:flex;align-items:center;gap:8px;padding:4px 0;color:var(--textMid);}
 .trip-doc-icon{font-size:13px;}
-@media(max-width:768px){.sidebar{display:none;}.stats-row{grid-template-columns:1fr 1fr;}.form-grid.cols-3{grid-template-columns:1fr 1fr;}.topbar{padding:0 16px;}.content{padding:20px;}}
+@media(max-width:768px){.sidebar{display:none;}
+/* ===== MOBILE LAYOUT ===== */
+.mob-menu-btn{display:none;align-items:center;justify-content:center;width:36px;height:36px;background:none;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;font-size:18px;color:var(--textMid);flex-shrink:0;margin-right:8px;}
+.mob-sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:499;}
+.mob-sidebar-overlay.show{display:block;}
+@media(max-width:600px){
+  .mob-menu-btn{display:flex;}
+  .sidebar{position:fixed!important;top:0;left:0;bottom:0;z-index:500;width:280px!important;min-width:280px!important;display:flex!important;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;}
+  .sidebar.mob-open{transform:translateX(0);}
+  .main{width:100%;}
+  #app.visible{overflow-x:hidden;}
+  .topbar{padding:0 12px!important;}
+  .bleisure-wrap{display:none!important;}
+  .context-pill{display:none!important;}
+  .autosave-indicator{display:none!important;}
+  .content{padding:16px!important;}
+  .stats-row{grid-template-columns:1fr 1fr!important;}
+  .form-grid,.form-grid.cols-3,.form-grid.cols-2{grid-template-columns:1fr!important;}
+  .sec-sub{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+  .sec-header{margin-bottom:20px;}
+  #doc-modal>div,#loyalty-modal>div,#fam-invite-modal>div,#add-insurance-modal>div,#add-tour-modal>div,#add-cruise-modal>div,#add-excursion-modal>div,#integration-request-modal>div{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;margin:0!important;border-radius:0!important;overflow-y:auto!important;}
+  .field-input{font-size:12px!important;}
+  #api-uuid,input[readonly]{overflow:hidden;text-overflow:ellipsis;}
+  .integration-row{flex-wrap:wrap;gap:8px;}
+  .integration-name{font-size:11px!important;word-break:break-all;}
+  .module-card{padding:16px!important;}
+  .topbar-title{font-size:13px;}
+}
+.stats-row{grid-template-columns:1fr 1fr;}.form-grid.cols-3{grid-template-columns:1fr 1fr;}.topbar{padding:0 16px;}.content{padding:20px;}}
 .fam-member-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;transition:border-color 0.15s;}
 .fam-member-card:hover{border-color:var(--border2);}
 .fam-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;flex-shrink:0;letter-spacing:0.5px;}
@@ -395,7 +423,7 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
 <div id="screen-loading"><div class="loading-ring"></div><div class="loading-label">Loading your profile</div></div>
 <div id="toast"></div>
 <div id="app">
-  <aside class="sidebar">
+  <div class="mob-sidebar-overlay" id="mob-sidebar-overlay" onclick="closeMobMenu()"></div><aside class="sidebar">
     <div class="sidebar-brand">
       <div class="brand-row"><div class="brand-mark">U</div><div class="brand-name">UniProfile</div></div>
       <div class="brand-tagline">Traveler Identity Platform</div>
@@ -449,7 +477,7 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
     </div>
   </aside>
   <div class="main">
-    <div class="topbar">
+    <div class="topbar"><button class="mob-menu-btn" id="mob-menu-btn" onclick="toggleMobMenu()" aria-label="Menu">&#9776;</button>
       <div class="topbar-title" id="page-title">Dashboard</div>
       <div class="bleisure-wrap">
         <span class="bleisure-opt teal on" id="lbl-personal">Personal</span>
@@ -1006,7 +1034,7 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
       </section>
       <section class="section" id="section-api">
         <div class="sec-header"><div class="sec-icon" style="background:rgba(56,99,177,0.1)">⚡</div><div><div class="sec-title">API &amp; Webhooks</div><div class="sec-sub">UUID-anchored REST API · AWS Lambda · Aurora PostgreSQL 16.4</div></div></div>
-        <div class="form-section"><div class="form-section-title">Your Credentials</div><div class="form-grid"><div class="form-field"><label class="field-label">Traveler UUID</label><input class="field-input" id="api-uuid" type="text" readonly style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--goldLt)"></div><div class="form-field"><label class="field-label">API Base URL</label><input class="field-input" type="text" value="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod" readonly style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tealLt)"></div></div></div>
+        <div class="form-section"><div class="form-section-title">Your Credentials</div><div class="form-grid"><div class="form-field"><label class="field-label">Traveler UUID</label><input class="field-input" id="api-uuid" type="text" readonly style="word-break:break-all;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--goldLt)"></div><div class="form-field"><label class="field-label">API Base URL</label><input class="field-input" type="text" value="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod" readonly style="word-break:break-all;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--tealLt)"></div></div></div>
         <div class="form-section"><div class="form-section-title">Live Endpoints</div>
         <div class="integration-list">
           <div class="integration-row"><div class="integration-info"><div class="integration-name" style="font-family:'JetBrains Mono',monospace;font-size:12px">GET /api/v1/me</div><div class="integration-scope">Resolve UUID from JWT — auto-creates traveler on first login</div></div><div class="status-dot-wrap"><div class="status-dot dot-live"></div><span style="color:var(--green)">Live</span></div></div>
@@ -1319,7 +1347,7 @@ function parseHash(){return new URLSearchParams(window.location.hash.slice(1)).g
 async function api(method,path,body){const opts={method,headers:{Authorization:`Bearer ${token}`}};if(body){opts.headers["Content-Type"]="application/json";opts.body=JSON.stringify(body);}const r=await fetch(`${API}${path}`,opts);if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json();}
 function toast(msg,type=""){const el=document.getElementById("toast");el.textContent=msg;el.className="toast show"+(type?" "+type:"");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.className="toast",3000);}
 function setSaveState(state){const dot=document.getElementById("save-dot"),lbl=document.getElementById("save-label");if(state==="saving"){dot.className="autosave-dot saving";lbl.textContent="Saving...";}else if(state==="saved"){dot.className="autosave-dot saved";lbl.textContent="All changes saved";setTimeout(()=>dot.className="autosave-dot",3000);}else{dot.className="autosave-dot";lbl.textContent="Unsaved changes";}}
-function showSection(id,btn){document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));document.getElementById("section-"+id).classList.add("active");if(btn)btn.classList.add("active");section=id;const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Seat & Cabin Preferences",meals:"Meal & Dietary",loyalty:"Loyalty Programs",payment:"Payment & Policy",trips:"Trip History",family:"Family Profiles",insurance:"Insurance & Tours",cruise:"Cruise Profile",consent:"Consent & Access",api:"API & Webhooks"};document.getElementById("page-title").textContent=titles[id]||"UniProfile";document.querySelector(".content").scrollTop=0;if(id==="family")loadFamilyData();
+function showSection(id,btn){closeMobMenu();document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));document.getElementById("section-"+id).classList.add("active");if(btn)btn.classList.add("active");section=id;const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Seat & Cabin Preferences",meals:"Meal & Dietary",loyalty:"Loyalty Programs",payment:"Payment & Policy",trips:"Trip History",family:"Family Profiles",insurance:"Insurance & Tours",cruise:"Cruise Profile",consent:"Consent & Access",api:"API & Webhooks"};document.getElementById("page-title").textContent=titles[id]||"UniProfile";document.querySelector(".content").scrollTop=0;if(id==="family")loadFamilyData();
 if(id==="insurance"){renderMyInsurance();renderMyTours();}
 if(id==="cruise"){loadCruiseData();}if(id==="consent"){loadConnectedPlatforms();}}
 async function switchContext(el){const ctx=el.checked?"CORPORATE":"PERSONAL";const pill=document.getElementById("context-pill"),lp=document.getElementById("lbl-personal"),lb=document.getElementById("lbl-business"),pp=document.getElementById("pay-personal"),pc=document.getElementById("pay-corporate"),nb=document.getElementById("badge-payment");if(el.checked){pill.textContent="Business Mode";pill.className="context-pill corporate";lp.className="bleisure-opt teal";lb.className="bleisure-opt gold on";if(pp)pp.style.display="none";if(pc)pc.style.display="block";if(nb)nb.style.display="inline";}else{pill.textContent="Personal Mode";pill.className="context-pill personal";lp.className="bleisure-opt teal on";lb.className="bleisure-opt gold";if(pp)pp.style.display="block";if(pc)pc.style.display="none";if(nb)nb.style.display="none";}try{await api("POST",`/api/v1/profile/${uuid}/bleisure`,{context:ctx});}catch(e){}}
@@ -2736,6 +2764,9 @@ function obCopyEmail(){navigator.clipboard.writeText('trips@uniprofile.net').the
 function openIntegrationModal(){var m=document.getElementById("integration-request-modal");if(!m)return;document.getElementById("int-req-platform").value="";document.getElementById("int-req-email").value=profile&&profile.email?profile.email:"";m.style.display="flex";}
 function closeIntegrationModal(){var m=document.getElementById("integration-request-modal");if(m)m.style.display="none";}
 async function submitIntegrationRequest(){var platform=(document.getElementById("int-req-platform").value||"").trim();var email=(document.getElementById("int-req-email").value||"").trim();if(!platform){toast("Please enter a platform name","error");return;}var btn=document.getElementById("int-req-btn");if(btn){btn.disabled=true;btn.textContent="Submitting...";}try{await api("POST","/api/v1/integration-request",{platform_name:platform,email:email,uuid:uuid});}catch(e){}closeIntegrationModal();if(btn){btn.disabled=false;btn.textContent="Submit Request";}toast("Request received \u2014 we\u2019ll prioritise based on demand.","success");}
+
+function toggleMobMenu(){var s=document.querySelector('.sidebar'),o=document.getElementById('mob-sidebar-overlay');if(!s)return;s.classList.toggle('mob-open');o.classList.toggle('show');}
+function closeMobMenu(){var s=document.querySelector('.sidebar'),o=document.getElementById('mob-sidebar-overlay');if(s)s.classList.remove('mob-open');if(o)o.classList.remove('show');}
 
 init();
 </script>
