@@ -382,6 +382,341 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .consent-chip.on{background:var(--accentLt);color:var(--accent);border-color:var(--accentBorder);}
 .fam-feed-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 16px;transition:border-color 0.12s;}
 .fam-feed-card:hover{border-color:var(--border2);}
+
+/* ── Groups section ─────────────────────────────────── */
+.grp-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.grp-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+.grp-subtitle {
+  font-size: 0.875rem;
+  color: var(--textDim);
+  margin: 0;
+  max-width: 520px;
+  line-height: 1.5;
+}
+.grp-create-btn {
+  background: var(--gold);
+  color: var(--ink);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+  font-family: 'Outfit', sans-serif;
+}
+.grp-create-btn:hover { opacity: 0.88; }
+.grp-type-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.grp-pill {
+  padding: 5px 14px;
+  border-radius: 99px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--textMid);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Outfit', sans-serif;
+}
+.grp-pill.active,
+.grp-pill:hover {
+  background: var(--goldGlow);
+  border-color: rgba(180,83,9,0.3);
+  color: var(--goldLt);
+}
+.grp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  margin-bottom: 2rem;
+}
+.grp-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: box-shadow 0.18s, transform 0.18s;
+  position: relative;
+  overflow: hidden;
+}
+.grp-card:hover {
+  box-shadow: 0 6px 24px rgba(0,0,0,0.09);
+  transform: translateY(-2px);
+}
+.grp-card-accent {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 14px 14px 0 0;
+}
+.grp-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.grp-card-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+.grp-card-id {
+  font-size: 0.6875rem;
+  color: var(--textDim);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 2px;
+}
+.grp-type-badge {
+  font-size: 0.6875rem;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.grp-badge-family    { background: #e6f1fb; color: #185FA5; }
+.grp-badge-golf      { background: #eaf3de; color: #3B6D11; }
+.grp-badge-church    { background: #eeedfe; color: #534AB7; }
+.grp-badge-corporate { background: #faeeda; color: #854F0B; }
+.grp-badge-volunteer { background: #fcebeb; color: #A32D2D; }
+.grp-card-meta {
+  font-size: 0.8125rem;
+  color: var(--textDim);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.grp-card-stats {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.grp-card-stat { display: flex; flex-direction: column; }
+.grp-card-stat-val   { font-size: 1.125rem; font-weight: 600; color: var(--text); }
+.grp-card-stat-label { font-size: 0.6875rem; color: var(--textDim); }
+.grp-card-alerts { display: flex; gap: 6px; flex-wrap: wrap; }
+.grp-alert-chip {
+  font-size: 0.6875rem;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-weight: 500;
+}
+.grp-alert-danger { background: #fcebeb; color: #A32D2D; }
+.grp-alert-warn   { background: #faeeda; color: #854F0B; }
+.grp-alert-ok     { background: #eaf3de; color: #3B6D11; }
+.grp-alert-info   { background: #e6f1fb; color: #185FA5; }
+.grp-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--textDim);
+}
+.grp-empty-icon  { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.3; }
+.grp-empty-title { font-size: 1.125rem; font-weight: 600; color: var(--textMid); margin-bottom: 8px; }
+.grp-empty-sub   { font-size: 0.875rem; max-width: 340px; margin: 0 auto; line-height: 1.5; }
+.grp-back-btn {
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+}
+.grp-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.grp-detail-title { font-size: 1.25rem; font-weight: 600; color: var(--text); margin: 0 0 4px; }
+.grp-detail-meta  { font-size: 0.8125rem; color: var(--textDim); }
+.grp-detail-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+  margin-bottom: 1.5rem;
+}
+.grp-detail-stat {
+  background: var(--surface2);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.grp-detail-stat-label {
+  font-size: 0.6875rem;
+  color: var(--textDim);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.grp-detail-stat-val { font-size: 1.25rem; font-weight: 600; color: var(--text); }
+.grp-section-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--textDim);
+  margin: 1.5rem 0 10px;
+}
+.grp-members { display: flex; flex-direction: column; gap: 8px; }
+.grp-member-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+.grp-member-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+}
+.grp-member-name  { font-size: 0.875rem; font-weight: 600; color: var(--text); }
+.grp-member-meta  { font-size: 0.75rem; color: var(--textDim); margin-top: 2px; }
+.grp-member-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; }
+.grp-badge {
+  font-size: 0.6875rem;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-weight: 500;
+}
+.grp-member-pnr { font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--text); text-align: right; }
+.grp-member-ff  { font-size: 0.6875rem; color: var(--textDim); text-align: right; margin-top: 2px; }
+.grp-alerts { display: flex; flex-direction: column; gap: 8px; }
+.grp-alert-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 10px;
+}
+.grp-alert-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.grp-alert-text { font-size: 0.8125rem; line-height: 1.5; color: var(--text); }
+.grp-alert-text strong { font-weight: 600; }
+.grp-alert-danger-row { background: #fcebeb; }
+.grp-alert-warn-row   { background: #faeeda; }
+.grp-alert-ok-row     { background: #eaf3de; }
+.grp-alert-info-row   { background: #e6f1fb; }
+.grp-flights { display: flex; flex-direction: column; gap: 8px; }
+.grp-flight-row {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.grp-flight-route { font-size: 0.9375rem; font-weight: 600; color: var(--text); }
+.grp-flight-meta  { font-size: 0.75rem; color: var(--textDim); margin-top: 2px; }
+.grp-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 0.5rem;
+}
+.grp-modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.grp-modal {
+  background: var(--white);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+}
+.grp-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 0;
+}
+.grp-modal-title  { font-size: 1rem; font-weight: 600; color: var(--text); font-family: 'Playfair Display', serif; }
+.grp-modal-close  { background: none; border: none; font-size: 1rem; cursor: pointer; color: var(--textDim); padding: 4px; }
+.grp-modal-body   { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
+.grp-form-row     { display: flex; flex-direction: column; gap: 5px; }
+.grp-form-2col    { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grp-label        { font-size: 0.8125rem; font-weight: 500; color: var(--textMid); }
+.grp-input {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 0.875rem;
+  color: var(--text);
+  background: var(--white);
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.grp-input:focus { border-color: var(--gold); }
+.grp-hint { font-size: 0.75rem; color: var(--textDim); }
+.grp-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 0 24px 20px;
+}
+.grp-btn-primary {
+  background: var(--gold);
+  color: var(--ink);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+}
+.grp-btn-secondary {
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 10px 20px;
+  font-size: 0.875rem;
+  color: var(--textMid);
+  cursor: pointer;
+  font-family: 'Outfit', sans-serif;
+}
+@media (max-width: 640px) {
+  .grp-two-col { grid-template-columns: 1fr; }
+  .grp-member-card { grid-template-columns: 36px 1fr; }
+  .grp-member-pnr, .grp-member-ff { display: none; }
+}
 </style>
 </head>
 <body>
@@ -471,6 +806,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         <button class="nav-btn" onclick="showSection('payment',this)"><span class="nav-icon">💳</span><span>Payment &amp; Policy</span><span class="nav-tag" id="badge-payment" style="display:none">corp</span></button>
         <button class="nav-btn" onclick="showSection('trips',this)"><span class="nav-icon">📋</span>Trip History</button>
         <button class="nav-btn" onclick="showSection('family',this)"><span class="nav-icon">👥</span>Family Profiles<span class="nav-badge" id="fam-nav-badge" style="display:none">0</span></button>
+        <button class="nav-btn" onclick="showSection('groups',this)"><span class="nav-icon">✦</span>Groups</button>
         <button class="nav-btn" onclick="showSection('insurance',this)"><span class="nav-icon">🛡</span>Insurance &amp; Tours</button>
         <button class="nav-btn" onclick="showSection('cruise',this)"><span class="nav-icon">🚢</span>Cruise Profile</button>
       </div>
@@ -785,6 +1121,87 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
           </div>
         </div>
       </div>
+
+      <section class="section" id="section-groups">
+  <div class="section-inner">
+    <div class="grp-header">
+      <div>
+        <h2 class="grp-title">Groups</h2>
+        <p class="grp-subtitle">Coordinate travel for families, tours, golf trips, church groups, corporate teams and more — under one shared view.</p>
+      </div>
+      <button class="grp-create-btn" onclick="openCreateGroupModal()">+ New Group</button>
+    </div>
+    <div id="grp-empty" class="grp-empty" style="display:none">
+      <div class="grp-empty-icon">✦</div>
+      <div class="grp-empty-title">No groups yet</div>
+      <div class="grp-empty-sub">Create a group to coordinate travel with family, friends, colleagues or any crew.</div>
+      <button class="grp-create-btn" onclick="openCreateGroupModal()" style="margin-top:1.5rem">Create your first group</button>
+    </div>
+    <div class="grp-type-pills" id="grp-type-filter">
+      <button class="grp-pill active" onclick="filterGroups('all', this)">All</button>
+      <button class="grp-pill" onclick="filterGroups('family', this)">Family</button>
+      <button class="grp-pill" onclick="filterGroups('golf', this)">Golf</button>
+      <button class="grp-pill" onclick="filterGroups('church', this)">Church / Tour</button>
+      <button class="grp-pill" onclick="filterGroups('corporate', this)">Corporate</button>
+      <button class="grp-pill" onclick="filterGroups('volunteer', this)">Volunteer / NGO</button>
+    </div>
+    <div id="grp-grid" class="grp-grid"></div>
+    <div id="grp-detail" class="grp-detail" style="display:none">
+      <button class="grp-back-btn" onclick="closeGroupDetail()">← Back to groups</button>
+      <div id="grp-detail-inner"></div>
+    </div>
+  </div>
+</section>
+
+<!-- Create Group Modal -->
+<div id="grp-modal" class="grp-modal-overlay" style="display:none" onclick="closeCreateGroupModal(event)">
+  <div class="grp-modal">
+    <div class="grp-modal-header">
+      <span class="grp-modal-title">Create a Group</span>
+      <button class="grp-modal-close" onclick="closeCreateGroupModal()">✕</button>
+    </div>
+    <div class="grp-modal-body">
+      <div class="grp-form-row">
+        <label class="grp-label">Group name</label>
+        <input class="grp-input" id="grp-new-name" placeholder="e.g. Cancun Golf Trip 2026" />
+      </div>
+      <div class="grp-form-row">
+        <label class="grp-label">Group type</label>
+        <select class="grp-input" id="grp-new-type">
+          <option value="family">Family</option>
+          <option value="golf">Golf</option>
+          <option value="church">Church / Tour</option>
+          <option value="corporate">Corporate</option>
+          <option value="volunteer">Volunteer / NGO</option>
+        </select>
+      </div>
+      <div class="grp-form-2col">
+        <div class="grp-form-row">
+          <label class="grp-label">Departure date</label>
+          <input class="grp-input" id="grp-new-dep" type="date" />
+        </div>
+        <div class="grp-form-row">
+          <label class="grp-label">Return date</label>
+          <input class="grp-input" id="grp-new-ret" type="date" />
+        </div>
+      </div>
+      <div class="grp-form-row">
+        <label class="grp-label">Destination</label>
+        <input class="grp-input" id="grp-new-dest" placeholder="e.g. Cancun, Mexico" />
+      </div>
+      <div class="grp-form-row">
+        <label class="grp-label">Invite members by UniProfile ID</label>
+        <input class="grp-input" id="grp-new-members" placeholder="UP-XXXX-XX, UP-XXXX-XX ..." />
+        <span class="grp-hint">Comma-separated IDs. You'll be added automatically as organizer.</span>
+      </div>
+    </div>
+    <div class="grp-modal-footer">
+      <button class="grp-btn-secondary" onclick="closeCreateGroupModal()">Cancel</button>
+      <button class="grp-btn-primary" onclick="createGroup()">Create Group</button>
+    </div>
+  </div>
+</div>
+
       <section class="section" id="section-insurance">
         <div class="sec-header">
           <div class="sec-icon" style="background:var(--greenGlow)">🛡</div>
@@ -1362,7 +1779,7 @@ function parseHash(){return new URLSearchParams(window.location.hash.slice(1)).g
 async function api(method,path,body){const opts={method,headers:{Authorization:`Bearer ${token}`}};if(body){opts.headers["Content-Type"]="application/json";opts.body=JSON.stringify(body);}const r=await fetch(`${API}${path}`,opts);if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json();}
 function toast(msg,type=""){const el=document.getElementById("toast");el.textContent=msg;el.className="toast show"+(type?" "+type:"");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.className="toast",3000);}
 function setSaveState(state){const dot=document.getElementById("save-dot"),lbl=document.getElementById("save-label");if(state==="saving"){dot.className="autosave-dot saving";lbl.textContent="Saving...";}else if(state==="saved"){dot.className="autosave-dot saved";lbl.textContent="All changes saved";setTimeout(()=>dot.className="autosave-dot",3000);}else{dot.className="autosave-dot";lbl.textContent="Unsaved changes";}}
-function showSection(id,btn){closeMobMenu();document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));document.getElementById("section-"+id).classList.add("active");if(btn)btn.classList.add("active");section=id;const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Seat & Cabin Preferences",meals:"Meal & Dietary",loyalty:"Loyalty Programs",payment:"Payment & Policy",trips:"Trip History",family:"Family Profiles",insurance:"Insurance & Tours",cruise:"Cruise Profile",consent:"Consent & Access",api:"API & Webhooks"};document.getElementById("page-title").textContent=titles[id]||"UniProfile";document.querySelector(".content").scrollTop=0;if(id==="family")loadFamilyData();
+function showSection(id,btn){closeMobMenu();document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));document.getElementById("section-"+id).classList.add("active");if(btn)btn.classList.add("active");section=id;const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Seat & Cabin Preferences",meals:"Meal & Dietary",loyalty:"Loyalty Programs",payment:"Payment & Policy",trips:"Trip History",family:"Family Profiles",groups:"Groups",insurance:"Insurance & Tours",cruise:"Cruise Profile",consent:"Consent & Access",api:"API & Webhooks"};document.getElementById("page-title").textContent=titles[id]||"UniProfile";document.querySelector(".content").scrollTop=0;if(id==="family")loadFamilyData();
 if(id==="insurance"){renderMyInsurance();renderMyTours();}
 if(id==="cruise"){loadCruiseData();}if(id==="consent"){loadConnectedPlatforms();}}
 async function switchContext(el){const ctx=el.checked?"CORPORATE":"PERSONAL";const pill=document.getElementById("context-pill"),lp=document.getElementById("lbl-personal"),lb=document.getElementById("lbl-business"),pp=document.getElementById("pay-personal"),pc=document.getElementById("pay-corporate"),nb=document.getElementById("badge-payment");if(el.checked){pill.textContent="Business Mode";pill.className="context-pill corporate";lp.className="bleisure-opt teal";lb.className="bleisure-opt gold on";if(pp)pp.style.display="none";if(pc)pc.style.display="block";if(nb)nb.style.display="inline";}else{pill.textContent="Personal Mode";pill.className="context-pill personal";lp.className="bleisure-opt teal on";lb.className="bleisure-opt gold";if(pp)pp.style.display="block";if(pc)pc.style.display="none";if(nb)nb.style.display="none";}try{await api("POST",`/api/v1/profile/${uuid}/bleisure`,{context:ctx});}catch(e){}}
@@ -2783,6 +3200,402 @@ function toggleMobMenu(){var s=document.querySelector('.sidebar'),o=document.get
 function closeMobMenu(){var s=document.querySelector('.sidebar'),o=document.getElementById('mob-sidebar-overlay');if(s)s.classList.remove('mob-open');if(o)o.classList.remove('show');}
 
 init();
+
+/* ── Groups data & state ─────────────────────────────────── */
+const GRP_COLORS = {
+  family:    { accent: '#378ADD', badge: 'grp-badge-family'    },
+  golf:      { accent: '#639922', badge: 'grp-badge-golf'      },
+  church:    { accent: '#7B75E0', badge: 'grp-badge-church'    },
+  corporate: { accent: '#EF9F27', badge: 'grp-badge-corporate' },
+  volunteer: { accent: '#E24B4A', badge: 'grp-badge-volunteer' },
+};
+
+const GRP_AVATAR_COLORS = [
+  { bg:'#E6F1FB', color:'#185FA5' },
+  { bg:'#EAF3DE', color:'#3B6D11' },
+  { bg:'#FAEEDA', color:'#854F0B' },
+  { bg:'#EEEDFE', color:'#534AB7' },
+  { bg:'#FCEBEB', color:'#A32D2D' },
+  { bg:'#E1F5EE', color:'#0F6E56' },
+];
+
+// Sample data — replace with API call when backend is ready
+const grpData = [
+  {
+    id: 'GRP-2026-CUN-44',
+    name: 'Cancun Golf Trip 2026',
+    type: 'golf',
+    destination: 'Cancun, Mexico',
+    dep: '2026-06-14',
+    ret: '2026-06-21',
+    organizer: 'UP-7821-44',
+    members: [
+      { upid:'UP-7821-44', name:'Jorge M.', initials:'JM', pnr:'ABC123', seat:'14A',
+        passport_expiry:'2029-03-10', ff:['AS·98,450','UA·12,000'], ssrs:['GOLF'], role:'organizer' },
+      { upid:'UP-3391-77', name:'Maria S.', initials:'MS', pnr:'ABC123', seat:'14B',
+        passport_expiry:'2026-08-15', ff:['UA·74,200'], ssrs:[], role:'member' },
+      { upid:'UP-0048-92', name:'Tom K.',   initials:'TK', pnr:'XYZ789', seat:'22F',
+        passport_expiry:'2028-11-20', ff:['DL·111,560'], ssrs:['GOLF'], role:'member' },
+      { upid:'UP-5512-03', name:'Ann R.',   initials:'AR', pnr:'ABC123', seat:'14C',
+        passport_expiry:'2027-06-30', ff:['MR·62,500','AS·8,200'], ssrs:[], role:'member' },
+    ],
+    flights: [
+      { route:'SEA → CUN', flight:'AS 441', date:'Jun 14', members:'Jorge, Maria, Ann', pnr:'ABC123', status:'ok' },
+      { route:'SEA → CUN', flight:'AS 441', date:'Jun 14', members:'Tom K.',           pnr:'XYZ789', status:'warn' },
+      { route:'CUN → SEA', flight:'AS 442', date:'Jun 21', members:'All 4',            pnr:'DEF456', status:'ok' },
+    ],
+    hotel: { name:'Marriott Cancun Resort', dates:'Jun 14–21', rooms:'2 rooms', note:'Ann\'s Bonvoy applied' },
+  },
+  {
+    id: 'GRP-2026-FAM-12',
+    name: 'Rodriguez Family Hawaii',
+    type: 'family',
+    destination: 'Maui, Hawaii',
+    dep: '2026-08-02',
+    ret: '2026-08-12',
+    organizer: 'UP-7821-44',
+    members: [
+      { upid:'UP-7821-44', name:'Jorge M.', initials:'JM', pnr:'HAW001', seat:'12A',
+        passport_expiry:'2029-03-10', ff:['AS·98,450'], ssrs:[], role:'organizer' },
+      { upid:'UP-8811-33', name:'Rosa M.',  initials:'RM', pnr:'HAW001', seat:'12B',
+        passport_expiry:'2028-07-04', ff:['AS·22,000'], ssrs:['VGML'], role:'member' },
+      { upid:'UP-9900-55', name:'Luis M.',  initials:'LM', pnr:'HAW001', seat:'12C',
+        passport_expiry:'2027-12-01', ff:[], ssrs:[], role:'member' },
+    ],
+    flights: [
+      { route:'DCA → OGG', flight:'AS 191', date:'Aug 2', members:'All 3', pnr:'HAW001', status:'ok' },
+    ],
+    hotel: { name:'Grand Wailea Maui', dates:'Aug 2–12', rooms:'1 suite', note:'Upgrade requested' },
+  },
+];
+
+let grpCurrentFilter = 'all';
+let grpSelectedId    = null;
+
+/* ── Alert engine ────────────────────────────────────────── */
+function grpComputeAlerts(group) {
+  const alerts = [];
+  const retDate  = new Date(group.ret);
+  const today    = new Date();
+
+  group.members.forEach(m => {
+    const exp = new Date(m.passport_expiry);
+    const sixMonthsAfterReturn = new Date(retDate);
+    sixMonthsAfterReturn.setMonth(sixMonthsAfterReturn.getMonth() + 6);
+
+    if (exp < sixMonthsAfterReturn) {
+      alerts.push({ level:'danger',
+        text: `<strong>${m.name}</strong> — passport expires ${grpFmtDate(m.passport_expiry)}. Mexico requires 6 months validity beyond return date. Renew before trip.` });
+    }
+  });
+
+  const rows = group.members.map(m => parseInt(m.seat));
+  const minRow = Math.min(...rows), maxRow = Math.max(...rows);
+  if (maxRow - minRow > 5) {
+    const scattered = group.members.filter(m => parseInt(m.seat) > minRow + 5);
+    alerts.push({ level:'warn',
+      text: `<strong>${scattered.map(m=>m.name).join(', ')}</strong> — seated in row ${maxRow}, rest of group near row ${minRow}. Seat consolidation possible.` });
+  }
+
+  const pnrs = [...new Set(group.members.map(m => m.pnr))];
+  if (pnrs.length > 1) {
+    alerts.push({ level:'warn',
+      text: `Group is spread across ${pnrs.length} separate PNRs (${pnrs.join(', ')}). Schedule changes may not propagate to all members automatically.` });
+  }
+
+  if (alerts.length === 0) {
+    alerts.push({ level:'ok', text: 'No issues detected. All members are cleared for travel.' });
+  }
+
+  return alerts;
+}
+
+/* ── Render helpers ──────────────────────────────────────── */
+function grpFmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+}
+
+function grpFmtRange(dep, ret) {
+  const d1 = new Date(dep), d2 = new Date(ret);
+  return d1.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' – ' +
+         d2.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+function grpDaysUntil(iso) {
+  return Math.ceil((new Date(iso) - new Date()) / (1000*60*60*24));
+}
+
+function grpTotalMiles(members) {
+  let total = 0;
+  members.forEach(m => {
+    (m.ff||[]).forEach(f => {
+      const match = f.match(/[\d,]+/);
+      if (match) total += parseInt(match[0].replace(/,/g,''));
+    });
+  });
+  return total > 0 ? (total >= 1000 ? Math.round(total/1000)+'k' : total) : '—';
+}
+
+function grpAlertSummary(alerts) {
+  const danger = alerts.filter(a=>a.level==='danger').length;
+  const warn   = alerts.filter(a=>a.level==='warn').length;
+  const chips  = [];
+  if (danger) chips.push(`<span class="grp-alert-chip grp-alert-danger">${danger} critical</span>`);
+  if (warn)   chips.push(`<span class="grp-alert-chip grp-alert-warn">${warn} warning${warn>1?'s':''}</span>`);
+  if (!danger && !warn) chips.push(`<span class="grp-alert-chip grp-alert-ok">All clear</span>`);
+  return chips.join('');
+}
+
+/* ── Render group cards ──────────────────────────────────── */
+function grpRenderGrid(filter) {
+  const grid  = document.getElementById('grp-grid');
+  const empty = document.getElementById('grp-empty');
+  const filtered = grpData.filter(g => filter === 'all' || g.type === filter);
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  grid.innerHTML = filtered.map(g => {
+    const col    = GRP_COLORS[g.type] || GRP_COLORS.family;
+    const alerts = grpComputeAlerts(g);
+    const days   = grpDaysUntil(g.dep);
+    const typeLabel = { family:'Family', golf:'Golf', church:'Church / Tour',
+                        corporate:'Corporate', volunteer:'Volunteer' }[g.type] || g.type;
+    return `
+    <div class="grp-card" onclick="openGroupDetail('${g.id}')">
+      <div class="grp-card-accent" style="background:${col.accent}"></div>
+      <div class="grp-card-top">
+        <div>
+          <div class="grp-card-name">${g.name}</div>
+          <div class="grp-card-id">${g.id}</div>
+        </div>
+        <span class="grp-type-badge ${col.badge}">${typeLabel}</span>
+      </div>
+      <div class="grp-card-meta">
+        📍 ${g.destination} &nbsp;·&nbsp; ${grpFmtRange(g.dep, g.ret)}<br>
+        ${days > 0 ? `<span style="color:var(--teal,#1D9E75);font-weight:500">${days} days away</span>` : '<span style="color:#A32D2D">Trip passed</span>'}
+      </div>
+      <div class="grp-card-stats">
+        <div class="grp-card-stat">
+          <span class="grp-card-stat-val">${g.members.length}</span>
+          <span class="grp-card-stat-label">Members</span>
+        </div>
+        <div class="grp-card-stat">
+          <span class="grp-card-stat-val">${[...new Set(g.members.map(m=>m.pnr))].length}</span>
+          <span class="grp-card-stat-label">PNRs</span>
+        </div>
+        <div class="grp-card-stat">
+          <span class="grp-card-stat-val">${grpTotalMiles(g.members)}</span>
+          <span class="grp-card-stat-label">Group miles</span>
+        </div>
+      </div>
+      <div class="grp-card-alerts">${grpAlertSummary(alerts)}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Group detail view ───────────────────────────────────── */
+function openGroupDetail(id) {
+  const g = grpData.find(x => x.id === id);
+  if (!g) return;
+  grpSelectedId = id;
+
+  const col    = GRP_COLORS[g.type] || GRP_COLORS.family;
+  const alerts = grpComputeAlerts(g);
+
+  const membersHTML = g.members.map((m, i) => {
+    const av = GRP_AVATAR_COLORS[i % GRP_AVATAR_COLORS.length];
+    const exp = new Date(m.passport_expiry);
+    const retD = new Date(g.ret);
+    const sixMo = new Date(retD); sixMo.setMonth(sixMo.getMonth()+6);
+    const passportOk = exp >= sixMo;
+    const badges = [
+      passportOk
+        ? `<span class="grp-badge grp-alert-ok">Passport valid</span>`
+        : `<span class="grp-badge grp-alert-danger">Passport exp. ${grpFmtDate(m.passport_expiry)}</span>`,
+      ...(m.ssrs||[]).map(s => `<span class="grp-badge grp-alert-info">${s}</span>`),
+      m.role === 'organizer' ? `<span class="grp-badge" style="background:#f0f0f0;color:#555">organizer</span>` : '',
+    ].filter(Boolean);
+
+    return `
+    <div class="grp-member-card">
+      <div class="grp-member-avatar" style="background:${av.bg};color:${av.color}">${m.initials}</div>
+      <div>
+        <div class="grp-member-name">${m.name}</div>
+        <div class="grp-member-meta">${m.upid} &nbsp;·&nbsp; Seat ${m.seat}</div>
+        <div class="grp-member-badges">${badges.join('')}</div>
+        ${m.ff && m.ff.length ? `<div class="grp-member-badges" style="margin-top:3px">${m.ff.map(f=>`<span class="grp-badge grp-alert-info">${f}</span>`).join('')}</div>` : ''}
+      </div>
+      <div>
+        <div class="grp-member-pnr">${m.pnr}</div>
+        <div class="grp-member-ff">${(m.ff||[]).join(' · ') || 'No FF'}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const alertsHTML = alerts.map(a => `
+    <div class="grp-alert-row grp-alert-${a.level}-row">
+      <div class="grp-alert-dot" style="background:${
+        {danger:'#E24B4A',warn:'#EF9F27',ok:'#639922',info:'#378ADD'}[a.level]
+      }"></div>
+      <div class="grp-alert-text">${a.text}</div>
+    </div>`).join('');
+
+  const flightsHTML = g.flights.map(f => `
+    <div class="grp-flight-row">
+      <div>
+        <div class="grp-flight-route">${f.route}</div>
+        <div class="grp-flight-meta">${f.date} &nbsp;·&nbsp; ${f.flight} &nbsp;·&nbsp; ${f.members}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <span class="grp-badge ${f.status==='ok'?'grp-alert-ok':f.status==='warn'?'grp-alert-warn':'grp-alert-danger'}">${
+          f.status==='ok'?'Confirmed':f.status==='warn'?'Needs attention':'Issue'
+        }</span>
+        <span style="font-size:0.6875rem;color:var(--text3);font-family:monospace">${f.pnr}</span>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('grp-detail-inner').innerHTML = `
+    <div class="grp-detail-header">
+      <div>
+        <div class="grp-detail-title">${g.name}</div>
+        <div class="grp-detail-meta">
+          ${g.id} &nbsp;·&nbsp; 📍 ${g.destination} &nbsp;·&nbsp; ${grpFmtRange(g.dep,g.ret)}
+        </div>
+      </div>
+      <span class="grp-type-badge ${col.badge}">${g.type}</span>
+    </div>
+
+    <div class="grp-detail-stats">
+      <div class="grp-detail-stat">
+        <div class="grp-detail-stat-label">Members</div>
+        <div class="grp-detail-stat-val">${g.members.length}</div>
+      </div>
+      <div class="grp-detail-stat">
+        <div class="grp-detail-stat-label">PNRs</div>
+        <div class="grp-detail-stat-val">${[...new Set(g.members.map(m=>m.pnr))].length}</div>
+      </div>
+      <div class="grp-detail-stat">
+        <div class="grp-detail-stat-label">Group miles</div>
+        <div class="grp-detail-stat-val">${grpTotalMiles(g.members)}</div>
+      </div>
+      <div class="grp-detail-stat">
+        <div class="grp-detail-stat-label">Days away</div>
+        <div class="grp-detail-stat-val" style="color:var(--teal,#1D9E75)">${grpDaysUntil(g.dep)}</div>
+      </div>
+      <div class="grp-detail-stat">
+        <div class="grp-detail-stat-label">Alerts</div>
+        <div class="grp-detail-stat-val" style="color:${alerts.some(a=>a.level==='danger')?'#A32D2D':alerts.some(a=>a.level==='warn')?'#854F0B':'#3B6D11'}">${alerts.filter(a=>a.level!=='ok').length||'✓'}</div>
+      </div>
+    </div>
+
+    <div class="grp-two-col">
+      <div>
+        <div class="grp-section-label">Alerts</div>
+        <div class="grp-alerts">${alertsHTML}</div>
+
+        <div class="grp-section-label" style="margin-top:1.5rem">Flights</div>
+        <div class="grp-flights">${flightsHTML}</div>
+
+        ${g.hotel ? `
+        <div class="grp-section-label" style="margin-top:1.5rem">Hotel</div>
+        <div class="grp-flight-row" style="background:var(--surface1,#fff);border:1px solid var(--border2,#e0ddd6);border-radius:10px;padding:12px 16px">
+          <div>
+            <div class="grp-flight-route">${g.hotel.name}</div>
+            <div class="grp-flight-meta">${g.hotel.dates} &nbsp;·&nbsp; ${g.hotel.rooms} &nbsp;·&nbsp; ${g.hotel.note}</div>
+          </div>
+          <span class="grp-badge grp-alert-ok">Confirmed</span>
+        </div>` : ''}
+      </div>
+
+      <div>
+        <div class="grp-section-label">Members</div>
+        <div class="grp-members">${membersHTML}</div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('grp-grid').style.display        = 'none';
+  document.getElementById('grp-type-filter').style.display = 'none';
+  document.getElementById('grp-empty').style.display       = 'none';
+  document.getElementById('grp-detail').style.display      = 'block';
+}
+
+function closeGroupDetail() {
+  grpSelectedId = null;
+  document.getElementById('grp-detail').style.display      = 'none';
+  document.getElementById('grp-grid').style.display        = 'grid';
+  document.getElementById('grp-type-filter').style.display = 'flex';
+}
+
+/* ── Filter ──────────────────────────────────────────────── */
+function filterGroups(type, btn) {
+  grpCurrentFilter = type;
+  document.querySelectorAll('.grp-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  grpRenderGrid(type);
+}
+
+/* ── Create group modal ──────────────────────────────────── */
+function openCreateGroupModal() {
+  document.getElementById('grp-modal').style.display = 'flex';
+}
+
+function closeCreateGroupModal(e) {
+  if (!e || e.target === document.getElementById('grp-modal')) {
+    document.getElementById('grp-modal').style.display = 'none';
+  }
+}
+
+function createGroup() {
+  const name    = document.getElementById('grp-new-name').value.trim();
+  const type    = document.getElementById('grp-new-type').value;
+  const dep     = document.getElementById('grp-new-dep').value;
+  const ret     = document.getElementById('grp-new-ret').value;
+  const dest    = document.getElementById('grp-new-dest').value.trim();
+  const members = document.getElementById('grp-new-members').value.trim();
+
+  if (!name || !dep || !dest) {
+    alert('Please fill in group name, destination, and departure date.');
+    return;
+  }
+
+  const id = 'GRP-' + Date.now().toString().slice(-6);
+  const newGroup = {
+    id, name, type, destination: dest, dep, ret: ret || dep,
+    organizer: 'UP-7821-44',
+    members: [
+      { upid:'UP-7821-44', name:'Jorge M.', initials:'JM',
+        pnr:'—', seat:'—', passport_expiry:'2029-03-10',
+        ff:['AS·98,450'], ssrs:[], role:'organizer' }
+    ],
+    flights: [],
+    hotel: null,
+  };
+
+  grpData.unshift(newGroup);
+  closeCreateGroupModal();
+  grpRenderGrid(grpCurrentFilter);
+
+  ['grp-new-name','grp-new-dep','grp-new-ret','grp-new-dest','grp-new-members']
+    .forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+}
+
+/* ── Init: hook into showSection for groups tab ─────────── */
+(function() {
+  const orig = window.showSection;
+  if (typeof orig === 'function') {
+    window.showSection = function(id, btn) {
+      orig(id, btn);
+      if (id === 'groups') grpRenderGrid(grpCurrentFilter);
+    };
+  }
+})();
 </script>
 </body>
 </html>
