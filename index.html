@@ -18,8 +18,9 @@
   --red:#DC2626;--redGlow:#FEF2F2;--redBorder:#FECACA;
   --green:#059669;--greenGlow:#F0FDF4;--greenBorder:#BBF7D0;
   --amber:#D97706;--amberGlow:#FFFBEB;--amberBorder:#FDE68A;
-  --tealLt:#0891B2;--tealGlow:#F0F9FF;
+  --teal:#0891B2;--tealLt:#0891B2;--tealGlow:#F0F9FF;
   --radius-sm:6px;--radius-md:8px;--radius-lg:10px;--radius-xl:14px;
+  --surface3:#F3F4F6;--border3:#9CA3AF;
   --ink:#0D0D0D;--ink2:#161616;--ink3:#1E1E1E;--ink4:#252525;--goldDim:#92400E;
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -110,7 +111,7 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
 .nav{flex:1;padding:16px 10px;overflow-y:auto;}
 .nav-group{margin-bottom:4px;}
 .nav-group-label{font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:var(--textDim);padding:10px 14px 6px;}
-.nav-btn{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--radius-sm);border:none;background:transparent;color:var(--textDim);cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:400;width:100%;text-align:left;transition:all 0.12s;}
+.nav-btn{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--radius-sm);border:none;background:transparent;color:var(--textDim);cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:400;width:100%;text-align:left;transition:all 0.12s;position:relative;}
 .nav-btn:hover:not(.active){background:#F0EFEC;color:var(--text);}
 .nav-btn.active{background:var(--goldGlow);color:var(--goldLt);}
 .nav-btn.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:2.5px;height:60%;background:var(--gold);border-radius:0 2px 2px 0;}
@@ -245,11 +246,11 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
 .loyalty-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
 .loyalty-card{border-radius:var(--radius-lg);padding:20px;position:relative;overflow:hidden;background:linear-gradient(135deg,var(--ink3) 0%,var(--ink4) 100%);border:1px solid var(--border2);}
 .loyalty-card::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:var(--goldGlow);}
-.loyalty-airline{font-size:13px;font-weight:600;color:var(--white);margin-bottom:2px;}
-.loyalty-program{font-size:11px;color:var(--textMid);margin-bottom:14px;}
-.loyalty-number{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--goldLt);letter-spacing:1.5px;margin-bottom:8px;background:var(--goldGlow);padding:5px 10px;border-radius:var(--radius-sm);display:inline-block;}
-.loyalty-tier{font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:600;}
-.loyalty-type-badge{position:absolute;top:14px;right:14px;font-size:9px;color:var(--textDim);letter-spacing:0.5px;text-transform:uppercase;}
+.loyalty-airline{font-size:13px;font-weight:600;color:var(--white);margin-bottom:2px;position:relative;z-index:1;}
+.loyalty-program{font-size:11px;color:var(--textMid);margin-bottom:14px;position:relative;z-index:1;}
+.loyalty-number{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--goldLt);letter-spacing:1.5px;margin-bottom:8px;background:var(--goldGlow);padding:5px 10px;border-radius:var(--radius-sm);display:inline-block;position:relative;z-index:1;}
+.loyalty-tier{font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:600;color:var(--goldGlow);position:relative;z-index:1;}
+.loyalty-type-badge{position:absolute;top:14px;right:14px;font-size:9px;color:var(--textDim);letter-spacing:0.5px;text-transform:uppercase;z-index:2;}
 .trip-list{display:flex;flex-direction:column;gap:10px;}
 .trip-row{display:flex;align-items:center;gap:14px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 18px;transition:border-color 0.12s;}
 .trip-row:hover{border-color:var(--border2);}
