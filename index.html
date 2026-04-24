@@ -1189,14 +1189,162 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         <input class="grp-input" id="grp-new-dest" placeholder="e.g. Cancun, Mexico" />
       </div>
       <div class="grp-form-row">
-        <label class="grp-label">Invite members by UniProfile ID</label>
-        <input class="grp-input" id="grp-new-members" placeholder="UP-XXXX-XX, UP-XXXX-XX ..." />
-        <span class="grp-hint">Comma-separated IDs. You'll be added automatically as organizer.</span>
+        <label class="grp-label">Notes (optional)</label>
+        <input class="grp-input" id="grp-new-notes" placeholder="e.g. Annual golf trip, 8 players" />
       </div>
     </div>
     <div class="grp-modal-footer">
       <button class="grp-btn-secondary" onclick="closeCreateGroupModal()">Cancel</button>
-      <button class="grp-btn-primary" onclick="createGroup()">Create Group</button>
+      <button class="grp-btn-primary" id="grp-create-btn" onclick="createGroup()">Create Group</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Member Modal -->
+<div id="grp-member-modal" class="grp-modal-overlay" style="display:none" onclick="if(event.target===this)closeGrpMemberModal()">
+  <div class="grp-modal" style="max-width:520px">
+    <div class="grp-modal-header">
+      <span class="grp-modal-title">Add Member</span>
+      <button class="grp-modal-close" onclick="closeGrpMemberModal()">✕</button>
+    </div>
+    <div class="grp-modal-body">
+      <div class="grp-form-2col">
+        <div class="grp-form-row">
+          <label class="grp-label">Full name *</label>
+          <input class="grp-input" id="gm-name" placeholder="e.g. Maria Santos" />
+        </div>
+        <div class="grp-form-row">
+          <label class="grp-label">Email or UniProfile ID</label>
+          <input class="grp-input" id="gm-email" placeholder="email or UP-XXXX-XX" />
+        </div>
+      </div>
+      <div class="grp-form-2col">
+        <div class="grp-form-row">
+          <label class="grp-label">PNR</label>
+          <input class="grp-input" id="gm-pnr" placeholder="e.g. ABC123" style="text-transform:uppercase" />
+        </div>
+        <div class="grp-form-row">
+          <label class="grp-label">Seat</label>
+          <input class="grp-input" id="gm-seat" placeholder="e.g. 14A" style="text-transform:uppercase" />
+        </div>
+      </div>
+      <div class="grp-form-2col">
+        <div class="grp-form-row">
+          <label class="grp-label">Passport expiry</label>
+          <input class="grp-input" id="gm-passport" type="date" />
+        </div>
+        <div class="grp-form-row">
+          <label class="grp-label">Role</label>
+          <select class="grp-input" id="gm-role">
+            <option value="member">Member</option>
+            <option value="organizer">Organizer</option>
+          </select>
+        </div>
+      </div>
+      <div class="grp-form-row">
+        <label class="grp-label">Frequent flyer numbers</label>
+        <input class="grp-input" id="gm-ff" placeholder="e.g. AS·98450, UA·12000 (comma separated)" />
+      </div>
+      <div class="grp-form-row">
+        <label class="grp-label">Special requests (SSRs)</label>
+        <input class="grp-input" id="gm-ssrs" placeholder="e.g. GOLF, VGML, WCHR (comma separated)" />
+      </div>
+    </div>
+    <div class="grp-modal-footer">
+      <button class="grp-btn-secondary" onclick="closeGrpMemberModal()">Cancel</button>
+      <button class="grp-btn-primary" onclick="saveGrpMember()">Add Member</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Flight Modal -->
+<div id="grp-flight-modal" class="grp-modal-overlay" style="display:none" onclick="if(event.target===this)closeGrpFlightModal()">
+  <div class="grp-modal" style="max-width:480px">
+    <div class="grp-modal-header">
+      <span class="grp-modal-title">Add Flight</span>
+      <button class="grp-modal-close" onclick="closeGrpFlightModal()">✕</button>
+    </div>
+    <div class="grp-modal-body">
+      <div class="grp-form-2col">
+        <div class="grp-form-row">
+          <label class="grp-label">Route *</label>
+          <input class="grp-input" id="gf-route" placeholder="e.g. SEA → CUN" />
+        </div>
+        <div class="grp-form-row">
+          <label class="grp-label">Flight number *</label>
+          <input class="grp-input" id="gf-flight" placeholder="e.g. AS 441" style="text-transform:uppercase" />
+        </div>
+      </div>
+      <div class="grp-form-2col">
+        <div class="grp-form-row">
+          <label class="grp-label">Date</label>
+          <input class="grp-input" id="gf-date" type="date" />
+        </div>
+        <div class="grp-form-row">
+          <label class="grp-label">PNR</label>
+          <input class="grp-input" id="gf-pnr" placeholder="e.g. ABC123" style="text-transform:uppercase" />
+        </div>
+      </div>
+      <div class="grp-form-row">
+        <label class="grp-label">Members on this flight</label>
+        <input class="grp-input" id="gf-members" placeholder="e.g. Jorge, Maria, Ann — or All" />
+      </div>
+      <div class="grp-form-row">
+        <label class="grp-label">Status</label>
+        <select class="grp-input" id="gf-status">
+          <option value="ok">Confirmed</option>
+          <option value="warn">Needs attention</option>
+          <option value="issue">Issue</option>
+        </select>
+      </div>
+    </div>
+    <div class="grp-modal-footer">
+      <button class="grp-btn-secondary" onclick="closeGrpFlightModal()">Cancel</button>
+      <button class="grp-btn-primary" onclick="saveGrpFlight()">Add Flight</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Hotel Modal -->
+<div id="grp-hotel-modal" class="grp-modal-overlay" style="display:none" onclick="if(event.target===this)closeGrpHotelModal()">
+  <div class="grp-modal" style="max-width:440px">
+    <div class="grp-modal-header">
+      <span class="grp-modal-title">Set Hotel</span>
+      <button class="grp-modal-close" onclick="closeGrpHotelModal()">✕</button>
+    </div>
+    <div class="grp-modal-body">
+      <div class="grp-form-row">
+        <label class="grp-label">Hotel name *</label>
+        <input class="grp-input" id="gh-name" placeholder="e.g. Marriott Cancun Resort" />
+      </div>
+      <div class="grp-form-2col">
+        <div class="grp-form-row">
+          <label class="grp-label">Check-in</label>
+          <input class="grp-input" id="gh-checkin" type="date" />
+        </div>
+        <div class="grp-form-row">
+          <label class="grp-label">Check-out</label>
+          <input class="grp-input" id="gh-checkout" type="date" />
+        </div>
+      </div>
+      <div class="grp-form-2col">
+        <div class="grp-form-row">
+          <label class="grp-label">Rooms</label>
+          <input class="grp-input" id="gh-rooms" placeholder="e.g. 2 rooms" />
+        </div>
+        <div class="grp-form-row">
+          <label class="grp-label">Confirmation #</label>
+          <input class="grp-input" id="gh-conf" placeholder="e.g. MARR-88421" />
+        </div>
+      </div>
+      <div class="grp-form-row">
+        <label class="grp-label">Notes</label>
+        <input class="grp-input" id="gh-note" placeholder="e.g. Ann's Bonvoy applied, early check-in requested" />
+      </div>
+    </div>
+    <div class="grp-modal-footer">
+      <button class="grp-btn-secondary" onclick="closeGrpHotelModal()">Cancel</button>
+      <button class="grp-btn-primary" onclick="saveGrpHotel()">Save Hotel</button>
     </div>
   </div>
 </div>
@@ -1801,7 +1949,7 @@ if(p.identity){s("f-legal_first",p.identity.legal_first);s("f-legal_middle",p.id
 renderDocumentVault(p.documents||[]);populateDocTypeDropdown(p.document_types||{});
 if(p.seat_preferences){s("f-cabin_domestic",p.seat_preferences.cabin_domestic);s("f-cabin_international",p.seat_preferences.cabin_international);s("f-seat_position",p.seat_preferences.seat_position);s("f-row_preference",p.seat_preferences.row_preference);s("f-hotel_room_type",p.seat_preferences.hotel_room_type);s("f-hotel_floor_pref",p.seat_preferences.hotel_floor_pref);s("f-car_type_pref",p.seat_preferences.car_type_pref||"MIDSIZE");sc("f-avoid_middle_seats",p.seat_preferences.avoid_middle_seats);sc("f-avoid_last_row",p.seat_preferences.avoid_last_row);sc("f-wheelchair_needed",p.seat_preferences.wheelchair_needed);}
 if(p.meal_preferences){s("f-primary_meal_code",p.meal_preferences.primary_meal_code);s("f-beverage_pref",p.meal_preferences.beverage_pref);s("f-allergies",(p.meal_preferences.allergies||[]).join(", "));s("f-avoid_items",(p.meal_preferences.avoid_items||[]).join(", "));s("f-dietary_notes",p.meal_preferences.dietary_notes);}
-renderLoyalty(p.loyalty_programs||[]);renderPayment(p.payment_profiles||[],p.identity);renderTrips(p.trips||[]);s("api-uuid",p.uuid);}
+renderLoyalty(p.loyalty_programs||[]);renderPayment(p.payment_profiles||[],p.identity);renderTrips(p.trips||[]);s("api-uuid",p.uuid);grpData=p.groups||[];}
 
 let editingLoyaltyId = null;
 
@@ -3200,7 +3348,7 @@ function closeMobMenu(){var s=document.querySelector('.sidebar'),o=document.getE
 
 init();
 
-/* ── Groups data & state ─────────────────────────────────── */
+/* ── Groups ──────────────────────────────────────────────── */
 const GRP_COLORS = {
   family:    { accent: '#378ADD', badge: 'grp-badge-family'    },
   golf:      { accent: '#639922', badge: 'grp-badge-golf'      },
@@ -3218,116 +3366,85 @@ const GRP_AVATAR_COLORS = [
   { bg:'#E1F5EE', color:'#0F6E56' },
 ];
 
-// Sample data — replace with API call when backend is ready
-const grpData = [
-  {
-    id: 'GRP-2026-CUN-44',
-    name: 'Cancun Golf Trip 2026',
-    type: 'golf',
-    destination: 'Cancun, Mexico',
-    dep: '2026-06-14',
-    ret: '2026-06-21',
-    organizer: 'UP-7821-44',
-    members: [
-      { upid:'UP-7821-44', name:'Jorge M.', initials:'JM', pnr:'ABC123', seat:'14A',
-        passport_expiry:'2029-03-10', ff:['AS·98,450','UA·12,000'], ssrs:['GOLF'], role:'organizer' },
-      { upid:'UP-3391-77', name:'Maria S.', initials:'MS', pnr:'ABC123', seat:'14B',
-        passport_expiry:'2026-08-15', ff:['UA·74,200'], ssrs:[], role:'member' },
-      { upid:'UP-0048-92', name:'Tom K.',   initials:'TK', pnr:'XYZ789', seat:'22F',
-        passport_expiry:'2028-11-20', ff:['DL·111,560'], ssrs:['GOLF'], role:'member' },
-      { upid:'UP-5512-03', name:'Ann R.',   initials:'AR', pnr:'ABC123', seat:'14C',
-        passport_expiry:'2027-06-30', ff:['MR·62,500','AS·8,200'], ssrs:[], role:'member' },
-    ],
-    flights: [
-      { route:'SEA → CUN', flight:'AS 441', date:'Jun 14', members:'Jorge, Maria, Ann', pnr:'ABC123', status:'ok' },
-      { route:'SEA → CUN', flight:'AS 441', date:'Jun 14', members:'Tom K.',           pnr:'XYZ789', status:'warn' },
-      { route:'CUN → SEA', flight:'AS 442', date:'Jun 21', members:'All 4',            pnr:'DEF456', status:'ok' },
-    ],
-    hotel: { name:'Marriott Cancun Resort', dates:'Jun 14–21', rooms:'2 rooms', note:'Ann\'s Bonvoy applied' },
-  },
-  {
-    id: 'GRP-2026-FAM-12',
-    name: 'Rodriguez Family Hawaii',
-    type: 'family',
-    destination: 'Maui, Hawaii',
-    dep: '2026-08-02',
-    ret: '2026-08-12',
-    organizer: 'UP-7821-44',
-    members: [
-      { upid:'UP-7821-44', name:'Jorge M.', initials:'JM', pnr:'HAW001', seat:'12A',
-        passport_expiry:'2029-03-10', ff:['AS·98,450'], ssrs:[], role:'organizer' },
-      { upid:'UP-8811-33', name:'Rosa M.',  initials:'RM', pnr:'HAW001', seat:'12B',
-        passport_expiry:'2028-07-04', ff:['AS·22,000'], ssrs:['VGML'], role:'member' },
-      { upid:'UP-9900-55', name:'Luis M.',  initials:'LM', pnr:'HAW001', seat:'12C',
-        passport_expiry:'2027-12-01', ff:[], ssrs:[], role:'member' },
-    ],
-    flights: [
-      { route:'DCA → OGG', flight:'AS 191', date:'Aug 2', members:'All 3', pnr:'HAW001', status:'ok' },
-    ],
-    hotel: { name:'Grand Wailea Maui', dates:'Aug 2–12', rooms:'1 suite', note:'Upgrade requested' },
-  },
-];
-
+let grpData = [];
 let grpCurrentFilter = 'all';
-let grpSelectedId    = null;
+let grpSelectedId = null;
+
+/* ── API persistence ─────────────────────────────────────── */
+async function grpPersist() {
+  if (!uuid) return;
+  try {
+    await api('PUT', '/api/v1/profile/' + uuid, { module: 'groups', data: { groups: grpData } });
+  } catch(e) { /* offline — state saved locally */ }
+}
+
+function grpInitials(name) {
+  if (!name) return '?';
+  var p = name.trim().split(/\s+/);
+  return p.length >= 2 ? (p[0][0] + p[p.length-1][0]).toUpperCase() : name.slice(0,2).toUpperCase();
+}
 
 /* ── Alert engine ────────────────────────────────────────── */
 function grpComputeAlerts(group) {
-  const alerts = [];
-  const retDate  = new Date(group.ret);
-  const today    = new Date();
+  var alerts = [];
+  var retDate = new Date(group.ret);
 
-  group.members.forEach(m => {
-    const exp = new Date(m.passport_expiry);
-    const sixMonthsAfterReturn = new Date(retDate);
-    sixMonthsAfterReturn.setMonth(sixMonthsAfterReturn.getMonth() + 6);
-
-    if (exp < sixMonthsAfterReturn) {
+  (group.members || []).forEach(function(m) {
+    if (!m.passport_expiry) return;
+    var exp = new Date(m.passport_expiry);
+    var sixMo = new Date(retDate);
+    sixMo.setMonth(sixMo.getMonth() + 6);
+    if (exp < sixMo) {
       alerts.push({ level:'danger',
-        text: `<strong>${m.name}</strong> — passport expires ${grpFmtDate(m.passport_expiry)}. Mexico requires 6 months validity beyond return date. Renew before trip.` });
+        text: '<strong>' + esc(m.name) + '</strong> — passport expires ' + grpFmtDate(m.passport_expiry) + '. Many destinations require 6 months validity beyond return date.' });
     }
   });
 
-  const rows = group.members.map(m => parseInt(m.seat));
-  const minRow = Math.min(...rows), maxRow = Math.max(...rows);
-  if (maxRow - minRow > 5) {
-    const scattered = group.members.filter(m => parseInt(m.seat) > minRow + 5);
-    alerts.push({ level:'warn',
-      text: `<strong>${scattered.map(m=>m.name).join(', ')}</strong> — seated in row ${maxRow}, rest of group near row ${minRow}. Seat consolidation possible.` });
+  var seatedMembers = (group.members || []).filter(function(m) { return m.seat && /\d/.test(m.seat); });
+  if (seatedMembers.length > 1) {
+    var rows = seatedMembers.map(function(m) { return parseInt(m.seat); });
+    var minRow = Math.min.apply(null, rows), maxRow = Math.max.apply(null, rows);
+    if (maxRow - minRow > 5) {
+      var scattered = seatedMembers.filter(function(m) { return parseInt(m.seat) > minRow + 5; });
+      alerts.push({ level:'warn',
+        text: '<strong>' + scattered.map(function(m){return esc(m.name);}).join(', ') + '</strong> seated far from rest of group. Seat consolidation may be possible.' });
+    }
   }
 
-  const pnrs = [...new Set(group.members.map(m => m.pnr))];
+  var pnrs = [...new Set((group.members || []).filter(function(m){return m.pnr;}).map(function(m){return m.pnr;}))];
   if (pnrs.length > 1) {
     alerts.push({ level:'warn',
-      text: `Group is spread across ${pnrs.length} separate PNRs (${pnrs.join(', ')}). Schedule changes may not propagate to all members automatically.` });
+      text: 'Group split across ' + pnrs.length + ' PNRs (' + pnrs.join(', ') + '). Schedule changes may not propagate to all members automatically.' });
   }
 
   if (alerts.length === 0) {
-    alerts.push({ level:'ok', text: 'No issues detected. All members are cleared for travel.' });
+    alerts.push({ level:'ok', text: 'No issues detected. All members cleared for travel.' });
   }
-
   return alerts;
 }
 
 /* ── Render helpers ──────────────────────────────────────── */
 function grpFmtDate(iso) {
+  if (!iso) return '—';
   const d = new Date(iso);
   return d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
 }
 
 function grpFmtRange(dep, ret) {
-  const d1 = new Date(dep), d2 = new Date(ret);
+  if (!dep) return '—';
+  const d1 = new Date(dep), d2 = ret ? new Date(ret) : d1;
   return d1.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' – ' +
          d2.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 }
 
 function grpDaysUntil(iso) {
+  if (!iso) return 0;
   return Math.ceil((new Date(iso) - new Date()) / (1000*60*60*24));
 }
 
 function grpTotalMiles(members) {
   let total = 0;
-  members.forEach(m => {
+  (members||[]).forEach(m => {
     (m.ff||[]).forEach(f => {
       const match = f.match(/[\d,]+/);
       if (match) total += parseInt(match[0].replace(/,/g,''));
@@ -3366,26 +3483,26 @@ function grpRenderGrid(filter) {
     const typeLabel = { family:'Family', golf:'Golf', church:'Church / Tour',
                         corporate:'Corporate', volunteer:'Volunteer' }[g.type] || g.type;
     return `
-    <div class="grp-card" onclick="openGroupDetail('${g.id}')">
+    <div class="grp-card" onclick="openGroupDetail('${esc(g.id)}')">
       <div class="grp-card-accent" style="background:${col.accent}"></div>
       <div class="grp-card-top">
         <div>
-          <div class="grp-card-name">${g.name}</div>
-          <div class="grp-card-id">${g.id}</div>
+          <div class="grp-card-name">${esc(g.name)}</div>
+          <div class="grp-card-id">${esc(g.id)}</div>
         </div>
-        <span class="grp-type-badge ${col.badge}">${typeLabel}</span>
+        <span class="grp-type-badge ${col.badge}">${esc(typeLabel)}</span>
       </div>
       <div class="grp-card-meta">
-        📍 ${g.destination} &nbsp;·&nbsp; ${grpFmtRange(g.dep, g.ret)}<br>
-        ${days > 0 ? `<span style="color:var(--teal,#1D9E75);font-weight:500">${days} days away</span>` : '<span style="color:#A32D2D">Trip passed</span>'}
+        ${esc(g.destination)} &nbsp;&middot;&nbsp; ${grpFmtRange(g.dep, g.ret)}<br>
+        ${days > 0 ? `<span style="color:var(--teal);font-weight:500">${days} days away</span>` : '<span style="color:var(--red)">Trip passed</span>'}
       </div>
       <div class="grp-card-stats">
         <div class="grp-card-stat">
-          <span class="grp-card-stat-val">${g.members.length}</span>
+          <span class="grp-card-stat-val">${(g.members||[]).length}</span>
           <span class="grp-card-stat-label">Members</span>
         </div>
         <div class="grp-card-stat">
-          <span class="grp-card-stat-val">${[...new Set(g.members.map(m=>m.pnr))].length}</span>
+          <span class="grp-card-stat-val">${[...new Set((g.members||[]).map(m=>m.pnr).filter(Boolean))].length}</span>
           <span class="grp-card-stat-label">PNRs</span>
         </div>
         <div class="grp-card-stat">
@@ -3407,77 +3524,95 @@ function openGroupDetail(id) {
   const col    = GRP_COLORS[g.type] || GRP_COLORS.family;
   const alerts = grpComputeAlerts(g);
 
-  const membersHTML = g.members.map((m, i) => {
+  const membersHTML = (g.members||[]).length === 0
+    ? `<div style="color:var(--textDim);font-size:13px;padding:12px 0">No members yet. <button class="grp-btn-secondary" style="padding:4px 10px;font-size:12px" onclick="openGrpMemberModal()">Add first member</button></div>`
+    : (g.members||[]).map((m, i) => {
     const av = GRP_AVATAR_COLORS[i % GRP_AVATAR_COLORS.length];
-    const exp = new Date(m.passport_expiry);
-    const retD = new Date(g.ret);
+    const exp = m.passport_expiry ? new Date(m.passport_expiry) : null;
+    const retD = new Date(g.ret || g.dep);
     const sixMo = new Date(retD); sixMo.setMonth(sixMo.getMonth()+6);
-    const passportOk = exp >= sixMo;
+    const passportOk = exp ? exp >= sixMo : false;
     const badges = [
-      passportOk
+      exp ? (passportOk
         ? `<span class="grp-badge grp-alert-ok">Passport valid</span>`
-        : `<span class="grp-badge grp-alert-danger">Passport exp. ${grpFmtDate(m.passport_expiry)}</span>`,
-      ...(m.ssrs||[]).map(s => `<span class="grp-badge grp-alert-info">${s}</span>`),
-      m.role === 'organizer' ? `<span class="grp-badge" style="background:#f0f0f0;color:#555">organizer</span>` : '',
+        : `<span class="grp-badge grp-alert-danger">Passport exp. ${grpFmtDate(m.passport_expiry)}</span>`) : '',
+      ...(m.ssrs||[]).map(s => `<span class="grp-badge grp-alert-info">${esc(s)}</span>`),
+      m.role === 'organizer' ? `<span class="grp-badge" style="background:var(--goldGlow);color:var(--goldLt)">organizer</span>` : '',
     ].filter(Boolean);
 
     return `
     <div class="grp-member-card">
-      <div class="grp-member-avatar" style="background:${av.bg};color:${av.color}">${m.initials}</div>
-      <div>
-        <div class="grp-member-name">${m.name}</div>
-        <div class="grp-member-meta">${m.upid} &nbsp;·&nbsp; Seat ${m.seat}</div>
+      <div class="grp-member-avatar" style="background:${av.bg};color:${av.color}">${esc(grpInitials(m.name))}</div>
+      <div style="flex:1;min-width:0">
+        <div class="grp-member-name">${esc(m.name)}</div>
+        <div class="grp-member-meta">${esc(m.upid||'—')} &nbsp;&middot;&nbsp; Seat ${esc(m.seat||'—')}</div>
         <div class="grp-member-badges">${badges.join('')}</div>
-        ${m.ff && m.ff.length ? `<div class="grp-member-badges" style="margin-top:3px">${m.ff.map(f=>`<span class="grp-badge grp-alert-info">${f}</span>`).join('')}</div>` : ''}
+        ${(m.ff||[]).length ? `<div class="grp-member-badges" style="margin-top:3px">${(m.ff||[]).map(f=>`<span class="grp-badge grp-alert-info">${esc(f)}</span>`).join('')}</div>` : ''}
       </div>
-      <div>
-        <div class="grp-member-pnr">${m.pnr}</div>
-        <div class="grp-member-ff">${(m.ff||[]).join(' · ') || 'No FF'}</div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+        <div class="grp-member-pnr">${esc(m.pnr||'—')}</div>
+        <button class="grp-btn-secondary" style="padding:3px 8px;font-size:11px;color:var(--red);border-color:var(--red)" onclick="removeGrpMember('${esc(m.id||m.name)}')">Remove</button>
       </div>
     </div>`;
   }).join('');
 
-  const alertsHTML = alerts.map(a => `
+  const alertsHTML = alerts.length === 0
+    ? `<div style="color:var(--textDim);font-size:13px;padding:8px 0">No alerts</div>`
+    : alerts.map(a => `
     <div class="grp-alert-row grp-alert-${a.level}-row">
-      <div class="grp-alert-dot" style="background:${
-        {danger:'#E24B4A',warn:'#EF9F27',ok:'#639922',info:'#378ADD'}[a.level]
-      }"></div>
+      <div class="grp-alert-dot" style="background:${{danger:'var(--red)',warn:'var(--amber)',ok:'var(--green)',info:'var(--teal)'}[a.level]||'var(--teal)'}"></div>
       <div class="grp-alert-text">${a.text}</div>
     </div>`).join('');
 
-  const flightsHTML = g.flights.map(f => `
+  const flightsHTML = (g.flights||[]).length === 0
+    ? `<div style="color:var(--textDim);font-size:13px;padding:8px 0">No flights added.</div>`
+    : (g.flights||[]).map((f, fi) => `
     <div class="grp-flight-row">
-      <div>
-        <div class="grp-flight-route">${f.route}</div>
-        <div class="grp-flight-meta">${f.date} &nbsp;·&nbsp; ${f.flight} &nbsp;·&nbsp; ${f.members}</div>
+      <div style="flex:1;min-width:0">
+        <div class="grp-flight-route">${esc(f.route)}</div>
+        <div class="grp-flight-meta">${grpFmtDate(f.date)} &nbsp;&middot;&nbsp; ${esc(f.flight)} &nbsp;&middot;&nbsp; ${esc(f.members||'All')}</div>
       </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
         <span class="grp-badge ${f.status==='ok'?'grp-alert-ok':f.status==='warn'?'grp-alert-warn':'grp-alert-danger'}">${
           f.status==='ok'?'Confirmed':f.status==='warn'?'Needs attention':'Issue'
         }</span>
-        <span style="font-size:0.6875rem;color:var(--text3);font-family:monospace">${f.pnr}</span>
+        <span style="font-size:0.6875rem;color:var(--textDim);font-family:var(--font-mono,monospace)">${esc(f.pnr||'')}</span>
+        <button class="grp-btn-secondary" style="padding:2px 7px;font-size:11px;color:var(--red);border-color:var(--red)" onclick="removeGrpFlight(${fi})">Remove</button>
       </div>
     </div>`).join('');
+
+  const hotelHTML = g.hotel ? `
+    <div class="grp-flight-row" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px">
+      <div style="flex:1">
+        <div class="grp-flight-route">${esc(g.hotel.name)}</div>
+        <div class="grp-flight-meta">${grpFmtDate(g.hotel.checkin)} – ${grpFmtDate(g.hotel.checkout)} &nbsp;&middot;&nbsp; ${esc(g.hotel.rooms||'')} &nbsp;&middot;&nbsp; ${esc(g.hotel.note||'')}</div>
+        ${g.hotel.conf ? `<div class="grp-flight-meta" style="font-family:var(--font-mono,monospace)">${esc(g.hotel.conf)}</div>` : ''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0">
+        <span class="grp-badge grp-alert-ok">Confirmed</span>
+        <button class="grp-btn-secondary" style="padding:3px 8px;font-size:11px" onclick="openGrpHotelModal()">Edit</button>
+      </div>
+    </div>` : `<div style="color:var(--textDim);font-size:13px;padding:8px 0">No hotel set.</div>`;
 
   document.getElementById('grp-detail-inner').innerHTML = `
     <div class="grp-detail-header">
       <div>
-        <div class="grp-detail-title">${g.name}</div>
+        <div class="grp-detail-title">${esc(g.name)}</div>
         <div class="grp-detail-meta">
-          ${g.id} &nbsp;·&nbsp; 📍 ${g.destination} &nbsp;·&nbsp; ${grpFmtRange(g.dep,g.ret)}
+          ${esc(g.id)} &nbsp;&middot;&nbsp; ${esc(g.destination)} &nbsp;&middot;&nbsp; ${grpFmtRange(g.dep,g.ret)}
         </div>
       </div>
-      <span class="grp-type-badge ${col.badge}">${g.type}</span>
+      <span class="grp-type-badge ${col.badge}">${esc(g.type)}</span>
     </div>
 
     <div class="grp-detail-stats">
       <div class="grp-detail-stat">
         <div class="grp-detail-stat-label">Members</div>
-        <div class="grp-detail-stat-val">${g.members.length}</div>
+        <div class="grp-detail-stat-val">${(g.members||[]).length}</div>
       </div>
       <div class="grp-detail-stat">
         <div class="grp-detail-stat-label">PNRs</div>
-        <div class="grp-detail-stat-val">${[...new Set(g.members.map(m=>m.pnr))].length}</div>
+        <div class="grp-detail-stat-val">${[...new Set((g.members||[]).map(m=>m.pnr).filter(Boolean))].length}</div>
       </div>
       <div class="grp-detail-stat">
         <div class="grp-detail-stat-label">Group miles</div>
@@ -3485,12 +3620,20 @@ function openGroupDetail(id) {
       </div>
       <div class="grp-detail-stat">
         <div class="grp-detail-stat-label">Days away</div>
-        <div class="grp-detail-stat-val" style="color:var(--teal,#1D9E75)">${grpDaysUntil(g.dep)}</div>
+        <div class="grp-detail-stat-val" style="color:var(--teal)">${grpDaysUntil(g.dep)}</div>
       </div>
       <div class="grp-detail-stat">
         <div class="grp-detail-stat-label">Alerts</div>
-        <div class="grp-detail-stat-val" style="color:${alerts.some(a=>a.level==='danger')?'#A32D2D':alerts.some(a=>a.level==='warn')?'#854F0B':'#3B6D11'}">${alerts.filter(a=>a.level!=='ok').length||'✓'}</div>
+        <div class="grp-detail-stat-val" style="color:${alerts.some(a=>a.level==='danger')?'var(--red)':alerts.some(a=>a.level==='warn')?'var(--amber)':'var(--green)'}">${alerts.filter(a=>a.level!=='ok').length||'✓'}</div>
       </div>
+    </div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px">
+      <button class="grp-btn-primary" onclick="openGrpMemberModal()">+ Add Member</button>
+      <button class="grp-btn-secondary" onclick="openGrpFlightModal()">+ Add Flight</button>
+      <button class="grp-btn-secondary" onclick="openGrpHotelModal()">${g.hotel ? 'Edit Hotel' : 'Set Hotel'}</button>
+      <button class="grp-btn-secondary" onclick="exportGroupManifest('${esc(g.id)}')">Export Manifest</button>
+      <button class="grp-btn-secondary" style="color:var(--red);border-color:var(--red);margin-left:auto" onclick="deleteGroup('${esc(g.id)}')">Delete Group</button>
     </div>
 
     <div class="grp-two-col">
@@ -3501,19 +3644,12 @@ function openGroupDetail(id) {
         <div class="grp-section-label" style="margin-top:1.5rem">Flights</div>
         <div class="grp-flights">${flightsHTML}</div>
 
-        ${g.hotel ? `
         <div class="grp-section-label" style="margin-top:1.5rem">Hotel</div>
-        <div class="grp-flight-row" style="background:var(--surface1,#fff);border:1px solid var(--border2,#e0ddd6);border-radius:10px;padding:12px 16px">
-          <div>
-            <div class="grp-flight-route">${g.hotel.name}</div>
-            <div class="grp-flight-meta">${g.hotel.dates} &nbsp;·&nbsp; ${g.hotel.rooms} &nbsp;·&nbsp; ${g.hotel.note}</div>
-          </div>
-          <span class="grp-badge grp-alert-ok">Confirmed</span>
-        </div>` : ''}
+        ${hotelHTML}
       </div>
 
       <div>
-        <div class="grp-section-label">Members</div>
+        <div class="grp-section-label">Members (${(g.members||[]).length})</div>
         <div class="grp-members">${membersHTML}</div>
       </div>
     </div>
@@ -3552,37 +3688,263 @@ function closeCreateGroupModal(e) {
 }
 
 function createGroup() {
-  const name    = document.getElementById('grp-new-name').value.trim();
-  const type    = document.getElementById('grp-new-type').value;
-  const dep     = document.getElementById('grp-new-dep').value;
-  const ret     = document.getElementById('grp-new-ret').value;
-  const dest    = document.getElementById('grp-new-dest').value.trim();
-  const members = document.getElementById('grp-new-members').value.trim();
+  const name = document.getElementById('grp-new-name').value.trim();
+  const type = document.getElementById('grp-new-type').value;
+  const dep  = document.getElementById('grp-new-dep').value;
+  const ret  = document.getElementById('grp-new-ret').value;
+  const dest = document.getElementById('grp-new-dest').value.trim();
 
   if (!name || !dep || !dest) {
     alert('Please fill in group name, destination, and departure date.');
     return;
   }
 
+  const orgName = profile && profile.identity
+    ? ((profile.identity.legal_first||'') + ' ' + (profile.identity.legal_last||'')).trim()
+    : 'Organizer';
+
   const id = 'GRP-' + Date.now().toString().slice(-6);
   const newGroup = {
     id, name, type, destination: dest, dep, ret: ret || dep,
-    organizer: 'UP-7821-44',
-    members: [
-      { upid:'UP-7821-44', name:'Jorge M.', initials:'JM',
-        pnr:'—', seat:'—', passport_expiry:'2029-03-10',
-        ff:['AS·98,450'], ssrs:[], role:'organizer' }
-    ],
+    members: [{
+      id: 'mbr-' + Date.now(),
+      upid: uuid || '—',
+      name: orgName,
+      pnr: '—', seat: '—',
+      passport_expiry: '',
+      ff: [], ssrs: [],
+      role: 'organizer'
+    }],
     flights: [],
     hotel: null,
   };
 
   grpData.unshift(newGroup);
   closeCreateGroupModal();
+  grpPersist();
   grpRenderGrid(grpCurrentFilter);
 
   ['grp-new-name','grp-new-dep','grp-new-ret','grp-new-dest','grp-new-members']
-    .forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+    .forEach(fid => { const el = document.getElementById(fid); if(el) el.value=''; });
+}
+
+/* ── Add / Remove member ─────────────────────────────────── */
+function openGrpMemberModal() {
+  ['gm-name','gm-email','gm-pnr','gm-seat','gm-ff','gm-ssrs'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value='';
+  });
+  const passEl = document.getElementById('gm-passport');
+  if (passEl) passEl.value = '';
+  const roleEl = document.getElementById('gm-role');
+  if (roleEl) roleEl.value = 'member';
+  document.getElementById('grp-member-modal').style.display = 'flex';
+}
+
+function closeGrpMemberModal() {
+  document.getElementById('grp-member-modal').style.display = 'none';
+}
+
+function saveGrpMember() {
+  if (!grpSelectedId) return;
+  const name = document.getElementById('gm-name').value.trim();
+  if (!name) { alert('Member name is required.'); return; }
+
+  const g = grpData.find(x => x.id === grpSelectedId);
+  if (!g) return;
+
+  const ffRaw  = document.getElementById('gm-ff').value.trim();
+  const ssrRaw = document.getElementById('gm-ssrs').value.trim();
+
+  const member = {
+    id: 'mbr-' + Date.now(),
+    name,
+    upid: document.getElementById('gm-email').value.trim() || '—',
+    pnr:  (document.getElementById('gm-pnr').value.trim() || '—').toUpperCase(),
+    seat: (document.getElementById('gm-seat').value.trim() || '—').toUpperCase(),
+    passport_expiry: document.getElementById('gm-passport').value || '',
+    role: document.getElementById('gm-role').value,
+    ff:   ffRaw  ? ffRaw.split(',').map(s=>s.trim()).filter(Boolean) : [],
+    ssrs: ssrRaw ? ssrRaw.split(',').map(s=>s.trim().toUpperCase()).filter(Boolean) : [],
+  };
+
+  g.members.push(member);
+  closeGrpMemberModal();
+  grpPersist();
+  openGroupDetail(grpSelectedId);
+}
+
+function removeGrpMember(memberId) {
+  if (!grpSelectedId) return;
+  const g = grpData.find(x => x.id === grpSelectedId);
+  if (!g) return;
+  const idx = g.members.findIndex(m => (m.id || m.name) === memberId);
+  if (idx === -1) return;
+  if (!confirm('Remove ' + g.members[idx].name + ' from the group?')) return;
+  g.members.splice(idx, 1);
+  grpPersist();
+  openGroupDetail(grpSelectedId);
+}
+
+/* ── Add / Remove flight ─────────────────────────────────── */
+function openGrpFlightModal() {
+  ['gf-route','gf-flight','gf-pnr','gf-members'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value='';
+  });
+  const dateEl = document.getElementById('gf-date');
+  if (dateEl) dateEl.value = '';
+  const statusEl = document.getElementById('gf-status');
+  if (statusEl) statusEl.value = 'ok';
+  document.getElementById('grp-flight-modal').style.display = 'flex';
+}
+
+function closeGrpFlightModal() {
+  document.getElementById('grp-flight-modal').style.display = 'none';
+}
+
+function saveGrpFlight() {
+  if (!grpSelectedId) return;
+  const route  = document.getElementById('gf-route').value.trim();
+  const flight = document.getElementById('gf-flight').value.trim().toUpperCase();
+  if (!route || !flight) { alert('Route and flight number are required.'); return; }
+
+  const g = grpData.find(x => x.id === grpSelectedId);
+  if (!g) return;
+
+  g.flights.push({
+    route,
+    flight,
+    date:    document.getElementById('gf-date').value || '',
+    pnr:     document.getElementById('gf-pnr').value.trim().toUpperCase() || '',
+    members: document.getElementById('gf-members').value.trim() || 'All',
+    status:  document.getElementById('gf-status').value,
+  });
+
+  closeGrpFlightModal();
+  grpPersist();
+  openGroupDetail(grpSelectedId);
+}
+
+function removeGrpFlight(idx) {
+  if (!grpSelectedId) return;
+  const g = grpData.find(x => x.id === grpSelectedId);
+  if (!g || !g.flights[idx]) return;
+  if (!confirm('Remove flight ' + g.flights[idx].route + '?')) return;
+  g.flights.splice(idx, 1);
+  grpPersist();
+  openGroupDetail(grpSelectedId);
+}
+
+/* ── Set hotel ───────────────────────────────────────────── */
+function openGrpHotelModal() {
+  if (!grpSelectedId) return;
+  const g = grpData.find(x => x.id === grpSelectedId);
+  if (g && g.hotel) {
+    document.getElementById('gh-name').value    = g.hotel.name    || '';
+    document.getElementById('gh-checkin').value = g.hotel.checkin || '';
+    document.getElementById('gh-checkout').value= g.hotel.checkout|| '';
+    document.getElementById('gh-rooms').value   = g.hotel.rooms   || '';
+    document.getElementById('gh-conf').value    = g.hotel.conf    || '';
+    document.getElementById('gh-note').value    = g.hotel.note    || '';
+  } else {
+    ['gh-name','gh-checkin','gh-checkout','gh-rooms','gh-conf','gh-note']
+      .forEach(id => { const el=document.getElementById(id);if(el)el.value=''; });
+  }
+  document.getElementById('grp-hotel-modal').style.display = 'flex';
+}
+
+function closeGrpHotelModal() {
+  document.getElementById('grp-hotel-modal').style.display = 'none';
+}
+
+function saveGrpHotel() {
+  if (!grpSelectedId) return;
+  const name = document.getElementById('gh-name').value.trim();
+  if (!name) { alert('Hotel name is required.'); return; }
+
+  const g = grpData.find(x => x.id === grpSelectedId);
+  if (!g) return;
+
+  g.hotel = {
+    name,
+    checkin:  document.getElementById('gh-checkin').value  || '',
+    checkout: document.getElementById('gh-checkout').value || '',
+    rooms:    document.getElementById('gh-rooms').value.trim() || '',
+    conf:     document.getElementById('gh-conf').value.trim()  || '',
+    note:     document.getElementById('gh-note').value.trim()  || '',
+  };
+
+  closeGrpHotelModal();
+  grpPersist();
+  openGroupDetail(grpSelectedId);
+}
+
+/* ── Delete group ────────────────────────────────────────── */
+function deleteGroup(id) {
+  const g = grpData.find(x => x.id === id);
+  if (!g) return;
+  if (!confirm('Delete group "' + g.name + '"? This cannot be undone.')) return;
+  grpData = grpData.filter(x => x.id !== id);
+  closeGroupDetail();
+  grpPersist();
+  grpRenderGrid(grpCurrentFilter);
+  toast('Group deleted', 'success');
+}
+
+/* ── Export manifest ─────────────────────────────────────── */
+function exportGroupManifest(id) {
+  const g = grpData.find(x => x.id === id);
+  if (!g) return;
+
+  const lines = [
+    'GROUP TRAVEL MANIFEST',
+    '=====================',
+    'Group: ' + g.name,
+    'ID: ' + g.id,
+    'Type: ' + g.type,
+    'Destination: ' + g.destination,
+    'Travel dates: ' + grpFmtRange(g.dep, g.ret),
+    'Members: ' + (g.members||[]).length,
+    '',
+    'MEMBERS',
+    '-------',
+  ];
+
+  (g.members||[]).forEach((m, i) => {
+    lines.push((i+1) + '. ' + m.name
+      + ' | PNR: ' + (m.pnr||'—')
+      + ' | Seat: ' + (m.seat||'—')
+      + ' | Role: ' + (m.role||'member')
+      + (m.passport_expiry ? ' | Passport exp: ' + grpFmtDate(m.passport_expiry) : '')
+      + ((m.ff||[]).length ? ' | FF: ' + m.ff.join(', ') : '')
+      + ((m.ssrs||[]).length ? ' | SSRs: ' + m.ssrs.join(', ') : ''));
+  });
+
+  if ((g.flights||[]).length) {
+    lines.push('', 'FLIGHTS', '-------');
+    (g.flights||[]).forEach(f => {
+      lines.push(f.route + ' | ' + f.flight + ' | ' + grpFmtDate(f.date)
+        + ' | PNR: ' + (f.pnr||'—') + ' | ' + (f.status==='ok'?'Confirmed':f.status==='warn'?'Needs attention':'Issue'));
+    });
+  }
+
+  if (g.hotel) {
+    lines.push('', 'HOTEL', '-----');
+    lines.push(g.hotel.name);
+    lines.push('Check-in: ' + grpFmtDate(g.hotel.checkin) + ' | Check-out: ' + grpFmtDate(g.hotel.checkout));
+    if (g.hotel.rooms) lines.push('Rooms: ' + g.hotel.rooms);
+    if (g.hotel.conf)  lines.push('Confirmation: ' + g.hotel.conf);
+    if (g.hotel.note)  lines.push('Notes: ' + g.hotel.note);
+  }
+
+  lines.push('', 'Generated: ' + new Date().toLocaleString());
+
+  const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = g.id + '-manifest.txt';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 /* ── Init: hook into showSection for groups tab ─────────── */
