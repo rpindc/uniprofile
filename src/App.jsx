@@ -210,6 +210,8 @@ async function cognitoReq(action, body) {
 const signUp = (e, p, f, l) => cognitoReq("SignUp", { ClientId: CLIENT_ID, Username: e, Password: p, UserAttributes: [{ Name: "email", Value: e }, { Name: "given_name", Value: f }, { Name: "family_name", Value: l }] });
 const confirmSignUp = (e, c) => cognitoReq("ConfirmSignUp", { ClientId: CLIENT_ID, Username: e, ConfirmationCode: c });
 const signIn = (e, p) => cognitoReq("InitiateAuth", { AuthFlow: "USER_PASSWORD_AUTH", ClientId: CLIENT_ID, AuthParameters: { USERNAME: e, PASSWORD: p } });
+const forgotPassword = (e) => cognitoReq("ForgotPassword", { ClientId: CLIENT_ID, Username: e });
+const confirmForgotPassword = (e, c, p) => cognitoReq("ConfirmForgotPassword", { ClientId: CLIENT_ID, Username: e, ConfirmationCode: c, Password: p });
 
 async function api(path, method = "GET", body = null, token = null) {
   const r = await fetch(`${API_URL}/v1${path}`, {
@@ -308,6 +310,59 @@ function SignUpPage({ onSwitch }) {
   );
 }
 
+function ForgotPasswordPage({ onSwitch }) {
+  const [step, setStep] = useState("request");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [pw, setPw] = useState("");
+  const [pw2, setPw2] = useState("");
+  const [err, setErr] = useState(""); const [loading, setLoading] = useState(false);
+  const doRequest = async () => {
+    if (!email) return setErr("Enter your email address");
+    setErr(""); setLoading(true);
+    try { await forgotPassword(email); setStep("reset"); } catch (e) { setErr(e.message); }
+    setLoading(false);
+  };
+  const doReset = async () => {
+    if (!code) return setErr("Enter the verification code");
+    if (!pw || pw.length < 8) return setErr("Password must be at least 8 characters");
+    if (pw !== pw2) return setErr("Passwords don't match");
+    setErr(""); setLoading(true);
+    try { await confirmForgotPassword(email, code, pw); onSwitch("login", email); } catch (e) { setErr(e.message); }
+    setLoading(false);
+  };
+  if (step === "reset") return (
+    <div className="auth-wrap"><div className="auth-box fade-up">
+      <div className="auth-wordmark">Uni<span>Profile</span></div>
+      <div className="auth-tag">Password reset</div>
+      <div className="auth-h">Check your email ✉️</div>
+      <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 20, lineHeight: 1.7 }}>We sent a reset code to <strong style={{ color: "var(--ink)" }}>{email}</strong></p>
+      {err && <div className="err">{err}</div>}
+      <form onSubmit={e => { e.preventDefault(); doReset(); }} autoComplete="off">
+        <div className="field"><label>Verification code</label><input value={code} onChange={e => setCode(e.target.value)} placeholder="123456" maxLength={6} autoComplete="one-time-code" style={{ fontSize: 22, letterSpacing: 8, textAlign: "center", fontFamily: "var(--mono)" }} /></div>
+        <div className="field"><label>New password</label><input type="password" value={pw} onChange={e => setPw(e.target.value)} placeholder="Min 8 characters" autoComplete="new-password" /></div>
+        <div className="field"><label>Confirm new password</label><input type="password" value={pw2} onChange={e => setPw2(e.target.value)} placeholder="Repeat password" autoComplete="new-password" /></div>
+        <button type="submit" className="btn-full" disabled={loading}>{loading ? "Resetting…" : "Set new password →"}</button>
+      </form>
+      <div className="auth-sw"><a onClick={() => setStep("request")}>← Try a different email</a></div>
+    </div></div>
+  );
+  return (
+    <div className="auth-wrap"><div className="auth-box fade-up">
+      <div className="auth-wordmark">Uni<span>Profile</span></div>
+      <div className="auth-tag">Password reset</div>
+      <div className="auth-h">Forgot your password?</div>
+      <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 20, lineHeight: 1.7 }}>Enter your email and we'll send a reset code.</p>
+      {err && <div className="err">{err}</div>}
+      <form onSubmit={e => { e.preventDefault(); doRequest(); }} autoComplete="on">
+        <div className="field"><label>Email</label><input type="email" name="email" autoComplete="username" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" /></div>
+        <button type="submit" className="btn-full" disabled={loading}>{loading ? "Sending code…" : "Send reset code →"}</button>
+      </form>
+      <div className="auth-sw"><a onClick={() => onSwitch("login")}>← Back to sign in</a></div>
+    </div></div>
+  );
+}
+
 function LoginPage({ onLogin, onSwitch, prefill = "" }) {
   const [f, setF] = useState({ email: prefill, pw: "" });
   const [err, setErr] = useState(""); const [loading, setLoading] = useState(false);
@@ -329,7 +384,7 @@ function LoginPage({ onLogin, onSwitch, prefill = "" }) {
         <div className="field"><label>Password</label><input type="password" name="password" autoComplete="current-password" value={f.pw} onChange={set("pw")} placeholder="Your password" /></div>
         <button type="submit" className="btn-full" disabled={loading}>{loading ? "Signing in…" : "Sign in →"}</button>
       </form>
-      <div className="auth-sw">No account yet? <a onClick={() => onSwitch("signup")}>Create one</a></div>
+      <div className="auth-sw">No account yet? <a onClick={() => onSwitch("signup")}>Create one</a> · <a onClick={() => onSwitch("forgot")}>Forgot password?</a></div>
     </div></div>
   );
 }
@@ -1980,6 +2035,7 @@ export default function App() {
 
   if (!user) {
     if (authMode === "signup") return <><style>{CSS}</style><SignUpPage onSwitch={handleSwitch} /></>;
+    if (authMode === "forgot") return <><style>{CSS}</style><ForgotPasswordPage onSwitch={handleSwitch} /></>;
     return <><style>{CSS}</style><LoginPage onLogin={handleLogin} onSwitch={handleSwitch} prefill={prefill} /></>;
   }
   if (loadingProfile) return (
