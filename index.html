@@ -197,10 +197,11 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
 .module-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
 .module-tag{font-size:10px;padding:3px 9px;border-radius:100px;background:var(--surface2);color:var(--textDim);}
 .module-tag.filled{background:var(--tealGlow);color:var(--tealLt);}
-.form-section{margin-bottom:20px;background:var(--white);border-radius:var(--radius-lg);padding:20px 24px;border:1px solid var(--border);}
+.form-section{margin-bottom:20px;background:var(--white);border-radius:var(--radius-lg);padding:20px 24px;border:1px solid var(--border);max-width:860px;}
 .form-section-title{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--textHint);font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
 .form-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-grid.cols-4{grid-template-columns:repeat(4,1fr);}
 .form-grid.cols-3{grid-template-columns:1fr 1fr 1fr;}
 .form-grid.cols-1{grid-template-columns:1fr;}
 .form-field{display:flex;flex-direction:column;gap:7px;}
@@ -559,7 +560,7 @@ body{background:var(--ink);color:var(--text);font-family:'Outfit',sans-serif;fon
             <div class="form-field"><label class="field-label">Legal Middle Name</label><input class="field-input" id="f-legal_middle" type="text" placeholder="Optional"></div>
             <div class="form-field"><label class="field-label">Legal Last Name</label><input class="field-input" id="f-legal_last" type="text" placeholder="As on passport"></div>
           </div>
-          <div class="form-grid" style="margin-top:14px">
+          <div class="form-grid cols-4" style="margin-top:14px">
             <div class="form-field"><label class="field-label">Date of Birth</label><input class="field-input" id="f-dob" type="date"></div>
             <div class="form-field"><label class="field-label">Nationality</label><input class="field-input" id="f-nationality" type="text" placeholder="e.g. United States"></div>
             <div class="form-field"><label class="field-label">Gender (as on travel docs)</label><select class="field-select" id="f-gender_code"><option value="M">Male</option><option value="F">Female</option><option value="X">X / Unspecified</option></select></div>
