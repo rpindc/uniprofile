@@ -6,18 +6,19 @@ const REGION = import.meta.env.VITE_REGION || "us-east-1";
 const COGNITO_URL = `https://cognito-idp.${REGION}.amazonaws.com/`;
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;800;900&family=Outfit:wght@400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#F7F8FC;--surface:#FFFFFF;--surface2:#F0F2F9;
-  --border:#E4E7F0;--border2:#CDD2E6;
-  --ink:#0F1523;--ink2:#374151;--muted:#7B8494;--hint:#A8B0C0;
-  --indigo:#4F46E5;--indigo-light:#818CF8;--indigo-xlight:#EEF2FF;--indigo-surface:#E0E7FF;
+  --bg:#F7F6F3;--surface:#FFFFFF;--surface2:#F5F4F1;
+  --border:#E7E5E4;--border2:#D6D3D1;
+  --ink:#1C1917;--ink2:#44403C;--muted:#78716C;--hint:#A8A29E;
+  --indigo:#B45309;--indigo-light:#D97706;--indigo-xlight:#FEF3C7;--indigo-surface:#FDE68A;
   --emerald:#10B981;--emerald-light:#34D399;--emerald-xlight:#D1FAE5;
-  --amber:#F59E0B;--amber-xlight:#FEF3C7;
+  --amber:#F59E0B;--amber-xlight:#FFFBEB;
   --rose:#F43F5E;--rose-xlight:#FFF1F2;
   --purple:#7C3AED;--purple-xlight:#F5F3FF;
-  --display:'Nunito',sans-serif;--sans:'Plus Jakarta Sans',sans-serif;--mono:'JetBrains Mono',monospace;
+  --sidebar:#FBFAF8;
+  --display:'Playfair Display',Georgia,serif;--sans:'DM Sans',system-ui,sans-serif;--ui:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;
   --r-sm:8px;--r-md:12px;--r-lg:16px;--r-xl:20px;--r-pill:50px;
 }
 body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh}
@@ -25,30 +26,37 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14p
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .fade-up{animation:fadeUp 0.22s ease both}
 .app{display:flex;min-height:100vh}
-.main{flex:1;overflow-y:auto;padding:32px 36px;height:100vh;max-width:100%}
+.app-right{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.main{flex:1;overflow-y:auto;padding:32px 36px;max-width:100%}
+
+.topbar{padding:12px 36px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.topbar-left{font-family:var(--mono);font-size:10px;color:var(--hint);letter-spacing:1px;text-transform:uppercase}
+.bleisure-wrap{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-pill);overflow:hidden;padding:3px;gap:1px}
+.bleisure-btn{padding:6px 14px;font-size:11px;font-family:var(--ui);font-weight:600;border:none;background:transparent;color:var(--muted);cursor:pointer;text-align:center;transition:all 0.15s;border-radius:var(--r-pill);letter-spacing:0.02em}
+.bleisure-btn.on{background:var(--indigo);color:#fff;box-shadow:0 2px 8px rgba(180,83,9,0.22)}
 
 .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg)}
-.auth-box{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:48px 44px;width:100%;max-width:440px;box-shadow:0 4px 24px rgba(79,70,229,0.06)}
+.auth-box{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:48px 44px;width:100%;max-width:440px;box-shadow:0 4px 24px rgba(180,83,9,0.06)}
 .auth-wordmark{font-family:var(--display);font-size:28px;font-weight:900;color:var(--ink);letter-spacing:-0.5px;margin-bottom:2px}
 .auth-wordmark span{color:var(--indigo)}
 .auth-tag{font-size:10px;color:var(--muted);font-family:var(--mono);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:32px}
 .auth-h{font-family:var(--display);font-size:22px;font-weight:800;color:var(--ink);margin-bottom:24px;letter-spacing:-0.3px}
 .field{margin-bottom:14px}
-.field label{display:block;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:6px;font-family:var(--ui)}
 .field input,.field select,.field textarea{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r-md);color:var(--ink);font-family:var(--sans);font-size:14px;padding:11px 14px;outline:none;transition:border-color 0.15s,box-shadow 0.15s}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(79,70,229,0.1)}
-.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237B8494' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;appearance:none;padding-right:36px}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--indigo);box-shadow:0 0 0 3px rgba(180,83,9,0.1)}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2378716C' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;appearance:none;padding-right:36px}
 .field textarea{min-height:90px;resize:vertical}
 .g2f{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.btn-full{width:100%;padding:14px;border-radius:var(--r-pill);background:var(--indigo);border:none;color:#fff;font-family:var(--display);font-size:15px;font-weight:700;cursor:pointer;transition:all 0.15s;margin-top:6px}
-.btn-full:hover{background:#3730C8;transform:translateY(-1px);box-shadow:0 4px 16px rgba(79,70,229,0.3)}
+.btn-full{width:100%;padding:14px;border-radius:var(--r-pill);background:var(--indigo);border:none;color:#fff;font-family:var(--ui);font-size:15px;font-weight:700;cursor:pointer;transition:all 0.15s;margin-top:6px;letter-spacing:0.01em}
+.btn-full:hover{background:#92400E;transform:translateY(-1px);box-shadow:0 4px 16px rgba(180,83,9,0.3)}
 .btn-full:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none}
 .auth-sw{text-align:center;margin-top:20px;font-size:13px;color:var(--muted)}
 .auth-sw a{color:var(--indigo);cursor:pointer;font-weight:600;text-decoration:none}
 .auth-sw a:hover{text-decoration:underline}
 .err{background:var(--rose-xlight);border:1px solid rgba(244,63,94,0.25);border-radius:var(--r-md);padding:11px 16px;font-size:13px;color:var(--rose);margin-bottom:14px}
 
-.sidebar{width:236px;min-width:236px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;position:sticky;top:0;overflow:hidden}
+.sidebar{width:248px;min-width:248px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;position:sticky;top:0;overflow-y:auto;overflow-x:hidden}
 .logo-area{padding:22px 20px 16px;border-bottom:1px solid var(--border)}
 .logotype{font-family:var(--display);font-size:22px;font-weight:900;letter-spacing:-0.5px;color:var(--ink)}
 .logotype span{color:var(--indigo)}
@@ -56,18 +64,16 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14p
 .uuid-chip{margin:12px 14px;padding:10px 12px;background:var(--indigo-xlight);border:1px solid var(--indigo-surface);border-radius:var(--r-md)}
 .uuid-lbl{font-size:8px;letter-spacing:1.2px;text-transform:uppercase;color:var(--indigo-light);font-family:var(--mono);font-weight:500}
 .uuid-val{font-family:var(--mono);font-size:8.5px;color:var(--indigo);word-break:break-all;margin-top:3px;line-height:1.6}
-.ctx-row{margin:0 14px 12px;display:flex;background:var(--bg);border:1px solid var(--border);border-radius:var(--r-pill);overflow:hidden;padding:3px}
-.ctx-btn{flex:1;padding:6px 4px;font-size:10px;font-family:var(--display);font-weight:700;border:none;background:transparent;color:var(--muted);cursor:pointer;text-align:center;transition:all 0.15s;border-radius:var(--r-pill)}
-.ctx-btn.on{background:var(--indigo);color:#fff;box-shadow:0 2px 8px rgba(79,70,229,0.25)}
 .nav-sec{font-size:9px;text-transform:uppercase;letter-spacing:1.4px;color:var(--hint);font-family:var(--mono);font-weight:500;padding:14px 20px 6px}
-.nav-item{display:flex;align-items:center;gap:10px;padding:9px 14px;margin:1px 8px;cursor:pointer;border-radius:var(--r-md);font-size:13px;font-weight:500;color:var(--muted);transition:all 0.12s}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 14px;margin:1px 8px;cursor:pointer;border-radius:var(--r-md);font-size:13px;font-weight:500;color:var(--muted);transition:all 0.12s;font-family:var(--sans);position:relative;overflow:visible}
 .nav-item:hover{background:var(--bg);color:var(--ink)}
 .nav-item.on{background:var(--indigo-xlight);color:var(--indigo);font-weight:600}
+.nav-item.on::before{content:'';position:absolute;left:-8px;top:4px;bottom:4px;width:2.5px;background:var(--indigo);border-radius:0 2px 2px 0}
 .nav-icon{width:28px;height:28px;border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;font-size:13px;background:var(--bg);flex-shrink:0;transition:background 0.12s}
 .nav-item.on .nav-icon{background:var(--indigo-surface)}
 .sidebar-foot{margin-top:auto;padding:14px 16px;border-top:1px solid var(--border)}
 .user-pill{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 10px;background:var(--bg);border-radius:var(--r-md)}
-.user-avatar{width:28px;height:28px;border-radius:50%;background:var(--indigo);color:#fff;font-family:var(--display);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.user-avatar{width:28px;height:28px;border-radius:50%;background:var(--indigo);color:#fff;font-family:var(--ui);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .user-email{font-size:11px;color:var(--muted);font-family:var(--mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .signout-btn{width:100%;padding:8px;border-radius:var(--r-md);background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;transition:all 0.12s}
 .signout-btn:hover{border-color:var(--rose);color:var(--rose);background:var(--rose-xlight)}
@@ -82,11 +88,12 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14p
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
 .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 
-.stat{border-radius:var(--r-xl);padding:18px 20px}
-.stat-indigo{background:var(--indigo-xlight);border:1.5px solid var(--indigo-surface)}
-.stat-emerald{background:var(--emerald-xlight);border:1.5px solid #A7F3D0}
-.stat-amber{background:var(--amber-xlight);border:1.5px solid #FCD34D}
-.stat-gray{background:var(--bg);border:1px solid var(--border)}
+.stat{border-radius:var(--r-xl);padding:18px 20px;position:relative;overflow:hidden}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--r-xl) var(--r-xl) 0 0}
+.stat-indigo{background:var(--indigo-xlight);border:1.5px solid var(--indigo-surface)}.stat-indigo::after{background:var(--indigo)}
+.stat-emerald{background:var(--emerald-xlight);border:1.5px solid #A7F3D0}.stat-emerald::after{background:var(--emerald)}
+.stat-amber{background:var(--amber-xlight);border:1.5px solid #FCD34D}.stat-amber::after{background:var(--amber)}
+.stat-gray{background:var(--bg);border:1px solid var(--border)}.stat-gray::after{background:var(--border2)}
 .slbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;font-family:var(--mono)}
 .sval{font-family:var(--display);font-size:24px;font-weight:900;line-height:1.1;margin-top:6px;letter-spacing:-0.5px}
 .ssub{font-size:11px;margin-top:3px;font-weight:500}
@@ -97,12 +104,12 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14p
 
 .fr{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
 .fr:last-child{border-bottom:none}
-.fl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted)}
+.fl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);font-family:var(--ui)}
 .fv{font-size:13px;color:var(--ink);text-align:right;font-family:var(--mono)}
 
-.badge{display:inline-flex;align-items:center;font-size:11px;font-family:var(--sans);font-weight:600;padding:4px 10px;border-radius:var(--r-pill)}
+.badge{display:inline-flex;align-items:center;font-size:11px;font-family:var(--ui);font-weight:600;padding:4px 10px;border-radius:var(--r-pill)}
 .bg{background:var(--emerald-xlight);color:#065F46}
-.bb{background:var(--indigo-xlight);color:#3730A3}
+.bb{background:var(--indigo-xlight);color:#92400E}
 .bw{background:var(--amber-xlight);color:#92400E}
 .bd{background:var(--rose-xlight);color:#BE123C}
 .bp{background:var(--purple-xlight);color:#5B21B6}
@@ -122,15 +129,15 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14p
 .empty-title{font-family:var(--display);font-size:20px;font-weight:800;margin-bottom:8px;color:var(--ink);letter-spacing:-0.3px}
 .empty-sub{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.7;max-width:400px;margin-left:auto;margin-right:auto}
 
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--r-pill);border:1.5px solid var(--border);background:var(--surface);color:var(--ink2);font-size:13px;font-family:var(--sans);font-weight:600;cursor:pointer;transition:all 0.12s;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--r-pill);border:1.5px solid var(--border);background:var(--surface);color:var(--ink2);font-size:13px;font-family:var(--ui);font-weight:600;cursor:pointer;transition:all 0.12s;white-space:nowrap}
 .btn:hover{border-color:var(--indigo);color:var(--indigo);background:var(--indigo-xlight)}
 .btn-p{background:var(--indigo);border-color:var(--indigo);color:#fff}
-.btn-p:hover{background:#3730C8;border-color:#3730C8;box-shadow:0 4px 14px rgba(79,70,229,0.25)}
+.btn-p:hover{background:#92400E;border-color:#92400E;box-shadow:0 4px 14px rgba(180,83,9,0.25)}
 .btn-d{border-color:rgba(244,63,94,0.3);color:var(--rose)}
 .btn-d:hover{background:var(--rose-xlight);border-color:var(--rose)}
 .btn-sm{padding:6px 12px;font-size:11px}
 
-.modal-bg{position:fixed;inset:0;background:rgba(15,21,35,0.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:24px;backdrop-filter:blur(6px)}
+.modal-bg{position:fixed;inset:0;background:rgba(28,25,23,0.5);display:flex;align-items:center;justify-content:center;z-index:200;padding:24px;backdrop-filter:blur(6px)}
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:24px;padding:32px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,0.12)}
 .modal-title{font-family:var(--display);font-size:22px;font-weight:800;margin-bottom:24px;letter-spacing:-0.4px;color:var(--ink)}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:16px;border-top:1px solid var(--border)}
@@ -143,17 +150,51 @@ body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14p
 .t-on{background:var(--emerald)}.t-on::after{left:19px}
 .t-off{background:var(--border2)}.t-off::after{left:3px}
 
-.wizard{max-width:580px;margin:0 auto}
-.wstep{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:28px 32px;margin-bottom:16px}
+.wizard-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:24px}
+.wizard{width:100%;max-width:580px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);padding:36px 40px;max-height:90vh;overflow-y:auto}
+.wstep{background:var(--bg);border:1px solid var(--border);border-radius:var(--r-xl);padding:28px 32px;margin-bottom:16px}
 .wnum{font-family:var(--mono);font-size:10px;color:var(--indigo);font-weight:500;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px}
 .wtitle{font-family:var(--display);font-size:20px;font-weight:800;margin-bottom:22px;letter-spacing:-0.3px;color:var(--ink)}
 
 .consent-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);gap:16px}
 .consent-row:last-child{border-bottom:none}
+.access-entry{display:flex;align-items:flex-start;gap:14px;padding:13px 0;border-bottom:1px solid var(--border)}
+.access-entry:last-child{border-bottom:none}
+.access-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.access-fields{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.access-field{font-size:10px;font-family:var(--mono);background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:1px 6px;color:var(--muted)}
 
-.info-box{background:var(--indigo-xlight);border:1px solid var(--indigo-surface);border-radius:var(--r-md);padding:12px 16px;font-size:12px;color:#3730A3;margin-top:6px;line-height:1.6}
+.info-box{background:var(--indigo-xlight);border:1px solid var(--indigo-surface);border-radius:var(--r-md);padding:12px 16px;font-size:12px;color:#92400E;margin-top:6px;line-height:1.6}
 
 .loyalty-card-visual{background:var(--indigo);border-radius:var(--r-lg);padding:14px 18px;color:#fff;position:relative;overflow:hidden;flex-shrink:0}
+
+.alert-banner{padding:13px 16px;border-radius:var(--r-lg);margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;cursor:default}
+.alert-warning{background:var(--amber-xlight);border:1px solid rgba(245,158,11,0.3)}
+.alert-danger{background:var(--rose-xlight);border:1px solid rgba(244,63,94,0.25)}
+.alert-info{background:var(--indigo-xlight);border:1px solid var(--indigo-surface)}
+.alert-icon{font-size:17px;flex-shrink:0;margin-top:1px}
+.alert-title{font-weight:700;font-size:13px;color:var(--ink);margin-bottom:1px}
+.alert-sub{font-size:12px;color:var(--muted);line-height:1.5}
+.feature-spotlight{background:linear-gradient(135deg,#B45309 0%,#92400E 100%);border-radius:var(--r-xl);padding:22px 24px;color:#fff;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.spotlight-title{font-family:var(--display);font-size:17px;font-weight:800;letter-spacing:-0.3px;margin-bottom:4px}
+.spotlight-sub{font-size:12px;opacity:0.8;line-height:1.5}
+.btn-white{background:rgba(255,255,255,0.18);border:1.5px solid rgba(255,255,255,0.4);color:#fff;padding:9px 18px;border-radius:var(--r-pill);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all 0.15s;font-family:var(--ui)}
+.btn-white:hover{background:rgba(255,255,255,0.3)}
+.timatic-result{border-radius:var(--r-lg);padding:18px 20px;margin-top:14px;animation:fadeUp 0.2s ease both}
+.timatic-ok{background:var(--emerald-xlight);border:1px solid #A7F3D0}
+.timatic-warn{background:var(--amber-xlight);border:1px solid rgba(245,158,11,0.3)}
+.timatic-fail{background:var(--rose-xlight);border:1px solid rgba(244,63,94,0.25)}
+.timatic-unk{background:var(--bg);border:1px solid var(--border)}
+.timatic-heading{font-family:var(--display);font-weight:800;font-size:15px;margin-bottom:8px}
+.timatic-req{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:12px 14px;margin-top:10px;font-size:12px;line-height:1.9;color:var(--ink2)}
+.exp-bar{height:5px;border-radius:3px;overflow:hidden;background:var(--bg);border:1px solid var(--border);margin-top:6px}
+.exp-fill{height:100%;border-radius:3px;transition:width 0.4s}
+.vault-doc{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r-xl);padding:20px 22px;margin-bottom:12px}
+.vault-doc.exp-soon{border-color:rgba(245,158,11,0.5)}
+.vault-doc.exp-critical{border-color:rgba(244,63,94,0.4)}
+.nav-badge{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--rose);margin-left:7px;vertical-align:middle;flex-shrink:0}
+.mod-num{font-size:10px;font-weight:700;font-family:var(--mono);color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 5px;margin-left:auto;flex-shrink:0}
+.nav-item.on .mod-num{color:var(--indigo);background:var(--indigo-xlight);border-color:var(--indigo-surface)}
 `;
 
 async function cognitoReq(action, body) {
@@ -307,43 +348,62 @@ function SetupWizard({ user, onComplete }) {
     setLoading(false);
   };
   return (
-    <div className="main"><div className="wizard fade-up">
-      <div style={{ marginBottom: 32 }}>
-        <div style={{ fontFamily: "var(--display)", fontSize: 30, fontWeight: 900, letterSpacing: "-0.5px", color: "var(--ink)", marginBottom: 8 }}>Welcome to UniProfile 🛫</div>
-        <div style={{ fontSize: 14, color: "var(--muted)" }}>Set up your passenger identity — takes 2 minutes</div>
+    <div className="wizard-overlay">
+      <div className="wizard fade-up">
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ fontFamily: "var(--display)", fontSize: 28, fontWeight: 900, letterSpacing: "-0.5px", color: "var(--ink)", marginBottom: 6 }}>Welcome to UniProfile 🛫</div>
+          <div style={{ fontSize: 14, color: "var(--muted)" }}>Set up your passenger identity — takes 2 minutes</div>
+        </div>
+        {err && <div className="err">{err}</div>}
+        <div className="wstep">
+          <div className="wnum">Step 1 of 2</div>
+          <div className="wtitle">Travel documents</div>
+          <div className="g2f">
+            <div className="field"><label>Phone number</label><input value={f.phone} onChange={set("phone")} placeholder="+1 571 555 0192" /></div>
+            <div className="field"><label>Nationality (ISO 3)</label><input value={f.nat} onChange={set("nat")} placeholder="PHL" maxLength={3} /></div>
+          </div>
+          <div className="g2f">
+            <div className="field"><label>Passport number</label><input value={f.passport} onChange={set("passport")} placeholder="P12345678" /></div>
+            <div className="field"><label>Passport expiry</label><input type="date" value={f.exp} onChange={set("exp")} /></div>
+          </div>
+          <div className="field"><label>Date of birth</label><input type="date" value={f.dob} onChange={set("dob")} /></div>
+        </div>
+        <div className="wstep">
+          <div className="wnum">Step 2 of 2</div>
+          <div className="wtitle">Travel preferences</div>
+          <div className="g2f">
+            <div className="field"><label>Preferred seat</label><select value={f.seat} onChange={set("seat")}><option>Window</option><option>Aisle</option><option>Middle</option></select></div>
+            <div className="field"><label>Preferred cabin</label><select value={f.cabin} onChange={set("cabin")}><option>Economy</option><option>Premium Economy</option><option>Business</option><option>First</option></select></div>
+          </div>
+          <div className="g2f">
+            <div className="field"><label>Meal preference</label><select value={f.meal} onChange={set("meal")}><option value="AVML">Asian Vegetarian</option><option value="VGML">Vegan</option><option value="HNML">Hindu</option><option value="MOML">Muslim</option><option value="KSML">Kosher</option><option value="GFML">Gluten Free</option><option value="NLML">No Preference</option></select></div>
+            <div className="field"><label>Travel context</label><select value={f.ctx} onChange={set("ctx")}><option value="leisure">Leisure</option><option value="business">Business</option><option value="bleisure">Bleisure</option></select></div>
+          </div>
+        </div>
+        <button className="btn-full" onClick={submit} disabled={loading}>{loading ? "Creating your UniProfile…" : "Complete setup →"}</button>
       </div>
-      {err && <div className="err">{err}</div>}
-      <div className="wstep">
-        <div className="wnum">Step 1 of 2</div>
-        <div className="wtitle">Travel documents</div>
-        <div className="g2f">
-          <div className="field"><label>Phone number</label><input value={f.phone} onChange={set("phone")} placeholder="+1 571 555 0192" /></div>
-          <div className="field"><label>Nationality (ISO 3)</label><input value={f.nat} onChange={set("nat")} placeholder="PHL" maxLength={3} /></div>
-        </div>
-        <div className="g2f">
-          <div className="field"><label>Passport number</label><input value={f.passport} onChange={set("passport")} placeholder="P12345678" /></div>
-          <div className="field"><label>Passport expiry</label><input type="date" value={f.exp} onChange={set("exp")} /></div>
-        </div>
-        <div className="field"><label>Date of birth</label><input type="date" value={f.dob} onChange={set("dob")} /></div>
-      </div>
-      <div className="wstep">
-        <div className="wnum">Step 2 of 2</div>
-        <div className="wtitle">Travel preferences</div>
-        <div className="g2f">
-          <div className="field"><label>Preferred seat</label><select value={f.seat} onChange={set("seat")}><option>Window</option><option>Aisle</option><option>Middle</option></select></div>
-          <div className="field"><label>Preferred cabin</label><select value={f.cabin} onChange={set("cabin")}><option>Economy</option><option>Premium Economy</option><option>Business</option><option>First</option></select></div>
-        </div>
-        <div className="g2f">
-          <div className="field"><label>Meal preference</label><select value={f.meal} onChange={set("meal")}><option value="AVML">Asian Vegetarian</option><option value="VGML">Vegan</option><option value="HNML">Hindu</option><option value="MOML">Muslim</option><option value="KSML">Kosher</option><option value="GFML">Gluten Free</option><option value="NLML">No Preference</option></select></div>
-          <div className="field"><label>Travel context</label><select value={f.ctx} onChange={set("ctx")}><option value="leisure">Leisure</option><option value="business">Business</option><option value="bleisure">Bleisure</option></select></div>
-        </div>
-      </div>
-      <button className="btn-full" onClick={submit} disabled={loading}>{loading ? "Creating your UniProfile…" : "Complete setup →"}</button>
-    </div></div>
+    </div>
   );
 }
 
-function Dashboard({ passenger, uuid, onRefresh }) {
+function Dashboard({ passenger, uuid, token, onRefresh, onNavigate }) {
+  const [orders, setOrders] = useState(null);
+
+  useEffect(() => {
+    if (!uuid || !token) return;
+    api(`/orders?uuid=${uuid}`, "GET", null, token).then(d => setOrders(d.orders || [])).catch(() => {});
+  }, [uuid, token]);
+
+  const today = new Date();
+  const passportExpiry = passenger?.passport_expiry ? new Date(passenger.passport_expiry) : null;
+  const daysToExpiry = passportExpiry ? Math.ceil((passportExpiry - today) / 86400000) : null;
+
+  const upcomingTrips = (orders || [])
+    .filter(o => o.departure_date && o.status !== "cancelled")
+    .map(o => ({ ...o, daysAway: Math.ceil((new Date(o.departure_date) - today) / 86400000) }))
+    .filter(o => o.daysAway >= 0 && o.daysAway <= 30)
+    .sort((a, b) => a.daysAway - b.daysAway);
+
   if (!passenger) return (
     <div className="card" style={{ textAlign: "center", padding: "48px 32px" }}>
       <div style={{ fontSize: 40, marginBottom: 16 }}>👤</div>
@@ -359,6 +419,47 @@ function Dashboard({ passenger, uuid, onRefresh }) {
           <div className="ptitle">Hey, {passenger.first_name} 👋</div>
           <div className="psub">Your UniProfile identity dashboard · IATA OneOrder active</div>
         </div>
+      </div>
+
+      {/* ── ALERTS ── */}
+      {daysToExpiry !== null && daysToExpiry <= 180 && (
+        <div className={`alert-banner ${daysToExpiry <= 30 ? "alert-danger" : "alert-warning"}`}>
+          <div className="alert-icon">{daysToExpiry <= 30 ? "🚨" : "⚠️"}</div>
+          <div>
+            <div className="alert-title">{daysToExpiry <= 0 ? "Passport expired" : `Passport expires in ${daysToExpiry} day${daysToExpiry !== 1 ? "s" : ""}`}</div>
+            <div className="alert-sub">
+              {daysToExpiry <= 0 ? "Your passport has expired. Renew it immediately to avoid travel disruption." :
+               daysToExpiry <= 30 ? "Most countries require 6 months validity. Renew before your next trip." :
+               "Your passport expires soon. Check visa validity requirements for upcoming destinations."}
+              {" "}<span style={{ color: "var(--indigo)", cursor: "pointer", fontWeight: 600 }} onClick={() => onNavigate("tripvault")}>Check doc requirements →</span>
+            </div>
+          </div>
+        </div>
+      )}
+      {upcomingTrips.length > 0 && upcomingTrips.map(trip => (
+        <div key={trip.id || trip.pnr} className={`alert-banner ${trip.daysAway <= 3 ? "alert-danger" : "alert-info"}`}>
+          <div className="alert-icon">{trip.daysAway <= 3 ? "✈️" : "📅"}</div>
+          <div>
+            <div className="alert-title">
+              {trip.daysAway === 0 ? "Flight today" : trip.daysAway === 1 ? "Flight tomorrow" : `Flight in ${trip.daysAway} days`}
+              {" · "}{trip.origin || "—"} → {trip.destination || "—"}{trip.airline_code ? ` (${trip.airline_code})` : ""}
+            </div>
+            <div className="alert-sub">
+              {new Date(trip.departure_date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+              {trip.pnr ? ` · PNR: ${trip.pnr}` : ""}
+              {" · "}<span style={{ color: "var(--indigo)", cursor: "pointer", fontWeight: 600 }} onClick={() => onNavigate("tripvault")}>Verify travel docs →</span>
+            </div>
+          </div>
+        </div>
+      ))}
+
+      {/* ── TRIP VAULT SPOTLIGHT ── */}
+      <div className="feature-spotlight">
+        <div>
+          <div className="spotlight-title">🛂 Trip Vault — Document & Visa Check</div>
+          <div className="spotlight-sub">Powered by IATA Timatic · Check entry requirements for any destination instantly</div>
+        </div>
+        <button className="btn-white" onClick={() => onNavigate("tripvault")}>Check my docs</button>
       </div>
       <div className="g4" style={{ marginBottom: 20 }}>
         <div className="stat stat-indigo">
@@ -509,7 +610,7 @@ function Loyalty({ uuid, token }) {
   return (
     <div className="fade-up">
       <div className="ph">
-        <div><div className="ptitle">Loyalty & recognition</div><div className="psub">FFP aggregation · Real-time tier status · UUID-linked rewards</div></div>
+        <div><div className="ptitle">Loyalty & recognition</div><div className="psub">Module 4 · FFP aggregation · Real-time tier status · UUID-linked rewards</div></div>
         <button className="btn btn-p" onClick={() => setModal(true)}>+ Add program</button>
       </div>
       {programs && programs.length > 0 && <div className="g3" style={{ marginBottom: 20 }}>
@@ -581,30 +682,33 @@ function Payment({ uuid, token }) {
     await api("/payment", "POST", { passengerUuid: uuid, cardType: f.type, lastFour: f.last4, expiryMonth: parseInt(f.month) || null, expiryYear: parseInt(f.year) || null, isDefault: f.isDefault }, token);
     setModal(false); setF({ type: "Visa", last4: "", month: "", year: "", isDefault: false }); await load(); setLoading(false);
   };
-  const cardGradient = type => {
-    if (type === "Amex") return "linear-gradient(135deg,#0C6E4E,#1A9E75)";
-    if (type === "Mastercard") return "linear-gradient(135deg,#EB5757,#B33A3A)";
-    return "linear-gradient(135deg,#4F46E5,#7C3AED)";
-  };
+  const cardIcon = type => ({ "Amex": "🟩", "Mastercard": "🔴", "Diners Club": "⬜", "UnionPay": "🟥" }[type] || "💳");
   return (
     <div className="fade-up">
       <div className="ph">
-        <div><div className="ptitle">Payment & settlement</div><div className="psub">IATA PAX · BSP tokenisation · PCI-DSS Level 1 compliant</div></div>
+        <div><div className="ptitle">Payment & settlement</div><div className="psub">Module 5 · IATA PAX · BSP tokenisation · PCI-DSS Level 1 compliant</div></div>
         <button className="btn btn-p" onClick={() => setModal(true)}>+ Add card</button>
       </div>
       {!methods ? <div className="loading"><div className="spinner"></div>Loading payment methods…</div> : methods.length === 0 ?
-        <Empty icon="💳" title="No payment methods" sub="Add a BSP-tokenised payment card. Your card details are never stored — only secure tokens are used for airline settlement." onAdd={() => setModal(true)} addLabel="+ Add card" /> : (
-          <div className="g2">{methods.map(m => (
-            <div key={m.id} style={{ background: cardGradient(m.card_type), borderRadius: "var(--r-xl)", padding: 24, color: "#fff", position: "relative", overflow: "hidden" }}>
-              {m.is_default && <div style={{ position: "absolute", top: 14, right: 14 }}><span style={{ background: "rgba(255,255,255,0.2)", borderRadius: "var(--r-pill)", padding: "3px 10px", fontSize: 10, fontWeight: 700 }}>DEFAULT</span></div>}
-              <div style={{ fontSize: 12, opacity: 0.7, marginBottom: 20, fontFamily: "var(--mono)" }}>{m.card_type}</div>
-              <div style={{ fontFamily: "var(--mono)", fontSize: 20, letterSpacing: 5, marginBottom: 20 }}>•••• •••• •••• {m.last_four}</div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, opacity: 0.85 }}>
-                <div><div style={{ opacity: 0.6, marginBottom: 2, fontSize: 10 }}>Expires</div>{m.expiry_month}/{m.expiry_year}</div>
-                <div style={{ textAlign: "right" }}><div style={{ opacity: 0.6, marginBottom: 2, fontSize: 10 }}>BSP token</div><div style={{ fontSize: 9, fontFamily: "var(--mono)", opacity: 0.7, maxWidth: 140, overflow: "hidden", textOverflow: "ellipsis" }}>{m.bsp_token}</div></div>
+        <Empty icon="💳" title="No payment methods" sub="Add a preferred card reference. Your card details are never stored — only a BSP-tokenised reference is used for airline settlement." onAdd={() => setModal(true)} addLabel="+ Add card" /> : (
+          <div className="card">
+            {methods.map((m, i) => (
+              <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 0", borderBottom: i < methods.length - 1 ? "1px solid var(--border)" : "none" }}>
+                <div style={{ fontSize: 22, flexShrink: 0 }}>{cardIcon(m.card_type)}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <span style={{ fontWeight: 600, fontSize: 14, color: "var(--ink)" }}>{m.card_type}</span>
+                    {m.is_default && <span className="badge bg" style={{ fontSize: 10 }}>Default</span>}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                    Card reference — last 4 digits: <span style={{ fontFamily: "var(--mono)", fontWeight: 700, color: "var(--ink)" }}>{m.last_four || "——"}</span>
+                    {(m.expiry_month && m.expiry_year) && <span style={{ marginLeft: 12 }}>Expires {m.expiry_month}/{m.expiry_year}</span>}
+                  </div>
+                  {m.bsp_token && <div style={{ fontSize: 10, fontFamily: "var(--mono)", color: "var(--hint)", marginTop: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>BSP token: {m.bsp_token}</div>}
+                </div>
               </div>
-            </div>
-          ))}</div>
+            ))}
+          </div>
         )}
       {modal && <Modal title="Add payment card" onClose={() => setModal(false)} onSubmit={save} loading={loading}>
         <div className="field"><label>Card type</label><select value={f.type} onChange={set("type")}><option>Visa</option><option>Mastercard</option><option>Amex</option><option>Diners Club</option><option>UnionPay</option></select></div>
@@ -669,12 +773,29 @@ function Baggage({ uuid, token }) {
   );
 }
 
+const TIME_AGO = ts => {
+  const s = Math.floor((Date.now() - new Date(ts)) / 1000);
+  if (s < 60) return `${s}s ago`;
+  if (s < 3600) return `${Math.floor(s/60)}m ago`;
+  if (s < 86400) return `${Math.floor(s/3600)}h ago`;
+  if (s < 2592000) return `${Math.floor(s/86400)}d ago`;
+  return new Date(ts).toLocaleDateString();
+};
+
 function Consent({ uuid, token }) {
   const [grants, setGrants] = useState(null); const [modal, setModal] = useState(false);
   const [f, setF] = useState({ org: "", type: "AIRLINE", scope: "" });
   const [loading, setLoading] = useState(false);
+  const [accessLog, setAccessLog] = useState(null);
   const set = k => e => setF(p => ({ ...p, [k]: e.target.value }));
-  const load = useCallback(async () => { const d = await api(`/consent?uuid=${uuid}`, "GET", null, token); setGrants(d.grants || []); }, [uuid, token]);
+  const load = useCallback(async () => {
+    const d = await api(`/consent?uuid=${uuid}`, "GET", null, token);
+    setGrants(d.grants || []);
+    try {
+      const al = await api(`/access-log?uuid=${uuid}`, "GET", null, token);
+      setAccessLog(al.events || al.logs || al.access_events || []);
+    } catch { setAccessLog([]); }
+  }, [uuid, token]);
   useEffect(() => { load(); }, [load]);
   const save = async () => {
     if (!f.org || !f.scope) return;
@@ -729,6 +850,76 @@ function Consent({ uuid, token }) {
           {(!grants || grants.length === 0) && <div style={{ color: "var(--hint)" }}>No consent events yet</div>}
         </div>
       </div>
+      <div className="card" style={{ marginTop: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+          <div className="ctitle" style={{ marginBottom: 0 }}>Access history</div>
+          {accessLog && accessLog.length > 0 && <span style={{ fontSize: 11, color: "var(--muted)", fontFamily: "var(--mono)" }}>{accessLog.length} event{accessLog.length !== 1 ? "s" : ""}</span>}
+        </div>
+        <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 14, lineHeight: 1.6 }}>Every time a connected platform reads your profile, it is logged here. You can see exactly who accessed your data, when, and which fields they read.</div>
+        {accessLog === null ? (
+          <div className="loading"><div className="spinner"></div>Loading access history…</div>
+        ) : accessLog.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "28px 0" }}>
+            <div style={{ fontSize: 28, marginBottom: 10 }}>👁</div>
+            <div style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 14, color: "var(--ink)", marginBottom: 6 }}>No access events yet</div>
+            <div style={{ fontSize: 12, color: "var(--muted)", lineHeight: 1.6, maxWidth: 320, margin: "0 auto" }}>When a connected airline, TMC, or airport reads your profile data, the event will appear here with a full field-level breakdown.</div>
+          </div>
+        ) : (
+          accessLog.map((ev, i) => {
+            const fields = Array.isArray(ev.fields_accessed) ? ev.fields_accessed
+              : typeof ev.fields_accessed === "string" ? ev.fields_accessed.split(",").map(s => s.trim())
+              : ev.data_scope ? ev.data_scope.split(",").map(s => s.trim())
+              : [];
+            const authorized = ev.status !== "unauthorized" && ev.status !== "denied";
+            return (
+              <div key={ev.id || i} className="access-entry">
+                <div className="access-dot" style={{ background: authorized ? "var(--emerald)" : "var(--rose)" }} />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: 8, flexWrap: "wrap" }}>
+                    <span style={{ fontWeight: 600, fontSize: 13, color: "var(--ink)" }}>{ev.organisation || ev.org || ev.platform || "Unknown platform"}</span>
+                    <span className={`badge ${authorized ? "bg" : "br"}`} style={{ fontSize: 10 }}>{authorized ? "READ" : "DENIED"}</span>
+                    {ev.organisation_type && <span className="badge bm" style={{ fontSize: 10 }}>{ev.organisation_type}</span>}
+                  </div>
+                  {fields.length > 0 && (
+                    <div className="access-fields">
+                      {fields.map((f, fi) => <span key={fi} className="access-field">{f}</span>)}
+                    </div>
+                  )}
+                  {!fields.length && ev.data_scope && <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>{ev.data_scope}</div>}
+                </div>
+                <div style={{ flexShrink: 0, textAlign: "right" }}>
+                  <div style={{ fontSize: 11, fontFamily: "var(--mono)", color: "var(--muted)", whiteSpace: "nowrap" }}>{TIME_AGO(ev.accessed_at || ev.created_at || ev.timestamp)}</div>
+                  <div style={{ fontSize: 10, color: "var(--hint)", marginTop: 2 }}>{new Date(ev.accessed_at || ev.created_at || ev.timestamp).toLocaleString()}</div>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+      <div className="card" style={{ marginTop: 16, border: "1px solid var(--border)" }}>
+        <div className="ctitle">Privacy &amp; data rights</div>
+        <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 16, lineHeight: 1.7 }}>You have statutory rights over your personal data under the General Data Protection Regulation. UniProfile honours all GDPR data subject rights upon request.</div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: 220, background: "var(--indigo-xlight)", border: "1px solid var(--indigo-surface)", borderRadius: "var(--r-lg)", padding: "16px 18px" }}>
+            <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 14, color: "var(--indigo)", marginBottom: 4 }}>📤 Export my data</div>
+            <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 12, lineHeight: 1.6 }}>Download a full copy of your UniProfile record as JSON. <span style={{ fontWeight: 600, color: "var(--ink)" }}>GDPR Article 20</span> — right to data portability.</div>
+            <button className="btn btn-p" style={{ fontSize: 12, padding: "7px 14px" }} onClick={() => {
+              const blob = new Blob([JSON.stringify({ uuid, passenger, consentGrants: grants, exportedAt: new Date().toISOString(), gdprBasis: "Article 20 — Right to data portability" }, null, 2)], { type: "application/json" });
+              const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `uniprofile-${uuid || "data"}.json`; a.click(); URL.revokeObjectURL(a.href);
+            }}>Download JSON</button>
+          </div>
+          <div style={{ flex: 1, minWidth: 220, background: "var(--rose-xlight)", border: "1px solid rgba(244,63,94,0.2)", borderRadius: "var(--r-lg)", padding: "16px 18px" }}>
+            <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 14, color: "var(--rose)", marginBottom: 4 }}>🗑 Delete account</div>
+            <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 12, lineHeight: 1.6 }}>Permanently erase your UUID, profile, and all associated data. <span style={{ fontWeight: 600, color: "var(--ink)" }}>GDPR Article 17</span> — right to erasure.</div>
+            <button className="btn" style={{ fontSize: 12, padding: "7px 14px", background: "var(--rose)", color: "#fff", border: "none", borderRadius: "var(--r-md)", cursor: "pointer", fontFamily: "var(--sans)", fontWeight: 600 }} onClick={async () => {
+              if (!window.confirm("Permanently delete your UniProfile account and all data? This cannot be undone.")) return;
+              const confirm2 = window.prompt('Type "DELETE" to confirm erasure of all your data.');
+              if (confirm2 !== "DELETE") return;
+              try { await api(`/passengers/${uuid}`, "DELETE", null, token); window.location.reload(); } catch { window.alert("Deletion request submitted. Your data will be erased within 30 days per GDPR Article 17."); }
+            }}>Delete account</button>
+          </div>
+        </div>
+      </div>
       {modal && <Modal title="Grant data consent" onClose={() => setModal(false)} onSubmit={save} loading={loading} submitLabel="Grant consent">
         <div className="field"><label>Organisation</label>
           <input value={f.org} onChange={set("org")} placeholder="Emirates Airlines" list="org-list" />
@@ -745,7 +936,7 @@ function Consent({ uuid, token }) {
 function SeatAncillary({ passenger }) {
   return (
     <div className="fade-up">
-      <div className="ph"><div><div className="ptitle">Seat & ancillary</div><div className="psub">EMD-S · IATA PADIS · Personalised upsell engine</div></div></div>
+      <div className="ph"><div><div className="ptitle">Seat & ancillary</div><div className="psub">Module 2 · EMD-S · IATA PADIS · Personalised upsell engine</div></div></div>
       <div className="card">
         <div className="ctitle">Your preferences — auto-applied to NDC offers</div>
         <div className="g2">
@@ -802,6 +993,61 @@ function Disruption() {
             </div>
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+function IdentityDocs({ passenger, onNavigate }) {
+  const pp = passenger?.passport_number;
+  const exp = passenger?.passport_expiry;
+  const nat = passenger?.nationality;
+  const daysLeft = exp ? Math.floor((new Date(exp) - new Date()) / 86400000) : null;
+  const expColor = daysLeft === null ? "var(--ink)" : daysLeft <= 30 ? "var(--rose)" : daysLeft <= 90 ? "var(--amber)" : "var(--emerald)";
+  return (
+    <div className="fade-up">
+      <div className="ph"><div><div className="ptitle">Identity &amp; Documents</div><div className="psub">Module 1 · Passport · Visa · Travel documents · ICAO 9303</div></div></div>
+      <div className="vault-doc" style={{ borderColor: daysLeft !== null && daysLeft <= 90 ? (daysLeft <= 30 ? "rgba(244,63,94,0.4)" : "rgba(245,158,11,0.5)") : "var(--border)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
+          <div style={{ fontSize: 32 }}>🛂</div>
+          <div>
+            <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 15, color: "var(--ink)" }}>Passport</div>
+            <div style={{ fontSize: 12, color: "var(--muted)" }}>Primary travel document · ICAO 9303</div>
+          </div>
+          {daysLeft !== null && daysLeft <= 180 && (
+            <span className={`badge ${daysLeft <= 30 ? "br" : "ba"}`} style={{ marginLeft: "auto" }}>
+              {daysLeft <= 0 ? "Expired" : `${daysLeft}d left`}
+            </span>
+          )}
+        </div>
+        <div className="g3" style={{ gap: 12 }}>
+          {[
+            { label: "Passport No.", value: pp || "—" },
+            { label: "Nationality", value: nat || "—" },
+            { label: "Expiry", value: exp || "—" },
+          ].map(f => (
+            <div key={f.label}>
+              <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 3 }}>{f.label}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: f.label === "Expiry" ? expColor : "var(--ink)" }}>{f.value}</div>
+            </div>
+          ))}
+        </div>
+        {daysLeft !== null && (
+          <div className="exp-bar" style={{ marginTop: 14 }}>
+            <div className="exp-fill" style={{ width: `${Math.max(0, Math.min(100, (daysLeft / 365) * 100))}%`, background: expColor }} />
+          </div>
+        )}
+      </div>
+      <div className="card">
+        <div className="ctitle">Visa &amp; entry requirements</div>
+        <div style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.8 }}>
+          Use <strong>Trip Vault</strong> to check real-time visa and entry requirements for your upcoming trips. Powered by IATA Timatic — the same system airlines and border agencies rely on.
+        </div>
+        <button className="btn-primary" style={{ marginTop: 14 }} onClick={() => onNavigate?.("tripvault")}>Open Trip Vault →</button>
+      </div>
+      <div className="card">
+        <div className="ctitle">Document compliance</div>
+        <div style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.8 }}>Your travel documents are verified against ICAO 9303 machine-readable passport standards. NFC ePassport chip data is cross-referenced with the stored record to detect tampering.</div>
       </div>
     </div>
   );
@@ -892,7 +1138,7 @@ function JourneyMap({ uuid, token, passenger }) {
 
   // ── PERSONALITY ────────────────────────────────────────────────────────────
   const getPersonality = () => {
-    if (businessTrips > leisureTrips * 2) return { label: "Road warrior", sub: "Always on the move for work", color: "#4F46E5" };
+    if (businessTrips > leisureTrips * 2) return { label: "Road warrior", sub: "Always on the move for work", color: "#B45309" };
     if (leisureTrips > businessTrips * 2) return { label: "Adventure seeker", sub: "Travel is your favourite hobby", color: "#10B981" };
     if (destinations.length > 8) return { label: "World explorer", sub: "Collecting stamps across continents", color: "#7C3AED" };
     return { label: "Bleisure pro", sub: "Work hard, travel smart", color: "#F59E0B" };
@@ -915,7 +1161,7 @@ function JourneyMap({ uuid, token, passenger }) {
     .sort((a, b) => new Date(b.departure_date) - new Date(a.departure_date));
 
   const cabinColor = c => ({
-    "First": "#7C3AED", "Business": "#4F46E5",
+    "First": "#7C3AED", "Business": "#B45309",
     "Premium Economy": "#10B981", "Economy": "#6B7280"
   }[c] || "#6B7280");
 
@@ -977,9 +1223,9 @@ function JourneyMap({ uuid, token, passenger }) {
           <div style={{ padding: "14px 20px 8px", borderBottom: "1px solid var(--border)" }}>
             <div className="ctitle" style={{ marginBottom: 0 }}>Flight routes · {routes.length} segments · {visitedCodes.length} airports</div>
           </div>
-          <svg width="100%" viewBox="0 0 600 320" style={{ display: "block", background: "#F0F4FF" }}>
+          <svg width="100%" viewBox="0 0 600 320" style={{ display: "block", background: "#F5F3EF" }}>
             {/* World outline — simplified continents */}
-            <path fill="#DDE3F4" stroke="#C8D0EA" strokeWidth="0.5" d="
+            <path fill="#E5E0D8" stroke="#D4CEC4" strokeWidth="0.5" d="
               M60,80 L90,70 L120,65 L150,68 L170,75 L180,85 L175,100 L160,110 L140,115 L120,112 L100,108 L80,100 L60,90 Z
               M185,68 L220,60 L260,55 L300,58 L330,62 L340,70 L335,82 L320,90 L295,95 L265,92 L240,88 L215,82 L190,78 Z
               M305,95 L330,90 L355,92 L375,100 L385,112 L380,125 L365,132 L345,130 L325,122 L310,110 Z
@@ -996,7 +1242,7 @@ function JourneyMap({ uuid, token, passenger }) {
             {routes.map((r, i) => {
               const a = AIRPORTS[r.from], b = AIRPORTS[r.to];
               if (!a || !b) return null;
-              const col = r.context === "business" ? "#4F46E5" : r.context === "leisure" ? "#10B981" : "#F59E0B";
+              const col = r.context === "business" ? "#B45309" : r.context === "leisure" ? "#10B981" : "#F59E0B";
               return <path key={i} d={arcPath(a.x,a.y,b.x,b.y)} fill="none" stroke={col} strokeWidth="1.5" strokeOpacity="0.6" strokeLinecap="round"/>;
             })}
             {/* Airport dots */}
@@ -1005,15 +1251,15 @@ function JourneyMap({ uuid, token, passenger }) {
               if (!pt) return null;
               return (
                 <g key={code}>
-                  <circle cx={pt.x} cy={pt.y} r="4" fill="#4F46E5" fillOpacity="0.15" stroke="#4F46E5" strokeWidth="1"/>
-                  <circle cx={pt.x} cy={pt.y} r="2" fill="#4F46E5"/>
+                  <circle cx={pt.x} cy={pt.y} r="4" fill="#B45309" fillOpacity="0.15" stroke="#B45309" strokeWidth="1"/>
+                  <circle cx={pt.x} cy={pt.y} r="2" fill="#B45309"/>
                   <text x={pt.x+5} y={pt.y+4} fontSize="7" fill="#374151" fontFamily="monospace" fontWeight="600">{code}</text>
                 </g>
               );
             })}
           </svg>
           <div style={{ padding: "10px 20px 14px", display: "flex", gap: 20, fontSize: 12, color: "var(--muted)" }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ width: 16, height: 2, background: "#4F46E5", display: "inline-block", borderRadius: 1 }}></span>Business</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ width: 16, height: 2, background: "#B45309", display: "inline-block", borderRadius: 1 }}></span>Business</span>
             <span style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ width: 16, height: 2, background: "#10B981", display: "inline-block", borderRadius: 1 }}></span>Leisure</span>
             <span style={{ display: "flex", alignItems: "center", gap: 5 }}><span style={{ width: 16, height: 2, background: "#F59E0B", display: "inline-block", borderRadius: 1 }}></span>Bleisure</span>
           </div>
@@ -1154,15 +1400,549 @@ function JourneyMap({ uuid, token, passenger }) {
   );
 }
 
+const COUNTRIES = [
+  { code: "AF", name: "Afghanistan" }, { code: "AL", name: "Albania" }, { code: "DZ", name: "Algeria" },
+  { code: "AR", name: "Argentina" }, { code: "AU", name: "Australia" }, { code: "AT", name: "Austria" },
+  { code: "AZ", name: "Azerbaijan" }, { code: "BH", name: "Bahrain" }, { code: "BD", name: "Bangladesh" },
+  { code: "BE", name: "Belgium" }, { code: "BZ", name: "Belize" }, { code: "BT", name: "Bhutan" },
+  { code: "BO", name: "Bolivia" }, { code: "BA", name: "Bosnia and Herzegovina" }, { code: "BR", name: "Brazil" },
+  { code: "BN", name: "Brunei" }, { code: "BG", name: "Bulgaria" }, { code: "KH", name: "Cambodia" },
+  { code: "CA", name: "Canada" }, { code: "CN", name: "China" }, { code: "CO", name: "Colombia" },
+  { code: "CR", name: "Costa Rica" }, { code: "HR", name: "Croatia" }, { code: "CU", name: "Cuba" },
+  { code: "CY", name: "Cyprus" }, { code: "CZ", name: "Czech Republic" }, { code: "DK", name: "Denmark" },
+  { code: "DO", name: "Dominican Republic" }, { code: "EC", name: "Ecuador" }, { code: "EG", name: "Egypt" },
+  { code: "SV", name: "El Salvador" }, { code: "EE", name: "Estonia" }, { code: "ET", name: "Ethiopia" },
+  { code: "FI", name: "Finland" }, { code: "FR", name: "France" }, { code: "DE", name: "Germany" },
+  { code: "GH", name: "Ghana" }, { code: "GR", name: "Greece" }, { code: "GT", name: "Guatemala" },
+  { code: "HN", name: "Honduras" }, { code: "HK", name: "Hong Kong" }, { code: "HU", name: "Hungary" },
+  { code: "IS", name: "Iceland" }, { code: "IN", name: "India" }, { code: "ID", name: "Indonesia" },
+  { code: "IR", name: "Iran" }, { code: "IQ", name: "Iraq" }, { code: "IE", name: "Ireland" },
+  { code: "IL", name: "Israel" }, { code: "IT", name: "Italy" }, { code: "JM", name: "Jamaica" },
+  { code: "JP", name: "Japan" }, { code: "JO", name: "Jordan" }, { code: "KZ", name: "Kazakhstan" },
+  { code: "KE", name: "Kenya" }, { code: "KW", name: "Kuwait" }, { code: "KG", name: "Kyrgyzstan" },
+  { code: "LA", name: "Laos" }, { code: "LV", name: "Latvia" }, { code: "LB", name: "Lebanon" },
+  { code: "LT", name: "Lithuania" }, { code: "LU", name: "Luxembourg" }, { code: "MO", name: "Macau" },
+  { code: "MY", name: "Malaysia" }, { code: "MV", name: "Maldives" }, { code: "MT", name: "Malta" },
+  { code: "MX", name: "Mexico" }, { code: "MD", name: "Moldova" }, { code: "MN", name: "Mongolia" },
+  { code: "MA", name: "Morocco" }, { code: "MZ", name: "Mozambique" }, { code: "MM", name: "Myanmar" },
+  { code: "NA", name: "Namibia" }, { code: "NP", name: "Nepal" }, { code: "NL", name: "Netherlands" },
+  { code: "NZ", name: "New Zealand" }, { code: "NI", name: "Nicaragua" }, { code: "NG", name: "Nigeria" },
+  { code: "NO", name: "Norway" }, { code: "OM", name: "Oman" }, { code: "PK", name: "Pakistan" },
+  { code: "PA", name: "Panama" }, { code: "PY", name: "Paraguay" }, { code: "PE", name: "Peru" },
+  { code: "PH", name: "Philippines" }, { code: "PL", name: "Poland" }, { code: "PT", name: "Portugal" },
+  { code: "QA", name: "Qatar" }, { code: "RO", name: "Romania" }, { code: "RU", name: "Russia" },
+  { code: "SA", name: "Saudi Arabia" }, { code: "SN", name: "Senegal" }, { code: "RS", name: "Serbia" },
+  { code: "SG", name: "Singapore" }, { code: "SK", name: "Slovakia" }, { code: "SI", name: "Slovenia" },
+  { code: "ZA", name: "South Africa" }, { code: "KR", name: "South Korea" }, { code: "ES", name: "Spain" },
+  { code: "LK", name: "Sri Lanka" }, { code: "SE", name: "Sweden" }, { code: "CH", name: "Switzerland" },
+  { code: "TW", name: "Taiwan" }, { code: "TZ", name: "Tanzania" }, { code: "TH", name: "Thailand" },
+  { code: "TN", name: "Tunisia" }, { code: "TR", name: "Turkey" }, { code: "TM", name: "Turkmenistan" },
+  { code: "UG", name: "Uganda" }, { code: "UA", name: "Ukraine" }, { code: "AE", name: "United Arab Emirates" },
+  { code: "GB", name: "United Kingdom" }, { code: "US", name: "United States" }, { code: "UY", name: "Uruguay" },
+  { code: "UZ", name: "Uzbekistan" }, { code: "VE", name: "Venezuela" }, { code: "VN", name: "Vietnam" },
+  { code: "YE", name: "Yemen" }, { code: "ZM", name: "Zambia" }, { code: "ZW", name: "Zimbabwe" },
+];
+
+function daysUntil(dateStr) {
+  if (!dateStr) return null;
+  return Math.ceil((new Date(dateStr) - new Date()) / 86400000);
+}
+
+function expiryColor(days) {
+  if (days === null) return "var(--border)";
+  if (days <= 0) return "var(--rose)";
+  if (days <= 30) return "var(--rose)";
+  if (days <= 90) return "var(--amber)";
+  return "var(--emerald)";
+}
+
+function TripVault({ passenger, uuid, token }) {
+  const [form, setForm] = useState({
+    nationality: passenger?.nationality || "",
+    destination: "",
+    travelDate: "",
+    docType: "P",
+    residency: passenger?.nationality || "",
+  });
+  const [result, setResult] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const set = k => e => setForm(p => ({ ...p, [k]: e.target.value }));
+
+  const passportDays = daysUntil(passenger?.passport_expiry);
+  const passportPct = passenger?.passport_expiry
+    ? Math.max(0, Math.min(100, (passportDays / (10 * 365)) * 100))
+    : 0;
+
+  const checkDocs = async () => {
+    if (!form.nationality || !form.destination || !form.travelDate) {
+      setErr("Please fill in nationality, destination and travel date.");
+      return;
+    }
+    setErr(""); setResult(null); setLoading(true);
+    try {
+      const TIMATIC_KEY = "4e54227f34msh0eb8b07c1198168p1611acjsnc08da5ae6ec3";
+      const TIMATIC_HOST = "timatic-autocheck-rest-api.p-eu.rapidapi.com";
+      const TIMATIC_URL = `https://${TIMATIC_HOST}/query-interface-service/api/v1/documentRequest`;
+
+      const travelDt = form.travelDate + "T12:00:00";
+      const departureDt = new Date(new Date(form.travelDate) - 86400000).toISOString().split("T")[0] + "T22:00:00";
+
+      const payload = {
+        checkType: "DOCUMENT",
+        language: "EN",
+        passengerId: uuid || "guest",
+        transactionId: `up-${Date.now()}`,
+        passengerDetails: {
+          nationality: form.nationality,
+          residentCountryCode: form.residency || form.nationality,
+          birthDate: passenger?.date_of_birth || "",
+          birthCountry: form.nationality,
+          gender: passenger?.gender || "",
+          countriesVisited: { countries: [], visitedBeforeDays: 0 },
+        },
+        travelDocuments: {
+          documents: [
+            {
+              documentType: form.docType === "P" ? "PASSPORT" : form.docType,
+              nationalityCode: form.nationality,
+              expiryDate: passenger?.passport_expiry ? passenger.passport_expiry.split("T")[0] : "2030-01-01",
+              issuingCountry: form.nationality,
+              ...(passenger?.passport_number ? { documentNumber: passenger.passport_number } : {}),
+            },
+          ],
+        },
+        itinerary: {
+          legs: [
+            {
+              arrival: { dateTime: travelDt, point: form.destination, type: "AIRPORT" },
+              departure: { dateTime: departureDt, point: form.origin || form.nationality, type: "AIRPORT" },
+              durationOfStay: { duration: 7, timeUnit: "DAYS" },
+              luggageCollected: true,
+              operatingCarrier: "",
+              processingEntity: form.destination,
+              purposeOfStay: "",
+              returnOnwardTicket: "",
+            },
+          ],
+        },
+      };
+
+      const resp = await fetch(TIMATIC_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-RapidAPI-Key": TIMATIC_KEY,
+          "X-RapidAPI-Host": TIMATIC_HOST,
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await resp.json();
+
+      if (!resp.ok || data.message || data.error) {
+        setErr(data.message || data.error || `Timatic error (${resp.status})`);
+      } else {
+        setResult(data);
+      }
+    } catch (e) {
+      setErr("Could not reach Timatic. Please check your connection and try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Timatic result can come back as top-level or nested under result/data
+  const timaticData = result?.result || result?.data || result || null;
+  const timaticStatus = timaticData?.overallAdmissibility || timaticData?.status || timaticData?.admissibility || "";
+  const isOk = timaticStatus === "ADMITTED" || timaticStatus === "OK" || timaticStatus === "ALLOWED";
+  const isWarn = timaticStatus === "CONDITIONAL" || timaticStatus === "WARNING" || timaticStatus === "REVIEW";
+  const isFail = timaticStatus === "NOT_ADMITTED" || timaticStatus === "REFUSED" || timaticStatus === "DENIED";
+
+  const statusClass = result
+    ? isOk ? "timatic-ok" : isWarn ? "timatic-warn" : isFail ? "timatic-fail" : "timatic-unk"
+    : "";
+
+  const statusIcon = result
+    ? isOk ? "✅" : isWarn ? "⚠️" : isFail ? "🚫" : "ℹ️"
+    : "";
+
+  return (
+    <div className="fade-up">
+      <div className="ph">
+        <div>
+          <div className="ptitle">Trip Vault</div>
+          <div className="psub">Module 6 · IATA Timatic · Document &amp; Visa Requirements · Passport Health</div>
+        </div>
+      </div>
+
+      {/* ── PASSPORT STATUS ── */}
+      <div className="vault-doc" style={{ borderColor: passportDays !== null && passportDays <= 90 ? (passportDays <= 30 ? "rgba(244,63,94,0.4)" : "rgba(245,158,11,0.5)") : "var(--border)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ fontSize: 28 }}>📘</div>
+            <div>
+              <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 15, color: "var(--ink)" }}>Passport</div>
+              <div style={{ fontSize: 11, color: "var(--muted)", fontFamily: "var(--mono)" }}>
+                {passenger?.nationality || "—"} · {passenger?.passport_number || "—"}
+              </div>
+            </div>
+          </div>
+          {passportDays !== null && (
+            <span className={`badge ${passportDays <= 0 ? "bd" : passportDays <= 30 ? "bd" : passportDays <= 90 ? "bw" : "bg"}`}>
+              {passportDays <= 0 ? "Expired" : `${passportDays}d left`}
+            </span>
+          )}
+        </div>
+        <div className="g2" style={{ gap: 12 }}>
+          <div>
+            <div className="fr"><span className="fl">Holder</span><span className="fv">{passenger?.first_name} {passenger?.last_name}</span></div>
+            <div className="fr"><span className="fl">Nationality</span><span className="fv">{passenger?.nationality || "—"}</span></div>
+          </div>
+          <div>
+            <div className="fr"><span className="fl">Passport no.</span><span className="fv">{passenger?.passport_number || "—"}</span></div>
+            <div className="fr"><span className="fl">Expiry</span>
+              <span className="fv" style={{ color: passportDays !== null && passportDays <= 90 ? expiryColor(passportDays) : "var(--ink)" }}>
+                {passenger?.passport_expiry ? new Date(passenger.passport_expiry).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "—"}
+              </span>
+            </div>
+          </div>
+        </div>
+        {passportDays !== null && (
+          <div className="exp-bar" style={{ marginTop: 14 }}>
+            <div className="exp-fill" style={{ width: `${passportPct}%`, background: expiryColor(passportDays) }} />
+          </div>
+        )}
+        {passportDays !== null && passportDays > 0 && passportDays <= 180 && (
+          <div style={{ marginTop: 8, fontSize: 12, color: passportDays <= 30 ? "var(--rose)" : "var(--amber)", fontWeight: 600 }}>
+            ⚠️ Many countries require 6 months passport validity beyond travel dates. Renew promptly.
+          </div>
+        )}
+      </div>
+
+      {/* ── TIMATIC CHECK ── */}
+      <div className="card">
+        <div className="ctitle">✈️ Timatic Document Check — Sandbox</div>
+        <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 18, lineHeight: 1.6 }}>
+          Enter your travel details to check visa requirements, passport validity rules, and entry restrictions
+          via the IATA Timatic database.
+        </div>
+        <div className="g2" style={{ gap: 14, marginBottom: 0 }}>
+          <div className="field">
+            <label>Nationality</label>
+            <select value={form.nationality} onChange={set("nationality")}>
+              <option value="">Select country…</option>
+              {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
+            </select>
+          </div>
+          <div className="field">
+            <label>Country of residence</label>
+            <select value={form.residency} onChange={set("residency")}>
+              <option value="">Same as nationality</option>
+              {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
+            </select>
+          </div>
+          <div className="field">
+            <label>Destination country</label>
+            <select value={form.destination} onChange={set("destination")}>
+              <option value="">Select destination…</option>
+              {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name} ({c.code})</option>)}
+            </select>
+          </div>
+          <div className="field">
+            <label>Travel date</label>
+            <input type="date" value={form.travelDate} onChange={set("travelDate")} min={new Date().toISOString().split("T")[0]} />
+          </div>
+          <div className="field">
+            <label>Document type</label>
+            <select value={form.docType} onChange={set("docType")}>
+              <option value="P">Passport</option>
+              <option value="V">Visa</option>
+              <option value="ID">National ID</option>
+              <option value="RP">Residence Permit</option>
+            </select>
+          </div>
+        </div>
+        {err && <div className="err" style={{ marginTop: 12 }}>{err}</div>}
+        <div style={{ marginTop: 14 }}>
+          <button className="btn btn-p" onClick={checkDocs} disabled={loading} style={{ width: "100%", padding: "13px" }}>
+            {loading ? <><div className="spinner" style={{ width: 16, height: 16, borderWidth: 2 }} /> Checking requirements…</> : "🛂 Check document requirements"}
+          </button>
+        </div>
+
+        {result && (
+          <div className={`timatic-result ${statusClass}`}>
+            <div className="timatic-heading">{statusIcon} {
+              isOk ? "Travel permitted" :
+              isWarn ? "Conditions apply — review required" :
+              isFail ? "Entry not permitted" :
+              "Timatic requirements"
+            }</div>
+
+            {/* Overall admissibility */}
+            {timaticStatus && (
+              <div style={{ fontSize: 12, fontFamily: "var(--mono)", fontWeight: 700, marginBottom: 10, opacity: 0.75 }}>
+                TIMATIC STATUS: {timaticStatus}
+              </div>
+            )}
+
+            {/* Visa requirement */}
+            {(timaticData?.visaRequired !== undefined || timaticData?.visa?.required !== undefined) && (
+              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8 }}>
+                Visa required:{" "}
+                <span style={{ color: (timaticData?.visaRequired ?? timaticData?.visa?.required) ? "var(--rose)" : "var(--emerald)" }}>
+                  {(timaticData?.visaRequired ?? timaticData?.visa?.required) ? "Yes" : "No"}
+                </span>
+              </div>
+            )}
+
+            {/* Document requirements / rules */}
+            {(timaticData?.requirements || timaticData?.documentRequirements || timaticData?.rules || timaticData?.visa?.requirements) && (
+              <div className="timatic-req">
+                {(timaticData?.requirements || timaticData?.documentRequirements || timaticData?.rules || timaticData?.visa?.requirements || [])
+                  .map((r, i) => <div key={i} style={{ paddingBottom: 4 }}>• {typeof r === "string" ? r : r.text || r.description || r.rule || JSON.stringify(r)}</div>)}
+              </div>
+            )}
+
+            {/* Admission rules from legs */}
+            {timaticData?.admissionRules && timaticData.admissionRules.length > 0 && (
+              <div className="timatic-req">
+                {timaticData.admissionRules.map((r, i) => (
+                  <div key={i} style={{ paddingBottom: 4 }}>• {r.text || r.description || JSON.stringify(r)}</div>
+                ))}
+              </div>
+            )}
+
+            {/* Health requirements */}
+            {timaticData?.healthRequirements?.length > 0 && (
+              <div style={{ marginTop: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "var(--amber)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Health requirements</div>
+                <div className="timatic-req">
+                  {timaticData.healthRequirements.map((r, i) => (
+                    <div key={i} style={{ paddingBottom: 4 }}>• {r.text || r.description || JSON.stringify(r)}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Notes / free-text */}
+            {(timaticData?.notes || timaticData?.remarks || timaticData?.summary) && (
+              <div style={{ fontSize: 12, color: "var(--ink2)", marginTop: 10, lineHeight: 1.8 }}>
+                {timaticData.notes || timaticData.remarks || timaticData.summary}
+              </div>
+            )}
+
+            {/* Raw fallback for unknown structure */}
+            {!timaticStatus && !timaticData?.requirements && !timaticData?.admissionRules && (
+              <pre style={{ fontSize: 11, color: "var(--muted)", whiteSpace: "pre-wrap", wordBreak: "break-all", marginTop: 8 }}>
+                {JSON.stringify(result, null, 2)}
+              </pre>
+            )}
+
+            <div style={{ fontSize: 11, color: "var(--hint)", marginTop: 12, fontFamily: "var(--mono)" }}>
+              Source: IATA Timatic · Checked {new Date().toLocaleString()}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="card" style={{ background: "var(--indigo-xlight)", border: "1px solid var(--indigo-surface)" }}>
+        <div className="ctitle" style={{ color: "var(--indigo-light)" }}>About Timatic</div>
+        <div style={{ fontSize: 12, color: "#92400E", lineHeight: 1.8 }}>
+          IATA Timatic is the authoritative source for travel document, visa, health, and customs requirements used by airlines and travel agents worldwide.
+          Results are sourced from official government databases and updated daily. Always confirm with the destination country's embassy or consulate for critical travel.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Meal({ passenger }) {
+  const prefs = [
+    { key: "meal_preference", label: "Meal code", sub: "IATA SSR meal type stored in UUID profile", icon: "🍽" },
+    { key: "dietary_requirement", label: "Dietary requirement", sub: "Allergy & preference flags — auto-applied at booking", icon: "🥗" },
+    { key: "snack_preference", label: "Snack preference", sub: "Lounge & in-flight snack personalisation", icon: "🧃" },
+  ];
+  return (
+    <div className="fade-up">
+      <div className="ph"><div><div className="ptitle">Meal preferences</div><div className="psub">Module 3 · IATA SSR codes · Dietary requirements · UUID-stored</div></div></div>
+      <div className="g3" style={{ marginBottom: 18 }}>
+        {prefs.map(p => (
+          <div key={p.key} className="card" style={{ textAlign: "center", padding: "28px 20px" }}>
+            <div style={{ fontSize: 32, marginBottom: 14 }}>{p.icon}</div>
+            <div style={{ fontFamily: "var(--display)", fontWeight: 800, fontSize: 15, marginBottom: 5, color: "var(--ink)" }}>{p.label}</div>
+            <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 14, lineHeight: 1.5 }}>{p.sub}</div>
+            <span className={`badge ${passenger?.[p.key] ? "bg" : "bw"}`}>{passenger?.[p.key] || "Not set"}</span>
+          </div>
+        ))}
+      </div>
+      <div className="card">
+        <div className="ctitle">IATA SSR meal codes</div>
+        <div style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.8 }}>Meal preferences are stored as IATA Special Service Request codes (VGML, HNML, KSML, etc.) and automatically injected into NDC offer requests and PNR remarks. Update your preferences in the Setup Wizard to have them applied on every future booking.</div>
+      </div>
+    </div>
+  );
+}
+
+function Cruise({ passenger, onNavigate }) {
+  const pp = passenger?.passport_number;
+  const exp = passenger?.passport_expiry;
+  const nat = passenger?.nationality;
+  const daysLeft = exp ? Math.floor((new Date(exp) - new Date()) / 86400000) : null;
+  const expColor = daysLeft === null ? "var(--ink)" : daysLeft <= 30 ? "var(--rose)" : daysLeft <= 90 ? "var(--amber)" : "var(--emerald)";
+
+  const CRUISE_SSR = [
+    { code: "VGML", label: "Vegan" }, { code: "HNML", label: "Hindu" },
+    { code: "KSML", label: "Kosher" }, { code: "MOML", label: "Muslim / Halal" },
+    { code: "GFML", label: "Gluten-free" }, { code: "DBML", label: "Diabetic" },
+    { code: "LSML", label: "Low sodium" }, { code: "NLML", label: "Low lactose" },
+    { code: "SFML", label: "Seafood-free" }, { code: "RVML", label: "Vegetarian" },
+  ];
+
+  return (
+    <div className="fade-up">
+      <div className="ph"><div><div className="ptitle">Cruise profile</div><div className="psub">Module 7 · CLIA compliance · APIS · Cabin class · Shore excursions</div></div></div>
+
+      <div className="card" style={{ marginBottom: 14 }}>
+        <div className="ctitle">Cruise preferences</div>
+        <div className="g3" style={{ gap: 12, marginTop: 12 }}>
+          {[
+            { label: "Cabin class", value: passenger?.cruise_cabin || "Not set" },
+            { label: "Dining preference", value: passenger?.cruise_dining || "Not set" },
+            { label: "Loyalty programme", value: passenger?.cruise_loyalty || "Not set" },
+            { label: "Muster station", value: passenger?.muster_station || "Assigned at embarkation" },
+            { label: "Shore excursion tier", value: passenger?.shore_excursion_tier || "Not set" },
+            { label: "Accessibility needs", value: passenger?.accessibility || "None noted" },
+          ].map(f => (
+            <div key={f.label}>
+              <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 3 }}>{f.label}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--ink)" }}>{f.value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="card" style={{ marginBottom: 14 }}>
+        <div className="ctitle">Dietary &amp; onboard SSR</div>
+        <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 14, lineHeight: 1.6 }}>Cruise line dietary requirements use the same SSR codes as IATA. Your selection is transmitted to the vessel's catering system at time of booking.</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          {CRUISE_SSR.map(s => {
+            const active = passenger?.meal_preference === s.code || passenger?.dietary_requirement === s.code;
+            return (
+              <div key={s.code} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 12px", borderRadius: "var(--r-md)", border: `1px solid ${active ? "var(--emerald)" : "var(--border)"}`, background: active ? "var(--emerald-xlight)" : "var(--surface)", cursor: "default" }}>
+                <span style={{ fontSize: 11, fontFamily: "var(--mono)", fontWeight: 700, color: active ? "var(--emerald)" : "var(--muted)" }}>{s.code}</span>
+                <span style={{ fontSize: 12, color: active ? "var(--ink)" : "var(--muted)" }}>{s.label}</span>
+                {active && <span style={{ fontSize: 10, color: "var(--emerald)" }}>✓</span>}
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ fontSize: 11, color: "var(--hint)", marginTop: 12 }}>Active SSR code inherited from your Meal preferences (Module 3). Update it there to change it here.</div>
+      </div>
+
+      <div className="card" style={{ marginBottom: 14 }}>
+        <div className="ctitle">Vessel emergency contact</div>
+        <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 14, lineHeight: 1.6 }}>Required by CLIA member lines and port authorities. This contact is specific to the vessel and may differ from your standard travel emergency contact.</div>
+        <div className="g3" style={{ gap: 12 }}>
+          {[
+            { label: "Contact name", value: passenger?.cruise_emergency_name || "Not set" },
+            { label: "Relationship", value: passenger?.cruise_emergency_relationship || "Not set" },
+            { label: "Phone (with country code)", value: passenger?.cruise_emergency_phone || "Not set" },
+          ].map(f => (
+            <div key={f.label}>
+              <div style={{ fontSize: 11, color: "var(--muted)", marginBottom: 3 }}>{f.label}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: f.value === "Not set" ? "var(--hint)" : "var(--ink)" }}>{f.value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="card" style={{ marginBottom: 14, border: pp ? "1px solid var(--border)" : "1px solid rgba(245,158,11,0.35)" }}>
+        <div className="ctitle">Document &amp; compliance</div>
+        <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 14, lineHeight: 1.6 }}>CLIA member lines and port immigration systems require APIS (Advance Passenger Information System) data. Your passport is linked from the Identity &amp; Documents module — no re-entry needed.</div>
+        {pp ? (
+          <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 14px", background: "var(--emerald-xlight)", border: "1px solid rgba(16,185,129,0.25)", borderRadius: "var(--r-md)" }}>
+            <span style={{ fontSize: 22 }}>📘</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--emerald)", marginBottom: 2 }}>Passport linked ✓</div>
+              <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 12, color: "var(--muted)" }}>No. <strong style={{ color: "var(--ink)" }}>{pp}</strong></span>
+                <span style={{ fontSize: 12, color: "var(--muted)" }}>Nationality <strong style={{ color: "var(--ink)" }}>{nat || "—"}</strong></span>
+                <span style={{ fontSize: 12, color: daysLeft !== null && daysLeft <= 90 ? expColor : "var(--muted)" }}>Expires <strong style={{ color: expColor }}>{exp || "—"}{daysLeft !== null && daysLeft <= 180 ? ` · ${daysLeft}d` : ""}</strong></span>
+              </div>
+            </div>
+            <button className="btn" style={{ fontSize: 11, padding: "5px 12px" }} onClick={() => onNavigate?.("identitydocs")}>View →</button>
+          </div>
+        ) : (
+          <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 14px", background: "rgba(245,158,11,0.06)", border: "1px solid rgba(245,158,11,0.3)", borderRadius: "var(--r-md)" }}>
+            <span style={{ fontSize: 22 }}>⚠️</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "var(--amber)", marginBottom: 2 }}>No passport on file</div>
+              <div style={{ fontSize: 12, color: "var(--muted)" }}>APIS submission will be incomplete. Add your passport in Identity &amp; Documents.</div>
+            </div>
+            <button className="btn btn-p" style={{ fontSize: 11, padding: "5px 12px" }} onClick={() => onNavigate?.("identitydocs")}>Add passport →</button>
+          </div>
+        )}
+      </div>
+
+      <div className="card">
+        <div className="ctitle">About CLIA compliance</div>
+        <div style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.8 }}>Your UniProfile UUID links your cruise bookings to your full travel identity — enabling seamless port-to-port APIS submission, pre-boarding check-in, and loyalty consolidation across CLIA member lines. Passport data is transmitted once and reused across all booked voyages.</div>
+      </div>
+    </div>
+  );
+}
+
+function Family({ passenger }) {
+  return (
+    <div className="fade-up">
+      <div className="ph"><div><div className="ptitle">Family &amp; companions</div><div className="psub">Module 8 · Companion profiles · Minor travel · Group bookings</div></div></div>
+      <div className="card" style={{ marginBottom: 14 }}>
+        <div className="ctitle">Linked profiles</div>
+        <div style={{ fontSize: 14, color: "var(--ink)", lineHeight: 1.7, marginTop: 8, marginBottom: 4 }}>Link your family members so you share upcoming trips automatically and your respective preferences travel with each booking.</div>
+        <div style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.8 }}>Each linked member gets their own sub-UUID — keeping preferences and documents separate while allowing group booking in a single action.</div>
+        <button className="btn-primary" style={{ marginTop: 14 }}>+ Add companion profile</button>
+      </div>
+      <div className="card">
+        <div className="ctitle">Minor travel</div>
+        <div style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.8 }}>Children travelling as unaccompanied minors (UMNR) can be linked to your profile. Their documents, consent records, and handling instructions are stored under your UUID and presented automatically at check-in.</div>
+      </div>
+    </div>
+  );
+}
+
+function Insurance({ passenger }) {
+  return (
+    <div className="fade-up">
+      <div className="ph"><div><div className="ptitle">Travel insurance</div><div className="psub">Module 9 · Policy management · Claims · Real-time eligibility</div></div></div>
+      <div className="card" style={{ marginBottom: 14 }}>
+        <div className="ctitle">Active policies</div>
+        <div style={{ fontSize: 14, color: "var(--ink)", lineHeight: 1.7, marginTop: 8, marginBottom: 4 }}>Add your travel insurance policies and tour bookings here. Linked family members can see them for emergency contacts and shared itineraries.</div>
+        <div style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.8 }}>Connected policies allow insurers to verify trip data, flight disruption events, and baggage mishandling records in real time — eliminating manual claims paperwork.</div>
+        <button className="btn-primary" style={{ marginTop: 14 }}>+ Link insurance policy</button>
+      </div>
+      <div className="card">
+        <div className="ctitle">Automated claims</div>
+        <div style={{ fontSize: 13, color: "var(--muted)", lineHeight: 1.8 }}>When a disruption or delay is recorded against your UUID, your insurer is notified automatically via the UniProfile event bus. EU261 compensation and insurance claims can be initiated without you filing a single form.</div>
+      </div>
+    </div>
+  );
+}
+
 const NAV_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: "⬡", section: "overview" },
   { id: "journey", label: "Journey map", icon: "🌍", section: "overview" },
   { id: "order", label: "Offer & Order", icon: "✈", section: "oneorder" },
-  { id: "seat", label: "Seat & Ancillary", icon: "💺", section: "oneorder" },
   { id: "disruption", label: "Disruption", icon: "⚡", section: "oneorder" },
-  { id: "loyalty", label: "Loyalty", icon: "⭐", section: "oneorder" },
-  { id: "payment", label: "Payment", icon: "💳", section: "oneorder" },
   { id: "baggage", label: "BagJourney", icon: "🧳", section: "oneorder" },
+  { id: "identitydocs", label: "Identity & Documents", icon: "🪪", section: "modules", badge: true, mod: 1 },
+  { id: "seat", label: "Seat & Ancillary", icon: "💺", section: "modules", mod: 2 },
+  { id: "meal", label: "Meal preferences", icon: "🍽", section: "modules", mod: 3 },
+  { id: "loyalty", label: "Loyalty", icon: "⭐", section: "modules", mod: 4 },
+  { id: "payment", label: "Payment", icon: "💳", section: "modules", mod: 5 },
+  { id: "tripvault", label: "Trip Vault", icon: "🛂", section: "modules", mod: 6 },
+  { id: "cruise", label: "Cruise profile", icon: "🚢", section: "modules", mod: 7 },
+  { id: "family", label: "Family & companions", icon: "👨‍👩‍👧", section: "modules", mod: 8 },
+  { id: "insurance", label: "Travel insurance", icon: "🛡", section: "modules", mod: 9 },
   { id: "biometrics", label: "Biometrics", icon: "👁", section: "identity" },
   { id: "consent", label: "Consent engine", icon: "🔒", section: "identity" },
 ];
@@ -1176,7 +1956,7 @@ export default function App() {
   const [active, setActive] = useState("dashboard");
   const [context, setContext] = useState("bleisure");
   const [prefill, setPrefill] = useState("");
-  const [loadingProfile, setLoadingProfile] = useState(false);
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
   useEffect(() => {
     if (!user) return;
@@ -1207,17 +1987,21 @@ export default function App() {
       </div>
     </>
   );
-  if (!setupDone) return <><style>{CSS}</style><SetupWizard user={user} onComplete={handleSetupComplete} /></>;
-
   const PAGES = {
-    dashboard: <Dashboard passenger={passenger} uuid={uuid} onRefresh={handleRefresh} />,
+    dashboard: <Dashboard passenger={passenger} uuid={uuid} token={user.token} onRefresh={handleRefresh} onNavigate={setActive} />,
     journey: <JourneyMap uuid={uuid} token={user.token} passenger={passenger} />,
+    tripvault: <TripVault passenger={passenger} uuid={uuid} token={user.token} />,
     order: <Orders uuid={uuid} token={user.token} />,
     seat: <SeatAncillary passenger={passenger} />,
     disruption: <Disruption />,
     loyalty: <Loyalty uuid={uuid} token={user.token} />,
     payment: <Payment uuid={uuid} token={user.token} />,
     baggage: <Baggage uuid={uuid} token={user.token} />,
+    identitydocs: <IdentityDocs passenger={passenger} onNavigate={setActive} />,
+    meal: <Meal passenger={passenger} />,
+    cruise: <Cruise passenger={passenger} onNavigate={setActive} />,
+    family: <Family passenger={passenger} />,
+    insurance: <Insurance passenger={passenger} />,
     biometrics: <Biometrics passenger={passenger} />,
     consent: <Consent uuid={uuid} token={user.token} />,
   };
@@ -1233,24 +2017,19 @@ export default function App() {
           </div>
           {uuid && (
             <div className="uuid-chip">
-              <div className="uuid-lbl">Passenger UUID v7</div>
+              <div className="uuid-lbl">UniProfile Number</div>
               <div className="uuid-val">{uuid}</div>
             </div>
           )}
-          <div className="ctx-row">
-            {["business", "bleisure", "leisure"].map(c => (
-              <button key={c} className={`ctx-btn ${context === c ? "on" : ""}`} onClick={() => setContext(c)}>
-                {c.charAt(0).toUpperCase() + c.slice(1, 4)}
-              </button>
-            ))}
-          </div>
-          {[{ id: "overview", label: "Overview" }, { id: "oneorder", label: "OneOrder modules" }, { id: "identity", label: "Identity" }].map(section => (
+          {[{ id: "overview", label: "Overview" }, { id: "oneorder", label: "OneOrder" }, { id: "modules", label: "Passenger modules" }, { id: "identity", label: "Identity" }].map(section => (
             <div key={section.id}>
               <div className="nav-sec">{section.label}</div>
               {NAV_ITEMS.filter(n => n.section === section.id).map(n => (
                 <div key={n.id} className={`nav-item ${active === n.id ? "on" : ""}`} onClick={() => setActive(n.id)}>
                   <div className="nav-icon">{n.icon}</div>
                   {n.label}
+                  {n.badge && <span className="nav-badge" />}
+                  {n.mod != null && <span className="mod-num">{n.mod}</span>}
                 </div>
               ))}
             </div>
@@ -1263,8 +2042,19 @@ export default function App() {
             <button className="signout-btn" onClick={handleSignOut}>Sign out</button>
           </div>
         </aside>
-        <main className="main">{PAGES[active]}</main>
+        <div className="app-right">
+          <div className="topbar">
+            <div className="topbar-left">IATA OneOrder · v2.0</div>
+            <div className="bleisure-wrap">
+              {[["Personal", "leisure"], ["Bleisure", "bleisure"], ["Business", "business"]].map(([label, val]) => (
+                <button key={val} className={`bleisure-btn ${context === val ? "on" : ""}`} onClick={() => setContext(val)}>{label}</button>
+              ))}
+            </div>
+          </div>
+          <main className="main">{PAGES[active]}</main>
+        </div>
       </div>
+      {!setupDone && !loadingProfile && <SetupWizard user={user} onComplete={handleSetupComplete} />}
     </>
   );
 }
