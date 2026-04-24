@@ -383,46 +383,27 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .fam-feed-card:hover{border-color:var(--border2);}
 
 /* ── Groups section ─────────────────────────────────── */
-.grp-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-.grp-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text);
-  margin: 0 0 4px;
-}
-.grp-subtitle {
-  font-size: 0.875rem;
-  color: var(--textDim);
-  margin: 0;
-  max-width: 520px;
-  line-height: 1.5;
-}
+/* ── Groups: type filter pills ───────────────────────────── */
 .grp-create-btn {
   background: var(--gold);
   color: var(--ink);
   border: none;
-  border-radius: 8px;
-  padding: 10px 18px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  border-radius: var(--radius-sm);
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
   transition: opacity 0.15s;
   font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.2px;
 }
 .grp-create-btn:hover { opacity: 0.88; }
 .grp-type-pills {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 1.5rem;
+  margin-bottom: 28px;
 }
 .grp-pill {
   padding: 5px 14px;
@@ -430,7 +411,8 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   border: 1px solid var(--border2);
   background: var(--surface);
   color: var(--textMid);
-  font-size: 0.8125rem;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
   font-family: 'DM Sans', sans-serif;
@@ -438,9 +420,11 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .grp-pill.active,
 .grp-pill:hover {
   background: var(--goldGlow);
-  border-color: rgba(180,83,9,0.3);
+  border-color: var(--goldDim);
   color: var(--goldLt);
 }
+
+/* ── Groups: card grid ───────────────────────────────────── */
 .grp-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -448,24 +432,24 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   margin-bottom: 2rem;
 }
 .grp-card {
-  background: var(--white);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 18px 20px;
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
   cursor: pointer;
-  transition: box-shadow 0.18s, transform 0.18s;
+  transition: border-color 0.15s, transform 0.15s;
   position: relative;
   overflow: hidden;
 }
 .grp-card:hover {
-  box-shadow: 0 6px 24px rgba(0,0,0,0.09);
+  border-color: var(--border2);
   transform: translateY(-2px);
 }
 .grp-card-accent {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
-  border-radius: 14px 14px 0 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 .grp-card-top {
   display: flex;
@@ -474,176 +458,224 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   margin-bottom: 12px;
 }
 .grp-card-name {
-  font-size: 0.9375rem;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 500;
   color: var(--text);
   line-height: 1.3;
+  font-family: 'DM Sans', sans-serif;
 }
 .grp-card-id {
-  font-size: 0.6875rem;
+  font-size: 11px;
   color: var(--textDim);
   font-family: 'JetBrains Mono', monospace;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 .grp-type-badge {
-  font-size: 0.6875rem;
+  font-size: 9px;
   padding: 3px 10px;
   border-radius: 99px;
-  font-weight: 500;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
   white-space: nowrap;
+  font-family: 'DM Sans', sans-serif;
 }
-.grp-badge-family    { background: #e6f1fb; color: #185FA5; }
-.grp-badge-golf      { background: #eaf3de; color: #3B6D11; }
-.grp-badge-church    { background: #eeedfe; color: #534AB7; }
-.grp-badge-corporate { background: #faeeda; color: #854F0B; }
-.grp-badge-volunteer { background: #fcebeb; color: #A32D2D; }
+/* Type badge colors — desaturated to match design system */
+.grp-badge-family    { background: var(--tealGlow);  color: var(--teal); }
+.grp-badge-golf      { background: var(--greenGlow); color: var(--green); }
+.grp-badge-church    { background: var(--goldGlow);  color: var(--goldLt); }
+.grp-badge-corporate { background: var(--amberGlow); color: var(--amber); }
+.grp-badge-volunteer { background: var(--redGlow);   color: var(--red); }
 .grp-card-meta {
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: var(--textDim);
   margin-bottom: 14px;
   line-height: 1.5;
+  font-family: 'DM Sans', sans-serif;
 }
 .grp-card-stats {
   display: flex;
-  gap: 16px;
+  gap: 20px;
   margin-bottom: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
 }
 .grp-card-stat { display: flex; flex-direction: column; }
-.grp-card-stat-val   { font-size: 1.125rem; font-weight: 600; color: var(--text); }
-.grp-card-stat-label { font-size: 0.6875rem; color: var(--textDim); }
-.grp-card-alerts { display: flex; gap: 6px; flex-wrap: wrap; }
+.grp-card-stat-val   { font-size: 18px; font-weight: 600; color: var(--text); font-family: 'Playfair Display', serif; }
+.grp-card-stat-label { font-size: 11px; color: var(--textDim); font-family: 'DM Sans', sans-serif; margin-top: 2px; }
+.grp-card-alerts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
 .grp-alert-chip {
-  font-size: 0.6875rem;
+  font-size: 9px;
   padding: 3px 9px;
   border-radius: 99px;
-  font-weight: 500;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-family: 'DM Sans', sans-serif;
 }
-.grp-alert-danger { background: #fcebeb; color: #A32D2D; }
-.grp-alert-warn   { background: #faeeda; color: #854F0B; }
-.grp-alert-ok     { background: #eaf3de; color: #3B6D11; }
-.grp-alert-info   { background: #e6f1fb; color: #185FA5; }
+/* Semantic status colors — desaturated per design tokens */
+.grp-alert-danger { background: var(--redGlow);   color: var(--red); }
+.grp-alert-warn   { background: var(--amberGlow); color: var(--amber); }
+.grp-alert-ok     { background: var(--greenGlow); color: var(--green); }
+.grp-alert-info   { background: var(--tealGlow);  color: var(--teal); }
+
+/* ── Groups: empty state ─────────────────────────────────── */
 .grp-empty {
   text-align: center;
   padding: 4rem 2rem;
   color: var(--textDim);
 }
-.grp-empty-icon  { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.3; }
-.grp-empty-title { font-size: 1.125rem; font-weight: 600; color: var(--textMid); margin-bottom: 8px; }
-.grp-empty-sub   { font-size: 0.875rem; max-width: 340px; margin: 0 auto; line-height: 1.5; }
+.grp-empty-icon  { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.25; }
+.grp-empty-title { font-size: 18px; font-weight: 600; color: var(--textMid); margin-bottom: 8px; font-family: 'Playfair Display', serif; }
+.grp-empty-sub   { font-size: 13px; max-width: 340px; margin: 0 auto; line-height: 1.6; font-family: 'DM Sans', sans-serif; }
+
+/* ── Groups: back button ─────────────────────────────────── */
 .grp-back-btn {
   background: none;
   border: none;
   color: var(--gold);
-  font-size: 0.875rem;
+  font-size: 13px;
   cursor: pointer;
   padding: 0;
-  margin-bottom: 1.5rem;
+  margin-bottom: 28px;
   font-weight: 500;
   font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.1px;
 }
+.grp-back-btn:hover { color: var(--goldLt); }
+
+/* ── Groups: detail view ─────────────────────────────────── */
 .grp-detail-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
 }
-.grp-detail-title { font-size: 1.25rem; font-weight: 600; color: var(--text); margin: 0 0 4px; }
-.grp-detail-meta  { font-size: 0.8125rem; color: var(--textDim); }
+.grp-detail-title { font-size: 22px; font-weight: 600; color: var(--text); margin: 0 0 5px; font-family: 'Playfair Display', serif; letter-spacing: -0.2px; }
+.grp-detail-meta  { font-size: 13px; color: var(--textDim); font-family: 'DM Sans', sans-serif; }
 .grp-detail-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-  gap: 10px;
-  margin-bottom: 1.5rem;
+  gap: 8px;
+  margin-bottom: 24px;
 }
 .grp-detail-stat {
   background: var(--surface2);
-  border-radius: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   padding: 12px 14px;
 }
 .grp-detail-stat-label {
-  font-size: 0.6875rem;
-  color: var(--textDim);
-  margin-bottom: 4px;
+  font-size: 9px;
+  color: var(--textHint);
+  margin-bottom: 6px;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
-.grp-detail-stat-val { font-size: 1.25rem; font-weight: 600; color: var(--text); }
-.grp-section-label {
-  font-size: 0.6875rem;
+  letter-spacing: 1.2px;
   font-weight: 600;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  color: var(--textDim);
-  margin: 1.5rem 0 10px;
+  font-family: 'DM Sans', sans-serif;
 }
+.grp-detail-stat-val {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+  font-family: 'Playfair Display', serif;
+  line-height: 1;
+}
+
+/* ── Groups: section eyebrow label ──────────────────────── */
+.grp-section-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--textHint);
+  margin: 20px 0 10px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── Groups: member cards ───────────────────────────────── */
 .grp-members { display: flex; flex-direction: column; gap: 8px; }
 .grp-member-card {
-  background: var(--white);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 14px 16px;
   display: grid;
   grid-template-columns: 40px 1fr auto;
   gap: 12px;
-  align-items: center;
+  align-items: start;
 }
 .grp-member-avatar {
   width: 40px; height: 40px;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-size: 13px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
 }
-.grp-member-name  { font-size: 0.875rem; font-weight: 600; color: var(--text); }
-.grp-member-meta  { font-size: 0.75rem; color: var(--textDim); margin-top: 2px; }
-.grp-member-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px; }
+.grp-member-name  { font-size: 14px; font-weight: 500; color: var(--text); font-family: 'DM Sans', sans-serif; }
+.grp-member-meta  { font-size: 11px; color: var(--textDim); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+.grp-member-badges { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
 .grp-badge {
-  font-size: 0.6875rem;
+  font-size: 9px;
   padding: 2px 8px;
   border-radius: 99px;
-  font-weight: 500;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'DM Sans', sans-serif;
 }
-.grp-member-pnr { font-size: 0.75rem; font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--text); text-align: right; }
-.grp-member-ff  { font-size: 0.6875rem; color: var(--textDim); text-align: right; margin-top: 2px; }
-.grp-alerts { display: flex; flex-direction: column; gap: 8px; }
+.grp-member-pnr { font-size: 12px; font-family: 'JetBrains Mono', monospace; font-weight: 500; color: var(--text); text-align: right; }
+.grp-member-ff  { font-size: 11px; color: var(--textDim); text-align: right; margin-top: 2px; font-family: 'DM Sans', sans-serif; }
+
+/* ── Groups: alert rows ─────────────────────────────────── */
+.grp-alerts { display: flex; flex-direction: column; gap: 6px; }
 .grp-alert-row {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-start;
-  padding: 12px 14px;
-  border-radius: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
 }
-.grp-alert-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
-.grp-alert-text { font-size: 0.8125rem; line-height: 1.5; color: var(--text); }
+.grp-alert-dot  { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.grp-alert-text { font-size: 13px; line-height: 1.5; color: var(--text); font-family: 'DM Sans', sans-serif; }
 .grp-alert-text strong { font-weight: 600; }
-.grp-alert-danger-row { background: #fcebeb; }
-.grp-alert-warn-row   { background: #faeeda; }
-.grp-alert-ok-row     { background: #eaf3de; }
-.grp-alert-info-row   { background: #e6f1fb; }
+.grp-alert-danger-row { background: var(--redGlow);   border-color: rgba(158,58,58,0.15); }
+.grp-alert-warn-row   { background: var(--amberGlow); border-color: rgba(184,134,11,0.15); }
+.grp-alert-ok-row     { background: var(--greenGlow); border-color: rgba(74,122,90,0.15); }
+.grp-alert-info-row   { background: var(--tealGlow);  border-color: rgba(74,143,168,0.15); }
+
+/* ── Groups: flights list ───────────────────────────────── */
 .grp-flights { display: flex; flex-direction: column; gap: 8px; }
 .grp-flight-row {
-  background: var(--white);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   padding: 12px 16px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
-  flex-wrap: wrap;
 }
-.grp-flight-route { font-size: 0.9375rem; font-weight: 600; color: var(--text); }
-.grp-flight-meta  { font-size: 0.75rem; color: var(--textDim); margin-top: 2px; }
+.grp-flight-route { font-size: 14px; font-weight: 500; color: var(--text); font-family: 'DM Sans', sans-serif; }
+.grp-flight-meta  { font-size: 11px; color: var(--textDim); margin-top: 3px; font-family: 'DM Sans', sans-serif; }
+
+/* ── Groups: two-column layout ──────────────────────────── */
 .grp-two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 24px;
   margin-top: 0.5rem;
 }
+
+/* ── Groups: modals ─────────────────────────────────────── */
 .grp-modal-overlay {
   position: fixed; inset: 0;
-  background: rgba(0,0,0,0.55);
+  background: rgba(0,0,0,0.6);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -651,70 +683,143 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   padding: 1rem;
 }
 .grp-modal {
-  background: var(--white);
-  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
   width: 100%;
   max-width: 480px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.14);
+  max-height: 90vh;
+  overflow-y: auto;
 }
 .grp-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px 0;
+  padding: 22px 24px 0;
 }
-.grp-modal-title  { font-size: 1rem; font-weight: 600; color: var(--text); font-family: 'Playfair Display', serif; }
-.grp-modal-close  { background: none; border: none; font-size: 1rem; cursor: pointer; color: var(--textDim); padding: 4px; }
+.grp-modal-title  { font-size: 18px; font-weight: 600; color: var(--text); font-family: 'Playfair Display', serif; letter-spacing: -0.1px; }
+.grp-modal-close  { background: none; border: none; font-size: 16px; cursor: pointer; color: var(--textDim); padding: 4px 6px; }
 .grp-modal-body   { padding: 20px 24px; display: flex; flex-direction: column; gap: 14px; }
-.grp-form-row     { display: flex; flex-direction: column; gap: 5px; }
+.grp-form-row     { display: flex; flex-direction: column; gap: 4px; }
 .grp-form-2col    { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.grp-label        { font-size: 0.8125rem; font-weight: 500; color: var(--textMid); }
+.grp-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--textDim);
+  font-family: 'DM Sans', sans-serif;
+  letter-spacing: 0.2px;
+}
 .grp-input {
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 9px 12px;
-  font-size: 0.875rem;
+  font-size: 13px;
   color: var(--text);
-  background: var(--white);
+  background: var(--surface);
   width: 100%;
   box-sizing: border-box;
   outline: none;
   transition: border-color 0.15s;
   font-family: 'DM Sans', sans-serif;
 }
-.grp-input:focus { border-color: var(--gold); }
-.grp-hint { font-size: 0.75rem; color: var(--textDim); }
+.grp-input:focus { border-color: var(--gold); outline: none; }
+.grp-hint { font-size: 11px; color: var(--textHint); font-family: 'DM Sans', sans-serif; }
 .grp-modal-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  padding: 0 24px 20px;
+  gap: 8px;
+  padding: 0 24px 22px;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  margin-top: 4px;
 }
 .grp-btn-primary {
   background: var(--gold);
   color: var(--ink);
   border: none;
   border-radius: var(--radius-sm);
-  padding: 10px 20px;
-  font-size: 0.875rem;
+  padding: 9px 20px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   font-family: 'DM Sans', sans-serif;
+  transition: opacity 0.15s;
 }
+.grp-btn-primary:hover { opacity: 0.88; }
 .grp-btn-secondary {
   background: none;
   border: 1px solid var(--border2);
   border-radius: var(--radius-sm);
-  padding: 10px 20px;
-  font-size: 0.875rem;
+  padding: 9px 16px;
+  font-size: 13px;
   color: var(--textMid);
   cursor: pointer;
   font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.15s;
 }
+.grp-btn-secondary:hover { border-color: var(--border2); color: var(--text); }
+
+/* ── Consent: permission grid ───────────────────────────── */
+.perm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+.perm-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  transition: border-color 0.15s;
+}
+.perm-card.sharing { border-color: var(--goldDim); }
+.perm-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.perm-body { flex: 1; min-width: 0; }
+.perm-name { font-size: 13px; font-weight: 500; color: var(--text); font-family: 'DM Sans', sans-serif; margin-bottom: 2px; }
+.perm-desc { font-size: 11px; color: var(--textDim); font-family: 'DM Sans', sans-serif; line-height: 1.5; }
+.perm-toggle {
+  position: relative;
+  width: 36px; height: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.perm-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.perm-track {
+  position: absolute; inset: 0;
+  background: var(--border2);
+  border-radius: 99px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.perm-track::after {
+  content: '';
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  transition: transform 0.2s;
+}
+.perm-toggle input:checked + .perm-track { background: var(--gold); }
+.perm-toggle input:checked + .perm-track::after { transform: translateX(16px); }
+
 @media (max-width: 640px) {
   .grp-two-col { grid-template-columns: 1fr; }
   .grp-member-card { grid-template-columns: 36px 1fr; }
   .grp-member-pnr, .grp-member-ff { display: none; }
+  .perm-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -1123,12 +1228,13 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 
       <section class="section" id="section-groups">
   <div class="section-inner">
-    <div class="grp-header">
-      <div>
-        <h2 class="grp-title">Groups</h2>
-        <p class="grp-subtitle">Coordinate travel for families, tours, golf trips, church groups, corporate teams and more — under one shared view.</p>
+    <div class="sec-header" style="margin-bottom:32px">
+      <div class="sec-icon" style="background:var(--tealGlow)">✦</div>
+      <div style="flex:1">
+        <div class="sec-title">Groups</div>
+        <div class="sec-sub">Coordinate travel for families, tours, golf trips, church groups, corporate teams and more — under one shared view.</div>
       </div>
-      <button class="grp-create-btn" onclick="openCreateGroupModal()">+ New Group</button>
+      <button class="grp-create-btn" onclick="openCreateGroupModal()" style="flex-shrink:0;margin-top:4px">+ New Group</button>
     </div>
     <div id="grp-empty" class="grp-empty" style="display:none">
       <div class="grp-empty-icon">✦</div>
@@ -1572,6 +1678,18 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 
       <section class="section" id="section-consent">
         <div class="sec-header"><div class="sec-icon" style="background:var(--tealGlow)">🔒</div><div><div class="sec-title">Consent &amp; Access</div><div class="sec-sub">GDPR-aligned — you define exactly what each platform can read and write</div></div></div>
+
+        <div class="form-section" style="margin-bottom:20px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <div class="form-section-title" style="margin:0">Profile Sharing Permissions</div>
+            <span id="perm-save-status" style="font-size:11px;color:var(--textDim);font-family:'DM Sans',sans-serif"></span>
+          </div>
+          <div style="font-size:12px;color:var(--textDim);margin-bottom:16px;line-height:1.6">Choose which parts of your profile connected platforms are allowed to read. These defaults apply to every integration — you can override per-platform below.</div>
+          <div class="perm-grid" id="perm-grid">
+            <!-- Populated by renderConsentPermissions() -->
+          </div>
+        </div>
+
         <div class="form-section"><div class="form-section-title">Connected Platforms</div>
         <div class="integration-list">
           <div id="connected-platforms-list">
@@ -1928,7 +2046,7 @@ function toast(msg,type=""){const el=document.getElementById("toast");el.textCon
 function setSaveState(state){const dot=document.getElementById("save-dot"),lbl=document.getElementById("save-label");if(state==="saving"){dot.className="autosave-dot saving";lbl.textContent="Saving...";}else if(state==="saved"){dot.className="autosave-dot saved";lbl.textContent="All changes saved";setTimeout(()=>dot.className="autosave-dot",3000);}else{dot.className="autosave-dot";lbl.textContent="Unsaved changes";}}
 function showSection(id,btn){closeMobMenu();document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));document.getElementById("section-"+id).classList.add("active");if(btn)btn.classList.add("active");section=id;const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Seat & Cabin Preferences",meals:"Meal & Dietary",loyalty:"Loyalty Programs",payment:"Payment & Policy",trips:"Trip History",family:"Family Profiles",groups:"Groups",insurance:"Insurance & Tours",cruise:"Cruise Profile",consent:"Consent & Access",api:"API & Webhooks"};document.getElementById("page-title").textContent=titles[id]||"UniProfile";document.querySelector(".content").scrollTop=0;if(id==="family")loadFamilyData();
 if(id==="insurance"){renderMyInsurance();renderMyTours();}
-if(id==="cruise"){loadCruiseData();}if(id==="consent"){loadConnectedPlatforms();}}
+if(id==="cruise"){loadCruiseData();}if(id==="consent"){renderConsentPermissions();loadConnectedPlatforms();}}
 async function switchContext(el){const ctx=el.checked?"CORPORATE":"PERSONAL";const pill=document.getElementById("context-pill"),lp=document.getElementById("lbl-personal"),lb=document.getElementById("lbl-business"),pp=document.getElementById("pay-personal"),pc=document.getElementById("pay-corporate"),nb=document.getElementById("badge-payment");if(el.checked){pill.textContent="Business Mode";pill.className="context-pill corporate";lp.className="bleisure-opt teal";lb.className="bleisure-opt gold on";if(pp)pp.style.display="none";if(pc)pc.style.display="block";if(nb)nb.style.display="inline";}else{pill.textContent="Personal Mode";pill.className="context-pill personal";lp.className="bleisure-opt teal on";lb.className="bleisure-opt gold";if(pp)pp.style.display="block";if(pc)pc.style.display="none";if(nb)nb.style.display="none";}try{await api("POST",`/api/v1/profile/${uuid}/bleisure`,{context:ctx});}catch(e){}}
 const v=id=>document.getElementById(id)?.value?.trim()||"";
 const cb=id=>document.getElementById(id)?.checked||false;
@@ -1949,7 +2067,7 @@ if(p.identity){s("f-legal_first",p.identity.legal_first);s("f-legal_middle",p.id
 renderDocumentVault(p.documents||[]);populateDocTypeDropdown(p.document_types||{});
 if(p.seat_preferences){s("f-cabin_domestic",p.seat_preferences.cabin_domestic);s("f-cabin_international",p.seat_preferences.cabin_international);s("f-seat_position",p.seat_preferences.seat_position);s("f-row_preference",p.seat_preferences.row_preference);s("f-hotel_room_type",p.seat_preferences.hotel_room_type);s("f-hotel_floor_pref",p.seat_preferences.hotel_floor_pref);s("f-car_type_pref",p.seat_preferences.car_type_pref||"MIDSIZE");sc("f-avoid_middle_seats",p.seat_preferences.avoid_middle_seats);sc("f-avoid_last_row",p.seat_preferences.avoid_last_row);sc("f-wheelchair_needed",p.seat_preferences.wheelchair_needed);}
 if(p.meal_preferences){s("f-primary_meal_code",p.meal_preferences.primary_meal_code);s("f-beverage_pref",p.meal_preferences.beverage_pref);s("f-allergies",(p.meal_preferences.allergies||[]).join(", "));s("f-avoid_items",(p.meal_preferences.avoid_items||[]).join(", "));s("f-dietary_notes",p.meal_preferences.dietary_notes);}
-renderLoyalty(p.loyalty_programs||[]);renderPayment(p.payment_profiles||[],p.identity);renderTrips(p.trips||[]);s("api-uuid",p.uuid);grpData=p.groups||[];}
+renderLoyalty(p.loyalty_programs||[]);renderPayment(p.payment_profiles||[],p.identity);renderTrips(p.trips||[]);s("api-uuid",p.uuid);grpData=p.groups||[];consentData=p.consent||{};}
 
 let editingLoyaltyId = null;
 
@@ -2001,7 +2119,7 @@ function closeLoyaltyModal() {
 async function saveLoyalty() {
   var btn = document.getElementById("loyalty-save-btn");
   btn.textContent = "Saving..."; btn.disabled = true;
-  var data = {
+  var fields = {
     program_type: document.getElementById("lf-program_type").value,
     provider_name: document.getElementById("lf-provider_name").value,
     program_name: document.getElementById("lf-program_name").value,
@@ -2014,24 +2132,46 @@ async function saveLoyalty() {
     notes: document.getElementById("lf-notes").value || null,
     auto_apply: document.getElementById("lf-auto_apply").checked
   };
-  if(!data.provider_name || !data.member_number) {
+  if(!fields.provider_name || !fields.member_number) {
     toast("Provider and member number are required", "error");
     btn.textContent = "Save Program"; btn.disabled = false;
     return;
   }
-  if(editingLoyaltyId) data.loyalty_id = editingLoyaltyId;
   try {
-    var module = editingLoyaltyId ? "loyalty_update" : "loyalty_add";
-    var result = await api("PUT", "/api/v1/profile/"+uuid, {module:module, data:data});
-    if(result.success) {
-      profile = result.profile;
-      renderLoyalty(result.profile.loyalty_programs||[]);
+    var result;
+    if(editingLoyaltyId) {
+      // Build updated programs array and send as full replace — avoids module name ambiguity
+      var updated = (profile.loyalty_programs||[]).map(function(p) {
+        return (p.id === editingLoyaltyId || p.loyalty_id === editingLoyaltyId)
+          ? Object.assign({}, p, fields)
+          : p;
+      });
+      result = await api("PUT", "/api/v1/profile/"+uuid, {module:"loyalty_update", data:Object.assign({id:editingLoyaltyId, loyalty_id:editingLoyaltyId}, fields)});
+      // If backend returns updated profile use it; otherwise apply locally
+      if(result && result.success && result.profile) {
+        profile = result.profile;
+      } else if(result && result.success) {
+        profile.loyalty_programs = updated;
+        result = {success:true, profile:profile};
+      } else {
+        // Fallback: replace whole array
+        result = await api("PUT", "/api/v1/profile/"+uuid, {module:"loyalty_programs", data:{loyalty_programs:updated}});
+        if(result && result.success && result.profile) profile = result.profile;
+        else if(result && result.success) profile.loyalty_programs = updated;
+      }
+    } else {
+      result = await api("PUT", "/api/v1/profile/"+uuid, {module:"loyalty_add", data:fields});
+      if(result && result.success && result.profile) profile = result.profile;
+    }
+    if(result && result.success) {
+      renderLoyalty(profile.loyalty_programs||[]);
       closeLoyaltyModal();
       toast("Program saved", "success");
     } else {
-      toast("Error: "+(result.error||"unknown"), "error");
+      toast("Error: "+((result&&result.error)||"unknown"), "error");
     }
   } catch(e) {
+    console.error("saveLoyalty:", e);
     toast("Error: "+e.message, "error");
   }
   btn.textContent = "Save Program"; btn.disabled = false;
@@ -2041,14 +2181,18 @@ async function deleteLoyalty() {
   if(!editingLoyaltyId) return;
   if(!confirm("Remove this loyalty program?")) return;
   try {
-    var result = await api("PUT", "/api/v1/profile/"+uuid, {module:"loyalty_delete", data:{loyalty_id:editingLoyaltyId}});
-    if(result.success) {
-      profile = result.profile;
-      renderLoyalty(result.profile.loyalty_programs||[]);
+    var result = await api("PUT", "/api/v1/profile/"+uuid, {module:"loyalty_delete", data:{loyalty_id:editingLoyaltyId, id:editingLoyaltyId}});
+    if(result && result.success) {
+      if(result.profile) profile = result.profile;
+      else profile.loyalty_programs = (profile.loyalty_programs||[]).filter(function(p){return p.id!==editingLoyaltyId && p.loyalty_id!==editingLoyaltyId;});
+      renderLoyalty(profile.loyalty_programs||[]);
       closeLoyaltyModal();
       toast("Program removed", "success");
+    } else {
+      toast("Error: "+((result&&result.error)||"unknown"), "error");
     }
   } catch(e) {
+    console.error("deleteLoyalty:", e);
     toast("Error removing program", "error");
   }
 }
@@ -3365,6 +3509,69 @@ const GRP_AVATAR_COLORS = [
   { bg:'#FCEBEB', color:'#A32D2D' },
   { bg:'#E1F5EE', color:'#0F6E56' },
 ];
+
+/* ── Consent / Permissions ───────────────────────────────── */
+const PERM_MODULES = [
+  { key:'identity',         icon:'🪪', bg:'var(--goldGlow)',  name:'Identity',           desc:'Legal name, date of birth, nationality, home airport' },
+  { key:'documents',        icon:'📄', bg:'var(--goldGlow)',  name:'Documents',           desc:'Passport, visas, Known Traveller Numbers' },
+  { key:'seat_preferences', icon:'💺', bg:'var(--tealGlow)',  name:'Seat Preferences',    desc:'Seat position, cabin class, accessibility needs' },
+  { key:'meal_preferences', icon:'🍽', bg:'var(--greenGlow)', name:'Meal & Dietary',      desc:'IATA meal codes, allergies, avoid items' },
+  { key:'loyalty_programs', icon:'✦',  bg:'var(--goldGlow)',  name:'Loyalty Programs',    desc:'Member numbers and tier status — auto-applied at checkout' },
+  { key:'payment_profiles', icon:'💳', bg:'rgba(56,99,177,0.08)', name:'Payment Profiles', desc:'Card type and last 4 digits — not full card data' },
+  { key:'trips',            icon:'📋', bg:'var(--surface2)',  name:'Trip History',         desc:'Past and upcoming bookings and PNRs' },
+  { key:'groups',           icon:'👥', bg:'var(--tealGlow)',  name:'Groups',              desc:'Group trip manifests and member lists' },
+];
+
+let consentData = {};
+
+function renderConsentPermissions() {
+  const grid = document.getElementById('perm-grid');
+  if (!grid) return;
+  const perms = consentData.module_permissions || {};
+
+  grid.innerHTML = PERM_MODULES.map(m => {
+    const on = perms[m.key] !== false; // default on
+    return `
+    <div class="perm-card${on ? ' sharing' : ''}" id="perm-card-${m.key}">
+      <div class="perm-icon" style="background:${m.bg}">${m.icon}</div>
+      <div class="perm-body">
+        <div class="perm-name">${m.name}</div>
+        <div class="perm-desc">${m.desc}</div>
+      </div>
+      <label class="perm-toggle" title="${on ? 'Sharing — click to restrict' : 'Not shared — click to allow'}">
+        <input type="checkbox" ${on ? 'checked' : ''} onchange="toggleConsentPerm('${m.key}', this.checked)">
+        <span class="perm-track"></span>
+      </label>
+    </div>`;
+  }).join('');
+}
+
+async function toggleConsentPerm(key, value) {
+  consentData.module_permissions = consentData.module_permissions || {};
+  consentData.module_permissions[key] = value;
+
+  const card = document.getElementById('perm-card-' + key);
+  if (card) card.classList.toggle('sharing', value);
+
+  const status = document.getElementById('perm-save-status');
+  if (status) status.textContent = 'Saving…';
+
+  try {
+    const result = await api('PUT', '/api/v1/profile/' + uuid, {
+      module: 'consent',
+      data: { module_permissions: consentData.module_permissions }
+    });
+    if (result && result.success) {
+      if (result.profile && result.profile.consent) consentData = result.profile.consent;
+      if (status) { status.textContent = 'Saved'; setTimeout(() => { if(status) status.textContent = ''; }, 2000); }
+    } else {
+      if (status) status.textContent = '';
+    }
+  } catch(e) {
+    console.error('toggleConsentPerm:', e);
+    if (status) status.textContent = '';
+  }
+}
 
 let grpData = [];
 let grpCurrentFilter = 'all';
