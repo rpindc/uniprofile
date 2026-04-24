@@ -222,6 +222,39 @@ async function api(path, method = "GET", body = null, token = null) {
   return r.json();
 }
 
+async function apiMe(token) {
+  const r = await fetch(`${API_URL}/api/v1/me`, {
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+  });
+  return r.json();
+}
+
+function normalizeMe(d) {
+  const id = d.identity || {};
+  const seat = d.seat_preferences || {};
+  const meal = d.meal_preferences || {};
+  const passport = (d.documents || []).find(doc => doc.doc_type === "PASSPORT" && doc.is_primary)
+                || (d.documents || []).find(doc => doc.doc_type === "PASSPORT")
+                || {};
+  return {
+    uuid: d.uniprofile_number || d.uuid || "",
+    first_name: id.legal_first || d.first_name || "",
+    last_name: id.legal_last || d.last_name || "",
+    email: d.email || "",
+    phone: id.phone || d.phone || "",
+    nationality: id.nationality || "",
+    passport_number: passport.document_number || passport.passport_number || "",
+    passport_expiry: passport.expiry_date || "",
+    date_of_birth: id.dob || "",
+    seat_preference: seat.seat_position || "",
+    cabin_preference: seat.cabin_international || seat.cabin_domestic || "",
+    meal_preference: meal.primary_meal_code || "",
+    bleisure_context: d.bleisure_context || "Leisure",
+    created_at: d.created_at || new Date().toISOString(),
+    _raw: d,
+  };
+}
+
 function genUUID() {
   const n = Date.now(), h = n.toString(16).padStart(12, "0");
   const r = () => Math.floor(Math.random() * 0x10000).toString(16).padStart(4, "0");
@@ -2018,8 +2051,19 @@ export default function App() {
   useEffect(() => {
     if (!user) return;
     setLoadingProfile(true);
-    api(`/passengers/by-email?email=${encodeURIComponent(user.email)}`, "GET", null, user.token)
-      .then(d => { if (d.passenger) { setPassenger(d.passenger); setUuid(d.passenger.uuid); setSetupDone(true); } })
+    apiMe(user.token)
+      .then(d => {
+        const id = d.uniprofile_number || d.uuid;
+        if (id) {
+          const p = normalizeMe(d);
+          setPassenger(p);
+          setUuid(id);
+          setSetupDone(true);
+          return;
+        }
+        return api(`/passengers/by-email?email=${encodeURIComponent(user.email)}`, "GET", null, user.token)
+          .then(d2 => { if (d2.passenger) { setPassenger(d2.passenger); setUuid(d2.passenger.uuid); setSetupDone(true); } });
+      })
       .catch(() => {}).finally(() => setLoadingProfile(false));
   }, [user]);
 
@@ -2029,8 +2073,10 @@ export default function App() {
   const handleSignOut = () => { setUser(null); setUuid(null); setPassenger(null); setSetupDone(false); setActive("dashboard"); };
   const handleRefresh = () => {
     if (!user) return;
-    api(`/passengers/by-email?email=${encodeURIComponent(user.email)}`, "GET", null, user.token)
-      .then(d => { if (d.passenger) { setPassenger(d.passenger); setUuid(d.passenger.uuid); } });
+    apiMe(user.token).then(d => {
+      const id = d.uniprofile_number || d.uuid;
+      if (id) { setPassenger(normalizeMe(d)); setUuid(id); }
+    }).catch(() => {});
   };
 
   if (!user) {
