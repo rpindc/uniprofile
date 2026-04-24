@@ -403,7 +403,7 @@ function LoginPage({ onLogin, onSwitch, prefill = "" }) {
   const doLogin = async () => {
     if (!f.email || !f.pw) return setErr("Email and password required");
     setErr(""); setLoading(true);
-    try { const d = await signIn(f.email, f.pw); onLogin({ email: f.email, token: d.AuthenticationResult.IdToken }); } catch (e) { setErr(e.message); }
+    try { const d = await signIn(f.email, f.pw); onLogin({ email: f.email, token: d.AuthenticationResult.AccessToken, idToken: d.AuthenticationResult.IdToken }); } catch (e) { setErr(e.message); }
     setLoading(false);
   };
   return (
@@ -2048,23 +2048,28 @@ export default function App() {
   const [prefill, setPrefill] = useState("");
   const [loadingProfile, setLoadingProfile] = useState(true);
 
+  const [profileErr, setProfileErr] = useState("");
   useEffect(() => {
     if (!user) return;
     setLoadingProfile(true);
+    setProfileErr("");
     apiMe(user.token)
       .then(d => {
         const id = d.uniprofile_number || d.uuid;
         if (id) {
-          const p = normalizeMe(d);
-          setPassenger(p);
+          setPassenger(normalizeMe(d));
           setUuid(id);
           setSetupDone(true);
           return;
         }
+        if (d.error || d.message) {
+          setProfileErr(`API: ${d.error || d.message}`);
+        }
         return api(`/passengers/by-email?email=${encodeURIComponent(user.email)}`, "GET", null, user.token)
           .then(d2 => { if (d2.passenger) { setPassenger(d2.passenger); setUuid(d2.passenger.uuid); setSetupDone(true); } });
       })
-      .catch(() => {}).finally(() => setLoadingProfile(false));
+      .catch(e => setProfileErr(`Fetch error: ${e.message}`))
+      .finally(() => setLoadingProfile(false));
   }, [user]);
 
   const handleLogin = u => setUser(u);
@@ -2087,7 +2092,10 @@ export default function App() {
   if (loadingProfile) return (
     <><style>{CSS}</style>
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bg)" }}>
-        <div className="loading"><div className="spinner"></div>Loading your UniProfile…</div>
+        <div style={{ textAlign: "center" }}>
+          <div className="loading"><div className="spinner"></div>Loading your UniProfile…</div>
+          {profileErr && <div style={{ marginTop: 16, fontSize: 12, color: "var(--rose)", fontFamily: "var(--mono)", maxWidth: 420, padding: "0 24px" }}>{profileErr}</div>}
+        </div>
       </div>
     </>
   );
