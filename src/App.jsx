@@ -324,9 +324,11 @@ function LoginPage({ onLogin, onSwitch, prefill = "" }) {
       <div className="auth-tag">IATA OneOrder · v2.0</div>
       <div className="auth-h">Welcome back 👋</div>
       {err && <div className="err">{err}</div>}
-      <div className="field"><label>Email</label><input type="email" value={f.email} onChange={set("email")} placeholder="you@example.com" /></div>
-      <div className="field"><label>Password</label><input type="password" value={f.pw} onChange={set("pw")} placeholder="Your password" onKeyDown={e => e.key === "Enter" && doLogin()} /></div>
-      <button className="btn-full" onClick={doLogin} disabled={loading}>{loading ? "Signing in…" : "Sign in →"}</button>
+      <form onSubmit={e => { e.preventDefault(); doLogin(); }} autoComplete="on">
+        <div className="field"><label>Email</label><input type="email" name="email" autoComplete="username" value={f.email} onChange={set("email")} placeholder="you@example.com" /></div>
+        <div className="field"><label>Password</label><input type="password" name="password" autoComplete="current-password" value={f.pw} onChange={set("pw")} placeholder="Your password" /></div>
+        <button type="submit" className="btn-full" disabled={loading}>{loading ? "Signing in…" : "Sign in →"}</button>
+      </form>
       <div className="auth-sw">No account yet? <a onClick={() => onSwitch("signup")}>Create one</a></div>
     </div></div>
   );
