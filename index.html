@@ -244,14 +244,27 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .countdown-bar.warning{background:var(--amber);}
 .countdown-bar.critical{background:var(--red);}
 .countdown-days{font-size:10px;color:var(--textDim);white-space:nowrap;}
-.loyalty-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
-.loyalty-card{border-radius:var(--radius-lg);padding:20px;position:relative;overflow:hidden;background:linear-gradient(135deg,var(--ink3) 0%,var(--ink4) 100%);border:1px solid var(--border2);}
-.loyalty-card::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:var(--goldGlow);opacity:0.9;}
-.loyalty-airline{font-family:'Playfair Display',serif;font-size:13px;font-weight:600;color:var(--white);margin-bottom:2px;position:relative;z-index:1;}
-.loyalty-program{font-size:11px;color:var(--textMid);margin-bottom:14px;position:relative;z-index:1;}
-.loyalty-number{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--goldLt);letter-spacing:1.5px;margin-bottom:8px;background:var(--goldGlow);padding:5px 10px;border-radius:var(--radius-sm);display:inline-block;position:relative;z-index:1;}
-.loyalty-tier{font-size:10px;letter-spacing:1px;text-transform:uppercase;font-weight:600;color:var(--goldGlow);position:relative;z-index:1;}
-.loyalty-type-badge{position:absolute;top:14px;right:14px;font-size:9px;color:var(--textDim);letter-spacing:0.5px;text-transform:uppercase;z-index:2;}
+.loyalty-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+.loyalty-card{border-radius:14px;padding:18px 20px;position:relative;overflow:hidden;background:linear-gradient(140deg,#1E1E26 0%,#141418 100%);border:1px solid rgba(255,255,255,0.09);min-height:172px;display:flex;flex-direction:column;cursor:pointer;transition:transform 0.18s ease,box-shadow 0.18s ease;}
+.loyalty-card:hover{transform:translateY(-3px);box-shadow:0 12px 36px rgba(0,0,0,0.5);}
+.loyalty-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.06) 0%,transparent 55%,rgba(255,255,255,0.02) 100%);pointer-events:none;z-index:0;border-radius:14px;}
+.loyalty-card::before{content:'';position:absolute;top:-28px;right:-28px;width:100px;height:100px;border-radius:50%;background:var(--goldGlow);opacity:0.09;z-index:0;}
+.loyalty-card.tier-gold{background:linear-gradient(140deg,#1F1500 0%,#2E1F00 60%,#1A1200 100%);border-color:rgba(180,83,9,0.28);}
+.loyalty-card.tier-gold::before{opacity:0.22;}
+.loyalty-card.tier-plat{background:linear-gradient(140deg,#0E0E1C 0%,#191928 60%,#0E0E1C 100%);border-color:rgba(196,176,240,0.18);}
+.loyalty-card.tier-plat::before{background:#C4B0F0;opacity:0.12;}
+.loyalty-card.tier-diamond{background:linear-gradient(140deg,#060E1C 0%,#0C1A30 60%,#060E1C 100%);border-color:rgba(96,180,255,0.18);}
+.loyalty-card.tier-diamond::before{background:#80C0FF;opacity:0.12;}
+.lc-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1;margin-bottom:12px;}
+.lc-provider{font-family:'Playfair Display',serif;font-size:15px;font-weight:600;color:#fff;line-height:1.2;}
+.lc-program-sub{font-size:10px;color:rgba(255,255,255,0.42);margin-top:3px;letter-spacing:0.3px;}
+.lc-type-tag{font-size:8px;letter-spacing:1.4px;text-transform:uppercase;color:rgba(255,255,255,0.28);font-weight:600;background:rgba(255,255,255,0.06);padding:3px 8px;border-radius:100px;border:1px solid rgba(255,255,255,0.08);flex-shrink:0;margin-top:2px;}
+.lc-number{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--goldGlow);letter-spacing:2.5px;font-weight:500;position:relative;z-index:1;flex:1;display:flex;align-items:center;}
+.lc-footer{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1;margin-top:auto;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08);}
+.lc-tier{font-size:9px;letter-spacing:1.4px;text-transform:uppercase;font-weight:700;color:var(--goldGlow);}
+.loyalty-card.tier-plat .lc-tier{color:#D4C8F8;}
+.loyalty-card.tier-diamond .lc-tier{color:#90C8FF;}
+.lc-points{font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,0.5);}
 .trip-list{display:flex;flex-direction:column;gap:10px;}
 .trip-row{display:flex;align-items:center;gap:14px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 18px;transition:border-color 0.12s;}
 .trip-row:hover{border-color:var(--border2);}
@@ -1482,19 +1495,17 @@ function renderLoyalty(programs){
   var other=programs.filter(function(p){return p.program_type!=="AIRLINE"&&p.program_type!=="HOTEL";});
 
   function renderCard(l){
-    var tierColor=l.tier_status&&l.tier_status.toLowerCase().includes("gold")?"var(--goldLt)":l.tier_status&&(l.tier_status.toLowerCase().includes("plat")||l.tier_status.toLowerCase().includes("diamond"))?"#C4B0F0":l.tier_status&&l.tier_status.toLowerCase().includes("silver")?"#C0C0C0":"var(--textMid)";
-    return '<div class="loyalty-card" onclick="openEditLoyalty(this.dataset.lid)" data-lid="'+l.id+'" style="cursor:pointer">'+
-      '<div class="loyalty-type-badge">'+l.program_type+'</div>'+
-      '<div class="loyalty-airline">'+l.provider_name+'</div>'+
-      '<div class="loyalty-program">'+(l.program_name||"")+'</div>'+
-      '<div class="loyalty-number">'+(l.member_number||"")+'</div>'+
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">'+
-        '<div class="loyalty-tier">★ '+(l.tier_status||"Member")+'</div>'+
-        (l.points_balance?'<div style="font-size:10px;color:var(--goldGlow);font-family:JetBrains Mono,monospace;opacity:0.8">'+Number(l.points_balance).toLocaleString()+'pts</div>':'')+
-      '</div>'+
-      (l.linked_card_type?'<div style="margin-top:8px;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:4px;font-size:10px;color:var(--textMid)">'+
-        '💳 '+l.linked_card_type+(l.linked_card_last4?' ···· '+l.linked_card_last4:'')+'</div>':'')+
-    '</div>';
+    var t=(l.tier_status||"").toLowerCase();
+    var tc=(t.includes("gold")||t.includes("1k")||t.includes("exec")||t.includes("elite"))?"tier-gold"
+      :(t.includes("plat")||t.includes("pro"))?"tier-plat"
+      :(t.includes("diamond")||t.includes("sapphire"))?"tier-diamond":"";
+    var h='<div class="loyalty-card '+tc+'" onclick="openEditLoyalty(this.dataset.lid)" data-lid="'+l.id+'">';
+    h+='<div class="lc-top"><div><div class="lc-provider">'+l.provider_name+'</div><div class="lc-program-sub">'+(l.program_name||"")+'</div></div><div class="lc-type-tag">'+(l.program_type||"")+'</div></div>';
+    h+='<div class="lc-number">'+(l.member_number||"—")+'</div>';
+    h+='<div class="lc-footer"><div class="lc-tier">★ '+(l.tier_status||"Member")+'</div>'+(l.points_balance?'<div class="lc-points">'+Number(l.points_balance).toLocaleString()+' pts</div>':'')+'</div>';
+    if(l.linked_card_type) h+='<div style="margin-top:8px;font-size:9px;color:rgba(255,255,255,0.28);position:relative;z-index:1;letter-spacing:0.5px">💳 '+l.linked_card_type+(l.linked_card_last4?' ···· '+l.linked_card_last4:'')+'</div>';
+    h+='</div>';
+    return h;
   }
 
   function addBtn(type){
