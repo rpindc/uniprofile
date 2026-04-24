@@ -246,7 +246,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .countdown-days{font-size:10px;color:var(--textDim);white-space:nowrap;}
 .loyalty-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
 .loyalty-card{border-radius:var(--radius-lg);padding:20px;position:relative;overflow:hidden;background:linear-gradient(135deg,var(--ink3) 0%,var(--ink4) 100%);border:1px solid var(--border2);}
-.loyalty-card::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:var(--goldGlow);}
+.loyalty-card::before{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:var(--goldGlow);opacity:0.9;}
 .loyalty-airline{font-family:'Playfair Display',serif;font-size:13px;font-weight:600;color:var(--white);margin-bottom:2px;position:relative;z-index:1;}
 .loyalty-program{font-size:11px;color:var(--textMid);margin-bottom:14px;position:relative;z-index:1;}
 .loyalty-number{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--goldLt);letter-spacing:1.5px;margin-bottom:8px;background:var(--goldGlow);padding:5px 10px;border-radius:var(--radius-sm);display:inline-block;position:relative;z-index:1;}
@@ -1489,8 +1489,8 @@ function renderLoyalty(programs){
       '<div class="loyalty-program">'+(l.program_name||"")+'</div>'+
       '<div class="loyalty-number">'+(l.member_number||"")+'</div>'+
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">'+
-        '<div class="loyalty-tier" style="color:'+tierColor+'">'+(l.tier_status||"Member")+'</div>'+
-        (l.points_balance?'<div style="font-size:10px;color:var(--goldLt);font-family:JetBrains Mono,monospace">'+Number(l.points_balance).toLocaleString()+'pts</div>':'')+
+        '<div class="loyalty-tier">★ '+(l.tier_status||"Member")+'</div>'+
+        (l.points_balance?'<div style="font-size:10px;color:var(--goldGlow);font-family:JetBrains Mono,monospace;opacity:0.8">'+Number(l.points_balance).toLocaleString()+'pts</div>':'')+
       '</div>'+
       (l.linked_card_type?'<div style="margin-top:8px;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:4px;font-size:10px;color:var(--textMid)">'+
         '💳 '+l.linked_card_type+(l.linked_card_last4?' ···· '+l.linked_card_last4:'')+'</div>':'')+
