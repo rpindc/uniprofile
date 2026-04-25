@@ -1123,6 +1123,55 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         <!-- ── Tab: Essentials ─────────────────────────────── -->
         <div id="pref-tab-essentials" class="pref-tab-body">
           <div class="form-section">
+            <div class="form-section-title">IDENTITY</div>
+            <div class="form-grid">
+              <div class="form-field"><label class="field-label">Full legal name (as on passport)</label><input class="field-input" id="f-legal_name" type="text" placeholder="As on passport"></div>
+              <div class="form-field"><label class="field-label">Preferred name</label><input class="field-input" id="f-preferred_name" type="text" placeholder="What you go by"></div>
+              <div class="form-field"><label class="field-label">Date of birth</label><input class="field-input" id="f-date_of_birth" type="date"></div>
+              <div class="form-field"><label class="field-label">Gender</label><select class="field-select" id="f-gender"><option value="MALE">Male</option><option value="FEMALE">Female</option><option value="X">X</option><option value="PREFER_NOT">Prefer not to say</option></select></div>
+              <div class="form-field"><label class="field-label">Nationality (primary)</label><input class="field-input" id="f-nationality_primary" type="text" placeholder="e.g. Philippine"></div>
+              <div class="form-field"><label class="field-label">Secondary nationality</label><input class="field-input" id="f-nationality_secondary" type="text" placeholder="If dual citizen"></div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">PRIMARY PASSPORT</div>
+            <div class="form-grid">
+              <div class="form-field"><label class="field-label">Passport number</label><input class="field-input" id="f-passport_primary_number" type="text" placeholder="e.g. P12345678"></div>
+              <div class="form-field"><label class="field-label">Passport expiry</label><input class="field-input" id="f-passport_primary_expiry" type="date"></div>
+              <div class="form-field"><label class="field-label">Issuing country</label><input class="field-input" id="f-passport_primary_country" type="text" placeholder="e.g. Philippines"></div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">SECONDARY PASSPORT <span style="font-size:9px;color:var(--textHint);font-weight:400;letter-spacing:0;text-transform:none;margin-left:6px">If dual citizen</span></div>
+            <div class="form-grid">
+              <div class="form-field"><label class="field-label">Passport number</label><input class="field-input" id="f-passport_secondary_number" type="text" placeholder="e.g. A98765432"></div>
+              <div class="form-field"><label class="field-label">Passport expiry</label><input class="field-input" id="f-passport_secondary_expiry" type="date"></div>
+              <div class="form-field"><label class="field-label">Issuing country</label><input class="field-input" id="f-passport_secondary_country" type="text" placeholder="e.g. United States"></div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">TRUSTED TRAVELER</div>
+            <div class="form-grid">
+              <div class="form-field"><label class="field-label">TSA PreCheck KTN</label><input class="field-input" id="f-known_traveler_number" type="text" placeholder="e.g. 123456789"></div>
+              <div class="form-field"><label class="field-label">Global Entry / NEXUS / SENTRI</label><input class="field-input" id="f-global_entry_id" type="text" placeholder="e.g. 987654321"></div>
+              <div class="form-field"><label class="field-label">CLEAR ID</label><input class="field-input" id="f-clear_id" type="text" placeholder="CLEAR membership ID"></div>
+              <div class="form-field"><label class="field-label">Redress number</label><input class="field-input" id="f-redress_number" type="text" placeholder="DHS TRIP redress number"></div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-section-title">EMERGENCY CONTACT</div>
+            <div class="form-grid">
+              <div class="form-field"><label class="field-label">Contact name</label><input class="field-input" id="f-emergency_name" type="text" placeholder="Full name"></div>
+              <div class="form-field"><label class="field-label">Relationship</label><input class="field-input" id="f-emergency_relationship" type="text" placeholder="e.g. Spouse, Parent"></div>
+              <div class="form-field"><label class="field-label">Phone</label><input class="field-input" id="f-emergency_phone" type="tel" placeholder="+1 571 555 0192"></div>
+              <div class="form-field"><label class="field-label">Email</label><input class="field-input" id="f-emergency_email" type="email" placeholder="contact@example.com"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Tab: How I Fly ─────────────────────────────── -->
+        <div id="pref-tab-fly" class="pref-tab-body" style="display:none">
+          <div class="form-section">
             <div class="form-section-title">FLIGHT CABIN &amp; POSITION</div>
             <div class="form-grid">
               <div class="form-field"><label class="field-label">Cabin — Domestic</label><select class="field-select" id="f-cabin_domestic"><option value="ECONOMY">Economy</option><option value="ECONOMY_PLUS">Economy Plus</option><option value="BUSINESS">Business</option><option value="FIRST">First Class</option></select></div>
@@ -1131,10 +1180,6 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
               <div class="form-field"><label class="field-label">Row Preference</label><select class="field-select" id="f-row_preference"><option value="EXIT_ROW">Exit Row / Extra Legroom</option><option value="FRONT">Front of Cabin</option><option value="REAR">Rear of Cabin</option><option value="NO_PREF">No Preference</option></select></div>
             </div>
           </div>
-        </div>
-
-        <!-- ── Tab: How I Fly ─────────────────────────────── -->
-        <div id="pref-tab-fly" class="pref-tab-body" style="display:none">
           <div class="form-section">
             <div class="form-section-title">SEAT COMFORT</div>
             <div class="form-grid">
@@ -2352,7 +2397,7 @@ const cb=id=>document.getElementById(id)?.checked||false;
 const s=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val??"";};
 const sc=(id,val)=>{const el=document.getElementById(id);if(el)el.checked=!!val;};
 const st=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt??"—";};
-async function saveSection(){if(saving)return;const btn=document.getElementById("save-btn");saving=true;btn.disabled=true;btn.textContent="Saving...";setSaveState("saving");let module,data;try{if(section==="identity"){module="identity";data={legal_first:v("f-legal_first"),legal_middle:v("f-legal_middle"),legal_last:v("f-legal_last"),dob:v("f-dob"),nationality:v("f-nationality"),gender_code:v("f-gender_code"),home_airport:v("f-home_airport").toUpperCase().slice(0,3)};}else if(section==="identity"){module="identity";data={legal_first:v("f-legal_first"),legal_middle:v("f-legal_middle"),legal_last:v("f-legal_last"),dob:v("f-dob")||null,nationality:v("f-nationality"),gender_code:v("f-gender_code"),home_airport:v("f-home_airport").toUpperCase().slice(0,3)};}else if(section==="preferences"){const activeTab=document.querySelector('.pref-tab.active')?.id||'';if(activeTab==='ptab-fly'){module="meal_preferences";data={primary_meal_code:v("f-primary_meal_code"),beverage_pref:v("f-beverage_pref"),allergies:v("f-allergies").split(",").map(s=>s.trim()).filter(Boolean),avoid_items:v("f-avoid_items").split(",").map(s=>s.trim()).filter(Boolean),dietary_notes:v("f-dietary_notes")};}else{module="seat_preferences";data={cabin_domestic:v("f-cabin_domestic"),cabin_international:v("f-cabin_international"),seat_position:v("f-seat_position"),row_preference:v("f-row_preference"),avoid_middle_seats:cb("f-avoid_middle_seats"),avoid_last_row:cb("f-avoid_last_row"),wheelchair_needed:cb("f-wheelchair_needed"),hotel_room_type:v("f-hotel_room_type"),hotel_floor_pref:v("f-hotel_floor_pref"),car_type_pref:v("f-car_type_pref")};}}else if(section==="meals"){module="meal_preferences";data={primary_meal_code:v("f-primary_meal_code"),beverage_pref:v("f-beverage_pref"),allergies:v("f-allergies").split(",").map(s=>s.trim()).filter(Boolean),avoid_items:v("f-avoid_items").split(",").map(s=>s.trim()).filter(Boolean),dietary_notes:v("f-dietary_notes")};}else if(section==="payment"){const isCorp=document.getElementById("bleisure-toggle").checked;if(isCorp){module="payment_corporate";data={company_name:v("f-company_name"),corporate_card:v("f-corporate_card"),cost_center:v("f-cost_center"),policy_description:v("f-policy_description"),expense_platform:v("f-expense_platform")};}else{module="payment_personal";data={preferred_card:v("f-preferred_card")};}}else{toast("Navigate to a module tab to save");saving=false;btn.disabled=false;btn.textContent="Save Changes";setSaveState("");return;}const result=await api("PUT",`/api/v1/profile/${uuid}`,{module,data});if(result.success){profile=result.profile;toast("Saved successfully","success");setSaveState("saved");updateSidebar(result.profile);}else{toast("Save failed: "+(result.error||"unknown"),"error");setSaveState("");}}catch(e){toast("Error: "+e.message,"error");setSaveState("");}saving=false;btn.disabled=false;btn.textContent="Save Changes";}
+async function saveSection(){if(saving)return;const btn=document.getElementById("save-btn");saving=true;btn.disabled=true;btn.textContent="Saving...";setSaveState("saving");let module,data;try{if(section==="preferences"){const activeTab=document.querySelector('.pref-tab.active')?.id||'';if(activeTab==='ptab-essentials'){module="essentials";data={legal_name:v("f-legal_name"),preferred_name:v("f-preferred_name"),date_of_birth:v("f-date_of_birth")||null,gender:v("f-gender"),nationality_primary:v("f-nationality_primary"),nationality_secondary:v("f-nationality_secondary"),passport_primary_number:v("f-passport_primary_number"),passport_primary_expiry:v("f-passport_primary_expiry")||null,passport_primary_country:v("f-passport_primary_country"),passport_secondary_number:v("f-passport_secondary_number"),passport_secondary_expiry:v("f-passport_secondary_expiry")||null,passport_secondary_country:v("f-passport_secondary_country"),known_traveler_number:v("f-known_traveler_number"),global_entry_id:v("f-global_entry_id"),clear_id:v("f-clear_id"),redress_number:v("f-redress_number"),emergency_name:v("f-emergency_name"),emergency_relationship:v("f-emergency_relationship"),emergency_phone:v("f-emergency_phone"),emergency_email:v("f-emergency_email")};}else if(activeTab==='ptab-fly'){module="fly_preferences";data={cabin_domestic:v("f-cabin_domestic"),cabin_international:v("f-cabin_international"),seat_position:v("f-seat_position"),row_preference:v("f-row_preference"),avoid_middle_seats:cb("f-avoid_middle_seats"),avoid_last_row:cb("f-avoid_last_row"),wheelchair_needed:cb("f-wheelchair_needed"),primary_meal_code:v("f-primary_meal_code"),beverage_pref:v("f-beverage_pref"),allergies:v("f-allergies").split(",").map(s=>s.trim()).filter(Boolean),avoid_items:v("f-avoid_items").split(",").map(s=>s.trim()).filter(Boolean),dietary_notes:v("f-dietary_notes")};}else if(activeTab==='ptab-travel'){module="travel_preferences";data={hotel_room_type:v("f-hotel_room_type"),hotel_floor_pref:v("f-hotel_floor_pref"),car_type_pref:v("f-car_type_pref")};}else{toast("Loyalty programs are managed above","success");saving=false;btn.disabled=false;btn.textContent="Save Changes";setSaveState("");return;}}else if(section==="meals"){module="meal_preferences";data={primary_meal_code:v("f-primary_meal_code"),beverage_pref:v("f-beverage_pref"),allergies:v("f-allergies").split(",").map(s=>s.trim()).filter(Boolean),avoid_items:v("f-avoid_items").split(",").map(s=>s.trim()).filter(Boolean),dietary_notes:v("f-dietary_notes")};}else if(section==="payment"){const isCorp=document.getElementById("bleisure-toggle").checked;if(isCorp){module="payment_corporate";data={company_name:v("f-company_name"),corporate_card:v("f-corporate_card"),cost_center:v("f-cost_center"),policy_description:v("f-policy_description"),expense_platform:v("f-expense_platform")};}else{module="payment_personal";data={preferred_card:v("f-preferred_card")};}}else{toast("Navigate to a module tab to save");saving=false;btn.disabled=false;btn.textContent="Save Changes";setSaveState("");return;}const result=await api("PUT",`/api/v1/profile/${uuid}`,{module,data});if(result.success){profile=result.profile;toast("Saved successfully","success");setSaveState("saved");updateSidebar(result.profile);}else{toast("Save failed: "+(result.error||"unknown"),"error");setSaveState("");}}catch(e){toast("Error: "+e.message,"error");setSaveState("");}saving=false;btn.disabled=false;btn.textContent="Save Changes";}
 function calcCompleteness(p){var checks=[{label:"Identity",weight:25,section:"identity",done:!!(p.identity&&p.identity.legal_first&&p.identity.legal_last&&p.identity.dob&&p.identity.nationality)},{label:"Passport",weight:20,section:"identity",done:!!(p.documents&&p.documents.some(function(d){return d.doc_type==="PASSPORT";}))},{label:"Seat preferences",weight:15,section:"preferences",done:!!(p.seat_preferences&&p.seat_preferences.cabin_domestic)},{label:"Meal preference",weight:10,section:"meals",done:!!(p.meal_preferences&&p.meal_preferences.primary_meal_code)},{label:"Loyalty program",weight:15,section:"loyalty",done:!!(p.loyalty_programs&&p.loyalty_programs.length)},{label:"Payment profile",weight:10,section:"payment",done:!!(p.payment_profiles&&p.payment_profiles.length)},{label:"First trip",weight:5,section:"trips",done:!!(p.trips&&p.trips.length)},];var pct=checks.reduce(function(s,c){return s+(c.done?c.weight:0);},0);var missing=checks.filter(function(c){return !c.done;});return{pct:pct,done:checks.length-missing.length,total:checks.length,missing:missing};}
 function navToSection(s){showSection(s,document.querySelector('.nav-btn[onclick*="\'"+s+"\'"]'));}
 function exportAllData(){if(!profile)return toast("Profile not loaded yet","error");const blob=new Blob([JSON.stringify(profile,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`uniprofile-export-${(profile.uniprofile_number||"data").toLowerCase()}.json`;a.click();URL.revokeObjectURL(url);toast("Export downloaded","success");}
