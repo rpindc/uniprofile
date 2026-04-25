@@ -860,6 +860,29 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .pref-tab.active{background:var(--white);color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.08);}
 .pref-tab-body{animation:fadeIn 0.15s ease;}
 .form-eyebrow{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--textHint);font-weight:700;margin-bottom:14px;}
+/* ── Group Notes ─────────────────────────────────────────── */
+.grp-notes-list{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+.grp-note-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 14px;position:relative;}
+.grp-note-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+.grp-note-author{font-size:10px;font-weight:700;color:var(--textHint);letter-spacing:0.5px;text-transform:uppercase;}
+.grp-note-time{font-size:10px;color:var(--textHint);}
+.grp-note-text{font-size:13px;color:var(--text);line-height:1.6;white-space:pre-wrap;word-break:break-word;}
+.grp-note-attachments{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.grp-note-thumb{width:64px;height:64px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid var(--border);transition:opacity 0.15s;}
+.grp-note-thumb:hover{opacity:0.8;}
+.grp-note-file-chip{display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--surface);border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--text);cursor:pointer;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.grp-note-del{position:absolute;top:8px;right:8px;background:none;border:none;color:var(--textHint);font-size:14px;cursor:pointer;opacity:0;transition:opacity 0.15s;line-height:1;}
+.grp-note-card:hover .grp-note-del{opacity:1;}
+.grp-note-add{display:flex;flex-direction:column;gap:8px;padding:12px 14px;background:var(--surface);border:1px dashed var(--border2);border-radius:var(--radius-md);}
+.grp-note-textarea{width:100%;min-height:68px;resize:vertical;box-sizing:border-box;}
+.grp-note-attach-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.grp-note-attach-btn{padding:5px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:11px;color:var(--textDim);cursor:pointer;font-family:'DM Sans',sans-serif;transition:border-color 0.15s;}
+.grp-note-attach-btn:hover{border-color:var(--gold);color:var(--text);}
+.grp-note-pending-wrap{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px;}
+.grp-note-pending-item{position:relative;display:inline-flex;}
+.grp-note-pending-item img{width:48px;height:48px;object-fit:cover;border-radius:5px;border:1px solid var(--border);}
+.grp-note-pending-file{display:flex;align-items:center;gap:4px;padding:4px 8px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;font-size:10px;color:var(--textDim);}
+.grp-note-pending-rm{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;border:none;border-radius:50%;width:14px;height:14px;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;}
 /* ── Account section ──────────────────────────────────────── */
 .acct-profile-card{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px;margin-bottom:20px;}
 .acct-avatar{width:48px;height:48px;border-radius:50%;background:var(--goldGlow);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:18px;color:var(--gold);flex-shrink:0;}
@@ -4279,6 +4302,26 @@ function openGroupDetail(id) {
         <div class="grp-members">${membersHTML}</div>
       </div>
     </div>
+
+    <div class="grp-section-label" style="margin-top:1.5rem">Notes</div>
+    <div id="grp-notes-panel">
+      ${grpRenderNotes(g.notes||[],'${esc(g.id)}')}
+      <div class="grp-note-add">
+        <textarea class="grp-input grp-note-textarea" id="grp-note-text" placeholder="Add a note visible to all members…"></textarea>
+        <div class="grp-note-attach-row">
+          <button class="grp-note-attach-btn" onclick="document.getElementById('grp-note-file-input').click()">📎 Attach photo or file</button>
+          <input type="file" id="grp-note-file-input" accept="image/*,.pdf,.txt" multiple style="display:none" onchange="grpNoteAttachFiles(this)">
+          <label style="font-size:11px;color:var(--textHint);display:flex;align-items:center;gap:5px;cursor:pointer;margin-left:auto">
+            <input type="checkbox" id="grp-note-notify" checked style="width:12px;height:12px">
+            Notify members
+          </label>
+        </div>
+        <div id="grp-note-pending-wrap" class="grp-note-pending-wrap"></div>
+        <div>
+          <button class="grp-btn-primary" style="font-size:12px;padding:7px 16px" onclick="addGroupNote('${esc(g.id)}')">Add Note</button>
+        </div>
+      </div>
+    </div>
   `;
 
   document.getElementById('grp-grid').style.display        = 'none';
@@ -4292,6 +4335,148 @@ function closeGroupDetail() {
   document.getElementById('grp-detail').style.display      = 'none';
   document.getElementById('grp-grid').style.display        = 'grid';
   document.getElementById('grp-type-filter').style.display = 'flex';
+}
+
+/* ── Notes ───────────────────────────────────────────────── */
+let pendingNoteAttachments = [];
+
+function grpRenderNotes(notes, grpId) {
+  if (!notes || !notes.length) return '<div style="font-size:12px;color:var(--textHint);margin-bottom:10px">No notes yet.</div>';
+  return '<div class="grp-notes-list">' + notes.map(n => {
+    const attHTML = (n.attachments||[]).map(a => {
+      if (a.type && a.type.startsWith('image/')) {
+        return `<img class="grp-note-thumb" src="${a.dataUrl}" title="${esc(a.name)}" onclick="grpViewAttachment('${a.dataUrl}','${esc(a.name)}')">`;
+      }
+      return `<span class="grp-note-file-chip" onclick="grpDownloadAttachment('${a.dataUrl}','${esc(a.name)}')">📄 ${esc(a.name)}</span>`;
+    }).join('');
+    const ts = n.ts ? new Date(n.ts).toLocaleString([], {month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '';
+    return `<div class="grp-note-card">
+      <button class="grp-note-del" onclick="deleteGroupNote('${grpId}','${n.id}')" title="Delete note">✕</button>
+      <div class="grp-note-header">
+        <span class="grp-note-author">${esc(n.author||'You')}</span>
+        <span class="grp-note-time">${ts}</span>
+      </div>
+      <div class="grp-note-text">${esc(n.text)}</div>
+      ${attHTML ? '<div class="grp-note-attachments">'+attHTML+'</div>' : ''}
+    </div>`;
+  }).join('') + '</div>';
+}
+
+function grpNoteAttachFiles(input) {
+  const files = Array.from(input.files);
+  const MAX = 5;
+  if (pendingNoteAttachments.length + files.length > MAX) {
+    toast(`Max ${MAX} attachments per note`, 'error'); input.value=''; return;
+  }
+  files.forEach(file => {
+    if (file.size > 3 * 1024 * 1024) { toast(`${file.name} is too large (max 3 MB)`,'error'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      if (file.type.startsWith('image/')) {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_DIM = 900;
+          let w = img.width, h = img.height;
+          if (w > MAX_DIM || h > MAX_DIM) {
+            if (w > h) { h = Math.round(h * MAX_DIM / w); w = MAX_DIM; }
+            else       { w = Math.round(w * MAX_DIM / h); h = MAX_DIM; }
+          }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
+          pendingNoteAttachments.push({ name: file.name, type: 'image/jpeg', dataUrl });
+          grpNoteRenderPending();
+        };
+        img.src = e.target.result;
+      } else {
+        pendingNoteAttachments.push({ name: file.name, type: file.type||'application/octet-stream', dataUrl: e.target.result });
+        grpNoteRenderPending();
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function grpNoteRenderPending() {
+  const wrap = document.getElementById('grp-note-pending-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = pendingNoteAttachments.map((a, i) => {
+    if (a.type.startsWith('image/')) {
+      return `<span class="grp-note-pending-item"><img src="${a.dataUrl}" title="${esc(a.name)}"><button class="grp-note-pending-rm" onclick="grpNoteRemovePending(${i})">✕</button></span>`;
+    }
+    return `<span class="grp-note-pending-item"><span class="grp-note-pending-file">📄 ${esc(a.name)}</span><button class="grp-note-pending-rm" onclick="grpNoteRemovePending(${i})">✕</button></span>`;
+  }).join('');
+}
+
+function grpNoteRemovePending(i) {
+  pendingNoteAttachments.splice(i, 1);
+  grpNoteRenderPending();
+}
+
+async function addGroupNote(grpId) {
+  const textEl = document.getElementById('grp-note-text');
+  const text = textEl ? textEl.value.trim() : '';
+  if (!text && !pendingNoteAttachments.length) { toast('Write something or attach a file first', 'error'); return; }
+  const g = grpData.find(x => x.id === grpId);
+  if (!g) return;
+  const authorName = profile && profile.identity
+    ? ((profile.identity.legal_first||'') + ' ' + (profile.identity.legal_last||'')).trim() || 'You'
+    : 'You';
+  const note = { id: 'note-' + Date.now(), author: authorName, text, ts: new Date().toISOString(), attachments: [...pendingNoteAttachments] };
+  if (!g.notes) g.notes = [];
+  g.notes.push(note);
+  pendingNoteAttachments = [];
+  if (textEl) textEl.value = '';
+  grpPersist();
+  // Notify members if checkbox checked
+  const notify = document.getElementById('grp-note-notify');
+  if (notify && notify.checked && token && uuid) {
+    try {
+      await api('POST', `/api/v1/groups/${grpId}/note-alert`, { text, author: authorName });
+    } catch(e) { /* non-fatal */ }
+  }
+  // Re-render notes panel without full detail refresh
+  const panel = document.getElementById('grp-notes-panel');
+  if (panel) {
+    panel.innerHTML = grpRenderNotes(g.notes, grpId) +
+      `<div class="grp-note-add">
+        <textarea class="grp-input grp-note-textarea" id="grp-note-text" placeholder="Add a note visible to all members…"></textarea>
+        <div class="grp-note-attach-row">
+          <button class="grp-note-attach-btn" onclick="document.getElementById('grp-note-file-input').click()">📎 Attach photo or file</button>
+          <input type="file" id="grp-note-file-input" accept="image/*,.pdf,.txt" multiple style="display:none" onchange="grpNoteAttachFiles(this)">
+          <label style="font-size:11px;color:var(--textHint);display:flex;align-items:center;gap:5px;cursor:pointer;margin-left:auto">
+            <input type="checkbox" id="grp-note-notify" checked style="width:12px;height:12px">Notify members
+          </label>
+        </div>
+        <div id="grp-note-pending-wrap" class="grp-note-pending-wrap"></div>
+        <div><button class="grp-btn-primary" style="font-size:12px;padding:7px 16px" onclick="addGroupNote('${grpId}')">Add Note</button></div>
+      </div>`;
+  }
+  toast('Note added', 'success');
+}
+
+function deleteGroupNote(grpId, noteId) {
+  const g = grpData.find(x => x.id === grpId);
+  if (!g) return;
+  g.notes = (g.notes||[]).filter(n => n.id !== noteId);
+  grpPersist();
+  const panel = document.getElementById('grp-notes-panel');
+  if (panel) {
+    const addHtml = panel.querySelector('.grp-note-add') ? panel.querySelector('.grp-note-add').outerHTML : '';
+    panel.innerHTML = grpRenderNotes(g.notes, grpId) + addHtml;
+  }
+  toast('Note deleted');
+}
+
+function grpViewAttachment(dataUrl, name) {
+  const win = window.open('', '_blank');
+  if (win) { win.document.write(`<html><body style="margin:0;background:#111"><img src="${dataUrl}" style="max-width:100%;display:block;margin:auto" title="${name}"></body></html>`); }
+}
+
+function grpDownloadAttachment(dataUrl, name) {
+  const a = document.createElement('a'); a.href = dataUrl; a.download = name; a.click();
 }
 
 /* ── Filter ──────────────────────────────────────────────── */
@@ -4343,6 +4528,7 @@ function createGroup() {
     }],
     flights: [],
     hotel: null,
+    notes: [],
   };
 
   grpData.unshift(newGroup);
