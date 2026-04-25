@@ -1251,78 +1251,6 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         </div><!-- /pref-tab-loyalty -->
 
       </section>
-      <section class="section" id="section-loyalty-removed" style="display:none!important">
-        <div class="sec-header"><div class="sec-icon" style="background:var(--goldGlow)">✦</div><div><div class="sec-title">Loyalty Programs</div><div class="sec-sub">IATA OneOrder Module 4 — Auto-applied at checkout on all integrated platforms</div></div></div>
-
-        <!-- Loyalty Modal -->
-        <div id="loyalty-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
-          <div style="background:var(--ink2);border:1px solid var(--border2);border-radius:var(--radius-xl);padding:32px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;margin:20px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
-              <div style="font-family:Playfair Display,serif;font-size:22px;color:var(--white)" id="loyalty-modal-title">Add Program</div>
-              <button onclick="closeLoyaltyModal()" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:20px">✕</button>
-            </div>
-            <div class="form-grid" style="margin-bottom:14px">
-              <div class="form-field"><label class="field-label">Program Type</label>
-                <select class="field-select" id="lf-program_type">
-                  <option value="AIRLINE">Airline</option>
-                  <option value="HOTEL">Hotel</option>
-                  <option value="CAR">Car Rental</option>
-                  <option value="RAIL">Rail</option>
-                  <option value="OTHER">Other</option>
-                </select>
-              </div>
-              <div class="form-field"><label class="field-label">Provider / Airline</label>
-                <input class="field-input" id="lf-provider_name" type="text" placeholder="e.g. United Airlines">
-              </div>
-            </div>
-            <div class="form-grid" style="margin-bottom:14px">
-              <div class="form-field"><label class="field-label">Program Name</label>
-                <input class="field-input" id="lf-program_name" type="text" placeholder="e.g. MileagePlus">
-              </div>
-              <div class="form-field"><label class="field-label">Member Number</label>
-                <input class="field-input" id="lf-member_number" type="text" placeholder="e.g. MP12345678">
-              </div>
-            </div>
-            <div class="form-grid" style="margin-bottom:14px">
-              <div class="form-field"><label class="field-label">Tier Status</label>
-                <input class="field-input" id="lf-tier_status" type="text" placeholder="e.g. Gold, Platinum, Member">
-              </div>
-              <div class="form-field"><label class="field-label">Tier Expiry</label>
-                <input class="field-input" id="lf-tier_expires" type="date">
-              </div>
-            </div>
-            <div class="form-grid" style="margin-bottom:14px">
-              <div class="form-field"><label class="field-label">Points Balance</label>
-                <input class="field-input" id="lf-points_balance" type="number" placeholder="e.g. 85000">
-              </div>
-              <div class="form-field"><label class="field-label">Linked Card Type</label>
-                <input class="field-input" id="lf-linked_card_type" type="text" placeholder="e.g. Citi AAdvantage Platinum">
-              </div>
-            </div>
-            <div class="form-grid" style="margin-bottom:14px">
-              <div class="form-field"><label class="field-label">Linked Card Last 4</label>
-                <input class="field-input" id="lf-linked_card_last4" type="text" placeholder="e.g. 4521" maxlength="4">
-              </div>
-              <div class="form-field"><label class="field-label">Notes</label>
-                <input class="field-input" id="lf-notes" type="text" placeholder="Optional notes">
-              </div>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding:12px 14px;background:var(--surface);border-radius:var(--radius-sm)">
-              <input type="checkbox" id="lf-auto_apply" checked style="width:14px;height:14px">
-              <label for="lf-auto_apply" style="font-size:13px;color:var(--text);cursor:pointer">Auto-apply at checkout on integrated platforms</label>
-            </div>
-            <div style="display:flex;gap:10px">
-              <button class="save-btn" onclick="saveLoyalty()" id="loyalty-save-btn">Save Program</button>
-              <button onclick="closeLoyaltyModal()" style="padding:8px 20px;background:transparent;border:1px solid var(--border2);color:var(--textMid);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:DM Sans,sans-serif">Cancel</button>
-              <button id="loyalty-delete-btn" onclick="deleteLoyalty()" style="display:none;padding:8px 20px;background:var(--redGlow);border:1px solid rgba(217,95,82,0.3);color:var(--red);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:DM Sans,sans-serif;margin-left:auto">Delete</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-section"><div class="form-section-title">Airlines</div><div class="loyalty-grid" id="loyalty-airlines"></div></div>
-        <div class="form-section"><div class="form-section-title">Hotels</div><div class="loyalty-grid" id="loyalty-hotels"></div></div>
-        <div class="form-section"><div class="form-section-title">Car Rental &amp; Other</div><div class="loyalty-grid" id="loyalty-other"></div></div>
-      </section>
       <section class="section" id="section-payment">
         <div class="sec-header"><div class="sec-icon" style="background:rgba(56,99,177,0.1)">💳</div><div><div class="sec-title">Payment &amp; Policy</div><div class="sec-sub">IATA OneOrder Module 5 — Context-aware switching with bleisure toggle</div></div></div>
         <div id="pay-personal">
@@ -1345,20 +1273,20 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
           <button class="trip-filter-btn" onclick="filterTrips('BLEISURE',this)">Bleisure</button>
           <button class="trip-filter-btn" style="margin-left:auto;background:var(--goldGlow);color:var(--goldLt);border-color:rgba(184,149,90,0.3)" onclick="exportTrips()">⬇ Export CSV</button>
         </div>
-        <div style="background:rgba(26,71,49,0.08);border:1px solid rgba(26,71,49,0.2);border-radius:var(--radius-md);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px">
+        <div style="background:var(--greenGlow);border:1px solid var(--greenBorder);border-radius:var(--radius-md);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px">
           <div style="font-size:24px">&#128231;</div>
           <div style="flex:1">
-            <div style="font-size:12px;font-weight:500;color:#1A4731;margin-bottom:4px">Add trips instantly — forward any booking confirmation email</div>
-            <div style="font-size:13px;color:#1a1a2e;font-family:JetBrains Mono,monospace;background:rgba(255,255,255,0.8);display:inline-block;padding:4px 10px;border-radius:4px;border:1px solid rgba(180,160,120,0.3)">trips@uniprofile.net</div>
-            <div style="font-size:11px;color:#6b6050;margin-top:6px">Flights, hotels, car rentals from any airline or booking platform — parsed automatically</div>
+            <div style="font-size:12px;font-weight:500;color:var(--green);margin-bottom:4px">Add trips instantly — forward any booking confirmation email</div>
+            <div style="font-size:13px;color:var(--text);font-family:JetBrains Mono,monospace;background:var(--surface);display:inline-block;padding:4px 10px;border-radius:4px;border:1px solid var(--border2)">trips@uniprofile.net</div>
+            <div style="font-size:11px;color:var(--textDim);margin-top:6px">Flights, hotels, car rentals from any airline or booking platform — parsed automatically</div>
           </div>
-          <button onclick="navigator.clipboard.writeText('trips@uniprofile.net').then(function(){toast('Copied!','success')})" style="padding:8px 14px;background:#0C1A2E;color:#C4A862;border:none;border-radius:4px;font-size:11px;cursor:pointer;white-space:nowrap;font-family:DM Sans,sans-serif">Copy Address</button>
+          <button onclick="navigator.clipboard.writeText('trips@uniprofile.net').then(function(){toast('Copied!','success')})" style="padding:8px 14px;background:var(--ink);color:var(--goldDim);border:none;border-radius:var(--radius-sm);font-size:11px;cursor:pointer;white-space:nowrap;font-family:DM Sans,sans-serif">Copy Address</button>
         </div>
         <div class="trip-list" id="trip-list"><div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips in vault yet</div><div class="empty-sub">Trips appear here when integrated platforms send booking confirmations</div></div></div>
       </section>
       <section class="section" id="section-family">
         <div class="sec-header">
-          <div class="sec-icon" style="background:#EFF6FF">👥</div>
+          <div class="sec-icon" style="background:var(--accentLt)">👥</div>
           <div style="flex:1"><div class="sec-title">Family Profiles</div><div class="sec-sub">Cross-linked UniProfiles — share PNR, trips, insurance and tour details with consent</div></div>
           <button class="save-btn" style="font-size:12px;padding:8px 18px;margin-top:4px" onclick="openFamilyInviteModal()">+ Link Member</button>
         </div>
@@ -1795,7 +1723,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
       </div>
       <section class="section" id="section-cruise">
         <div class="sec-header">
-          <div class="sec-icon" style="background:#F0F9FF">🚢</div>
+          <div class="sec-icon" style="background:var(--tealGlow)">🚢</div>
           <div style="flex:1"><div class="sec-title">Cruise Profile</div><div class="sec-sub">Cruise bookings, cabin preferences and shore excursions</div></div>
         </div>
 
