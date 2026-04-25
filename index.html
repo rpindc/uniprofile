@@ -601,7 +601,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   color: var(--textHint);
   margin-bottom: 6px;
   text-transform: uppercase;
-  letter-spacing: 1.2px;
+  letter-spacing: 1.8px;
   font-weight: 600;
   font-family: 'DM Sans', sans-serif;
 }
@@ -854,12 +854,11 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   .perm-grid { grid-template-columns: 1fr; }
 }
 /* ── Preferences sub-nav ─────────────────────────────────── */
-.pref-subnav{display:flex;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:4px;margin-bottom:24px;overflow-x:auto;flex-shrink:0;}
-.pref-tab{flex:1;padding:8px 14px;background:transparent;border:none;border-radius:calc(var(--radius-md) - 2px);color:var(--textDim);font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;transition:all 0.15s;letter-spacing:0.2px;}
-.pref-tab:hover{color:var(--text);background:var(--surface);}
-.pref-tab.active{background:var(--white);color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+.pref-subnav{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:28px;overflow-x:auto;flex-shrink:0;}
+.pref-tab{flex-shrink:0;padding:10px 20px 9px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--textHint);font-size:11px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;transition:color 0.15s,border-color 0.15s;letter-spacing:0.3px;margin-bottom:-1px;}
+.pref-tab:hover{color:var(--textMid);}
+.pref-tab.active{color:var(--goldLt);font-weight:600;border-bottom-color:var(--gold);}
 .pref-tab-body{animation:fadeIn 0.15s ease;}
-.form-eyebrow{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--textHint);font-weight:700;margin-bottom:14px;}
 /* ── Group Notes ─────────────────────────────────────────── */
 .grp-notes-list{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
 .grp-note-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 14px;position:relative;}
@@ -895,7 +894,6 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .acct-label{font-size:11px;color:var(--textHint);letter-spacing:0.4px;white-space:nowrap;}
 .acct-value{font-size:12px;color:var(--text);text-align:right;word-break:break-all;}
 .mono{font-family:'JetBrains Mono',monospace;}
-.acct-section-title{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--textHint);font-weight:700;margin:0 0 8px;}
 .acct-links{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;margin-bottom:24px;}
 .acct-link-row{display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 16px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:left;text-decoration:none;transition:background 0.15s;}
 .acct-link-row:last-child{border-bottom:none;}
@@ -1125,7 +1123,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         <!-- ── Tab: Essentials ─────────────────────────────── -->
         <div id="pref-tab-essentials" class="pref-tab-body">
           <div class="form-section">
-            <div class="form-eyebrow">FLIGHT CABIN &amp; POSITION</div>
+            <div class="form-section-title">FLIGHT CABIN &amp; POSITION</div>
             <div class="form-grid">
               <div class="form-field"><label class="field-label">Cabin — Domestic</label><select class="field-select" id="f-cabin_domestic"><option value="ECONOMY">Economy</option><option value="ECONOMY_PLUS">Economy Plus</option><option value="BUSINESS">Business</option><option value="FIRST">First Class</option></select></div>
               <div class="form-field"><label class="field-label">Cabin — International</label><select class="field-select" id="f-cabin_international"><option value="ECONOMY">Economy</option><option value="PREMIUM_ECONOMY">Premium Economy</option><option value="BUSINESS">Business Class</option><option value="FIRST">First Class</option></select></div>
@@ -1138,7 +1136,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         <!-- ── Tab: How I Fly ─────────────────────────────── -->
         <div id="pref-tab-fly" class="pref-tab-body" style="display:none">
           <div class="form-section">
-            <div class="form-eyebrow">SEAT COMFORT</div>
+            <div class="form-section-title">SEAT COMFORT</div>
             <div class="form-grid">
               <div class="toggle-row"><div><div class="toggle-row-label">Avoid middle seats</div><div class="toggle-row-sub">Never place me in a middle seat</div></div><label class="mini-toggle"><input type="checkbox" id="f-avoid_middle_seats"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
               <div class="toggle-row"><div><div class="toggle-row-label">Avoid last row</div><div class="toggle-row-sub">Non-reclining seats at rear</div></div><label class="mini-toggle"><input type="checkbox" id="f-avoid_last_row"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
@@ -1146,7 +1144,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
             </div>
           </div>
           <div class="form-section">
-            <div class="form-eyebrow">MEAL &amp; DIETARY</div>
+            <div class="form-section-title">MEAL &amp; DIETARY</div>
             <div class="form-grid">
               <div class="form-field"><label class="field-label">Primary Meal Code</label><select class="field-select" id="f-primary_meal_code"><option value="AVML">AVML — Asian Vegetarian</option><option value="BBML">BBML — Baby Meal</option><option value="DBML">DBML — Diabetic</option><option value="FPML">FPML — Fruit Platter</option><option value="GFML">GFML — Gluten Free</option><option value="HNML">HNML — Hindu Non-Veg</option><option value="KSML">KSML — Kosher</option><option value="LCML">LCML — Low Calorie</option><option value="LFML">LFML — Low Fat</option><option value="LSML">LSML — Low Sodium</option><option value="MOML">MOML — Muslim Meal</option><option value="SFML">SFML — Seafood</option><option value="VGML">VGML — Vegan</option><option value="VLML">VLML — Vegetarian</option></select></div>
               <div class="form-field"><label class="field-label">Beverage Preference</label><select class="field-select" id="f-beverage_pref"><option value="NON_ALC">Non-alcoholic only</option><option value="ALCOHOL_OK">Alcohol permitted</option><option value="NO_PREF">No preference</option></select></div>
@@ -1162,14 +1160,14 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         <!-- ── Tab: How I Travel ──────────────────────────── -->
         <div id="pref-tab-travel" class="pref-tab-body" style="display:none">
           <div class="form-section">
-            <div class="form-eyebrow">HOTEL</div>
+            <div class="form-section-title">HOTEL</div>
             <div class="form-grid">
               <div class="form-field"><label class="field-label">Room Type</label><select class="field-select" id="f-hotel_room_type"><option value="KING">King bed</option><option value="QUEEN">Queen bed</option><option value="TWIN">Twin beds</option></select></div>
               <div class="form-field"><label class="field-label">Floor Preference</label><select class="field-select" id="f-hotel_floor_pref"><option value="HIGH">High floor</option><option value="LOW">Low floor</option><option value="NO_PREF">No preference</option></select></div>
             </div>
           </div>
           <div class="form-section">
-            <div class="form-eyebrow">GROUND TRANSPORT</div>
+            <div class="form-section-title">GROUND TRANSPORT</div>
             <div class="form-grid">
               <div class="form-field"><label class="field-label">Car Type</label><select class="field-select" id="f-car_type_pref"><option value="COMPACT">Compact</option><option value="MIDSIZE">Midsize</option><option value="FULLSIZE">Full Size</option><option value="SUV">SUV</option><option value="LUXURY">Luxury</option></select></div>
             </div>
@@ -1247,9 +1245,9 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
           </div>
         </div>
 
-        <div class="form-section"><div class="form-eyebrow" style="margin-bottom:12px">AIRLINES</div><div class="loyalty-grid" id="loyalty-airlines"></div></div>
-        <div class="form-section"><div class="form-eyebrow" style="margin-bottom:12px">HOTELS</div><div class="loyalty-grid" id="loyalty-hotels"></div></div>
-        <div class="form-section"><div class="form-eyebrow" style="margin-bottom:12px">CAR RENTAL &amp; OTHER</div><div class="loyalty-grid" id="loyalty-other"></div></div>
+        <div class="form-section"><div class="form-section-title">AIRLINES</div><div class="loyalty-grid" id="loyalty-airlines"></div></div>
+        <div class="form-section"><div class="form-section-title">HOTELS</div><div class="loyalty-grid" id="loyalty-hotels"></div></div>
+        <div class="form-section"><div class="form-section-title">CAR RENTAL &amp; OTHER</div><div class="loyalty-grid" id="loyalty-other"></div></div>
         </div><!-- /pref-tab-loyalty -->
 
       </section>
@@ -2051,7 +2049,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         </div>
 
         <!-- Legal & Privacy -->
-        <div class="acct-section-title">Legal &amp; Privacy</div>
+        <div class="form-section-title">Legal &amp; Privacy</div>
         <div class="acct-links">
           <a class="acct-link-row" href="https://www.uniprofile.net/terms" target="_blank" rel="noopener">
             <span>Terms of Service</span>
@@ -2072,7 +2070,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         </div>
 
         <!-- Data -->
-        <div class="acct-section-title">Your Data</div>
+        <div class="form-section-title">Your Data</div>
         <div class="acct-links">
           <button class="acct-link-row" onclick="showSection('consent',document.querySelector('.nav-btn[onclick*=\'consent\']'))">
             <span>Consent &amp; Access Controls</span>
@@ -2085,7 +2083,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         </div>
 
         <!-- Danger zone -->
-        <div class="acct-section-title" style="color:var(--red)">Danger Zone</div>
+        <div class="form-section-title" style="color:var(--red)">Danger Zone</div>
         <div class="acct-links">
           <button class="acct-link-row acct-danger" onclick="requestAccountDeletion()">
             <span>Delete my account</span>
