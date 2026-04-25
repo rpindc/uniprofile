@@ -1474,6 +1474,34 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   </div>
 </div>
 
+<!-- Share with UniProfile Modal -->
+<div id="grp-share-modal" class="grp-modal-overlay" style="display:none" onclick="if(event.target===this)closeGrpShareModal()">
+  <div class="grp-modal" style="max-width:460px">
+    <div class="grp-modal-header">
+      <span class="grp-modal-title">Share Group</span>
+      <button class="grp-modal-close" onclick="closeGrpShareModal()">✕</button>
+    </div>
+    <div class="grp-modal-body">
+      <div style="font-size:12px;color:var(--textDim);line-height:1.6;padding:10px 12px;background:var(--tealGlow);border-radius:var(--radius-sm);border:1px solid rgba(74,143,168,0.2);margin-bottom:16px">
+        Enter the UniProfile ID of the traveler you want to share this group with. They will receive a notification and can view the group in their UniProfile.
+      </div>
+      <div class="grp-form-row">
+        <label class="grp-label">UniProfile ID</label>
+        <input class="grp-input" id="gs-upid" placeholder="e.g. UP-482910" style="font-family:'JetBrains Mono',monospace;letter-spacing:0.5px;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()" />
+      </div>
+      <div class="grp-form-row">
+        <label class="grp-label">Message <span style="color:var(--textHint)">(optional)</span></label>
+        <input class="grp-input" id="gs-message" placeholder="e.g. Here are the details for our trip!" />
+      </div>
+      <div id="gs-result" style="display:none;margin-top:4px"></div>
+    </div>
+    <div class="grp-modal-footer">
+      <button class="grp-btn-secondary" onclick="closeGrpShareModal()">Cancel</button>
+      <button class="grp-btn-primary" id="gs-send-btn" onclick="submitShareWithProfile()">Share</button>
+    </div>
+  </div>
+</div>
+
 <!-- Invite Members Modal -->
 <div id="grp-invite-modal" class="grp-modal-overlay" style="display:none" onclick="if(event.target===this)closeGrpInviteModal()">
   <div class="grp-modal" style="max-width:500px">
@@ -4325,28 +4353,63 @@ function deleteGroup(id) {
   toast('Group deleted', 'success');
 }
 
-/* ── Share group ─────────────────────────────────────────── */
-async function shareGroup(id, event) {
+/* ── Share with UniProfile ───────────────────────────────── */
+let grpShareTargetId = null;
+
+function shareGroup(id, event) {
   if (event) event.stopPropagation();
-  const g = grpData.find(x => x.id === id);
-  if (!g) return;
-  const memberNames = (g.members||[]).map(m => m.name).filter(Boolean);
-  const text = [
-    '✦ ' + g.name,
-    g.destination + ' · ' + grpFmtRange(g.dep, g.ret),
-    (g.members||[]).length + ' member' + ((g.members||[]).length !== 1 ? 's' : '') + (memberNames.length ? ': ' + memberNames.join(', ') : ''),
-    (g.flights||[]).length ? (g.flights||[]).length + ' flight' + ((g.flights||[]).length !== 1 ? 's' : '') + ' on itinerary' : '',
-    'UniProfile Group · ' + g.id,
-  ].filter(Boolean).join('\n');
-  if (navigator.share) {
-    try { await navigator.share({ title: g.name, text }); } catch(e) { /* cancelled */ }
-  } else {
-    try {
-      await navigator.clipboard.writeText(text);
-      toast('Group summary copied to clipboard', 'success');
-    } catch(e) {
-      toast('Share not supported in this browser', '');
+  grpShareTargetId = id || grpSelectedId;
+  if (!grpShareTargetId) return;
+  document.getElementById('gs-upid').value = '';
+  document.getElementById('gs-message').value = '';
+  const res = document.getElementById('gs-result');
+  if (res) { res.style.display = 'none'; res.innerHTML = ''; }
+  const btn = document.getElementById('gs-send-btn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Share'; }
+  document.getElementById('grp-share-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('gs-upid').focus(), 80);
+}
+
+function closeGrpShareModal() {
+  document.getElementById('grp-share-modal').style.display = 'none';
+}
+
+async function submitShareWithProfile() {
+  const rawId = document.getElementById('gs-upid').value.trim().toUpperCase();
+  const message = document.getElementById('gs-message').value.trim();
+  const res = document.getElementById('gs-result');
+  const btn = document.getElementById('gs-send-btn');
+
+  if (!rawId) { toast('Enter a UniProfile ID', 'error'); return; }
+  const upid = rawId.startsWith('UP-') ? rawId : 'UP-' + rawId;
+
+  btn.disabled = true; btn.textContent = 'Sharing…';
+  if (res) { res.style.display = 'none'; }
+
+  try {
+    const result = await api('POST', '/api/v1/groups/' + grpShareTargetId + '/share', { uniprofile_id: upid, message });
+    if (result && result.success) {
+      const name = result.shared_with_name || upid;
+      if (res) {
+        res.style.display = 'block';
+        res.innerHTML = `<div style="padding:10px 12px;background:var(--tealGlow);border:1px solid rgba(74,143,168,0.2);border-radius:var(--radius-sm);font-size:13px;color:var(--text)">
+          Group shared with <strong>${esc(name)}</strong>. They will receive a notification.
+        </div>`;
+      }
+      btn.textContent = 'Done';
+      setTimeout(closeGrpShareModal, 1800);
+    } else {
+      throw new Error(result && result.error || 'Share failed');
     }
+  } catch(e) {
+    const msg = e.message.includes('404') ? 'UniProfile ID not found — check the ID and try again.'
+              : e.message.includes('400') ? e.message
+              : 'Could not share group. Please try again.';
+    if (res) {
+      res.style.display = 'block';
+      res.innerHTML = `<div style="padding:10px 12px;background:rgba(220,38,38,0.08);border:1px solid var(--red);border-radius:var(--radius-sm);font-size:13px;color:var(--red)">${esc(msg)}</div>`;
+    }
+    btn.disabled = false; btn.textContent = 'Share';
   }
 }
 
