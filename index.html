@@ -401,21 +401,28 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .grp-create-btn:hover { opacity: 0.88; }
 .grp-type-pills {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 28px;
+  gap: 6px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 24px;
+  padding-bottom: 2px;
 }
+.grp-type-pills::-webkit-scrollbar { display: none; }
 .grp-pill {
-  padding: 5px 14px;
+  padding: 5px 13px;
   border-radius: 99px;
   border: 1px solid var(--border2);
   background: var(--surface);
   color: var(--textMid);
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s;
   font-family: 'DM Sans', sans-serif;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .grp-pill.active,
 .grp-pill:hover {
@@ -427,48 +434,54 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 /* ── Groups: card grid ───────────────────────────────────── */
 .grp-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 14px;
   margin-bottom: 2rem;
 }
 .grp-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 20px 22px;
+  padding: 20px 22px 14px;
   cursor: pointer;
-  transition: border-color 0.15s, transform 0.15s;
+  transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 .grp-card:hover {
-  border-color: var(--border2);
+  border-color: var(--goldDim);
   transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.10);
 }
 .grp-card-accent {
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 3px;
+  height: 4px;
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 .grp-card-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 12px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 .grp-card-name {
-  font-size: 15px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--text);
-  line-height: 1.3;
-  font-family: 'DM Sans', sans-serif;
+  line-height: 1.25;
+  font-family: 'Playfair Display', serif;
+  letter-spacing: -0.1px;
 }
 .grp-card-id {
-  font-size: 11px;
-  color: var(--textDim);
+  font-size: 10px;
+  color: var(--textHint);
   font-family: 'JetBrains Mono', monospace;
-  margin-top: 3px;
+  margin-top: 4px;
+  letter-spacing: 0.3px;
 }
 .grp-type-badge {
   font-size: 9px;
@@ -478,37 +491,46 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   text-transform: uppercase;
   letter-spacing: 0.8px;
   white-space: nowrap;
+  flex-shrink: 0;
   font-family: 'DM Sans', sans-serif;
 }
-/* Type badge colors — desaturated to match design system */
-.grp-badge-family    { background: var(--tealGlow);  color: var(--teal); }
-.grp-badge-golf      { background: var(--greenGlow); color: var(--green); }
-.grp-badge-church    { background: var(--goldGlow);  color: var(--goldLt); }
-.grp-badge-corporate { background: var(--amberGlow); color: var(--amber); }
-.grp-badge-volunteer { background: var(--redGlow);   color: var(--red); }
+/* ── Badge colors for all types ──────────────────────────── */
+.grp-badge-family     { background: var(--tealGlow);              color: var(--teal); }
+.grp-badge-golf       { background: var(--greenGlow);             color: var(--green); }
+.grp-badge-church     { background: var(--goldGlow);              color: var(--goldLt); }
+.grp-badge-corporate  { background: var(--amberGlow);             color: var(--amber); }
+.grp-badge-conference { background: var(--amberGlow);             color: var(--amber); }
+.grp-badge-school     { background: var(--tealGlow);              color: var(--teal); }
+.grp-badge-sports     { background: var(--greenGlow);             color: var(--green); }
+.grp-badge-wedding    { background: var(--goldGlow);              color: var(--goldLt); }
+.grp-badge-military   { background: rgba(100,116,139,0.12);       color: #94a3b8; }
+.grp-badge-medical    { background: var(--redGlow);               color: var(--red); }
+.grp-badge-volunteer  { background: var(--redGlow);               color: var(--red); }
+.grp-badge-other      { background: var(--surface2);              color: var(--textDim); }
 .grp-card-meta {
   font-size: 13px;
-  color: var(--textDim);
-  margin-bottom: 14px;
-  line-height: 1.5;
+  color: var(--textMid);
+  margin-bottom: 12px;
+  line-height: 1.55;
   font-family: 'DM Sans', sans-serif;
 }
+.grp-card-dest { font-weight: 500; color: var(--text); }
 .grp-card-stats {
   display: flex;
   gap: 20px;
-  margin-bottom: 14px;
-  padding-top: 14px;
+  padding-top: 12px;
   border-top: 1px solid var(--border);
+  margin-top: auto;
 }
 .grp-card-stat { display: flex; flex-direction: column; }
-.grp-card-stat-val   { font-size: 18px; font-weight: 600; color: var(--text); font-family: 'Playfair Display', serif; }
-.grp-card-stat-label { font-size: 11px; color: var(--textDim); font-family: 'DM Sans', sans-serif; margin-top: 2px; }
-.grp-card-alerts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
-.grp-card-actions { display: flex; gap: 6px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
-.grp-card-action-btn { flex: 1; padding: 5px 0; font-size: 12px; font-weight: 500; font-family: inherit; background: var(--surface2); border: 1px solid var(--border2); color: var(--textDim); border-radius: 6px; cursor: pointer; transition: background 0.15s, color 0.15s; }
-.grp-card-action-btn:hover { background: var(--surface3,var(--border)); color: var(--text); }
-.grp-card-action-delete { color: var(--red) !important; border-color: var(--red) !important; }
-.grp-card-action-delete:hover { background: rgba(220,38,38,0.08) !important; }
+.grp-card-stat-val   { font-size: 17px; font-weight: 600; color: var(--text); font-family: 'Playfair Display', serif; line-height: 1; }
+.grp-card-stat-label { font-size: 10px; color: var(--textDim); font-family: 'DM Sans', sans-serif; margin-top: 4px; }
+.grp-card-alerts { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 10px; }
+.grp-card-actions { display: flex; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.grp-card-action-btn { flex: 1; padding: 6px 0; font-size: 11.5px; font-weight: 500; font-family: inherit; background: transparent; border: 1px solid var(--border2); color: var(--textDim); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.15s; }
+.grp-card-action-btn:hover { background: var(--surface2); color: var(--text); }
+.grp-card-action-delete { color: var(--red) !important; border-color: rgba(185,28,28,0.25) !important; }
+.grp-card-action-delete:hover { background: var(--redGlow) !important; border-color: var(--red) !important; }
 .grp-alert-chip {
   font-size: 9px;
   padding: 3px 9px;
@@ -675,6 +697,11 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   grid-template-columns: 1fr 1fr;
   gap: 24px;
   margin-top: 0.5rem;
+}
+@media (max-width: 680px) {
+  .grp-two-col { grid-template-columns: 1fr; }
+  .grp-grid { grid-template-columns: 1fr; }
+  .grp-detail-stats { grid-template-columns: repeat(3, 1fr); }
 }
 
 /* ── Groups: modals ─────────────────────────────────────── */
@@ -1245,7 +1272,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
       <div class="grp-empty-icon">✦</div>
       <div class="grp-empty-title">No groups yet</div>
       <div class="grp-empty-sub">Create a group to coordinate travel with family, friends, colleagues or any crew.</div>
-      <button class="grp-create-btn" onclick="openCreateGroupModal()" style="margin-top:1.5rem">Create your first group</button>
+      <button class="grp-create-btn" id="grp-empty-cta" onclick="openCreateGroupModal()" style="margin-top:1.5rem">Create your first group</button>
     </div>
     <div class="grp-type-pills" id="grp-type-filter">
       <button class="grp-pill active" onclick="filterGroups('all', this)">All</button>
@@ -3823,6 +3850,8 @@ function grpRenderGrid(filter) {
     grid.style.display = 'none';
     grid.innerHTML = '';
     if (empty) empty.style.display = 'block';
+    const cta = document.getElementById('grp-empty-cta');
+    if (cta) cta.style.display = grpData.length === 0 ? '' : 'none';
     return;
   }
   if (empty) empty.style.display = 'none';
@@ -3849,8 +3878,8 @@ function grpRenderGrid(filter) {
         <span class="grp-type-badge ${col.badge}">${esc(typeLabel)}</span>
       </div>
       <div class="grp-card-meta">
-        ${esc(g.destination)} &nbsp;&middot;&nbsp; ${grpFmtRange(g.dep, g.ret)}<br>
-        ${days > 0 ? `<span style="color:var(--teal);font-weight:500">${days} days away</span>` : '<span style="color:var(--red)">Trip passed</span>'}
+        <span class="grp-card-dest">${esc(g.destination)}</span> &nbsp;&middot;&nbsp; ${grpFmtRange(g.dep, g.ret)}<br>
+        ${days > 0 ? `<span style="color:var(--teal);font-weight:500">${days} days away</span>` : days === 0 ? '<span style="color:var(--amber);font-weight:500">Today</span>' : '<span style="color:var(--textDim)">Trip passed</span>'}
       </div>
       <div class="grp-card-stats">
         <div class="grp-card-stat">
