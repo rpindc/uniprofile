@@ -1248,7 +1248,14 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
       <button class="grp-pill" onclick="filterGroups('golf', this)">Golf</button>
       <button class="grp-pill" onclick="filterGroups('church', this)">Church / Tour</button>
       <button class="grp-pill" onclick="filterGroups('corporate', this)">Corporate</button>
+      <button class="grp-pill" onclick="filterGroups('conference', this)">Conference</button>
+      <button class="grp-pill" onclick="filterGroups('school', this)">School</button>
+      <button class="grp-pill" onclick="filterGroups('sports', this)">Sports</button>
+      <button class="grp-pill" onclick="filterGroups('wedding', this)">Wedding</button>
+      <button class="grp-pill" onclick="filterGroups('military', this)">Military</button>
+      <button class="grp-pill" onclick="filterGroups('medical', this)">Medical</button>
       <button class="grp-pill" onclick="filterGroups('volunteer', this)">Volunteer / NGO</button>
+      <button class="grp-pill" onclick="filterGroups('other', this)">Other</button>
     </div>
     <div id="grp-grid" class="grp-grid"></div>
     <div id="grp-detail" class="grp-detail" style="display:none">
@@ -1277,7 +1284,14 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
           <option value="golf">Golf</option>
           <option value="church">Church / Tour</option>
           <option value="corporate">Corporate</option>
+          <option value="conference">Business / Conference</option>
+          <option value="school">School Trip</option>
+          <option value="sports">Sports</option>
+          <option value="wedding">Wedding / Honeymoon</option>
+          <option value="military">Military / Veterans</option>
+          <option value="medical">Medical</option>
           <option value="volunteer">Volunteer / NGO</option>
+          <option value="other">Other</option>
         </select>
       </div>
       <div class="grp-form-2col">
@@ -1451,6 +1465,54 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
     <div class="grp-modal-footer">
       <button class="grp-btn-secondary" onclick="closeGrpHotelModal()">Cancel</button>
       <button class="grp-btn-primary" onclick="saveGrpHotel()">Save Hotel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Invite Members Modal -->
+<div id="grp-invite-modal" class="grp-modal-overlay" style="display:none" onclick="if(event.target===this)closeGrpInviteModal()">
+  <div class="grp-modal" style="max-width:500px">
+    <div class="grp-modal-header">
+      <span class="grp-modal-title">Invite Members</span>
+      <button class="grp-modal-close" onclick="closeGrpInviteModal()">✕</button>
+    </div>
+    <div class="grp-modal-body">
+      <div style="font-size:12px;color:var(--textDim);line-height:1.6;padding:10px 12px;background:var(--tealGlow);border-radius:var(--radius-sm);border:1px solid rgba(74,143,168,0.2)">
+        Invitees will receive an email with a link to view this group. If they have a UniProfile, they can accept and their travel preferences will be visible to the group organizer.
+      </div>
+      <div class="grp-form-row">
+        <label class="grp-label">Email addresses <span style="color:var(--textHint)">(one per line or comma-separated)</span></label>
+        <textarea class="grp-input" id="gi-emails" rows="3" placeholder="e.g.&#10;maria@example.com&#10;john@example.com" style="resize:vertical;font-family:'DM Sans',sans-serif"></textarea>
+      </div>
+      <div class="grp-form-2col">
+        <div class="grp-form-row">
+          <label class="grp-label">Role</label>
+          <select class="grp-input" id="gi-role">
+            <option value="member">Member</option>
+            <option value="organizer">Co-organizer</option>
+            <option value="viewer">View only</option>
+          </select>
+        </div>
+        <div class="grp-form-row">
+          <label class="grp-label">Personal message (optional)</label>
+          <input class="grp-input" id="gi-message" placeholder="e.g. Join our Cancun trip!" />
+        </div>
+      </div>
+      <div class="grp-form-row">
+        <label class="grp-label">Share link</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="grp-input" id="gi-link" readonly style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--textDim);flex:1" />
+          <button class="grp-btn-secondary" style="padding:9px 14px;white-space:nowrap;flex-shrink:0" onclick="copyGroupLink()">Copy link</button>
+        </div>
+      </div>
+      <div id="gi-pending" style="display:none">
+        <div class="grp-section-label" style="margin-top:0">Pending invites</div>
+        <div id="gi-pending-list" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+    </div>
+    <div class="grp-modal-footer">
+      <button class="grp-btn-secondary" onclick="closeGrpInviteModal()">Close</button>
+      <button class="grp-btn-primary" id="gi-send-btn" onclick="sendGrpInvites()">Send Invites</button>
     </div>
   </div>
 </div>
@@ -2067,7 +2129,7 @@ if(p.identity){s("f-legal_first",p.identity.legal_first);s("f-legal_middle",p.id
 renderDocumentVault(p.documents||[]);populateDocTypeDropdown(p.document_types||{});
 if(p.seat_preferences){s("f-cabin_domestic",p.seat_preferences.cabin_domestic);s("f-cabin_international",p.seat_preferences.cabin_international);s("f-seat_position",p.seat_preferences.seat_position);s("f-row_preference",p.seat_preferences.row_preference);s("f-hotel_room_type",p.seat_preferences.hotel_room_type);s("f-hotel_floor_pref",p.seat_preferences.hotel_floor_pref);s("f-car_type_pref",p.seat_preferences.car_type_pref||"MIDSIZE");sc("f-avoid_middle_seats",p.seat_preferences.avoid_middle_seats);sc("f-avoid_last_row",p.seat_preferences.avoid_last_row);sc("f-wheelchair_needed",p.seat_preferences.wheelchair_needed);}
 if(p.meal_preferences){s("f-primary_meal_code",p.meal_preferences.primary_meal_code);s("f-beverage_pref",p.meal_preferences.beverage_pref);s("f-allergies",(p.meal_preferences.allergies||[]).join(", "));s("f-avoid_items",(p.meal_preferences.avoid_items||[]).join(", "));s("f-dietary_notes",p.meal_preferences.dietary_notes);}
-renderLoyalty(p.loyalty_programs||[]);renderPayment(p.payment_profiles||[],p.identity);renderTrips(p.trips||[]);s("api-uuid",p.uuid);grpData=p.groups||[];consentData=p.consent||{};}
+renderLoyalty(p.loyalty_programs||[]);renderPayment(p.payment_profiles||[],p.identity);renderTrips(p.trips||[]);s("api-uuid",p.uuid);grpData=p.groups||[];if(!grpData.length)grpLoadLocal();consentData=p.consent||{};renderConsentPermissions();}
 
 let editingLoyaltyId = null;
 
@@ -2137,27 +2199,27 @@ async function saveLoyalty() {
     btn.textContent = "Save Program"; btn.disabled = false;
     return;
   }
+  var result;
   try {
-    var result;
     if(editingLoyaltyId) {
-      // Build updated programs array and send as full replace — avoids module name ambiguity
       var updated = (profile.loyalty_programs||[]).map(function(p) {
         return (p.id === editingLoyaltyId || p.loyalty_id === editingLoyaltyId)
           ? Object.assign({}, p, fields)
           : p;
       });
-      result = await api("PUT", "/api/v1/profile/"+uuid, {module:"loyalty_update", data:Object.assign({id:editingLoyaltyId, loyalty_id:editingLoyaltyId}, fields)});
-      // If backend returns updated profile use it; otherwise apply locally
-      if(result && result.success && result.profile) {
-        profile = result.profile;
-      } else if(result && result.success) {
-        profile.loyalty_programs = updated;
-        result = {success:true, profile:profile};
-      } else {
-        // Fallback: replace whole array
+      // Try atomic update first; fall back to full-array replace on any failure
+      try {
+        result = await api("PUT", "/api/v1/profile/"+uuid, {module:"loyalty_update", data:Object.assign({id:editingLoyaltyId, loyalty_id:editingLoyaltyId}, fields)});
+      } catch(_) { result = null; }
+      if(!result || !result.success) {
         result = await api("PUT", "/api/v1/profile/"+uuid, {module:"loyalty_programs", data:{loyalty_programs:updated}});
-        if(result && result.success && result.profile) profile = result.profile;
-        else if(result && result.success) profile.loyalty_programs = updated;
+        if(result && result.success) {
+          if(result.profile) profile = result.profile;
+          else profile.loyalty_programs = updated;
+        }
+      } else {
+        if(result.profile) profile = result.profile;
+        else profile.loyalty_programs = updated;
       }
     } else {
       result = await api("PUT", "/api/v1/profile/"+uuid, {module:"loyalty_add", data:fields});
@@ -3494,20 +3556,28 @@ init();
 
 /* ── Groups ──────────────────────────────────────────────── */
 const GRP_COLORS = {
-  family:    { accent: '#378ADD', badge: 'grp-badge-family'    },
-  golf:      { accent: '#639922', badge: 'grp-badge-golf'      },
-  church:    { accent: '#7B75E0', badge: 'grp-badge-church'    },
-  corporate: { accent: '#EF9F27', badge: 'grp-badge-corporate' },
-  volunteer: { accent: '#E24B4A', badge: 'grp-badge-volunteer' },
+  family:     { accent: 'var(--teal)',   badge: 'grp-badge-family'     },
+  golf:       { accent: 'var(--green)',  badge: 'grp-badge-golf'       },
+  church:     { accent: 'var(--gold)',   badge: 'grp-badge-church'     },
+  corporate:  { accent: 'var(--amber)',  badge: 'grp-badge-corporate'  },
+  conference: { accent: 'var(--amber)',  badge: 'grp-badge-corporate'  },
+  school:     { accent: 'var(--teal)',   badge: 'grp-badge-family'     },
+  sports:     { accent: 'var(--green)',  badge: 'grp-badge-golf'       },
+  wedding:    { accent: 'var(--gold)',   badge: 'grp-badge-church'     },
+  military:   { accent: 'var(--amber)',  badge: 'grp-badge-corporate'  },
+  medical:    { accent: 'var(--red)',    badge: 'grp-badge-volunteer'  },
+  volunteer:  { accent: 'var(--red)',    badge: 'grp-badge-volunteer'  },
+  other:      { accent: 'var(--border2)','badge': 'grp-badge-corporate' },
 };
 
+/* Avatar palette — 6 slots cycling, uses design-token adjacent values */
 const GRP_AVATAR_COLORS = [
-  { bg:'#E6F1FB', color:'#185FA5' },
-  { bg:'#EAF3DE', color:'#3B6D11' },
-  { bg:'#FAEEDA', color:'#854F0B' },
-  { bg:'#EEEDFE', color:'#534AB7' },
-  { bg:'#FCEBEB', color:'#A32D2D' },
-  { bg:'#E1F5EE', color:'#0F6E56' },
+  { bg:'var(--tealGlow)',  color:'var(--teal)'  },
+  { bg:'var(--greenGlow)', color:'var(--green)' },
+  { bg:'var(--amberGlow)', color:'var(--amber)' },
+  { bg:'var(--goldGlow)',  color:'var(--goldLt)'},
+  { bg:'var(--redGlow)',   color:'var(--red)'   },
+  { bg:'var(--surface2)',  color:'var(--textMid)'},
 ];
 
 /* ── Consent / Permissions ───────────────────────────────── */
@@ -3578,11 +3648,27 @@ let grpCurrentFilter = 'all';
 let grpSelectedId = null;
 
 /* ── API persistence ─────────────────────────────────────── */
+function grpSaveLocal() {
+  try { localStorage.setItem('up_groups_' + uuid, JSON.stringify(grpData)); } catch(_) {}
+}
+function grpLoadLocal() {
+  try {
+    const raw = localStorage.getItem('up_groups_' + uuid);
+    if (raw) grpData = JSON.parse(raw);
+  } catch(_) {}
+}
+
 async function grpPersist() {
   if (!uuid) return;
+  grpSaveLocal();
   try {
-    await api('PUT', '/api/v1/profile/' + uuid, { module: 'groups', data: { groups: grpData } });
-  } catch(e) { /* offline — state saved locally */ }
+    const result = await api('PUT', '/api/v1/profile/' + uuid, { module: 'groups', data: { groups: grpData } });
+    if (result && !result.success) {
+      console.warn('grpPersist backend error:', result.error);
+    }
+  } catch(e) {
+    console.warn('grpPersist failed (saved locally):', e.message);
+  }
 }
 
 function grpInitials(name) {
@@ -3687,8 +3773,12 @@ function grpRenderGrid(filter) {
     const col    = GRP_COLORS[g.type] || GRP_COLORS.family;
     const alerts = grpComputeAlerts(g);
     const days   = grpDaysUntil(g.dep);
-    const typeLabel = { family:'Family', golf:'Golf', church:'Church / Tour',
-                        corporate:'Corporate', volunteer:'Volunteer' }[g.type] || g.type;
+    const typeLabel = {
+      family:'Family', golf:'Golf', church:'Church / Tour',
+      corporate:'Corporate', conference:'Conference', school:'School',
+      sports:'Sports', wedding:'Wedding', military:'Military',
+      medical:'Medical', volunteer:'Volunteer / NGO', other:'Other'
+    }[g.type] || g.type;
     return `
     <div class="grp-card" onclick="openGroupDetail('${esc(g.id)}')">
       <div class="grp-card-accent" style="background:${col.accent}"></div>
@@ -3833,14 +3923,19 @@ function openGroupDetail(id) {
         <div class="grp-detail-stat-label">Alerts</div>
         <div class="grp-detail-stat-val" style="color:${alerts.some(a=>a.level==='danger')?'var(--red)':alerts.some(a=>a.level==='warn')?'var(--amber)':'var(--green)'}">${alerts.filter(a=>a.level!=='ok').length||'✓'}</div>
       </div>
+      <div class="grp-detail-stat">
+        <div class="grp-detail-stat-label">Pending invites</div>
+        <div class="grp-detail-stat-val" style="color:var(--teal)">${(g.invites||[]).filter(i=>i.status==='pending').length||'—'}</div>
+      </div>
     </div>
 
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px">
       <button class="grp-btn-primary" onclick="openGrpMemberModal()">+ Add Member</button>
-      <button class="grp-btn-secondary" onclick="openGrpFlightModal()">+ Add Flight</button>
+      <button class="grp-btn-secondary" onclick="openGrpInviteModal()">Invite via Email</button>
+      <button class="grp-btn-secondary" onclick="openGrpFlightModal()">+ Flight</button>
       <button class="grp-btn-secondary" onclick="openGrpHotelModal()">${g.hotel ? 'Edit Hotel' : 'Set Hotel'}</button>
-      <button class="grp-btn-secondary" onclick="exportGroupManifest('${esc(g.id)}')">Export Manifest</button>
-      <button class="grp-btn-secondary" style="color:var(--red);border-color:var(--red);margin-left:auto" onclick="deleteGroup('${esc(g.id)}')">Delete Group</button>
+      <button class="grp-btn-secondary" onclick="exportGroupManifest('${esc(g.id)}')">Export</button>
+      <button class="grp-btn-secondary" style="color:var(--red);border-color:var(--red);margin-left:auto" onclick="deleteGroup('${esc(g.id)}')">Delete</button>
     </div>
 
     <div class="grp-two-col">
@@ -4083,6 +4178,103 @@ function saveGrpHotel() {
   closeGrpHotelModal();
   grpPersist();
   openGroupDetail(grpSelectedId);
+}
+
+/* ── Invite members ──────────────────────────────────────── */
+function openGrpInviteModal() {
+  if (!grpSelectedId) return;
+  const g = grpData.find(x => x.id === grpSelectedId);
+  if (!g) return;
+
+  const linkEl = document.getElementById('gi-link');
+  if (linkEl) linkEl.value = window.location.origin + '?join=' + grpSelectedId;
+
+  document.getElementById('gi-emails').value = '';
+  document.getElementById('gi-message').value = '';
+  document.getElementById('gi-role').value = 'member';
+
+  // Show pending invites
+  const pending = (g.invites || []).filter(i => i.status === 'pending');
+  const pendingWrap = document.getElementById('gi-pending');
+  const pendingList = document.getElementById('gi-pending-list');
+  if (pendingWrap && pendingList) {
+    if (pending.length) {
+      pendingList.innerHTML = pending.map(i => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm)">
+          <div>
+            <div style="font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif">${esc(i.email)}</div>
+            <div style="font-size:11px;color:var(--textDim);font-family:'DM Sans',sans-serif">${esc(i.role)} · invited ${grpFmtDate(i.invited_at)}</div>
+          </div>
+          <button class="grp-btn-secondary" style="padding:4px 10px;font-size:11px;color:var(--red);border-color:var(--red)" onclick="cancelGrpInvite('${esc(i.email)}')">Cancel</button>
+        </div>`).join('');
+      pendingWrap.style.display = 'block';
+    } else {
+      pendingWrap.style.display = 'none';
+    }
+  }
+
+  document.getElementById('grp-invite-modal').style.display = 'flex';
+}
+
+function closeGrpInviteModal() {
+  document.getElementById('grp-invite-modal').style.display = 'none';
+}
+
+async function sendGrpInvites() {
+  if (!grpSelectedId) return;
+  const g = grpData.find(x => x.id === grpSelectedId);
+  if (!g) return;
+
+  const raw = document.getElementById('gi-emails').value.trim();
+  if (!raw) { toast('Enter at least one email address', 'error'); return; }
+
+  const emails = raw.split(/[\n,]+/).map(e => e.trim()).filter(e => e.includes('@'));
+  if (!emails.length) { toast('No valid email addresses found', 'error'); return; }
+
+  const role    = document.getElementById('gi-role').value;
+  const message = document.getElementById('gi-message').value.trim();
+  const btn     = document.getElementById('gi-send-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+
+  if (!g.invites) g.invites = [];
+
+  let sent = 0;
+  for (const email of emails) {
+    // Skip duplicates
+    if (g.invites.some(i => i.email === email && i.status === 'pending')) continue;
+    g.invites.push({ email, role, message, invited_at: new Date().toISOString(), status: 'pending' });
+    // Try backend notification — non-fatal if it fails
+    try {
+      await api('POST', '/api/v1/groups/' + grpSelectedId + '/invite', { email, role, message, group_name: g.name });
+    } catch(_) {}
+    sent++;
+  }
+
+  grpPersist();
+  if (btn) { btn.disabled = false; btn.textContent = 'Send Invites'; }
+  closeGrpInviteModal();
+  toast(sent + ' invite' + (sent !== 1 ? 's' : '') + ' sent', 'success');
+  openGroupDetail(grpSelectedId); // refresh detail to show updated pending count
+}
+
+async function cancelGrpInvite(email) {
+  if (!grpSelectedId) return;
+  const g = grpData.find(x => x.id === grpSelectedId);
+  if (!g) return;
+  g.invites = (g.invites || []).filter(i => !(i.email === email && i.status === 'pending'));
+  grpPersist();
+  openGrpInviteModal(); // re-render modal with updated list
+}
+
+function copyGroupLink() {
+  const el = document.getElementById('gi-link');
+  if (!el) return;
+  navigator.clipboard.writeText(el.value).then(() => {
+    toast('Link copied to clipboard', 'success');
+  }).catch(() => {
+    el.select(); document.execCommand('copy');
+    toast('Link copied', 'success');
+  });
 }
 
 /* ── Delete group ────────────────────────────────────────── */
