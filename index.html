@@ -853,6 +853,13 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   .grp-member-pnr, .grp-member-ff { display: none; }
   .perm-grid { grid-template-columns: 1fr; }
 }
+/* ── Preferences sub-nav ─────────────────────────────────── */
+.pref-subnav{display:flex;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:4px;margin-bottom:24px;overflow-x:auto;flex-shrink:0;}
+.pref-tab{flex:1;padding:8px 14px;background:transparent;border:none;border-radius:calc(var(--radius-md) - 2px);color:var(--textDim);font-size:12px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;white-space:nowrap;transition:all 0.15s;letter-spacing:0.2px;}
+.pref-tab:hover{color:var(--text);background:var(--surface);}
+.pref-tab.active{background:var(--white);color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,0.08);}
+.pref-tab-body{animation:fadeIn 0.15s ease;}
+.form-eyebrow{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--textHint);font-weight:700;margin-bottom:14px;}
 /* ── Account section ──────────────────────────────────────── */
 .acct-profile-card{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px;margin-bottom:20px;}
 .acct-avatar{width:48px;height:48px;border-radius:50%;background:var(--goldGlow);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:18px;color:var(--gold);flex-shrink:0;}
@@ -960,9 +967,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
       <div class="nav-group">
         <div class="nav-group-label">Identity Modules</div>
         <button class="nav-btn" onclick="showSection('identity',this)"><span class="nav-icon"></span>Identity &amp; Documents<span class="nav-badge" id="badge-identity" style="display:none">!</span></button>
-        <button class="nav-btn" onclick="showSection('preferences',this)"><span class="nav-icon">💺</span>Seat &amp; Cabin</button>
-        <button class="nav-btn" onclick="showSection('meals',this)"><span class="nav-icon">🍽</span>Meal &amp; Dietary</button>
-        <button class="nav-btn" onclick="showSection('loyalty',this)"><span class="nav-icon">✦</span>Loyalty Programs</button>
+        <button class="nav-btn" id="nav-preferences" onclick="showSection('preferences',this)"><span class="nav-icon">✈</span>Preferences</button>
         <button class="nav-btn" onclick="showSection('payment',this)"><span class="nav-icon">💳</span><span>Payment &amp; Policy</span><span class="nav-tag" id="badge-payment" style="display:none">corp</span></button>
         <button class="nav-btn" onclick="showSection('trips',this)"><span class="nav-icon">📋</span>Trip History</button>
         <button class="nav-btn" onclick="showSection('family',this)"><span class="nav-icon">👥</span>Family Profiles<span class="nav-badge" id="fam-nav-badge" style="display:none">0</span></button>
@@ -1077,53 +1082,155 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
           </div>
         </div>
       </section>
+      <!-- hidden alias so navToSection('meals') / navToSection('loyalty') still works -->
+      <section class="section" id="section-meals" style="display:none!important"></section>
+
       <section class="section" id="section-preferences">
-        <div class="sec-header"><div class="sec-icon" style="background:var(--tealGlow)">💺</div><div><div class="sec-title">Seat &amp; Cabin Preferences</div><div class="sec-sub">IATA OneOrder Module 2 — Pre-filled at checkout on integrated platforms</div></div></div>
-        <div class="form-section">
-          <div class="form-section-title">Flight Preferences</div>
-          <div class="form-grid">
-            <div class="form-field"><label class="field-label">Cabin — Domestic</label><select class="field-select" id="f-cabin_domestic"><option value="ECONOMY">Economy</option><option value="ECONOMY_PLUS">Economy Plus</option><option value="BUSINESS">Business</option><option value="FIRST">First Class</option></select></div>
-            <div class="form-field"><label class="field-label">Cabin — International</label><select class="field-select" id="f-cabin_international"><option value="ECONOMY">Economy</option><option value="PREMIUM_ECONOMY">Premium Economy</option><option value="BUSINESS">Business Class</option><option value="FIRST">First Class</option></select></div>
-            <div class="form-field"><label class="field-label">Seat Position</label><select class="field-select" id="f-seat_position"><option value="AISLE">Aisle</option><option value="WINDOW">Window</option><option value="MIDDLE">Middle</option><option value="NO_PREF">No Preference</option></select></div>
-            <div class="form-field"><label class="field-label">Row Preference</label><select class="field-select" id="f-row_preference"><option value="EXIT_ROW">Exit Row / Extra Legroom</option><option value="FRONT">Front of Cabin</option><option value="REAR">Rear of Cabin</option><option value="NO_PREF">No Preference</option></select></div>
+        <div class="sec-header">
+          <div class="sec-icon" style="background:var(--tealGlow)">✈</div>
+          <div><div class="sec-title">Preferences</div><div class="sec-sub">Cabin, seat, meal, hotel &amp; loyalty — pre-filled at checkout on every integrated platform</div></div>
+        </div>
+
+        <!-- Sub-nav pill tabs -->
+        <div class="pref-subnav" id="pref-subnav">
+          <button class="pref-tab active" id="ptab-essentials"   onclick="showPrefTab('essentials')">Essentials</button>
+          <button class="pref-tab"        id="ptab-fly"          onclick="showPrefTab('fly')">How I Fly</button>
+          <button class="pref-tab"        id="ptab-travel"       onclick="showPrefTab('travel')">How I Travel</button>
+          <button class="pref-tab"        id="ptab-loyalty"      onclick="showPrefTab('loyalty')">Loyalty &amp; Status</button>
+        </div>
+
+        <!-- ── Tab: Essentials ─────────────────────────────── -->
+        <div id="pref-tab-essentials" class="pref-tab-body">
+          <div class="form-section">
+            <div class="form-eyebrow">FLIGHT CABIN &amp; POSITION</div>
+            <div class="form-grid">
+              <div class="form-field"><label class="field-label">Cabin — Domestic</label><select class="field-select" id="f-cabin_domestic"><option value="ECONOMY">Economy</option><option value="ECONOMY_PLUS">Economy Plus</option><option value="BUSINESS">Business</option><option value="FIRST">First Class</option></select></div>
+              <div class="form-field"><label class="field-label">Cabin — International</label><select class="field-select" id="f-cabin_international"><option value="ECONOMY">Economy</option><option value="PREMIUM_ECONOMY">Premium Economy</option><option value="BUSINESS">Business Class</option><option value="FIRST">First Class</option></select></div>
+              <div class="form-field"><label class="field-label">Seat Position</label><select class="field-select" id="f-seat_position"><option value="AISLE">Aisle</option><option value="WINDOW">Window</option><option value="MIDDLE">Middle</option><option value="NO_PREF">No Preference</option></select></div>
+              <div class="form-field"><label class="field-label">Row Preference</label><select class="field-select" id="f-row_preference"><option value="EXIT_ROW">Exit Row / Extra Legroom</option><option value="FRONT">Front of Cabin</option><option value="REAR">Rear of Cabin</option><option value="NO_PREF">No Preference</option></select></div>
+            </div>
           </div>
         </div>
-        <div class="form-section">
-          <div class="form-section-title">Special Requirements</div>
-          <div class="form-grid">
-            <div class="toggle-row"><div><div class="toggle-row-label">Avoid middle seats</div><div class="toggle-row-sub">Never place me in a middle seat</div></div><label class="mini-toggle"><input type="checkbox" id="f-avoid_middle_seats"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-            <div class="toggle-row"><div><div class="toggle-row-label">Avoid last row</div><div class="toggle-row-sub">Non-reclining seats at rear</div></div><label class="mini-toggle"><input type="checkbox" id="f-avoid_last_row"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-            <div class="toggle-row"><div><div class="toggle-row-label">Wheelchair assistance</div><div class="toggle-row-sub">Airport mobility support needed</div></div><label class="mini-toggle"><input type="checkbox" id="f-wheelchair_needed"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+
+        <!-- ── Tab: How I Fly ─────────────────────────────── -->
+        <div id="pref-tab-fly" class="pref-tab-body" style="display:none">
+          <div class="form-section">
+            <div class="form-eyebrow">SEAT COMFORT</div>
+            <div class="form-grid">
+              <div class="toggle-row"><div><div class="toggle-row-label">Avoid middle seats</div><div class="toggle-row-sub">Never place me in a middle seat</div></div><label class="mini-toggle"><input type="checkbox" id="f-avoid_middle_seats"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+              <div class="toggle-row"><div><div class="toggle-row-label">Avoid last row</div><div class="toggle-row-sub">Non-reclining seats at rear</div></div><label class="mini-toggle"><input type="checkbox" id="f-avoid_last_row"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+              <div class="toggle-row"><div><div class="toggle-row-label">Wheelchair assistance</div><div class="toggle-row-sub">Airport mobility support needed</div></div><label class="mini-toggle"><input type="checkbox" id="f-wheelchair_needed"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-eyebrow">MEAL &amp; DIETARY</div>
+            <div class="form-grid">
+              <div class="form-field"><label class="field-label">Primary Meal Code</label><select class="field-select" id="f-primary_meal_code"><option value="AVML">AVML — Asian Vegetarian</option><option value="BBML">BBML — Baby Meal</option><option value="DBML">DBML — Diabetic</option><option value="FPML">FPML — Fruit Platter</option><option value="GFML">GFML — Gluten Free</option><option value="HNML">HNML — Hindu Non-Veg</option><option value="KSML">KSML — Kosher</option><option value="LCML">LCML — Low Calorie</option><option value="LFML">LFML — Low Fat</option><option value="LSML">LSML — Low Sodium</option><option value="MOML">MOML — Muslim Meal</option><option value="SFML">SFML — Seafood</option><option value="VGML">VGML — Vegan</option><option value="VLML">VLML — Vegetarian</option></select></div>
+              <div class="form-field"><label class="field-label">Beverage Preference</label><select class="field-select" id="f-beverage_pref"><option value="NON_ALC">Non-alcoholic only</option><option value="ALCOHOL_OK">Alcohol permitted</option><option value="NO_PREF">No preference</option></select></div>
+            </div>
+            <div class="form-grid" style="margin-top:14px">
+              <div class="form-field"><label class="field-label">Allergies</label><input class="field-input" id="f-allergies" type="text" placeholder="e.g. shellfish, peanuts"><div class="field-hint">Comma-separated</div></div>
+              <div class="form-field"><label class="field-label">Items to Avoid</label><input class="field-input" id="f-avoid_items" type="text" placeholder="e.g. pork, alcohol"><div class="field-hint">Comma-separated</div></div>
+            </div>
+            <div class="form-grid cols-1" style="margin-top:14px"><div class="form-field"><label class="field-label">Additional Dietary Notes</label><input class="field-input" id="f-dietary_notes" type="text" placeholder="Any other dietary requirements for airlines"></div></div>
           </div>
         </div>
-        <div class="form-section">
-          <div class="form-section-title">Hotel &amp; Car</div>
-          <div class="form-grid">
-            <div class="form-field"><label class="field-label">Room Type</label><select class="field-select" id="f-hotel_room_type"><option value="KING">King bed</option><option value="QUEEN">Queen bed</option><option value="TWIN">Twin beds</option></select></div>
-            <div class="form-field"><label class="field-label">Floor Preference</label><select class="field-select" id="f-hotel_floor_pref"><option value="HIGH">High floor</option><option value="LOW">Low floor</option><option value="NO_PREF">No preference</option></select></div>
-            <div class="form-field"><label class="field-label">Car Type</label><select class="field-select" id="f-car_type_pref"><option value="COMPACT">Compact</option><option value="MIDSIZE">Midsize</option><option value="FULLSIZE">Full Size</option><option value="SUV">SUV</option><option value="LUXURY">Luxury</option></select></div>
+
+        <!-- ── Tab: How I Travel ──────────────────────────── -->
+        <div id="pref-tab-travel" class="pref-tab-body" style="display:none">
+          <div class="form-section">
+            <div class="form-eyebrow">HOTEL</div>
+            <div class="form-grid">
+              <div class="form-field"><label class="field-label">Room Type</label><select class="field-select" id="f-hotel_room_type"><option value="KING">King bed</option><option value="QUEEN">Queen bed</option><option value="TWIN">Twin beds</option></select></div>
+              <div class="form-field"><label class="field-label">Floor Preference</label><select class="field-select" id="f-hotel_floor_pref"><option value="HIGH">High floor</option><option value="LOW">Low floor</option><option value="NO_PREF">No preference</option></select></div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-eyebrow">GROUND TRANSPORT</div>
+            <div class="form-grid">
+              <div class="form-field"><label class="field-label">Car Type</label><select class="field-select" id="f-car_type_pref"><option value="COMPACT">Compact</option><option value="MIDSIZE">Midsize</option><option value="FULLSIZE">Full Size</option><option value="SUV">SUV</option><option value="LUXURY">Luxury</option></select></div>
+            </div>
           </div>
         </div>
+
+        <!-- ── Tab: Loyalty & Status ──────────────────────── -->
+        <div id="pref-tab-loyalty" class="pref-tab-body" style="display:none">
+
+      <!-- section-loyalty alias kept for navToSection('loyalty') -->
+      <span id="section-loyalty" style="display:none"></span>
+
+        <!-- Loyalty Modal (fixed-position, DOM location doesn't affect rendering) -->
+        <div id="loyalty-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center">
+          <div style="background:var(--ink2);border:1px solid var(--border2);border-radius:var(--radius-xl);padding:32px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;margin:20px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+              <div style="font-family:Playfair Display,serif;font-size:22px;color:var(--white)" id="loyalty-modal-title">Add Program</div>
+              <button onclick="closeLoyaltyModal()" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:20px">✕</button>
+            </div>
+            <div class="form-grid" style="margin-bottom:14px">
+              <div class="form-field"><label class="field-label">Program Type</label>
+                <select class="field-select" id="lf-program_type">
+                  <option value="AIRLINE">Airline</option>
+                  <option value="HOTEL">Hotel</option>
+                  <option value="CAR">Car Rental</option>
+                  <option value="RAIL">Rail</option>
+                  <option value="OTHER">Other</option>
+                </select>
+              </div>
+              <div class="form-field"><label class="field-label">Provider / Airline</label>
+                <input class="field-input" id="lf-provider_name" type="text" placeholder="e.g. United Airlines">
+              </div>
+            </div>
+            <div class="form-grid" style="margin-bottom:14px">
+              <div class="form-field"><label class="field-label">Program Name</label>
+                <input class="field-input" id="lf-program_name" type="text" placeholder="e.g. MileagePlus">
+              </div>
+              <div class="form-field"><label class="field-label">Member Number</label>
+                <input class="field-input" id="lf-member_number" type="text" placeholder="e.g. MP12345678">
+              </div>
+            </div>
+            <div class="form-grid" style="margin-bottom:14px">
+              <div class="form-field"><label class="field-label">Tier Status</label>
+                <input class="field-input" id="lf-tier_status" type="text" placeholder="e.g. Gold, Platinum, Member">
+              </div>
+              <div class="form-field"><label class="field-label">Tier Expiry</label>
+                <input class="field-input" id="lf-tier_expires" type="date">
+              </div>
+            </div>
+            <div class="form-grid" style="margin-bottom:14px">
+              <div class="form-field"><label class="field-label">Points Balance</label>
+                <input class="field-input" id="lf-points_balance" type="number" placeholder="e.g. 85000">
+              </div>
+              <div class="form-field"><label class="field-label">Linked Card Type</label>
+                <input class="field-input" id="lf-linked_card_type" type="text" placeholder="e.g. Citi AAdvantage Platinum">
+              </div>
+            </div>
+            <div class="form-grid" style="margin-bottom:14px">
+              <div class="form-field"><label class="field-label">Linked Card Last 4</label>
+                <input class="field-input" id="lf-linked_card_last4" type="text" placeholder="e.g. 4521" maxlength="4">
+              </div>
+              <div class="form-field"><label class="field-label">Notes</label>
+                <input class="field-input" id="lf-notes" type="text" placeholder="Optional notes">
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;padding:12px 14px;background:var(--surface);border-radius:var(--radius-sm)">
+              <input type="checkbox" id="lf-auto_apply" checked style="width:14px;height:14px">
+              <label for="lf-auto_apply" style="font-size:13px;color:var(--text);cursor:pointer">Auto-apply at checkout on integrated platforms</label>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="save-btn" onclick="saveLoyalty()" id="loyalty-save-btn">Save Program</button>
+              <button onclick="closeLoyaltyModal()" style="padding:8px 20px;background:transparent;border:1px solid var(--border2);color:var(--textMid);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:DM Sans,sans-serif">Cancel</button>
+              <button id="loyalty-delete-btn" onclick="deleteLoyalty()" style="display:none;padding:8px 20px;background:var(--redGlow);border:1px solid rgba(217,95,82,0.3);color:var(--red);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:DM Sans,sans-serif;margin-left:auto">Delete</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section"><div class="form-eyebrow" style="margin-bottom:12px">AIRLINES</div><div class="loyalty-grid" id="loyalty-airlines"></div></div>
+        <div class="form-section"><div class="form-eyebrow" style="margin-bottom:12px">HOTELS</div><div class="loyalty-grid" id="loyalty-hotels"></div></div>
+        <div class="form-section"><div class="form-eyebrow" style="margin-bottom:12px">CAR RENTAL &amp; OTHER</div><div class="loyalty-grid" id="loyalty-other"></div></div>
+        </div><!-- /pref-tab-loyalty -->
+
       </section>
-      <section class="section" id="section-meals">
-        <div class="sec-header"><div class="sec-icon" style="background:var(--greenGlow)">🍽</div><div><div class="sec-title">Meal &amp; Dietary</div><div class="sec-sub">IATA OneOrder Module 3 — Full SSIM meal code support</div></div></div>
-        <div class="form-section">
-          <div class="form-section-title">IATA Meal Code</div>
-          <div class="form-grid">
-            <div class="form-field"><label class="field-label">Primary Meal Code</label><select class="field-select" id="f-primary_meal_code"><option value="AVML">AVML — Asian Vegetarian</option><option value="BBML">BBML — Baby Meal</option><option value="DBML">DBML — Diabetic</option><option value="FPML">FPML — Fruit Platter</option><option value="GFML">GFML — Gluten Free</option><option value="HNML">HNML — Hindu Non-Veg</option><option value="KSML">KSML — Kosher</option><option value="LCML">LCML — Low Calorie</option><option value="LFML">LFML — Low Fat</option><option value="LSML">LSML — Low Sodium</option><option value="MOML">MOML — Muslim Meal</option><option value="SFML">SFML — Seafood</option><option value="VGML">VGML — Vegan</option><option value="VLML">VLML — Vegetarian</option></select></div>
-            <div class="form-field"><label class="field-label">Beverage Preference</label><select class="field-select" id="f-beverage_pref"><option value="NON_ALC">Non-alcoholic only</option><option value="ALCOHOL_OK">Alcohol permitted</option><option value="NO_PREF">No preference</option></select></div>
-          </div>
-        </div>
-        <div class="form-section">
-          <div class="form-section-title">Allergies &amp; Restrictions</div>
-          <div class="form-grid">
-            <div class="form-field"><label class="field-label">Allergies</label><input class="field-input" id="f-allergies" type="text" placeholder="e.g. shellfish, peanuts"><div class="field-hint">Comma-separated</div></div>
-            <div class="form-field"><label class="field-label">Items to Avoid</label><input class="field-input" id="f-avoid_items" type="text" placeholder="e.g. pork, alcohol"><div class="field-hint">Comma-separated</div></div>
-          </div>
-          <div class="form-grid cols-1" style="margin-top:14px"><div class="form-field"><label class="field-label">Additional Dietary Notes</label><input class="field-input" id="f-dietary_notes" type="text" placeholder="Any other dietary requirements for airlines"></div></div>
-        </div>
-      </section>
-      <section class="section" id="section-loyalty">
+      <section class="section" id="section-loyalty-removed" style="display:none!important">
         <div class="sec-header"><div class="sec-icon" style="background:var(--goldGlow)">✦</div><div><div class="sec-title">Loyalty Programs</div><div class="sec-sub">IATA OneOrder Module 4 — Auto-applied at checkout on all integrated platforms</div></div></div>
 
         <!-- Loyalty Modal -->
@@ -2270,16 +2377,33 @@ function parseHash(){return new URLSearchParams(window.location.hash.slice(1)).g
 async function api(method,path,body){const opts={method,headers:{Authorization:`Bearer ${token}`}};if(body){opts.headers["Content-Type"]="application/json";opts.body=JSON.stringify(body);}const r=await fetch(`${API}${path}`,opts);if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json();}
 function toast(msg,type=""){const el=document.getElementById("toast");el.textContent=msg;el.className="toast show"+(type?" "+type:"");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.className="toast",3000);}
 function setSaveState(state){const dot=document.getElementById("save-dot"),lbl=document.getElementById("save-label");if(state==="saving"){dot.className="autosave-dot saving";lbl.textContent="Saving...";}else if(state==="saved"){dot.className="autosave-dot saved";lbl.textContent="All changes saved";setTimeout(()=>dot.className="autosave-dot",3000);}else{dot.className="autosave-dot";lbl.textContent="Unsaved changes";}}
-function showSection(id,btn){closeMobMenu();document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));document.getElementById("section-"+id).classList.add("active");if(btn)btn.classList.add("active");section=id;const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Seat & Cabin Preferences",meals:"Meal & Dietary",loyalty:"Loyalty Programs",payment:"Payment & Policy",trips:"Trip History",family:"Family Profiles",groups:"Groups",insurance:"Insurance & Tours",cruise:"Cruise Profile",consent:"Consent & Access",api:"API & Webhooks",account:"Account"};document.getElementById("page-title").textContent=titles[id]||"UniProfile";document.querySelector(".content").scrollTop=0;if(id==="family")loadFamilyData();
-if(id==="insurance"){renderMyInsurance();renderMyTours();}
-if(id==="cruise"){loadCruiseData();}if(id==="consent"){renderConsentPermissions();loadConnectedPlatforms();}}
+function showPrefTab(tab){document.querySelectorAll('.pref-tab-body').forEach(d=>d.style.display='none');document.querySelectorAll('.pref-tab').forEach(b=>b.classList.remove('active'));const body=document.getElementById('pref-tab-'+tab);if(body)body.style.display='';const pill=document.getElementById('ptab-'+tab);if(pill)pill.classList.add('active');}
+function showSection(id,btn){
+  // meals and loyalty are now tabs inside preferences
+  if(id==='meals'){showSection('preferences',document.getElementById('nav-preferences'));showPrefTab('fly');return;}
+  if(id==='loyalty'){showSection('preferences',document.getElementById('nav-preferences'));showPrefTab('loyalty');return;}
+  closeMobMenu();
+  document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
+  const el=document.getElementById("section-"+id);
+  if(el)el.classList.add("active");
+  if(btn)btn.classList.add("active");
+  section=id;
+  const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Preferences",payment:"Payment & Policy",trips:"Trip History",family:"Family Profiles",groups:"Groups",insurance:"Insurance & Tours",cruise:"Cruise Profile",consent:"Consent & Access",api:"API & Webhooks",account:"Account"};
+  document.getElementById("page-title").textContent=titles[id]||"UniProfile";
+  document.querySelector(".content").scrollTop=0;
+  if(id==="family")loadFamilyData();
+  if(id==="insurance"){renderMyInsurance();renderMyTours();}
+  if(id==="cruise"){loadCruiseData();}
+  if(id==="consent"){renderConsentPermissions();loadConnectedPlatforms();}
+}
 async function switchContext(el){const ctx=el.checked?"CORPORATE":"PERSONAL";const pill=document.getElementById("context-pill"),lp=document.getElementById("lbl-personal"),lb=document.getElementById("lbl-business"),pp=document.getElementById("pay-personal"),pc=document.getElementById("pay-corporate"),nb=document.getElementById("badge-payment");if(el.checked){pill.textContent="Business Mode";pill.className="context-pill corporate";lp.className="bleisure-opt teal";lb.className="bleisure-opt gold on";if(pp)pp.style.display="none";if(pc)pc.style.display="block";if(nb)nb.style.display="inline";}else{pill.textContent="Personal Mode";pill.className="context-pill personal";lp.className="bleisure-opt teal on";lb.className="bleisure-opt gold";if(pp)pp.style.display="block";if(pc)pc.style.display="none";if(nb)nb.style.display="none";}try{await api("POST",`/api/v1/profile/${uuid}/bleisure`,{context:ctx});}catch(e){}}
 const v=id=>document.getElementById(id)?.value?.trim()||"";
 const cb=id=>document.getElementById(id)?.checked||false;
 const s=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val??"";};
 const sc=(id,val)=>{const el=document.getElementById(id);if(el)el.checked=!!val;};
 const st=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt??"—";};
-async function saveSection(){if(saving)return;const btn=document.getElementById("save-btn");saving=true;btn.disabled=true;btn.textContent="Saving...";setSaveState("saving");let module,data;try{if(section==="identity"){module="identity";data={legal_first:v("f-legal_first"),legal_middle:v("f-legal_middle"),legal_last:v("f-legal_last"),dob:v("f-dob"),nationality:v("f-nationality"),gender_code:v("f-gender_code"),home_airport:v("f-home_airport").toUpperCase().slice(0,3)};}else if(section==="identity"){module="identity";data={legal_first:v("f-legal_first"),legal_middle:v("f-legal_middle"),legal_last:v("f-legal_last"),dob:v("f-dob")||null,nationality:v("f-nationality"),gender_code:v("f-gender_code"),home_airport:v("f-home_airport").toUpperCase().slice(0,3)};}else if(section==="preferences"){module="seat_preferences";data={cabin_domestic:v("f-cabin_domestic"),cabin_international:v("f-cabin_international"),seat_position:v("f-seat_position"),row_preference:v("f-row_preference"),avoid_middle_seats:cb("f-avoid_middle_seats"),avoid_last_row:cb("f-avoid_last_row"),wheelchair_needed:cb("f-wheelchair_needed"),hotel_room_type:v("f-hotel_room_type"),hotel_floor_pref:v("f-hotel_floor_pref"),car_type_pref:v("f-car_type_pref")};}else if(section==="meals"){module="meal_preferences";data={primary_meal_code:v("f-primary_meal_code"),beverage_pref:v("f-beverage_pref"),allergies:v("f-allergies").split(",").map(s=>s.trim()).filter(Boolean),avoid_items:v("f-avoid_items").split(",").map(s=>s.trim()).filter(Boolean),dietary_notes:v("f-dietary_notes")};}else if(section==="payment"){const isCorp=document.getElementById("bleisure-toggle").checked;if(isCorp){module="payment_corporate";data={company_name:v("f-company_name"),corporate_card:v("f-corporate_card"),cost_center:v("f-cost_center"),policy_description:v("f-policy_description"),expense_platform:v("f-expense_platform")};}else{module="payment_personal";data={preferred_card:v("f-preferred_card")};}}else{toast("Navigate to a module tab to save");saving=false;btn.disabled=false;btn.textContent="Save Changes";setSaveState("");return;}const result=await api("PUT",`/api/v1/profile/${uuid}`,{module,data});if(result.success){profile=result.profile;toast("Saved successfully","success");setSaveState("saved");updateSidebar(result.profile);}else{toast("Save failed: "+(result.error||"unknown"),"error");setSaveState("");}}catch(e){toast("Error: "+e.message,"error");setSaveState("");}saving=false;btn.disabled=false;btn.textContent="Save Changes";}
+async function saveSection(){if(saving)return;const btn=document.getElementById("save-btn");saving=true;btn.disabled=true;btn.textContent="Saving...";setSaveState("saving");let module,data;try{if(section==="identity"){module="identity";data={legal_first:v("f-legal_first"),legal_middle:v("f-legal_middle"),legal_last:v("f-legal_last"),dob:v("f-dob"),nationality:v("f-nationality"),gender_code:v("f-gender_code"),home_airport:v("f-home_airport").toUpperCase().slice(0,3)};}else if(section==="identity"){module="identity";data={legal_first:v("f-legal_first"),legal_middle:v("f-legal_middle"),legal_last:v("f-legal_last"),dob:v("f-dob")||null,nationality:v("f-nationality"),gender_code:v("f-gender_code"),home_airport:v("f-home_airport").toUpperCase().slice(0,3)};}else if(section==="preferences"){const activeTab=document.querySelector('.pref-tab.active')?.id||'';if(activeTab==='ptab-fly'){module="meal_preferences";data={primary_meal_code:v("f-primary_meal_code"),beverage_pref:v("f-beverage_pref"),allergies:v("f-allergies").split(",").map(s=>s.trim()).filter(Boolean),avoid_items:v("f-avoid_items").split(",").map(s=>s.trim()).filter(Boolean),dietary_notes:v("f-dietary_notes")};}else{module="seat_preferences";data={cabin_domestic:v("f-cabin_domestic"),cabin_international:v("f-cabin_international"),seat_position:v("f-seat_position"),row_preference:v("f-row_preference"),avoid_middle_seats:cb("f-avoid_middle_seats"),avoid_last_row:cb("f-avoid_last_row"),wheelchair_needed:cb("f-wheelchair_needed"),hotel_room_type:v("f-hotel_room_type"),hotel_floor_pref:v("f-hotel_floor_pref"),car_type_pref:v("f-car_type_pref")};}}else if(section==="meals"){module="meal_preferences";data={primary_meal_code:v("f-primary_meal_code"),beverage_pref:v("f-beverage_pref"),allergies:v("f-allergies").split(",").map(s=>s.trim()).filter(Boolean),avoid_items:v("f-avoid_items").split(",").map(s=>s.trim()).filter(Boolean),dietary_notes:v("f-dietary_notes")};}else if(section==="payment"){const isCorp=document.getElementById("bleisure-toggle").checked;if(isCorp){module="payment_corporate";data={company_name:v("f-company_name"),corporate_card:v("f-corporate_card"),cost_center:v("f-cost_center"),policy_description:v("f-policy_description"),expense_platform:v("f-expense_platform")};}else{module="payment_personal";data={preferred_card:v("f-preferred_card")};}}else{toast("Navigate to a module tab to save");saving=false;btn.disabled=false;btn.textContent="Save Changes";setSaveState("");return;}const result=await api("PUT",`/api/v1/profile/${uuid}`,{module,data});if(result.success){profile=result.profile;toast("Saved successfully","success");setSaveState("saved");updateSidebar(result.profile);}else{toast("Save failed: "+(result.error||"unknown"),"error");setSaveState("");}}catch(e){toast("Error: "+e.message,"error");setSaveState("");}saving=false;btn.disabled=false;btn.textContent="Save Changes";}
 function calcCompleteness(p){var checks=[{label:"Identity",weight:25,section:"identity",done:!!(p.identity&&p.identity.legal_first&&p.identity.legal_last&&p.identity.dob&&p.identity.nationality)},{label:"Passport",weight:20,section:"identity",done:!!(p.documents&&p.documents.some(function(d){return d.doc_type==="PASSPORT";}))},{label:"Seat preferences",weight:15,section:"preferences",done:!!(p.seat_preferences&&p.seat_preferences.cabin_domestic)},{label:"Meal preference",weight:10,section:"meals",done:!!(p.meal_preferences&&p.meal_preferences.primary_meal_code)},{label:"Loyalty program",weight:15,section:"loyalty",done:!!(p.loyalty_programs&&p.loyalty_programs.length)},{label:"Payment profile",weight:10,section:"payment",done:!!(p.payment_profiles&&p.payment_profiles.length)},{label:"First trip",weight:5,section:"trips",done:!!(p.trips&&p.trips.length)},];var pct=checks.reduce(function(s,c){return s+(c.done?c.weight:0);},0);var missing=checks.filter(function(c){return !c.done;});return{pct:pct,done:checks.length-missing.length,total:checks.length,missing:missing};}
 function navToSection(s){showSection(s,document.querySelector('.nav-btn[onclick*="\'"+s+"\'"]'));}
 function exportAllData(){if(!profile)return toast("Profile not loaded yet","error");const blob=new Blob([JSON.stringify(profile,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`uniprofile-export-${(profile.uniprofile_number||"data").toLowerCase()}.json`;a.click();URL.revokeObjectURL(url);toast("Export downloaded","success");}
@@ -2290,7 +2414,7 @@ const acctName=p.identity?`${p.identity.legal_first||""} ${p.identity.legal_last
 function renderProfile(p){profile=p;updateSidebar(p);var comp=calcCompleteness(p);var pct=comp.pct;st("ov-completeness",pct+"%");var trips=p.trips_count||0,loyal=(p.loyalty_programs||[]).length,docs=(p.documents||[]).length;st("ov-trips",trips);st("ov-loyalty",loyal);st("ov-docs",docs);var tn=document.getElementById("ov-trips-note"),th=document.getElementById("ov-trips-hint");if(tn)tn.style.display=trips?"":"none";if(th)th.style.display=trips?"none":"";var ln=document.getElementById("ov-loyalty-note"),lh=document.getElementById("ov-loyalty-hint");if(ln)ln.style.display=loyal?"":"none";if(lh)lh.style.display=loyal?"none":"";var dn=document.getElementById("ov-docs-note"),dh=document.getElementById("ov-docs-hint");if(dn)dn.style.display=docs?"":"none";if(dh)dh.style.display=docs?"none":"";
 var compNote=document.getElementById("ov-comp-note");if(compNote){var nx=comp.missing[0];compNote.textContent=pct>=100?"All modules complete":pct>=70?"Almost there — add "+(nx?nx.label:""):pct>=40?"Add "+(nx?nx.label+" (+"+nx.weight+"%)":""):"Start with "+(nx?nx.label:"identity");compNote.className="stat-note "+(pct>=80?"teal":pct>=50?"":"warn");}
 const expiring=(p.documents||[]).filter(d=>d.days_remaining!==null&&d.days_remaining<=180);const ac=document.getElementById("alert-container");if(ac&&expiring.length){ac.innerHTML=expiring.map(d=>`<div class="alert-banner ${d.days_remaining<0?"danger":"warn"}"><span class="alert-icon">${d.days_remaining<0?"⛔":"⚠"}</span><span class="alert-text">Your <strong>${d.doc_type}</strong> ${d.days_remaining<0?"has expired":`expires in ${d.days_remaining} days`}.</span><span class="alert-link" onclick="showSection('identity',document.querySelectorAll('.nav-btn')[1])">Update →</span></div>`).join("");}
-const modules=[{id:"identity",icon:"",iconBg:"var(--goldGlow)",name:"Identity & Documents",desc:"Passport, KTN, TSA PreCheck, visas and government IDs",status:p.identity?"complete":"empty",tags:(p.documents||[]).map(d=>({label:d.doc_type.replace(/_/g," "),filled:true}))},{id:"preferences",icon:"💺",iconBg:"var(--tealGlow)",name:"Seat & Cabin Preferences",desc:"Seat position, cabin class, extra legroom, hotel and car preferences",status:p.seat_preferences?"complete":"empty",tags:p.seat_preferences?[{label:p.seat_preferences.seat_position,filled:true},{label:p.seat_preferences.cabin_international,filled:true}]:[]},{id:"meals",icon:"🍽",iconBg:"var(--greenGlow)",name:"Meal & Dietary",desc:"IATA meal codes, allergies and dietary restrictions",status:p.meal_preferences?"complete":"empty",tags:p.meal_preferences?[{label:p.meal_preferences.primary_meal_code,filled:true},...(p.meal_preferences.allergies||[]).map(a=>({label:a,filled:false}))]:[],},{id:"loyalty",icon:"✦",iconBg:"var(--goldGlow)",name:"Loyalty Programs",desc:"Airline, hotel and car memberships — auto-applied at checkout",status:(p.loyalty_programs||[]).length>0?"complete":"empty",tags:(p.loyalty_programs||[]).slice(0,3).map(l=>({label:l.provider_name,filled:true}))},{id:"payment",icon:"💳",iconBg:"rgba(56,99,177,0.1)",name:"Payment & Policy",desc:"Personal and corporate payment profiles with context-aware switching",status:(p.payment_profiles||[]).length>0?"partial":"empty",tags:(p.payment_profiles||[]).map(pp=>({label:pp.context,filled:true}))},{id:"trips",icon:"📋",iconBg:"var(--surface2)",name:"Trip History & Vault",desc:"All bookings and PNRs — populated via webhook",status:(p.trips||[]).length>0?"complete":"empty",tags:[{label:(p.trips_count||0)+" trips",filled:(p.trips_count||0)>0}]},];
+const modules=[{id:"identity",icon:"",iconBg:"var(--goldGlow)",name:"Identity & Documents",desc:"Passport, KTN, TSA PreCheck, visas and government IDs",status:p.identity?"complete":"empty",tags:(p.documents||[]).map(d=>({label:d.doc_type.replace(/_/g," "),filled:true}))},{id:"preferences",icon:"✈",iconBg:"var(--tealGlow)",name:"Preferences",desc:"Cabin, seat, meal, hotel &amp; loyalty — pre-filled at checkout",status:(p.seat_preferences||p.meal_preferences)?"complete":"empty",tags:[...(p.seat_preferences?[{label:p.seat_preferences.seat_position,filled:true},{label:p.seat_preferences.cabin_international,filled:true}]:[]),...(p.meal_preferences&&p.meal_preferences.primary_meal_code?[{label:p.meal_preferences.primary_meal_code,filled:true}]:[])].slice(0,4)},{id:"payment",icon:"💳",iconBg:"rgba(56,99,177,0.1)",name:"Payment & Policy",desc:"Personal and corporate payment profiles with context-aware switching",status:(p.payment_profiles||[]).length>0?"partial":"empty",tags:(p.payment_profiles||[]).map(pp=>({label:pp.context,filled:true}))},{id:"trips",icon:"📋",iconBg:"var(--surface2)",name:"Trip History & Vault",desc:"All bookings and PNRs — populated via webhook",status:(p.trips||[]).length>0?"complete":"empty",tags:[{label:(p.trips_count||0)+" trips",filled:(p.trips_count||0)>0}]},];
 const mg=document.getElementById("module-grid");if(mg)mg.innerHTML=modules.map((m,i)=>`<div class="module-card ${m.status}" onclick="showSection('${m.id}',document.querySelectorAll('.nav-btn')[${i+1}])"><div class="module-top"><div class="module-icon-wrap" style="background:${m.iconBg}">${m.icon}</div><div class="module-status-pill pill-${m.status}">${m.status==="complete"?"Complete":m.status==="partial"?"Partial":"Empty"}</div></div><div class="module-name">${m.name}</div><div class="module-desc">${m.desc}</div>${m.tags.length?`<div class="module-tags">${m.tags.slice(0,4).map(t=>`<span class="module-tag${t.filled?" filled":""}">${t.label}</span>`).join("")}</div>`:""}</div>`).join("");
 if(p.identity){s("f-legal_first",p.identity.legal_first);s("f-legal_middle",p.identity.legal_middle);s("f-legal_last",p.identity.legal_last);s("f-dob",p.identity.dob?p.identity.dob.split("T")[0]:"");s("f-nationality",p.identity.nationality);s("f-gender_code",p.identity.gender_code||"M");s("f-home_airport",p.identity.home_airport);}
 renderDocumentVault(p.documents||[]);populateDocTypeDropdown(p.document_types||{});
