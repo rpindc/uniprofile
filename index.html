@@ -504,6 +504,11 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .grp-card-stat-val   { font-size: 18px; font-weight: 600; color: var(--text); font-family: 'Playfair Display', serif; }
 .grp-card-stat-label { font-size: 11px; color: var(--textDim); font-family: 'DM Sans', sans-serif; margin-top: 2px; }
 .grp-card-alerts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+.grp-card-actions { display: flex; gap: 6px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border); }
+.grp-card-action-btn { flex: 1; padding: 5px 0; font-size: 12px; font-weight: 500; font-family: inherit; background: var(--surface2); border: 1px solid var(--border2); color: var(--textDim); border-radius: 6px; cursor: pointer; transition: background 0.15s, color 0.15s; }
+.grp-card-action-btn:hover { background: var(--surface3,var(--border)); color: var(--text); }
+.grp-card-action-delete { color: var(--red) !important; border-color: var(--red) !important; }
+.grp-card-action-delete:hover { background: rgba(220,38,38,0.08) !important; }
 .grp-alert-chip {
   font-size: 9px;
   padding: 3px 9px;
@@ -3834,6 +3839,10 @@ function grpRenderGrid(filter) {
         </div>
       </div>
       <div class="grp-card-alerts">${grpAlertSummary(alerts)}</div>
+      <div class="grp-card-actions" onclick="event.stopPropagation()">
+        <button class="grp-card-action-btn" onclick="shareGroup('${esc(g.id)}',event)">Share</button>
+        <button class="grp-card-action-btn grp-card-action-delete" onclick="deleteGroup('${esc(g.id)}')">Delete</button>
+      </div>
     </div>`;
   }).join('');
 }
@@ -3960,6 +3969,7 @@ function openGroupDetail(id) {
       <button class="grp-btn-secondary" onclick="openGrpInviteModal()">Invite via Email</button>
       <button class="grp-btn-secondary" onclick="openGrpFlightModal()">+ Flight</button>
       <button class="grp-btn-secondary" onclick="openGrpHotelModal()">${g.hotel ? 'Edit Hotel' : 'Set Hotel'}</button>
+      <button class="grp-btn-secondary" onclick="shareGroup('${esc(g.id)}',event)">Share</button>
       <button class="grp-btn-secondary" onclick="exportGroupManifest('${esc(g.id)}')">Export</button>
       <button class="grp-btn-secondary" style="color:var(--red);border-color:var(--red);margin-left:auto" onclick="deleteGroup('${esc(g.id)}')">Delete</button>
     </div>
@@ -4313,6 +4323,31 @@ function deleteGroup(id) {
   grpPersist();
   grpRenderGrid(grpCurrentFilter);
   toast('Group deleted', 'success');
+}
+
+/* ── Share group ─────────────────────────────────────────── */
+async function shareGroup(id, event) {
+  if (event) event.stopPropagation();
+  const g = grpData.find(x => x.id === id);
+  if (!g) return;
+  const memberNames = (g.members||[]).map(m => m.name).filter(Boolean);
+  const text = [
+    '✦ ' + g.name,
+    g.destination + ' · ' + grpFmtRange(g.dep, g.ret),
+    (g.members||[]).length + ' member' + ((g.members||[]).length !== 1 ? 's' : '') + (memberNames.length ? ': ' + memberNames.join(', ') : ''),
+    (g.flights||[]).length ? (g.flights||[]).length + ' flight' + ((g.flights||[]).length !== 1 ? 's' : '') + ' on itinerary' : '',
+    'UniProfile Group · ' + g.id,
+  ].filter(Boolean).join('\n');
+  if (navigator.share) {
+    try { await navigator.share({ title: g.name, text }); } catch(e) { /* cancelled */ }
+  } else {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast('Group summary copied to clipboard', 'success');
+    } catch(e) {
+      toast('Share not supported in this browser', '');
+    }
+  }
 }
 
 /* ── Export manifest ─────────────────────────────────────── */
