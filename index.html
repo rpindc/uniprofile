@@ -3649,25 +3649,36 @@ let grpSelectedId = null;
 
 /* ── API persistence ─────────────────────────────────────── */
 function grpSaveLocal() {
-  try { localStorage.setItem('up_groups_' + uuid, JSON.stringify(grpData)); } catch(_) {}
+  try {
+    localStorage.setItem('up_groups_' + uuid, JSON.stringify(grpData));
+    console.log('[Groups] saved', grpData.length, 'group(s) to localStorage');
+  } catch(e) { console.warn('[Groups] localStorage save failed:', e.message); }
 }
 function grpLoadLocal() {
   try {
     const raw = localStorage.getItem('up_groups_' + uuid);
-    if (raw) grpData = JSON.parse(raw);
-  } catch(_) {}
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length) {
+        grpData = parsed;
+        console.log('[Groups] loaded', grpData.length, 'group(s) from localStorage');
+      }
+    }
+  } catch(e) { console.warn('[Groups] localStorage load failed:', e.message); }
 }
 
 async function grpPersist() {
-  if (!uuid) return;
+  if (!uuid) { console.warn('[Groups] grpPersist: no uuid yet'); return; }
   grpSaveLocal();
   try {
     const result = await api('PUT', '/api/v1/profile/' + uuid, { module: 'groups', data: { groups: grpData } });
-    if (result && !result.success) {
-      console.warn('grpPersist backend error:', result.error);
+    if (result && result.success) {
+      console.log('[Groups] synced to backend OK');
+    } else {
+      console.warn('[Groups] backend returned non-success:', result && result.error);
     }
   } catch(e) {
-    console.warn('grpPersist failed (saved locally):', e.message);
+    console.warn('[Groups] backend sync failed (groups saved locally):', e.message);
   }
 }
 
@@ -3758,16 +3769,27 @@ function grpAlertSummary(alerts) {
 
 /* ── Render group cards ──────────────────────────────────── */
 function grpRenderGrid(filter) {
+  // Always reset to grid view — grid may be hidden if user navigated away while in detail view
+  const detail   = document.getElementById('grp-detail');
+  const typeBar  = document.getElementById('grp-type-filter');
+  if (detail)  detail.style.display  = 'none';
+  if (typeBar) typeBar.style.display = 'flex';
+  grpSelectedId = null;
+
   const grid  = document.getElementById('grp-grid');
   const empty = document.getElementById('grp-empty');
+  if (!grid) return;
+
   const filtered = grpData.filter(g => filter === 'all' || g.type === filter);
 
   if (filtered.length === 0) {
+    grid.style.display = 'none';
     grid.innerHTML = '';
-    empty.style.display = 'block';
+    if (empty) empty.style.display = 'block';
     return;
   }
-  empty.style.display = 'none';
+  if (empty) empty.style.display = 'none';
+  grid.style.display = 'grid';
 
   grid.innerHTML = filtered.map(g => {
     const col    = GRP_COLORS[g.type] || GRP_COLORS.family;
