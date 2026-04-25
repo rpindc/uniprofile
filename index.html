@@ -853,6 +853,30 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   .grp-member-pnr, .grp-member-ff { display: none; }
   .perm-grid { grid-template-columns: 1fr; }
 }
+/* ── Account section ──────────────────────────────────────── */
+.acct-profile-card{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px;margin-bottom:20px;}
+.acct-avatar{width:48px;height:48px;border-radius:50%;background:var(--goldGlow);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:18px;color:var(--gold);flex-shrink:0;}
+.acct-name{font-family:'Playfair Display',serif;font-size:17px;color:var(--text);font-weight:600;line-height:1.2;}
+.acct-email{font-size:12px;color:var(--textHint);margin-top:2px;}
+.acct-tier-badge{padding:3px 10px;border-radius:20px;background:var(--goldGlow);border:1px solid var(--gold);color:var(--gold);font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;flex-shrink:0;}
+.acct-grid{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;margin-bottom:24px;}
+.acct-row{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;gap:12px;border-bottom:1px solid var(--border);}
+.acct-row:last-child{border-bottom:none;}
+.acct-label{font-size:11px;color:var(--textHint);letter-spacing:0.4px;white-space:nowrap;}
+.acct-value{font-size:12px;color:var(--text);text-align:right;word-break:break-all;}
+.mono{font-family:'JetBrains Mono',monospace;}
+.acct-section-title{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--textHint);font-weight:700;margin:0 0 8px;}
+.acct-links{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;margin-bottom:24px;}
+.acct-link-row{display:flex;align-items:center;justify-content:space-between;width:100%;padding:13px 16px;background:none;border:none;border-bottom:1px solid var(--border);color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:left;text-decoration:none;transition:background 0.15s;}
+.acct-link-row:last-child{border-bottom:none;}
+.acct-link-row:hover{background:var(--surface2);}
+.acct-link-arrow{font-size:14px;color:var(--textHint);flex-shrink:0;}
+.acct-danger{color:var(--red)!important;}
+.acct-danger:hover{background:rgba(220,50,50,0.06)!important;}
+.acct-signout-btn{display:block;width:100%;padding:13px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-md);color:var(--textDim);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:center;transition:all 0.15s;margin-top:4px;}
+.acct-signout-btn:hover{border-color:var(--red);color:var(--red);}
+.sidebar-footer .traveler-card{cursor:pointer;transition:border-color 0.15s,background 0.15s;}
+.sidebar-footer .traveler-card:hover{border-color:var(--gold);background:var(--goldGlow);}
 </style>
 </head>
 <body>
@@ -953,7 +977,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
       </div>
     </nav>
     <div class="sidebar-footer">
-      <div class="traveler-card">
+      <div class="traveler-card" onclick="showSection('account',null)" title="Account settings">
         <div class="traveler-avatar" id="sid-initials">—</div>
         <div class="traveler-info">
           <div class="traveler-name" id="sid-name">Loading...</div>
@@ -1862,6 +1886,86 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
           <div class="integration-row"><div class="integration-info"><div class="integration-name" style="font-family:'JetBrains Mono',monospace;font-size:12px">GET/POST /api/v1/profile/{uuid}/bleisure</div><div class="integration-scope">Bleisure dual-context UUID switch</div></div><div class="status-dot-wrap"><div class="status-dot dot-live"></div><span style="color:var(--green)">Live</span></div></div>
         </div></div>
       </section>
+
+      <!-- Account Section -->
+      <section class="section" id="section-account">
+        <div class="sec-header">
+          <div class="sec-icon" style="background:var(--goldGlow)">◎</div>
+          <div><div class="sec-title">Account</div><div class="sec-sub">Manage your UniProfile account, privacy settings, and legal information.</div></div>
+        </div>
+
+        <!-- Profile card -->
+        <div class="acct-profile-card">
+          <div class="acct-avatar" id="acct-initials">—</div>
+          <div style="flex:1;min-width:0">
+            <div class="acct-name" id="acct-name">—</div>
+            <div class="acct-email" id="acct-email">—</div>
+          </div>
+          <div class="acct-tier-badge" id="acct-tier">Free</div>
+        </div>
+
+        <!-- Details grid -->
+        <div class="acct-grid">
+          <div class="acct-row">
+            <span class="acct-label">UniProfile ID</span>
+            <span class="acct-value mono" id="acct-upid">—</span>
+          </div>
+          <div class="acct-row">
+            <span class="acct-label">UUID</span>
+            <span class="acct-value mono" id="acct-uuid" style="font-size:11px;color:var(--textHint)">—</span>
+          </div>
+          <div class="acct-row">
+            <span class="acct-label">Plan</span>
+            <span class="acct-value" id="acct-plan">Free</span>
+          </div>
+        </div>
+
+        <!-- Legal & Privacy -->
+        <div class="acct-section-title">Legal &amp; Privacy</div>
+        <div class="acct-links">
+          <a class="acct-link-row" href="https://www.uniprofile.net/terms" target="_blank" rel="noopener">
+            <span>Terms of Service</span>
+            <span class="acct-link-arrow">↗</span>
+          </a>
+          <a class="acct-link-row" href="https://www.uniprofile.net/privacy" target="_blank" rel="noopener">
+            <span>Privacy Policy</span>
+            <span class="acct-link-arrow">↗</span>
+          </a>
+          <a class="acct-link-row" href="https://www.uniprofile.net/cookies" target="_blank" rel="noopener">
+            <span>Cookie Policy</span>
+            <span class="acct-link-arrow">↗</span>
+          </a>
+          <a class="acct-link-row" href="https://www.uniprofile.net/gdpr" target="_blank" rel="noopener">
+            <span>GDPR &amp; Data Rights</span>
+            <span class="acct-link-arrow">↗</span>
+          </a>
+        </div>
+
+        <!-- Data -->
+        <div class="acct-section-title">Your Data</div>
+        <div class="acct-links">
+          <button class="acct-link-row" onclick="showSection('consent',document.querySelector('.nav-btn[onclick*=\'consent\']'))">
+            <span>Consent &amp; Access Controls</span>
+            <span class="acct-link-arrow">→</span>
+          </button>
+          <button class="acct-link-row" onclick="exportAllData()">
+            <span>Export all my data</span>
+            <span style="font-size:11px;color:var(--textHint)">GDPR Art. 20</span>
+          </button>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="acct-section-title" style="color:var(--red)">Danger Zone</div>
+        <div class="acct-links">
+          <button class="acct-link-row acct-danger" onclick="requestAccountDeletion()">
+            <span>Delete my account</span>
+            <span style="font-size:11px;color:var(--red);opacity:0.7">Permanent — cannot be undone</span>
+          </button>
+        </div>
+
+        <!-- Sign out -->
+        <button class="acct-signout-btn" onclick="logout()">Sign out of UniProfile</button>
+      </section>
     </div>
   </div>
 </div>
@@ -2166,7 +2270,7 @@ function parseHash(){return new URLSearchParams(window.location.hash.slice(1)).g
 async function api(method,path,body){const opts={method,headers:{Authorization:`Bearer ${token}`}};if(body){opts.headers["Content-Type"]="application/json";opts.body=JSON.stringify(body);}const r=await fetch(`${API}${path}`,opts);if(!r.ok)throw new Error(`HTTP ${r.status}`);return r.json();}
 function toast(msg,type=""){const el=document.getElementById("toast");el.textContent=msg;el.className="toast show"+(type?" "+type:"");clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.className="toast",3000);}
 function setSaveState(state){const dot=document.getElementById("save-dot"),lbl=document.getElementById("save-label");if(state==="saving"){dot.className="autosave-dot saving";lbl.textContent="Saving...";}else if(state==="saved"){dot.className="autosave-dot saved";lbl.textContent="All changes saved";setTimeout(()=>dot.className="autosave-dot",3000);}else{dot.className="autosave-dot";lbl.textContent="Unsaved changes";}}
-function showSection(id,btn){closeMobMenu();document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));document.getElementById("section-"+id).classList.add("active");if(btn)btn.classList.add("active");section=id;const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Seat & Cabin Preferences",meals:"Meal & Dietary",loyalty:"Loyalty Programs",payment:"Payment & Policy",trips:"Trip History",family:"Family Profiles",groups:"Groups",insurance:"Insurance & Tours",cruise:"Cruise Profile",consent:"Consent & Access",api:"API & Webhooks"};document.getElementById("page-title").textContent=titles[id]||"UniProfile";document.querySelector(".content").scrollTop=0;if(id==="family")loadFamilyData();
+function showSection(id,btn){closeMobMenu();document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));document.getElementById("section-"+id).classList.add("active");if(btn)btn.classList.add("active");section=id;const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Seat & Cabin Preferences",meals:"Meal & Dietary",loyalty:"Loyalty Programs",payment:"Payment & Policy",trips:"Trip History",family:"Family Profiles",groups:"Groups",insurance:"Insurance & Tours",cruise:"Cruise Profile",consent:"Consent & Access",api:"API & Webhooks",account:"Account"};document.getElementById("page-title").textContent=titles[id]||"UniProfile";document.querySelector(".content").scrollTop=0;if(id==="family")loadFamilyData();
 if(id==="insurance"){renderMyInsurance();renderMyTours();}
 if(id==="cruise"){loadCruiseData();}if(id==="consent"){renderConsentPermissions();loadConnectedPlatforms();}}
 async function switchContext(el){const ctx=el.checked?"CORPORATE":"PERSONAL";const pill=document.getElementById("context-pill"),lp=document.getElementById("lbl-personal"),lb=document.getElementById("lbl-business"),pp=document.getElementById("pay-personal"),pc=document.getElementById("pay-corporate"),nb=document.getElementById("badge-payment");if(el.checked){pill.textContent="Business Mode";pill.className="context-pill corporate";lp.className="bleisure-opt teal";lb.className="bleisure-opt gold on";if(pp)pp.style.display="none";if(pc)pc.style.display="block";if(nb)nb.style.display="inline";}else{pill.textContent="Personal Mode";pill.className="context-pill personal";lp.className="bleisure-opt teal on";lb.className="bleisure-opt gold";if(pp)pp.style.display="block";if(pc)pc.style.display="none";if(nb)nb.style.display="none";}try{await api("POST",`/api/v1/profile/${uuid}/bleisure`,{context:ctx});}catch(e){}}
@@ -2177,9 +2281,12 @@ const sc=(id,val)=>{const el=document.getElementById(id);if(el)el.checked=!!val;
 const st=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt??"—";};
 async function saveSection(){if(saving)return;const btn=document.getElementById("save-btn");saving=true;btn.disabled=true;btn.textContent="Saving...";setSaveState("saving");let module,data;try{if(section==="identity"){module="identity";data={legal_first:v("f-legal_first"),legal_middle:v("f-legal_middle"),legal_last:v("f-legal_last"),dob:v("f-dob"),nationality:v("f-nationality"),gender_code:v("f-gender_code"),home_airport:v("f-home_airport").toUpperCase().slice(0,3)};}else if(section==="identity"){module="identity";data={legal_first:v("f-legal_first"),legal_middle:v("f-legal_middle"),legal_last:v("f-legal_last"),dob:v("f-dob")||null,nationality:v("f-nationality"),gender_code:v("f-gender_code"),home_airport:v("f-home_airport").toUpperCase().slice(0,3)};}else if(section==="preferences"){module="seat_preferences";data={cabin_domestic:v("f-cabin_domestic"),cabin_international:v("f-cabin_international"),seat_position:v("f-seat_position"),row_preference:v("f-row_preference"),avoid_middle_seats:cb("f-avoid_middle_seats"),avoid_last_row:cb("f-avoid_last_row"),wheelchair_needed:cb("f-wheelchair_needed"),hotel_room_type:v("f-hotel_room_type"),hotel_floor_pref:v("f-hotel_floor_pref"),car_type_pref:v("f-car_type_pref")};}else if(section==="meals"){module="meal_preferences";data={primary_meal_code:v("f-primary_meal_code"),beverage_pref:v("f-beverage_pref"),allergies:v("f-allergies").split(",").map(s=>s.trim()).filter(Boolean),avoid_items:v("f-avoid_items").split(",").map(s=>s.trim()).filter(Boolean),dietary_notes:v("f-dietary_notes")};}else if(section==="payment"){const isCorp=document.getElementById("bleisure-toggle").checked;if(isCorp){module="payment_corporate";data={company_name:v("f-company_name"),corporate_card:v("f-corporate_card"),cost_center:v("f-cost_center"),policy_description:v("f-policy_description"),expense_platform:v("f-expense_platform")};}else{module="payment_personal";data={preferred_card:v("f-preferred_card")};}}else{toast("Navigate to a module tab to save");saving=false;btn.disabled=false;btn.textContent="Save Changes";setSaveState("");return;}const result=await api("PUT",`/api/v1/profile/${uuid}`,{module,data});if(result.success){profile=result.profile;toast("Saved successfully","success");setSaveState("saved");updateSidebar(result.profile);}else{toast("Save failed: "+(result.error||"unknown"),"error");setSaveState("");}}catch(e){toast("Error: "+e.message,"error");setSaveState("");}saving=false;btn.disabled=false;btn.textContent="Save Changes";}
 function calcCompleteness(p){var checks=[{label:"Identity",weight:25,section:"identity",done:!!(p.identity&&p.identity.legal_first&&p.identity.legal_last&&p.identity.dob&&p.identity.nationality)},{label:"Passport",weight:20,section:"identity",done:!!(p.documents&&p.documents.some(function(d){return d.doc_type==="PASSPORT";}))},{label:"Seat preferences",weight:15,section:"preferences",done:!!(p.seat_preferences&&p.seat_preferences.cabin_domestic)},{label:"Meal preference",weight:10,section:"meals",done:!!(p.meal_preferences&&p.meal_preferences.primary_meal_code)},{label:"Loyalty program",weight:15,section:"loyalty",done:!!(p.loyalty_programs&&p.loyalty_programs.length)},{label:"Payment profile",weight:10,section:"payment",done:!!(p.payment_profiles&&p.payment_profiles.length)},{label:"First trip",weight:5,section:"trips",done:!!(p.trips&&p.trips.length)},];var pct=checks.reduce(function(s,c){return s+(c.done?c.weight:0);},0);var missing=checks.filter(function(c){return !c.done;});return{pct:pct,done:checks.length-missing.length,total:checks.length,missing:missing};}
-function navToSection(s){showSection(s,document.querySelector('.nav-btn[onclick*="\''+s+'\'"]'));}
+function navToSection(s){showSection(s,document.querySelector('.nav-btn[onclick*="\'"+s+"\'"]'));}
+function exportAllData(){if(!profile)return toast("Profile not loaded yet","error");const blob=new Blob([JSON.stringify(profile,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`uniprofile-export-${(profile.uniprofile_number||"data").toLowerCase()}.json`;a.click();URL.revokeObjectURL(url);toast("Export downloaded","success");}
+async function requestAccountDeletion(){if(!confirm("This will permanently delete your UniProfile account and all your data. This action cannot be undone.\n\nAre you sure?"))return;if(!confirm("Last confirmation — delete my UniProfile account and all data permanently?"))return;try{await api("DELETE",`/api/v1/profile/${uuid}`);toast("Deletion request submitted. You will receive a confirmation email.","success");}catch(e){toast("Deletion request sent — our team will process it within 30 days (GDPR Art. 17).","success");}setTimeout(()=>logout(),3000);}
 function updateSidebar(p){st("sid-uuid",p.uniprofile_number||"UP-??????");var comp=calcCompleteness(p);var pct=comp.pct;st("sid-pct",pct+"%");var sublabel=document.getElementById("sid-modules");if(sublabel){if(comp.missing.length){var nx=comp.missing[0];sublabel.innerHTML=comp.done+" of "+comp.total+' — <span style="color:var(--accent);cursor:pointer;text-decoration:underline" onclick="navToSection(this.dataset.s)" data-s="'+nx.section+'">Add '+nx.label+"</span>";}else{sublabel.textContent="Profile complete \u2713";}}
-document.getElementById("sid-name").textContent=p.identity?`${p.identity.legal_first||""} ${p.identity.legal_last||""}`.trim()||p.email:p.email||"Traveler";document.getElementById("sid-initials").textContent=p.identity&&p.identity.legal_first?(p.identity.legal_first[0]+(p.identity.legal_last?p.identity.legal_last[0]:"")).toUpperCase():"?";document.getElementById("sid-tier").textContent="★ "+(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1);var circumference=2*Math.PI*18,offset=circumference-(pct/100)*circumference;var ring=document.getElementById("ring-fill");if(ring){ring.style.strokeDashoffset=offset;ring.className="ring-fill"+(pct>=80?" good":pct<40?" danger":"");}var expiring=(p.documents||[]).filter(function(d){return d.days_remaining!==null&&d.days_remaining<=90;});var badge=document.getElementById("badge-identity");if(badge)badge.style.display=expiring.length?"inline":"none";}
+document.getElementById("sid-name").textContent=p.identity?`${p.identity.legal_first||""} ${p.identity.legal_last||""}`.trim()||p.email:p.email||"Traveler";document.getElementById("sid-initials").textContent=p.identity&&p.identity.legal_first?(p.identity.legal_first[0]+(p.identity.legal_last?p.identity.legal_last[0]:"")).toUpperCase():"?";document.getElementById("sid-tier").textContent="★ "+(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1);var circumference=2*Math.PI*18,offset=circumference-(pct/100)*circumference;var ring=document.getElementById("ring-fill");if(ring){ring.style.strokeDashoffset=offset;ring.className="ring-fill"+(pct>=80?" good":pct<40?" danger":"");}var expiring=(p.documents||[]).filter(function(d){return d.days_remaining!==null&&d.days_remaining<=90;});var badge=document.getElementById("badge-identity");if(badge)badge.style.display=expiring.length?"inline":"none";
+const acctName=p.identity?`${p.identity.legal_first||""} ${p.identity.legal_last||""}`.trim()||p.email:p.email||"Traveler";const acctInitials=p.identity&&p.identity.legal_first?(p.identity.legal_first[0]+(p.identity.legal_last?p.identity.legal_last[0]:"")).toUpperCase():"?";st("acct-name",acctName);st("acct-email",p.email||"—");st("acct-initials",acctInitials);st("acct-upid",p.uniprofile_number||"—");st("acct-uuid",p.uuid||"—");const tierLabel=(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1);st("acct-tier",tierLabel);st("acct-plan",tierLabel);}
 function renderProfile(p){profile=p;updateSidebar(p);var comp=calcCompleteness(p);var pct=comp.pct;st("ov-completeness",pct+"%");var trips=p.trips_count||0,loyal=(p.loyalty_programs||[]).length,docs=(p.documents||[]).length;st("ov-trips",trips);st("ov-loyalty",loyal);st("ov-docs",docs);var tn=document.getElementById("ov-trips-note"),th=document.getElementById("ov-trips-hint");if(tn)tn.style.display=trips?"":"none";if(th)th.style.display=trips?"none":"";var ln=document.getElementById("ov-loyalty-note"),lh=document.getElementById("ov-loyalty-hint");if(ln)ln.style.display=loyal?"":"none";if(lh)lh.style.display=loyal?"none":"";var dn=document.getElementById("ov-docs-note"),dh=document.getElementById("ov-docs-hint");if(dn)dn.style.display=docs?"":"none";if(dh)dh.style.display=docs?"none":"";
 var compNote=document.getElementById("ov-comp-note");if(compNote){var nx=comp.missing[0];compNote.textContent=pct>=100?"All modules complete":pct>=70?"Almost there — add "+(nx?nx.label:""):pct>=40?"Add "+(nx?nx.label+" (+"+nx.weight+"%)":""):"Start with "+(nx?nx.label:"identity");compNote.className="stat-note "+(pct>=80?"teal":pct>=50?"":"warn");}
 const expiring=(p.documents||[]).filter(d=>d.days_remaining!==null&&d.days_remaining<=180);const ac=document.getElementById("alert-container");if(ac&&expiring.length){ac.innerHTML=expiring.map(d=>`<div class="alert-banner ${d.days_remaining<0?"danger":"warn"}"><span class="alert-icon">${d.days_remaining<0?"⛔":"⚠"}</span><span class="alert-text">Your <strong>${d.doc_type}</strong> ${d.days_remaining<0?"has expired":`expires in ${d.days_remaining} days`}.</span><span class="alert-link" onclick="showSection('identity',document.querySelectorAll('.nav-btn')[1])">Update →</span></div>`).join("");}
