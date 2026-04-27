@@ -10,5 +10,6 @@ frontend:
     baseDirectory: .
     files:
       - index.html
+      - data/**/*
   cache:
     paths: []

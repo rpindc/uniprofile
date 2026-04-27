@@ -905,6 +905,135 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .acct-signout-btn:hover{border-color:var(--red);color:var(--red);}
 .sidebar-footer .traveler-card{cursor:pointer;transition:border-color 0.15s,background 0.15s;}
 .sidebar-footer .traveler-card:hover{border-color:var(--gold);background:var(--goldGlow);}
+/* ── Visual PNR modal ───────────────────────────────────── */
+.vpnr-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(28, 30, 38, 0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+  box-sizing: border-box;
+}
+.vpnr-modal-overlay.active { display: flex; }
+.vpnr-modal {
+  background: #F5F3EF;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 1100px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+  overflow: hidden;
+}
+.vpnr-header {
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+.vpnr-header-info { flex: 1; }
+.vpnr-header-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+.vpnr-header-meta {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--textDim);
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.vpnr-header-meta strong {
+  color: var(--text);
+  font-weight: 500;
+}
+.vpnr-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: var(--textDim);
+  font-size: 24px;
+  line-height: 1;
+}
+.vpnr-close:hover { color: var(--text); }
+.vpnr-map-area {
+  background: var(--goldGlow);
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--textDim);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-style: italic;
+}
+.vpnr-timeline {
+  padding: 24px 32px;
+  overflow-y: auto;
+  flex: 1;
+}
+.vpnr-segment {
+  display: flex;
+  gap: 20px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.vpnr-segment:last-child { border-bottom: none; }
+.vpnr-segment-flight {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gold);
+  min-width: 70px;
+}
+.vpnr-segment-route {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.vpnr-segment-airports {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+}
+.vpnr-segment-times {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--textDim);
+}
+.vpnr-segment-aircraft {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
+  color: var(--textDim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 100px;
+  text-align: right;
+}
+.vpnr-gap {
+  padding: 12px 16px;
+  margin: 8px 0;
+  background: var(--goldGlow);
+  border-left: 3px dashed var(--textDim);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: var(--textDim);
+  font-style: italic;
+}
 .field-slider{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;background:var(--border);outline:none;cursor:pointer;margin-top:8px;}.field-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer;transition:transform 0.1s;}.field-slider::-webkit-slider-thumb:hover{transform:scale(1.1);}.field-slider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer;border:none;transition:transform 0.1s;}.field-slider::-moz-range-thumb:hover{transform:scale(1.1);}.slider-readout{display:block;margin-top:6px;font-size:11px;font-family:'DM Sans',sans-serif;color:var(--textDim);letter-spacing:0.3px;}.slider-readout strong{color:var(--goldLt);font-weight:600;}
 </style>
 </head>
@@ -2950,7 +3079,7 @@ function applyTripFilter(filter){
         // Actions
         '<div style="display:flex;gap:6px">'+
           '<button class="act-btn primary" data-idx="'+i+'" data-dest="'+t.destination_iata+'" data-orig="'+t.origin_iata+'" data-date="'+(t.departure_date||"")+'" onclick="runDocCheck(parseInt(this.dataset.idx),this.dataset.dest,this.dataset.orig,this.dataset.date)" style="font-size:12px;padding:5px 14px;border-radius:6px;border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">Doc Check</button>'+
-          '<button style="font-size:12px;padding:5px 14px;border-radius:6px;border:1px solid #E5E4E0;background:#fff;color:#374151;cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">Visual PNR</button>'+
+          '<button onclick="openVisualPNR(allTrips.find(function(x){return x.id===\''+t.id+'\';}))" style="font-size:12px;padding:5px 14px;border-radius:6px;border:1px solid #E5E4E0;background:#fff;color:#374151;cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">Visual PNR</button>'+
           '<button onclick="exportSingleTrip('+i+')" style="font-size:12px;padding:5px 14px;border-radius:6px;border:1px solid #E5E4E0;background:#fff;color:#374151;cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">Export</button>'+
           '<select onchange="changeContext(\''+t.id+'\',\''+uuid+'\',this.value)" style="font-size:12px;padding:5px 14px;border-radius:6px;border:1px solid #E5E4E0;background:#fff;color:#374151;cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">'+
             '<option value="PERSONAL"'+(t.trip_context==="PERSONAL"?" selected":"")+'>Personal</option>'+
@@ -5047,6 +5176,284 @@ function exportGroupManifest(id) {
     };
   }
 })();
+
+/* ── Airport database ──────────────────────────────────── */
+let _airportDb = null;
+let _airportDbPromise = null;
+
+function loadAirportDb() {
+  if (_airportDb) return Promise.resolve(_airportDb);
+  if (!_airportDbPromise) {
+    _airportDbPromise = fetch('/data/airports.json')
+      .then(function(r) {
+        if (!r.ok) throw new Error('Airport DB fetch failed: ' + r.status);
+        return r.json();
+      })
+      .then(function(data) {
+        _airportDb = data;
+        return data;
+      })
+      .catch(function(e) {
+        _airportDbPromise = null;
+        console.warn('Airport DB unavailable:', e.message);
+        _airportDb = {};
+        return _airportDb;
+      });
+  }
+  return _airportDbPromise;
+}
+
+function getAirport(iata) {
+  if (!iata) return Promise.resolve(null);
+  return loadAirportDb().then(function(db) {
+    return db[iata.toUpperCase()] || null;
+  });
+}
+
+/* ── Visual PNR helpers ────────────────────────────────── */
+async function formatLocalTime(utcIso, iata) {
+  if (!utcIso) return '';
+  var date = new Date(utcIso);
+  if (isNaN(date.getTime())) return '';
+  var airport = iata ? await getAirport(iata) : null;
+  var tz = (airport && airport.timezone) ? airport.timezone : 'UTC';
+  var isUtcFallback = !airport || !airport.timezone;
+  try {
+    var fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZoneName: 'short'
+    });
+    var parts = fmt.formatToParts(date);
+    var get = function(type) {
+      var p = parts.find(function(x) { return x.type === type; });
+      return p ? p.value : '';
+    };
+    var result = get('weekday') + ', ' + get('month') + ' ' + get('day') +
+      ' · ' + get('hour') + ':' + get('minute') +
+      ' ' + get('dayPeriod') + ' ' + get('timeZoneName');
+    if (isUtcFallback) result += ' (UTC)';
+    return result;
+  } catch(e) {
+    return date.toUTCString().replace(' GMT', ' UTC');
+  }
+}
+
+async function formatLocalDate(utcIso, iata) {
+  if (!utcIso) return '';
+  var date = new Date(utcIso);
+  if (isNaN(date.getTime())) return '';
+  var airport = iata ? await getAirport(iata) : null;
+  var tz = (airport && airport.timezone) ? airport.timezone : 'UTC';
+  try {
+    var fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+    return fmt.format(date);
+  } catch(e) {
+    return date.toISOString().slice(0, 10);
+  }
+}
+
+function detectGaps(segments) {
+  if (!segments || segments.length < 2) return [];
+  segments = segments.slice().sort(function(a, b) {
+    return (a.segment_order || 0) - (b.segment_order || 0);
+  });
+  var gaps = [];
+  for (var i = 0; i < segments.length - 1; i++) {
+    var curr = segments[i];
+    var next = segments[i + 1];
+    if (!curr || !next) continue;
+    var currDest = (curr.destination_iata || '').toUpperCase();
+    var nextOrig = (next.origin_iata || '').toUpperCase();
+    if (currDest !== nextOrig) {
+      var fromTime = curr.arrival_datetime || null;
+      var toTime   = next.departure_datetime || null;
+      var durationMins = null;
+      var durationLabel = null;
+      if (fromTime && toTime) {
+        var ms = new Date(toTime).getTime() - new Date(fromTime).getTime();
+        durationMins = Math.round(ms / (1000 * 60));
+        if (durationMins < 360) {
+          var h = Math.floor(durationMins / 60);
+          var m = durationMins % 60;
+          durationLabel = h + 'h ' + m + 'm';
+        } else if (durationMins < 2880) {
+          var h2 = Math.floor(durationMins / 60);
+          var d2 = Math.floor(h2 / 24);
+          var rem2 = h2 % 24;
+          durationLabel = d2 + 'd ' + rem2 + 'h';
+        } else {
+          var days = Math.round(durationMins / (60 * 24));
+          durationLabel = days + ' days';
+        }
+      }
+      gaps.push({
+        fromAirport:   currDest,
+        toAirport:     nextOrig,
+        fromTime:      fromTime,
+        toTime:        toTime,
+        durationMins:  durationMins,
+        durationLabel: durationLabel
+      });
+    }
+  }
+  return gaps;
+}
+
+/* ── Visual PNR modal functions ────────────────────────── */
+function closeVisualPNR() {
+  var overlay = document.getElementById('vpnr-overlay');
+  if (overlay) overlay.classList.remove('active');
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeVisualPNR();
+});
+
+async function openVisualPNR(trip) {
+  if (!trip) return;
+
+  // Mount point — create once, reuse on subsequent opens
+  var overlay = document.getElementById('vpnr-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'vpnr-overlay';
+    overlay.className = 'vpnr-modal-overlay';
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) closeVisualPNR();
+    });
+    document.body.appendChild(overlay);
+  }
+
+  // Header data assembly
+  var pnr = trip.trip_locator || '—';
+  var tripTitle = trip.trip_name ||
+    ((trip.origin_iata || '?') + ' → ' + (trip.destination_iata || '?'));
+  var dateRange = (trip.departure_date ? trip.departure_date.slice(0, 10) : '—') +
+    (trip.return_date ? ' – ' + trip.return_date.slice(0, 10) : '');
+  var contextLabel = trip.trip_context === 'CORPORATE' ? 'Business'
+    : trip.trip_context === 'BLEISURE' ? 'Bleisure' : 'Personal';
+
+  var segments = (trip.segments || []).slice().sort(function(a, b) {
+    return (a.segment_order || 0) - (b.segment_order || 0);
+  });
+  var passengers = trip.passengers || [];
+  var paxNames = passengers.length
+    ? passengers.map(function(p) { return p.passenger_name || ''; })
+        .filter(Boolean).join(', ')
+    : '—';
+
+  // Gap map keyed by "ORIGIN_DEST" for O(1) lookup during segment render
+  var gaps = detectGaps(segments);
+  var gapMap = {};
+  gaps.forEach(function(g) {
+    gapMap[g.fromAirport + '_' + g.toAirport] = g;
+  });
+
+  // Build timeline HTML — UTC times as initial placeholder
+  var timelineHtml = '';
+  segments.forEach(function(s, i) {
+    var depRaw = s.departure_datetime || '';
+    var arrRaw = s.arrival_datetime || '';
+    var depDisplay = depRaw ? depRaw.replace('T', ' ').slice(0, 16) + ' UTC' : '—';
+    var arrDisplay = arrRaw ? arrRaw.replace('T', ' ').slice(0, 16) + ' UTC' : '—';
+
+    timelineHtml +=
+      '<div class="vpnr-segment">' +
+        '<div class="vpnr-segment-flight">' +
+          esc(s.carrier || '') + esc(s.flight_number || '') +
+        '</div>' +
+        '<div class="vpnr-segment-route">' +
+          '<div class="vpnr-segment-airports">' +
+            esc(s.origin_iata || '—') + ' → ' + esc(s.destination_iata || '—') +
+          '</div>' +
+          '<div class="vpnr-segment-times" id="vpnr-times-' + i + '">' +
+            depDisplay + ' → ' + arrDisplay +
+          '</div>' +
+        '</div>' +
+        '<div class="vpnr-segment-aircraft">' +
+          (s.aircraft_type ? esc(s.aircraft_type) + '<br>' : '') +
+          esc(s.cabin_class || '') +
+        '</div>' +
+      '</div>';
+
+    // Interleave gap if one exists after this segment
+    if (i < segments.length - 1) {
+      var nextSeg = segments[i + 1];
+      var gapKey = (s.destination_iata || '').toUpperCase() + '_' +
+        (nextSeg ? (nextSeg.origin_iata || '').toUpperCase() : '');
+      var gap = gapMap[gapKey];
+      if (gap) {
+        timelineHtml +=
+          '<div class="vpnr-gap">' +
+            esc(gap.fromAirport) + ' → ' + esc(gap.toAirport) +
+            (gap.durationLabel ? ' · ' + esc(gap.durationLabel) : '') +
+          '</div>';
+      }
+    }
+  });
+
+  if (!timelineHtml) {
+    timelineHtml =
+      '<div style="color:var(--textDim);font-size:13px;font-style:italic">' +
+        'No segment data available.' +
+      '</div>';
+  }
+
+  // Render modal
+  overlay.innerHTML =
+    '<div class="vpnr-modal">' +
+      '<div class="vpnr-header">' +
+        '<div class="vpnr-header-info">' +
+          '<div class="vpnr-header-title">' + esc(tripTitle) + '</div>' +
+          '<div class="vpnr-header-meta">' +
+            '<span>PNR <strong>' + esc(pnr) + '</strong></span>' +
+            '<span>Dates <strong id="vpnr-date-range">' + esc(dateRange) + '</strong></span>' +
+            '<span>Pax <strong>' + esc(paxNames) + '</strong></span>' +
+            '<span>Context <strong>' + esc(contextLabel) + '</strong></span>' +
+          '</div>' +
+        '</div>' +
+        '<button class="vpnr-close" onclick="closeVisualPNR()">&#x2715;</button>' +
+      '</div>' +
+      '<div class="vpnr-map-area" id="vpnr-map">Map coming in Phase 2</div>' +
+      '<div class="vpnr-timeline">' + timelineHtml + '</div>' +
+    '</div>';
+
+  overlay.classList.add('active');
+
+  // Async hydration — replace UTC placeholders with local times
+  for (var i = 0; i < segments.length; i++) {
+    var s = segments[i];
+    var el = document.getElementById('vpnr-times-' + i);
+    if (!el) continue;
+    var depLocal = s.departure_datetime
+      ? await formatLocalTime(s.departure_datetime, s.origin_iata)
+      : '—';
+    var arrLocal = s.arrival_datetime
+      ? await formatLocalTime(s.arrival_datetime, s.destination_iata)
+      : '—';
+    el.textContent = depLocal + ' → ' + arrLocal;
+  }
+
+  var dateEl = document.getElementById('vpnr-date-range');
+  if (dateEl && trip.departure_date) {
+    var depDate = await formatLocalDate(trip.departure_date, trip.origin_iata);
+    var retDate = trip.return_date
+      ? await formatLocalDate(trip.return_date, trip.destination_iata)
+      : '';
+    dateEl.textContent = retDate ? depDate + ' – ' + retDate : depDate;
+  }
+}
 </script>
 </body>
 </html>

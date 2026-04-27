@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.0",
+    "tz-lookup": "^6.1.25",
     "vite": "^5.0.0"
   }
 }
