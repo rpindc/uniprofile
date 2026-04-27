@@ -44,8 +44,9 @@ async function buildProfile(uuid){
     sql("SELECT ps.trip_id,ps.passenger_name,ps.ticket_number,ps.seat_number,ps.is_primary FROM trip_passengers ps INNER JOIN trips t ON t.id=ps.trip_id WHERE t.traveler_uuid=:u ORDER BY ps.trip_id,ps.is_primary DESC",p),
     sql("SELECT code,label,category,sort_order,fields_required,fields_optional FROM document_types WHERE is_active=TRUE ORDER BY sort_order",[]),
     sql("SELECT id,name,type,destination,dep::text,ret::text,members,flights,hotel,notes FROM traveler_groups WHERE owner_uuid=:u ORDER BY updated_at DESC",p),
+    sql("SELECT module_name,data FROM traveler_profile_modules WHERE traveler_uuid=:u",p),
   ]);
-  const [identity,docs,seat,meal,loyalty,bleisure,meta,payment,tripRows,segmentRows,passengerRows,docTypeRows,groupRows]=R;
+  const [identity,docs,seat,meal,loyalty,bleisure,meta,payment,tripRows,segmentRows,passengerRows,docTypeRows,groupRows,moduleRows]=R;
   let mealData=meal[0]||null;
   if(mealData){
     try{mealData.allergies=typeof mealData.allergies==="string"?JSON.parse(mealData.allergies):(mealData.allergies||[]);}catch(e){mealData.allergies=[];}
@@ -72,7 +73,9 @@ async function buildProfile(uuid){
     return Object.assign({},t,{days_until:daysUntil,status,segments:segsByTrip[t.id]||[],passengers:paxByTrip[t.id]||[]});
   });
   const groups=groupRows.map(g=>({id:g.id,name:g.name,type:g.type,destination:g.destination,dep:g.dep,ret:g.ret,members:typeof g.members==="string"?JSON.parse(g.members):(g.members||[]),flights:typeof g.flights==="string"?JSON.parse(g.flights):(g.flights||[]),hotel:g.hotel?(typeof g.hotel==="string"?JSON.parse(g.hotel):g.hotel):null,notes:typeof g.notes==="string"?JSON.parse(g.notes):(g.notes||[])}));
-  return {uuid,uniprofile_number:meta[0]&&meta[0].uniprofile_number||null,email:meta[0]&&meta[0].email,tier:meta[0]&&meta[0].tier||"free",profile_completeness:meta[0]&&meta[0].profile_complete||0,active_context:bleisure[0]&&bleisure[0].active_context||"PERSONAL",identity:identity[0]||null,documents:docsWithExpiry,document_types:docTypesGrouped,seat_preferences:seat[0]||null,meal_preferences:mealData,loyalty_programs:loyalty,payment_profiles:payment,trips,trips_count:trips.length,groups,generated_at:new Date().toISOString()};
+  const profileModules={};
+  moduleRows.forEach(r=>{try{profileModules[r.module_name]=typeof r.data==="string"?JSON.parse(r.data):r.data;}catch(e){profileModules[r.module_name]={};} });
+  return {uuid,uniprofile_number:meta[0]&&meta[0].uniprofile_number||null,email:meta[0]&&meta[0].email,tier:meta[0]&&meta[0].tier||"free",profile_completeness:meta[0]&&meta[0].profile_complete||0,active_context:bleisure[0]&&bleisure[0].active_context||"PERSONAL",identity:identity[0]||null,documents:docsWithExpiry,document_types:docTypesGrouped,seat_preferences:seat[0]||null,meal_preferences:mealData,...profileModules,loyalty_programs:loyalty,payment_profiles:payment,trips,trips_count:trips.length,groups,generated_at:new Date().toISOString()};
 }
 async function updateModule(uuid,module,data){
   switch(module){
@@ -124,6 +127,11 @@ async function updateModule(uuid,module,data){
       }
       break;
     }
+    case "essentials":
+    case "fly_preferences":
+    case "travel_preferences":
+      await sql("INSERT INTO traveler_profile_modules (traveler_uuid,module_name,data,updated_at) VALUES (:u,:mn,:data::jsonb,NOW()) ON CONFLICT (traveler_uuid,module_name) DO UPDATE SET data=:data::jsonb,updated_at=NOW()",[uuidParam("u",uuid),strParam("mn",module),strParam("data",JSON.stringify(data))]);
+      break;
     default:
       throw {status:400,message:"Unknown module: "+module};
   }
