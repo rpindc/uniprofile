@@ -5218,6 +5218,32 @@ function getAirport(iata) {
   });
 }
 
+/* ── ISO alpha-2 → numeric mapping ────────────────────── */
+const ISO_ALPHA2_TO_NUMERIC = {"AF":"004","AX":"248","AL":"008","DZ":"012","AS":"016","AD":"020","AO":"024","AI":"660","AQ":"010","AG":"028","AR":"032","AM":"051","AW":"533","AU":"036","AT":"040","AZ":"031","BS":"044","BH":"048","BD":"050","BB":"052","BY":"112","BE":"056","BZ":"084","BJ":"204","BM":"060","BT":"064","BO":"068","BQ":"535","BA":"070","BW":"072","BV":"074","BR":"076","IO":"086","BN":"096","BG":"100","BF":"854","BI":"108","CV":"132","KH":"116","CM":"120","CA":"124","KY":"136","CF":"140","TD":"148","CL":"152","CN":"156","CX":"162","CC":"166","CO":"170","KM":"174","CG":"178","CD":"180","CK":"184","CR":"188","CI":"384","HR":"191","CU":"192","CW":"531","CY":"196","CZ":"203","DK":"208","DJ":"262","DM":"212","DO":"214","EC":"218","EG":"818","SV":"222","GQ":"226","ER":"232","EE":"233","SZ":"748","ET":"231","FK":"238","FO":"234","FJ":"242","FI":"246","FR":"250","GF":"254","PF":"258","TF":"260","GA":"266","GM":"270","GE":"268","DE":"276","GH":"288","GI":"292","GR":"300","GL":"304","GD":"308","GP":"312","GU":"316","GT":"320","GG":"831","GN":"324","GW":"624","GY":"328","HT":"332","HM":"334","VA":"336","HN":"340","HK":"344","HU":"348","IS":"352","IN":"356","ID":"360","IR":"364","IQ":"368","IE":"372","IM":"833","IL":"376","IT":"380","JM":"388","JP":"392","JE":"832","JO":"400","KZ":"398","KE":"404","KI":"296","KP":"408","KR":"410","KW":"414","KG":"417","LA":"418","LV":"428","LB":"422","LS":"426","LR":"430","LY":"434","LI":"438","LT":"440","LU":"442","MO":"446","MG":"450","MW":"454","MY":"458","MV":"462","ML":"466","MT":"470","MH":"584","MQ":"474","MR":"478","MU":"480","YT":"175","MX":"484","FM":"583","MD":"498","MC":"492","MN":"496","ME":"499","MS":"500","MA":"504","MZ":"508","MM":"104","NA":"516","NR":"520","NP":"524","NL":"528","NC":"540","NZ":"554","NI":"558","NE":"562","NG":"566","NU":"570","NF":"574","MK":"807","MP":"580","NO":"578","OM":"512","PK":"586","PW":"585","PS":"275","PA":"591","PG":"598","PY":"600","PE":"604","PH":"608","PN":"612","PL":"616","PT":"620","PR":"630","QA":"634","RE":"638","RO":"642","RU":"643","RW":"646","BL":"652","SH":"654","KN":"659","LC":"662","MF":"663","PM":"666","VC":"670","WS":"882","SM":"674","ST":"678","SA":"682","SN":"686","RS":"688","SC":"690","SL":"694","SG":"702","SX":"534","SK":"703","SI":"705","SB":"090","SO":"706","ZA":"710","GS":"239","SS":"728","ES":"724","LK":"144","SD":"729","SR":"740","SJ":"744","SE":"752","CH":"756","SY":"760","TW":"158","TJ":"762","TZ":"834","TH":"764","TL":"626","TG":"768","TK":"772","TO":"776","TT":"780","TN":"788","TR":"792","TM":"795","TC":"796","TV":"798","UG":"800","UA":"804","AE":"784","GB":"826","US":"840","UM":"581","UY":"858","UZ":"860","VU":"548","VE":"862","VN":"704","VG":"092","VI":"850","WF":"876","EH":"732","YE":"887","ZM":"894","ZW":"716"};
+function alpha2ToNumeric(alpha2) {
+  if (!alpha2) return null;
+  return ISO_ALPHA2_TO_NUMERIC[alpha2.toUpperCase()] || null;
+}
+
+function getTripCountries(airports) {
+  if (!airports || airports.length === 0) return [];
+  var seen = {};
+  var ids = [];
+  airports.forEach(function(airport) {
+    var alpha2 = airport.country || airport.iso_country;
+    var numeric = alpha2ToNumeric(alpha2);
+    if (!numeric) {
+      console.warn('getTripCountries: no ISO numeric for', alpha2, '(', airport.name || '', ')');
+      return;
+    }
+    if (!seen[numeric]) {
+      seen[numeric] = true;
+      ids.push(numeric);
+    }
+  });
+  return ids;
+}
+
 /* ── World map database ────────────────────────────────── */
 let _worldMap = null;
 let _worldMapPromise = null;
@@ -5244,11 +5270,100 @@ function loadWorldMap() {
   return _worldMapPromise;
 }
 
+let _countriesMap = null;
+let _countriesMapPromise = null;
+
+function loadCountriesMap() {
+  if (_countriesMap) return Promise.resolve(_countriesMap);
+  if (!_countriesMapPromise) {
+    _countriesMapPromise = fetch('/data/countries-110m.json')
+      .then(function(r) {
+        if (!r.ok) throw new Error('Countries map fetch failed: ' + r.status);
+        return r.json();
+      })
+      .then(function(data) {
+        _countriesMap = data;
+        return data;
+      })
+      .catch(function(e) {
+        _countriesMapPromise = null;
+        console.warn('Countries map unavailable:', e.message);
+        _countriesMap = null;
+        return null;
+      });
+  }
+  return _countriesMapPromise;
+}
+
 function placeholderProjection(lng, lat) {
   return [
     (lng + 180) / 360 * 1000,
     (90 - lat) / 180 * 500
   ];
+}
+
+function createTripProjection(airports, viewportWidth, viewportHeight, padding) {
+  if (!airports || airports.length === 0) return placeholderProjection;
+
+  var lats = airports.map(function(a) { return a.lat; });
+  var lngs = airports.map(function(a) { return a.lng; });
+
+  var minLat = Math.min.apply(null, lats);
+  var maxLat = Math.max.apply(null, lats);
+  var minLng = Math.min.apply(null, lngs);
+  var maxLng = Math.max.apply(null, lngs);
+  var lngSpan = maxLng - minLng;
+
+  // Antimeridian handling: trip spans more than 180° — shift western lngs by +360
+  var antimeridianShift = false;
+  if (lngSpan > 180) {
+    antimeridianShift = true;
+    lngs = lngs.map(function(lng) { return lng < 0 ? lng + 360 : lng; });
+    minLng = Math.min.apply(null, lngs);
+    maxLng = Math.max.apply(null, lngs);
+    lngSpan = maxLng - minLng;
+  }
+
+  var latSpan = maxLat - minLat;
+
+  // Single-airport edge case: give it a minimal span so scale doesn't blow up
+  if (latSpan === 0) { minLat -= 5; maxLat += 5; latSpan = 10; }
+  if (lngSpan === 0) { minLng -= 5; maxLng += 5; lngSpan = 10; }
+
+  // Apply padding
+  var latPad = latSpan * padding;
+  var lngPad = lngSpan * padding;
+  minLat = Math.max(-90, minLat - latPad);
+  maxLat = Math.min(90, maxLat + latPad);
+  minLng = minLng - lngPad;
+  maxLng = maxLng + lngPad;
+  latSpan = maxLat - minLat;
+  lngSpan = maxLng - minLng;
+
+  // Fit bbox to viewport, preserving aspect ratio
+  var viewportAspect = viewportWidth / viewportHeight;
+  var bboxAspect = lngSpan / latSpan;
+  var scale, offsetX, offsetY;
+
+  if (bboxAspect > viewportAspect) {
+    // Wider than viewport: fit to width, letterbox vertically
+    scale = viewportWidth / lngSpan;
+    offsetX = 0;
+    offsetY = (viewportHeight - latSpan * scale) / 2;
+  } else {
+    // Taller than viewport: fit to height, letterbox horizontally
+    scale = viewportHeight / latSpan;
+    offsetX = (viewportWidth - lngSpan * scale) / 2;
+    offsetY = 0;
+  }
+
+  return function(lng, lat) {
+    if (antimeridianShift && lng < 0) lng += 360;
+    return [
+      offsetX + (lng - minLng) * scale,
+      offsetY + (maxLat - lat) * scale  // y inverted: SVG y increases downward
+    ];
+  };
 }
 
 function renderWorldMap(svgEl, topoData) {
@@ -5279,6 +5394,63 @@ function renderWorldMap(svgEl, topoData) {
   pathEl.setAttribute('d', d);
   svgEl.appendChild(pathEl);
   return pathEl;
+}
+
+function renderCountriesFiltered(svgEl, topoData, countryIds, projectionFn) {
+  var idSet = {};
+  countryIds.forEach(function(id) { idSet[id] = true; });
+
+  var features = topojson.feature(topoData, topoData.objects.countries).features;
+  var filtered = features.filter(function(f) { return idSet[String(f.id)]; });
+
+  var pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  pathEl.setAttribute('class', 'vpnr-map-land');
+
+  var d = '';
+  filtered.forEach(function(feature) {
+    var geom = feature.geometry;
+    if (!geom) return;
+    var polys = geom.type === 'Polygon'
+      ? [geom.coordinates]
+      : geom.coordinates; // MultiPolygon
+
+    polys.forEach(function(polygon) {
+      polygon.forEach(function(ring) {
+        var moved = false;
+        ring.forEach(function(coord) {
+          var pt = projectionFn(coord[0], coord[1]);
+          d += (moved ? 'L' : 'M') + pt[0].toFixed(2) + ' ' + pt[1].toFixed(2);
+          moved = true;
+        });
+        d += 'Z';
+      });
+    });
+  });
+
+  pathEl.setAttribute('d', d);
+  svgEl.appendChild(pathEl);
+  return pathEl;
+}
+
+async function getTripAirports(trip) {
+  if (!trip || !trip.segments || trip.segments.length === 0) return [];
+  var iataCodes = [];
+  var seen = {};
+  trip.segments.forEach(function(s) {
+    [s.origin_iata, s.destination_iata].forEach(function(code) {
+      if (code && !seen[code]) {
+        seen[code] = true;
+        iataCodes.push(code);
+      }
+    });
+  });
+  var results = await Promise.all(iataCodes.map(function(code) {
+    return getAirport(code).then(function(a) {
+      if (!a) console.warn('getTripAirports: airport not in DB:', code);
+      return a;
+    });
+  }));
+  return results.filter(function(a) { return a !== null; });
 }
 
 /* ── Visual PNR helpers ────────────────────────────────── */
@@ -5521,9 +5693,12 @@ async function openVisualPNR(trip) {
   var mapSvg = document.querySelector('#vpnr-map svg');
   if (mapSvg) {
     mapSvg.innerHTML = '';
-    var topoData = await loadWorldMap();
-    if (topoData) {
-      renderWorldMap(mapSvg, topoData);
+    var countriesData = await loadCountriesMap();
+    var tripAirports = await getTripAirports(trip);
+    if (countriesData && tripAirports.length > 0) {
+      var projection = createTripProjection(tripAirports, 1000, 500, 0.15);
+      var countryIds = getTripCountries(tripAirports);
+      renderCountriesFiltered(mapSvg, countriesData, countryIds, projection);
     }
   }
 
