@@ -987,6 +987,22 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   fill: var(--border);
   stroke: none;
 }
+.vpnr-graticule-line {
+  stroke: var(--border);
+  stroke-width: 0.5;
+  fill: none;
+  opacity: 0.5;
+}
+.vpnr-country-label {
+  fill: #6B6B68;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  pointer-events: none;
+  user-select: none;
+}
 .vpnr-timeline {
   padding: 24px 32px;
   overflow-y: auto;
@@ -5357,13 +5373,125 @@ function createTripProjection(airports, viewportWidth, viewportHeight, padding) 
     offsetY = 0;
   }
 
-  return function(lng, lat) {
+  var projectFn = function(lng, lat) {
     if (antimeridianShift && lng < 0) lng += 360;
     return [
       offsetX + (lng - minLng) * scale,
       offsetY + (maxLat - lat) * scale  // y inverted: SVG y increases downward
     ];
   };
+  return {
+    project: projectFn,
+    bounds: { minLat: minLat, maxLat: maxLat, minLng: minLng, maxLng: maxLng }
+  };
+}
+
+function renderGraticule(svgEl, projection, bounds, options) {
+  var latStep = (options && options.latStep) || 10;
+  var lngStep = (options && options.lngStep) || 20;
+  var minLat = bounds.minLat;
+  var maxLat = bounds.maxLat;
+  var minLng = bounds.minLng;
+  var maxLng = bounds.maxLng;
+
+  var latSpan = maxLat - minLat;
+  var lngSpan = maxLng - minLng;
+
+  // Defensive: skip if span is smaller than one step (nothing to draw)
+  if (latSpan < latStep && lngSpan < lngStep) return;
+
+  var ns = 'http://www.w3.org/2000/svg';
+
+  // Horizontal lines (parallels)
+  if (latSpan >= latStep) {
+    var startLat = Math.ceil(minLat / latStep) * latStep;
+    for (var lat = startLat; lat < maxLat; lat += latStep) {
+      var p1 = projection(minLng, lat);
+      var p2 = projection(maxLng, lat);
+      var line = document.createElementNS(ns, 'line');
+      line.setAttribute('class', 'vpnr-graticule-line');
+      line.setAttribute('x1', p1[0].toFixed(2));
+      line.setAttribute('y1', p1[1].toFixed(2));
+      line.setAttribute('x2', p2[0].toFixed(2));
+      line.setAttribute('y2', p2[1].toFixed(2));
+      svgEl.appendChild(line);
+    }
+  }
+
+  // Vertical lines (meridians)
+  if (lngSpan >= lngStep) {
+    var startLng = Math.ceil(minLng / lngStep) * lngStep;
+    for (var lng = startLng; lng < maxLng; lng += lngStep) {
+      var p3 = projection(lng, maxLat);
+      var p4 = projection(lng, minLat);
+      var vline = document.createElementNS(ns, 'line');
+      vline.setAttribute('class', 'vpnr-graticule-line');
+      vline.setAttribute('x1', p3[0].toFixed(2));
+      vline.setAttribute('y1', p3[1].toFixed(2));
+      vline.setAttribute('x2', p4[0].toFixed(2));
+      vline.setAttribute('y2', p4[1].toFixed(2));
+      svgEl.appendChild(vline);
+    }
+  }
+}
+
+function renderCountryLabels(svgEl, topoData, countryIds, projection) {
+  var idSet = {};
+  countryIds.forEach(function(id) { idSet[id] = true; });
+
+  var features = topojson.feature(topoData, topoData.objects.countries).features;
+  var filtered = features.filter(function(f) { return idSet[String(f.id)]; });
+
+  var ns = 'http://www.w3.org/2000/svg';
+
+  filtered.forEach(function(feature) {
+    var geom = feature.geometry;
+    if (!geom) return;
+
+    var name = feature.properties && feature.properties.name ? feature.properties.name : '';
+    if (!name) return;
+
+    // Find the largest polygon ring (most vertices) across all polygons
+    var allPolygons = geom.type === 'Polygon'
+      ? [geom.coordinates]
+      : geom.coordinates; // MultiPolygon
+
+    var largestRing = null;
+    var largestCount = 0;
+    allPolygons.forEach(function(polygon) {
+      polygon.forEach(function(ring) {
+        if (ring.length > largestCount) {
+          largestCount = ring.length;
+          largestRing = ring;
+        }
+      });
+    });
+
+    if (!largestRing || largestRing.length === 0) return;
+
+    // Centroid: average of all coordinates in the largest ring
+    var sumLng = 0, sumLat = 0;
+    largestRing.forEach(function(coord) {
+      sumLng += coord[0];
+      sumLat += coord[1];
+    });
+    var centLng = sumLng / largestRing.length;
+    var centLat = sumLat / largestRing.length;
+
+    var pt = projection(centLng, centLat);
+
+    // Skip if off-canvas
+    if (pt[0] < 0 || pt[0] > 1000 || pt[1] < 0 || pt[1] > 500) return;
+
+    var text = document.createElementNS(ns, 'text');
+    text.setAttribute('class', 'vpnr-country-label');
+    text.setAttribute('x', pt[0].toFixed(2));
+    text.setAttribute('y', pt[1].toFixed(2));
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('dominant-baseline', 'middle');
+    text.textContent = name;
+    svgEl.appendChild(text);
+  });
 }
 
 function renderWorldMap(svgEl, topoData) {
@@ -5696,9 +5824,11 @@ async function openVisualPNR(trip) {
     var countriesData = await loadCountriesMap();
     var tripAirports = await getTripAirports(trip);
     if (countriesData && tripAirports.length > 0) {
-      var projection = createTripProjection(tripAirports, 1000, 500, 0.15);
+      var proj = createTripProjection(tripAirports, 1000, 500, 0.15);
       var countryIds = getTripCountries(tripAirports);
-      renderCountriesFiltered(mapSvg, countriesData, countryIds, projection);
+      renderGraticule(mapSvg, proj.project, proj.bounds);
+      renderCountriesFiltered(mapSvg, countriesData, countryIds, proj.project);
+      renderCountryLabels(mapSvg, countriesData, countryIds, proj.project);
     }
   }
 
