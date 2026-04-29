@@ -1024,7 +1024,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   fill: none;
   stroke: var(--border);
   stroke-width: 0.4;
-  opacity: 0.5;
+  opacity: 0.7;
 }
 .vpnr-globe-continent {
   fill: #D5D2CC;
@@ -5662,8 +5662,9 @@ function renderGlobeInset(svgEl, viewportW, panels, landData, countriesData, opt
   var centroidLng = lngSum / allAirports.length;
   var centroidLat = latSum / allAirports.length;
 
-  // 3. Orthographic projection centered on trip
-  var ortho = createOrthographicProjection(centroidLng, centroidLat, centerX, centerY, radius);
+  // 3. Orthographic projection tilted 25° above trip centroid for 3D effect
+  var TILT_DEGREES = 25;
+  var ortho = createOrthographicProjection(centroidLng, centroidLat + TILT_DEGREES, centerX, centerY, radius);
   var fallbackPt = [centerX, centerY];
 
   // 4. ClipPath so continent shapes don't bleed outside sphere
