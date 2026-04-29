@@ -5609,6 +5609,9 @@ function renderPanels(svgEl, panels, topoData, options) {
 
 function renderArcs(svgEl, panels, viewportW, arcStripHeight, segments, options) {
   options = options || {};
+  console.log('[renderArcs] segments received:', segments);
+  console.log('[renderArcs] segments.length:', segments ? segments.length : 'null/undefined');
+  console.log('[renderArcs] first segment:', segments && segments[0]);
   var ns = 'http://www.w3.org/2000/svg';
 
   // Build IATA → panel index
@@ -5622,9 +5625,13 @@ function renderArcs(svgEl, panels, viewportW, arcStripHeight, segments, options)
   // Track seen routeKeys for overlap detection
   var seenRoutes = {};
 
-  segments.forEach(function(seg) {
+  segments.forEach(function(seg, idx) {
+    console.log('[renderArcs] processing seg', idx, ':', seg);
     // Skip gap segments (no flight number / carrier)
-    if (!seg.carrier || !seg.flight_number) return;
+    if (!seg.carrier || !seg.flight_number) {
+      console.log('[renderArcs] SKIP idx', idx, '— missing carrier or flight_number. carrier:', seg.carrier, 'fn:', seg.flight_number);
+      return;
+    }
 
     var originPanel = iataToPanel[seg.origin_iata];
     var destPanel   = iataToPanel[seg.destination_iata];
