@@ -5912,7 +5912,7 @@ async function openVisualPNR(trip) {
     var countriesData = await loadCountriesMap();
     var tripAirports = await getTripAirports(trip);
     if (countriesData && tripAirports.length > 0) {
-      var proj = createTripProjection(tripAirports, w, h, 0.15);
+      var proj = createTripProjection(tripAirports, w, h, 0.02);
       var countryIds = getTripCountries(tripAirports);
       renderGraticule(mapSvg, proj.project, proj.bounds);
       renderCountriesFiltered(mapSvg, countriesData, countryIds, proj.project);
