@@ -5655,16 +5655,15 @@ function renderGlobeInset(svgEl, viewportW, panels, landData, countriesData, opt
   var centerX = viewportW - marginRight - radius;
   var centerY = marginTop + radius;
 
-  // 2. Trip centroid from all panel airports
+  // 2. Trip longitude midpoint for balanced east-west orientation
   var allAirports = panels.reduce(function(acc, p) { return acc.concat(p.airports); }, []);
-  var lngSum = 0, latSum = 0;
-  allAirports.forEach(function(a) { lngSum += a.lng; latSum += a.lat; });
-  var centroidLng = lngSum / allAirports.length;
-  var centroidLat = latSum / allAirports.length;
+  var lngs = allAirports.map(function(a) { return a.lng; });
+  var midLng = (Math.min.apply(null, lngs) + Math.max.apply(null, lngs)) / 2;
 
-  // 3. Orthographic projection tilted 25° above trip centroid for 3D effect
-  var TILT_DEGREES = 25;
-  var ortho = createOrthographicProjection(centroidLng, centroidLat + TILT_DEGREES, centerX, centerY, radius);
+  // 3. Orthographic projection — classic globe view: equator near center,
+  //    slight northern tilt for 3D effect, midpoint longitude for balanced spread
+  var GLOBE_LAT = 15;
+  var ortho = createOrthographicProjection(midLng, GLOBE_LAT, centerX, centerY, radius);
   var fallbackPt = [centerX, centerY];
 
   // 4. ClipPath so continent shapes don't bleed outside sphere
