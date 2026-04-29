@@ -5272,6 +5272,283 @@ function getTripCountries(airports) {
   return ids;
 }
 
+/* ── Country area data ─────────────────────────────────── */
+const ISO_ALPHA2_TO_AREA = {"AW":180,"AF":652230,"AO":1246700,"AI":91,"AX":1580,"AL":28748,"AD":468,"AE":83600,"AR":2780400,"AM":29743,"AS":199,"AQ":14000000,"TF":7747,"AG":442,"AU":7692024,"AT":83871,"AZ":86600,"BI":27834,"BE":30528,"BJ":112622,"BF":272967,"BD":147570,"BG":110879,"BH":765,"BS":13943,"BA":51209,"BL":21,"SH":394,"BY":207600,"BZ":22966,"BM":54,"BO":1098581,"BQ":328,"BR":8515767,"BB":430,"BN":5765,"BT":38394,"BV":49,"BW":582000,"CF":622984,"CA":9984670,"CC":14,"CH":41284,"CL":756102,"CN":9706961,"CI":322463,"CM":475442,"CD":2344858,"CG":342000,"CK":236,"CO":1141748,"KM":1862,"CV":4033,"CR":51100,"CU":109884,"CW":444,"CX":135,"KY":264,"CY":9251,"CZ":78865,"DE":357114,"DJ":23200,"DM":751,"DK":43094,"DO":48671,"DZ":2381741,"EC":276841,"EG":1002450,"ER":117600,"EH":266000,"ES":505992,"EE":45227,"ET":1104300,"FI":338424,"FJ":18272,"FK":12173,"FR":551695,"FO":1393,"FM":702,"GA":267668,"GB":242900,"GE":69700,"GG":78,"GH":238533,"GI":6,"GN":245857,"GP":1628,"GM":10689,"GW":36125,"GQ":28051,"GR":131990,"GD":344,"GL":2166086,"GT":108889,"GF":83534,"GU":549,"GY":214969,"HK":1104,"HM":412,"HN":112492,"HR":56594,"HT":27750,"HU":93028,"ID":1904569,"IM":572,"IN":3287590,"IO":60,"IE":70273,"IR":1648195,"IQ":438317,"IS":103000,"IL":20770,"IT":301336,"JM":10991,"JE":116,"JO":89342,"JP":377930,"KZ":2724900,"KE":580367,"KG":199951,"KH":181035,"KI":811,"KN":261,"KR":100210,"XK":10908,"KW":17818,"LA":236800,"LB":10452,"LR":111369,"LY":1759540,"LC":616,"LI":160,"LK":65610,"LS":30355,"LT":65300,"LU":2586,"LV":64559,"MO":30,"MF":53,"MA":446550,"MC":2,"MD":33846,"MG":587041,"MV":300,"MX":1964375,"MH":181,"MK":25713,"ML":1240192,"MT":316,"MM":676578,"ME":13812,"MN":1564110,"MP":464,"MZ":801590,"MR":1030700,"MS":102,"MQ":1128,"MU":2040,"MW":118484,"MY":330803,"YT":374,"NA":825615,"NC":18575,"NE":1267000,"NF":36,"NG":923768,"NI":130373,"NU":260,"NL":41850,"NO":323802,"NP":147181,"NR":21,"NZ":270467,"OM":309500,"PK":881912,"PA":75417,"PN":47,"PE":1285216,"PH":342353,"PW":459,"PG":462840,"PL":312679,"PR":8870,"KP":120538,"PT":92090,"PY":406752,"PS":6220,"PF":4167,"QA":11586,"RE":2511,"RO":238391,"RU":17098242,"RW":26338,"SA":2149690,"SD":1886068,"SN":196722,"SG":710,"GS":3903,"SJ":-1,"SB":28896,"SL":71740,"SV":21041,"SM":61,"SO":637657,"PM":242,"RS":88361,"SS":619745,"ST":964,"SR":163820,"SK":49037,"SI":20273,"SE":450295,"SZ":17364,"SX":34,"SC":452,"SY":185180,"TC":948,"TD":1284000,"TG":56785,"TH":513120,"TJ":143100,"TK":12,"TM":488100,"TL":14874,"TO":747,"TT":5130,"TN":163610,"TR":783562,"TV":26,"TW":36193,"TZ":945087,"UG":241550,"UA":603500,"UM":34,"UY":181034,"US":9372610,"UZ":447400,"VA":0,"VC":389,"VE":916445,"VG":151,"VI":347,"VN":331212,"VU":12189,"WF":142,"WS":2842,"YE":527968,"ZA":1221037,"ZM":752612,"ZW":390757};
+
+function classifyCountry(alpha2) {
+  if (!alpha2) return null;
+  var area = ISO_ALPHA2_TO_AREA[alpha2.toUpperCase()];
+  if (area == null) return null;
+  if (area > 5000000) return 'XL';
+  if (area >= 1000000) return 'L';
+  if (area >= 100000) return 'M';
+  return 'S';
+}
+
+/* ── Panel layout ──────────────────────────────────────── */
+let _countryNameMap = null;
+
+function buildCountryNameMap(topoData) {
+  if (_countryNameMap) return;
+  _countryNameMap = {};
+  topojson.feature(topoData, topoData.objects.countries).features.forEach(function(f) {
+    if (f.id != null && f.properties && f.properties.name) {
+      _countryNameMap[String(f.id)] = f.properties.name;
+    }
+  });
+}
+
+function getCountryName(numericId) {
+  if (!numericId) return '';
+  return (_countryNameMap && _countryNameMap[String(numericId)]) || numericId;
+}
+
+function computePanelLayout(airports, viewportW, viewportH, options) {
+  options = options || {};
+  var gutter            = options.gutter             !== undefined ? options.gutter             : 8;
+  var headerHeight      = options.headerHeight       !== undefined ? options.headerHeight       : 40;
+  var minPanelWidth     = options.minPanelWidth      !== undefined ? options.minPanelWidth      : 100;
+  var maxPanelWidthFrac = options.maxPanelWidthFraction !== undefined ? options.maxPanelWidthFraction : 0.4;
+
+  if (options.topoData) buildCountryNameMap(options.topoData);
+
+  var TIER_UNITS = { XL: 4, L: 3, M: 2, S: 1 };
+
+  // 1. Group airports by country (skip unclassifiable)
+  var countryMap = {};
+  airports.forEach(function(airport) {
+    var alpha2 = airport.country;
+    if (!alpha2) return;
+    var tier = classifyCountry(alpha2);
+    if (!tier) return;
+    var key = alpha2.toUpperCase();
+    if (!countryMap[key]) {
+      var numeric = alpha2ToNumeric(alpha2);
+      countryMap[key] = {
+        alpha2: key, countryId: numeric || key,
+        name: getCountryName(numeric), tier: tier, airports: []
+      };
+    }
+    countryMap[key].airports.push(airport);
+  });
+
+  var countries = Object.keys(countryMap).map(function(k) { return countryMap[k]; });
+  if (countries.length === 0) return [];
+
+  // 2. Sort west-to-east by min airport longitude
+  countries.sort(function(a, b) {
+    var aLng = Math.min.apply(null, a.airports.map(function(ap) { return ap.lng; }));
+    var bLng = Math.min.apply(null, b.airports.map(function(ap) { return ap.lng; }));
+    return aLng - bLng;
+  });
+
+  // 3. Compute natural widths from tier units
+  var n          = countries.length;
+  var totalUnits = countries.reduce(function(s, c) { return s + TIER_UNITS[c.tier]; }, 0);
+  var usable     = viewportW - gutter * (n - 1);
+  var unit       = usable / totalUnits;
+  var maxW       = maxPanelWidthFrac * viewportW;
+
+  var naturalWidths = countries.map(function(c) { return TIER_UNITS[c.tier] * unit; });
+  var isClamped     = naturalWidths.map(function(w) { return w < minPanelWidth || w > maxW; });
+  var widths        = naturalWidths.map(function(w) { return Math.min(maxW, Math.max(minPanelWidth, w)); });
+
+  // 4. Renormalize: distribute delta to unclamped panels by tier weight (one pass)
+  var clampedSum     = widths.reduce(function(s, w) { return s + w; }, 0);
+  var delta          = usable - clampedSum;
+  if (Math.abs(delta) > 0.5) {
+    var unclampedUnits = countries.reduce(function(s, c, i) {
+      return s + (isClamped[i] ? 0 : TIER_UNITS[c.tier]);
+    }, 0);
+    if (unclampedUnits > 0) {
+      widths = widths.map(function(w, i) {
+        if (isClamped[i]) return w;
+        var adj = w + delta * (TIER_UNITS[countries[i].tier] / unclampedUnits);
+        return Math.min(maxW, Math.max(minPanelWidth, adj));
+      });
+      var residual = usable - widths.reduce(function(s, w) { return s + w; }, 0);
+      if (Math.abs(residual) > 2) {
+        console.warn('computePanelLayout: width residual', residual.toFixed(1), 'px');
+      }
+    }
+  }
+
+  // 5. Build panel objects with sequential x positions
+  var panels = [];
+  var x = 0;
+  countries.forEach(function(c, i) {
+    var w = Math.round(widths[i]);
+    panels.push({
+      countryId: c.countryId, alpha2: c.alpha2, name: c.name, tier: c.tier,
+      x: x, y: headerHeight, width: w, height: viewportH - headerHeight,
+      headerY: 0, headerHeight: headerHeight, airports: c.airports
+    });
+    x += w + gutter;
+  });
+
+  return panels;
+}
+
+function computeCountryBbox(country, topoData) {
+  var features = topojson.feature(topoData, topoData.objects.countries).features;
+  var feature = null;
+  for (var i = 0; i < features.length; i++) {
+    if (String(features[i].id) === String(country.countryId)) { feature = features[i]; break; }
+  }
+  if (!feature || !feature.geometry) return null;
+
+  // Find ring with most vertices across all polygons — picks mainland shape
+  var largestRing = null;
+  var largestCount = 0;
+  function checkRing(ring) {
+    if (ring.length > largestCount) { largestCount = ring.length; largestRing = ring; }
+  }
+  var geom = feature.geometry;
+  if (geom.type === 'Polygon') {
+    geom.coordinates.forEach(checkRing);
+  } else if (geom.type === 'MultiPolygon') {
+    geom.coordinates.forEach(function(polygon) { polygon.forEach(checkRing); });
+  }
+  if (!largestRing) return null;
+
+  var minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
+  for (var j = 0; j < largestRing.length; j++) {
+    var lng = largestRing[j][0], lat = largestRing[j][1];
+    if (lat < minLat) minLat = lat;
+    if (lat > maxLat) maxLat = lat;
+    if (lng < minLng) minLng = lng;
+    if (lng > maxLng) maxLng = lng;
+  }
+  return { minLat: minLat, maxLat: maxLat, minLng: minLng, maxLng: maxLng };
+}
+
+function computeGlobalLatRange(countries, topoData) {
+  var minLat = Infinity, maxLat = -Infinity;
+  countries.forEach(function(country) {
+    var bbox = computeCountryBbox(country, topoData);
+    if (!bbox) return;
+    if (bbox.minLat < minLat) minLat = bbox.minLat;
+    if (bbox.maxLat > maxLat) maxLat = bbox.maxLat;
+  });
+  if (!isFinite(minLat)) return { minLat: -90, maxLat: 90 };
+  return { minLat: minLat, maxLat: maxLat };
+}
+
+function createPanelProjection(panel, countryBbox, globalLatRange, padding) {
+  padding = (padding !== undefined) ? padding : 0.08;
+
+  // a. Padded content area
+  var contentW = panel.width  * (1 - 2 * padding);
+  var contentH = panel.height * (1 - 2 * padding);
+  var contentX = panel.x + panel.width  * padding;
+  var contentY = panel.y + panel.height * padding;
+
+  // b. Geographic spans (guard against degenerate)
+  var lngSpan = Math.max(countryBbox.maxLng - countryBbox.minLng, 0.01);
+  var latSpan = Math.max(countryBbox.maxLat - countryBbox.minLat, 0.01);
+
+  // c. Aspect-preserving scale
+  var scale = Math.min(contentW / lngSpan, contentH / latSpan);
+
+  // d. Country centroid latitude
+  var centroidLat = (countryBbox.minLat + countryBbox.maxLat) / 2;
+
+  // e. Target Y for centroid on global lat scale
+  var globalLatFraction = (globalLatRange.maxLat - centroidLat) /
+                          (globalLatRange.maxLat - globalLatRange.minLat);
+  var targetCenterY = contentY + globalLatFraction * contentH;
+
+  // f/g. Y offset, clamped so shape stays within content area
+  var countryHeightAtScale = latSpan * scale;
+  var yOffset = targetCenterY - countryHeightAtScale / 2;
+  yOffset = Math.max(contentY, yOffset);
+  yOffset = Math.min(contentY + contentH - countryHeightAtScale, yOffset);
+
+  // h. X offset: center horizontally
+  var countryWidthAtScale = lngSpan * scale;
+  var xOffset = contentX + (contentW - countryWidthAtScale) / 2;
+
+  // capture for closure
+  var _minLng = countryBbox.minLng;
+  var _maxLat = countryBbox.maxLat;
+
+  return {
+    project: function(lng, lat) {
+      return [
+        xOffset + (lng - _minLng) * scale,
+        yOffset + (_maxLat  - lat) * scale
+      ];
+    },
+    bounds: countryBbox
+  };
+}
+
+function geomToPath(geom, projFn) {
+  function ringToPath(ring) {
+    var d = '';
+    for (var i = 0; i < ring.length; i++) {
+      var pt = projFn(ring[i][0], ring[i][1]);
+      d += (i === 0 ? 'M' : 'L') + pt[0].toFixed(1) + ',' + pt[1].toFixed(1);
+    }
+    return d + 'Z';
+  }
+  function polygonToPath(coords) { return coords.map(ringToPath).join(''); }
+  if (geom.type === 'Polygon')      return polygonToPath(geom.coordinates);
+  if (geom.type === 'MultiPolygon') return geom.coordinates.map(polygonToPath).join('');
+  return '';
+}
+
+function renderPanelHeader(svgEl, panel) {
+  var textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+  textEl.setAttribute('class', 'vpnr-country-label');
+  textEl.setAttribute('x', (panel.x + panel.width / 2).toFixed(1));
+  textEl.setAttribute('y', (panel.headerY + panel.headerHeight / 2).toFixed(1));
+  textEl.setAttribute('text-anchor', 'middle');
+  textEl.setAttribute('dominant-baseline', 'middle');
+  textEl.textContent = panel.name;
+  svgEl.appendChild(textEl);
+}
+
+function renderPanels(svgEl, panels, topoData, options) {
+  options = options || {};
+  var padding = options.padding !== undefined ? options.padding : 0.08;
+
+  var globalLatRange = computeGlobalLatRange(panels, topoData);
+  // Decode features once — reused for shape lookup across all panels
+  var allFeatures = topojson.feature(topoData, topoData.objects.countries).features;
+
+  panels.forEach(function(panel) {
+    var bbox = computeCountryBbox(panel, topoData);
+    if (!bbox) return;
+    var proj = createPanelProjection(panel, bbox, globalLatRange, padding);
+
+    // Panel header: country name in header strip
+    renderPanelHeader(svgEl, panel);
+
+    // Country shape using panel projection
+    var feature = null;
+    for (var i = 0; i < allFeatures.length; i++) {
+      if (String(allFeatures[i].id) === String(panel.countryId)) {
+        feature = allFeatures[i]; break;
+      }
+    }
+    if (feature && feature.geometry) {
+      var pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      pathEl.setAttribute('class', 'vpnr-map-land');
+      pathEl.setAttribute('d', geomToPath(feature.geometry, proj.project));
+      svgEl.appendChild(pathEl);
+    }
+
+    // Airport markers and labels bounded to this panel
+    var panelBounds = {
+      minX: panel.x,  maxX: panel.x + panel.width,
+      minY: panel.y,  maxY: panel.y + panel.height
+    };
+    var markerData = renderAirportMarkers(svgEl, panel.airports, proj.project, panelBounds);
+    renderAirportLabels(svgEl, markerData, panelBounds);
+  });
+}
+
 /* ── World map database ────────────────────────────────── */
 let _worldMap = null;
 let _worldMapPromise = null;
@@ -5506,12 +5783,12 @@ function renderCountryLabels(svgEl, topoData, countryIds, projection) {
   });
 }
 
-function renderAirportMarkers(svgEl, airports, projectionFn, viewportW, viewportH) {
+function renderAirportMarkers(svgEl, airports, projectionFn, bounds) {
   var ns = 'http://www.w3.org/2000/svg';
   var markerData = [];
   airports.forEach(function(airport) {
     var pt = projectionFn(airport.lng, airport.lat);
-    if (pt[0] < 0 || pt[0] > viewportW || pt[1] < 0 || pt[1] > viewportH) return;
+    if (pt[0] < bounds.minX || pt[0] > bounds.maxX || pt[1] < bounds.minY || pt[1] > bounds.maxY) return;
     var circle = document.createElementNS(ns, 'circle');
     circle.setAttribute('class', 'vpnr-airport-marker');
     circle.setAttribute('cx', pt[0].toFixed(2));
@@ -5523,7 +5800,7 @@ function renderAirportMarkers(svgEl, airports, projectionFn, viewportW, viewport
   return markerData;
 }
 
-function renderAirportLabels(svgEl, markerData, viewportW, viewportH) {
+function renderAirportLabels(svgEl, markerData, bounds) {
   var ns = 'http://www.w3.org/2000/svg';
   var charW = 7.5;
   var lineH = 14;
@@ -5538,7 +5815,7 @@ function renderAirportLabels(svgEl, markerData, viewportW, viewportH) {
   }
 
   function inBounds(box) {
-    return box.x1 >= 0 && box.x2 <= viewportW && box.y1 >= 0 && box.y2 <= viewportH;
+    return box.x1 >= bounds.minX && box.x2 <= bounds.maxX && box.y1 >= bounds.minY && box.y2 <= bounds.maxY;
   }
 
   markerData.forEach(function(d) {
@@ -5912,13 +6189,14 @@ async function openVisualPNR(trip) {
     var countriesData = await loadCountriesMap();
     var tripAirports = await getTripAirports(trip);
     if (countriesData && tripAirports.length > 0) {
-      var proj = createTripProjection(tripAirports, w, h, 0.02);
-      var countryIds = getTripCountries(tripAirports);
-      renderGraticule(mapSvg, proj.project, proj.bounds);
-      renderCountriesFiltered(mapSvg, countriesData, countryIds, proj.project);
-      renderCountryLabels(mapSvg, countriesData, countryIds, proj.project);
-      var markerData = renderAirportMarkers(mapSvg, tripAirports, proj.project, w, h);
-      renderAirportLabels(mapSvg, markerData, w, h);
+      var panels = computePanelLayout(tripAirports, w, h, {
+        topoData: countriesData,
+        gutter: 8,
+        headerHeight: 40,
+        minPanelWidth: 100,
+        maxPanelWidthFraction: 0.4
+      });
+      renderPanels(mapSvg, panels, countriesData, { padding: 0.08 });
     }
   }
 
