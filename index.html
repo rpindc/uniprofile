@@ -1056,17 +1056,28 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   border-top: 1px solid var(--border);
   background: var(--surface);
   display: flex;
-  align-items: stretch;
-  gap: 0;
+  flex-direction: column;
+  gap: 8px;
   font-family: 'JetBrains Mono', monospace;
 }
-.vpnr-cal-stop {
+.vpnr-cal-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 0;
+}
+.vpnr-cal-arrow-dep {
+  font-size: 14px;
+  color: var(--gold);
+}
+.vpnr-cal-arrow-arr {
+  font-size: 14px;
+  color: var(--gold);
+}
+.vpnr-cal-airport {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  flex: 1 1 auto;
   min-width: 60px;
-  padding: 0 4px;
 }
 .vpnr-cal-iata {
   font-size: 13px;
@@ -1074,52 +1085,32 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   color: var(--text);
   letter-spacing: 0.05em;
 }
-.vpnr-cal-date {
+.vpnr-cal-datetime {
   font-size: 10px;
   color: var(--textDim);
-  margin-top: 4px;
-}
-.vpnr-cal-time {
-  font-size: 11px;
-  color: var(--text);
-  margin-top: 2px;
   font-variant-numeric: tabular-nums;
 }
-.vpnr-cal-direction {
+.vpnr-cal-flight-arrow {
+  flex: 1 1 auto;
+  min-width: 40px;
+  border-top: 1px solid var(--border);
+  position: relative;
+  align-self: center;
+}
+.vpnr-cal-flightnum {
   font-size: 10px;
   color: var(--textDim);
-  margin-top: 2px;
-  opacity: 0.7;
-}
-.vpnr-cal-connector {
-  flex: 1 1 auto;
-  align-self: center;
-  height: 1px;
-  background: var(--border);
-  min-width: 20px;
-  position: relative;
-  top: -8px;
-}
-.vpnr-cal-gap {
-  flex: 2 1 auto;
-  align-self: center;
-  height: 1px;
-  border-top: 1px dashed var(--border);
   min-width: 60px;
-  position: relative;
-  top: -8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  text-align: right;
 }
-.vpnr-cal-gap-text {
-  position: absolute;
-  background: var(--surface);
-  padding: 0 8px;
-  font-size: 10px;
+.vpnr-cal-gap-row {
+  padding: 8px 0;
+  text-align: center;
+  border-top: 1px dashed var(--border);
+  border-bottom: 1px dashed var(--border);
+  font-size: 11px;
   color: var(--textDim);
   font-style: italic;
-  white-space: nowrap;
 }
 .vpnr-timeline {
   padding: 24px 32px;
@@ -6348,17 +6339,18 @@ function buildCalendarStops(trip, airports) {
     }
 
     items.push({
-      type: 'stop', iata: seg.origin_iata,
-      dateLocal: localDate(seg.departure_datetime, seg.origin_iata),
-      timeLocal: localTime(seg.departure_datetime, seg.origin_iata),
-      direction: 'dep'
-    });
-    items.push({ type: 'flight' });
-    items.push({
-      type: 'stop', iata: seg.destination_iata,
-      dateLocal: localDate(seg.arrival_datetime, seg.destination_iata),
-      timeLocal: localTime(seg.arrival_datetime, seg.destination_iata),
-      direction: 'arr'
+      type: 'segment',
+      origin: {
+        iata: seg.origin_iata,
+        dateLocal: localDate(seg.departure_datetime, seg.origin_iata),
+        timeLocal: localTime(seg.departure_datetime, seg.origin_iata)
+      },
+      destination: {
+        iata: seg.destination_iata,
+        dateLocal: localDate(seg.arrival_datetime, seg.destination_iata),
+        timeLocal: localTime(seg.arrival_datetime, seg.destination_iata)
+      },
+      flightNumber: (seg.carrier || '') + (seg.flight_number || '')
     });
   }
 
@@ -6369,35 +6361,57 @@ function renderCalendar(containerEl, items) {
   containerEl.innerHTML = '';
   items.forEach(function(item) {
     var el;
-    if (item.type === 'stop') {
+    if (item.type === 'segment') {
       el = document.createElement('div');
-      el.className = 'vpnr-cal-stop';
-      var iata = document.createElement('div');
-      iata.className = 'vpnr-cal-iata';
-      iata.textContent = item.iata || '';
-      var date = document.createElement('div');
-      date.className = 'vpnr-cal-date';
-      date.textContent = item.dateLocal || '';
-      var time = document.createElement('div');
-      time.className = 'vpnr-cal-time';
-      time.textContent = item.timeLocal || '';
-      var dir = document.createElement('div');
-      dir.className = 'vpnr-cal-direction';
-      dir.textContent = item.direction === 'dep' ? '↑' : '↓';
-      el.appendChild(iata);
-      el.appendChild(date);
-      el.appendChild(time);
-      el.appendChild(dir);
-    } else if (item.type === 'flight') {
-      el = document.createElement('div');
-      el.className = 'vpnr-cal-connector';
+      el.className = 'vpnr-cal-row';
+
+      var arrDep = document.createElement('span');
+      arrDep.className = 'vpnr-cal-arrow-dep';
+      arrDep.textContent = '↗';
+
+      var orig = document.createElement('div');
+      orig.className = 'vpnr-cal-airport';
+      var origIata = document.createElement('div');
+      origIata.className = 'vpnr-cal-iata';
+      origIata.textContent = item.origin.iata || '';
+      var origDt = document.createElement('div');
+      origDt.className = 'vpnr-cal-datetime';
+      origDt.textContent = (item.origin.dateLocal || '') + '  ' + (item.origin.timeLocal || '');
+      orig.appendChild(origIata);
+      orig.appendChild(origDt);
+
+      var arrow = document.createElement('div');
+      arrow.className = 'vpnr-cal-flight-arrow';
+
+      var dest = document.createElement('div');
+      dest.className = 'vpnr-cal-airport';
+      var destIata = document.createElement('div');
+      destIata.className = 'vpnr-cal-iata';
+      destIata.textContent = item.destination.iata || '';
+      var destDt = document.createElement('div');
+      destDt.className = 'vpnr-cal-datetime';
+      destDt.textContent = (item.destination.dateLocal || '') + '  ' + (item.destination.timeLocal || '');
+      dest.appendChild(destIata);
+      dest.appendChild(destDt);
+
+      var arrArr = document.createElement('span');
+      arrArr.className = 'vpnr-cal-arrow-arr';
+      arrArr.textContent = '↘';
+
+      var fnum = document.createElement('div');
+      fnum.className = 'vpnr-cal-flightnum';
+      fnum.textContent = item.flightNumber || '';
+
+      el.appendChild(arrDep);
+      el.appendChild(orig);
+      el.appendChild(arrow);
+      el.appendChild(dest);
+      el.appendChild(arrArr);
+      el.appendChild(fnum);
     } else if (item.type === 'gap') {
       el = document.createElement('div');
-      el.className = 'vpnr-cal-gap';
-      var txt = document.createElement('div');
-      txt.className = 'vpnr-cal-gap-text';
-      txt.textContent = item.label || '';
-      el.appendChild(txt);
+      el.className = 'vpnr-cal-gap-row';
+      el.textContent = item.label || '';
     }
     if (el) containerEl.appendChild(el);
   });
