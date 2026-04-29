@@ -5611,7 +5611,7 @@ function renderArcs(svgEl, panels, viewportW, arcStripHeight, segments, options)
   options = options || {};
   console.log('[renderArcs] segments received:', segments);
   console.log('[renderArcs] segments.length:', segments ? segments.length : 'null/undefined');
-  console.log('[renderArcs] first segment:', segments && segments[0]);
+  console.log('[renderArcs] first segment full:', segments && segments[0] ? JSON.stringify(segments[0]) : 'none');
   var ns = 'http://www.w3.org/2000/svg';
 
   // Build IATA → panel index
@@ -5621,6 +5621,7 @@ function renderArcs(svgEl, panels, viewportW, arcStripHeight, segments, options)
       iataToPanel[airport.iata] = panel;
     });
   });
+  console.log('[renderArcs] index built:', Object.keys(iataToPanel));
 
   // Track seen routeKeys for overlap detection
   var seenRoutes = {};
@@ -5635,15 +5636,19 @@ function renderArcs(svgEl, panels, viewportW, arcStripHeight, segments, options)
 
     var originPanel = iataToPanel[seg.origin_iata];
     var destPanel   = iataToPanel[seg.destination_iata];
+    console.log('[renderArcs] seg', idx, 'origin_iata:', seg.origin_iata, 'destination_iata:', seg.destination_iata, 'originPanel:', originPanel ? originPanel.alpha2 : 'NOT FOUND', 'destPanel:', destPanel ? destPanel.alpha2 : 'NOT FOUND');
     if (!originPanel || !destPanel) return;
+    console.log('[renderArcs] seg', idx, 'project fns:', !!originPanel.project, !!destPanel.project);
     if (!originPanel.project || !destPanel.project) return;
 
     var originAirport = originPanel.airports.find(function(a) { return a.iata === seg.origin_iata; });
     var destAirport   = destPanel.airports.find(function(a)   { return a.iata === seg.destination_iata; });
+    console.log('[renderArcs] seg', idx, 'originAirport:', originAirport, 'destAirport:', destAirport);
     if (!originAirport || !destAirport) return;
 
     var oPt = originPanel.project(originAirport.lng, originAirport.lat);
     var dPt = destPanel.project(destAirport.lng, destAirport.lat);
+    console.log('[renderArcs] seg', idx, 'oPt:', oPt, 'dPt:', dPt);
     if (!oPt || !dPt) return;
 
     var x1 = oPt[0];
