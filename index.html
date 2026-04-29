@@ -5640,29 +5640,45 @@ function renderArcs(svgEl, panels, viewportW, arcStripHeight, segments, options)
     if (!oPt || !dPt) return;
 
     var x1 = oPt[0];
+    var y1 = oPt[1];
     var x2 = dPt[0];
-    var y0 = arcStripHeight;
+    var y2 = dPt[1];
 
-    // Bow height: proportional to viewport fraction, clamped [10, arcStripHeight-5]
+    // Bow height: up to 80px above the higher airport
     var dx = Math.abs(x2 - x1);
-    var rawBow = arcStripHeight * 2.0 * (dx / viewportW);
-    var bow = Math.max(10, Math.min(arcStripHeight - 5, rawBow));
+    var maxBow = 80;
+    var rawBow = maxBow * (dx / viewportW);
+    var bow = Math.max(20, Math.min(maxBow, rawBow));
 
     // Overlap detection via sorted routeKey
     var routeKey = [seg.origin_iata, seg.destination_iata].sort().join('-');
     var isReturn = seenRoutes[routeKey];
     seenRoutes[routeKey] = true;
 
-    // Quadratic Bezier: control point at midpoint x, top of bow
+    // Control point: x at midpoint, y above the higher airport (lower y value)
     var cx = (x1 + x2) / 2;
-    var cy = y0 - bow;
+    var cy = Math.min(y1, y2) - bow;
+
+    // Return flights: shift control point perpendicular to flight line
+    if (isReturn) {
+      var dxLine = x2 - x1;
+      var dyLine = y2 - y1;
+      var lineLength = Math.sqrt(dxLine * dxLine + dyLine * dyLine);
+      if (lineLength > 0) {
+        var perpOffsetPx = 8;
+        var perpX = -dyLine / lineLength;
+        var perpY =  dxLine / lineLength;
+        cx += perpX * perpOffsetPx;
+        cy += perpY * perpOffsetPx;
+      }
+    }
 
     var path = document.createElementNS(ns, 'path');
     path.setAttribute('class', 'vpnr-arc' + (isReturn ? ' vpnr-arc-return' : ''));
     path.setAttribute('d',
-      'M' + x1.toFixed(1) + ',' + y0.toFixed(1) +
+      'M' + x1.toFixed(1) + ',' + y1.toFixed(1) +
       ' Q' + cx.toFixed(1) + ',' + cy.toFixed(1) +
-      ' ' + x2.toFixed(1) + ',' + y0.toFixed(1)
+      ' ' + x2.toFixed(1) + ',' + y2.toFixed(1)
     );
     svgEl.appendChild(path);
   });
