@@ -1003,6 +1003,18 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   pointer-events: none;
   user-select: none;
 }
+.vpnr-airport-marker {
+  fill: var(--gold);
+  stroke: none;
+}
+.vpnr-airport-label {
+  fill: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  pointer-events: none;
+  user-select: none;
+}
 .vpnr-timeline {
   padding: 24px 32px;
   overflow-y: auto;
@@ -5494,6 +5506,78 @@ function renderCountryLabels(svgEl, topoData, countryIds, projection) {
   });
 }
 
+function renderAirportMarkers(svgEl, airports, projectionFn, viewportW, viewportH) {
+  var ns = 'http://www.w3.org/2000/svg';
+  var markerData = [];
+  airports.forEach(function(airport) {
+    var pt = projectionFn(airport.lng, airport.lat);
+    if (pt[0] < 0 || pt[0] > viewportW || pt[1] < 0 || pt[1] > viewportH) return;
+    var circle = document.createElementNS(ns, 'circle');
+    circle.setAttribute('class', 'vpnr-airport-marker');
+    circle.setAttribute('cx', pt[0].toFixed(2));
+    circle.setAttribute('cy', pt[1].toFixed(2));
+    circle.setAttribute('r', '4.5');
+    svgEl.appendChild(circle);
+    markerData.push({ airport: airport, x: pt[0], y: pt[1] });
+  });
+  return markerData;
+}
+
+function renderAirportLabels(svgEl, markerData, viewportW, viewportH) {
+  var ns = 'http://www.w3.org/2000/svg';
+  var charW = 7.5;
+  var lineH = 14;
+  var placed = [];
+
+  function overlaps(box) {
+    for (var i = 0; i < placed.length; i++) {
+      var p = placed[i];
+      if (box.x1 < p.x2 && box.x2 > p.x1 && box.y1 < p.y2 && box.y2 > p.y1) return true;
+    }
+    return false;
+  }
+
+  function inBounds(box) {
+    return box.x1 >= 0 && box.x2 <= viewportW && box.y1 >= 0 && box.y2 <= viewportH;
+  }
+
+  markerData.forEach(function(d) {
+    var iata = d.airport.iata || '';
+    var lw = iata.length * charW;
+    var cx = d.x, cy = d.y;
+
+    var positions = [
+      { anchor: 'middle', dx: 0,   dy: -12, box: function() { return { x1: cx - lw/2, y1: cy - 12 - lineH, x2: cx + lw/2, y2: cy - 12 }; } },
+      { anchor: 'middle', dx: 0,   dy:  16, box: function() { return { x1: cx - lw/2, y1: cy + 16,          x2: cx + lw/2, y2: cy + 16 + lineH }; } },
+      { anchor: 'start',  dx:  10, dy:   4, box: function() { return { x1: cx + 10,      y1: cy + 4 - lineH/2, x2: cx + 10 + lw,   y2: cy + 4 + lineH/2 }; } },
+      { anchor: 'end',    dx: -10, dy:   4, box: function() { return { x1: cx - 10 - lw, y1: cy + 4 - lineH/2, x2: cx - 10,         y2: cy + 4 + lineH/2 }; } }
+    ];
+
+    var chosen = null;
+    for (var i = 0; i < positions.length; i++) {
+      var pos = positions[i];
+      var box = pos.box();
+      if (inBounds(box) && !overlaps(box)) {
+        chosen = pos;
+        placed.push(box);
+        break;
+      }
+    }
+    if (!chosen) {
+      chosen = positions[0];
+      placed.push(chosen.box());
+    }
+
+    var text = document.createElementNS(ns, 'text');
+    text.setAttribute('class', 'vpnr-airport-label');
+    text.setAttribute('x', (cx + chosen.dx).toFixed(2));
+    text.setAttribute('y', (cy + chosen.dy).toFixed(2));
+    text.setAttribute('text-anchor', chosen.anchor);
+    text.textContent = iata;
+    svgEl.appendChild(text);
+  });
+}
+
 function renderWorldMap(svgEl, topoData) {
   var features = topojson.feature(topoData, topoData.objects.land).features;
   var pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -5821,14 +5905,20 @@ async function openVisualPNR(trip) {
   var mapSvg = document.querySelector('#vpnr-map svg');
   if (mapSvg) {
     mapSvg.innerHTML = '';
+    var rect = mapSvg.getBoundingClientRect();
+    var w = rect.width || 1000;
+    var h = rect.height || 500;
+    mapSvg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
     var countriesData = await loadCountriesMap();
     var tripAirports = await getTripAirports(trip);
     if (countriesData && tripAirports.length > 0) {
-      var proj = createTripProjection(tripAirports, 1000, 500, 0.15);
+      var proj = createTripProjection(tripAirports, w, h, 0.15);
       var countryIds = getTripCountries(tripAirports);
       renderGraticule(mapSvg, proj.project, proj.bounds);
       renderCountriesFiltered(mapSvg, countriesData, countryIds, proj.project);
       renderCountryLabels(mapSvg, countriesData, countryIds, proj.project);
+      var markerData = renderAirportMarkers(mapSvg, tripAirports, proj.project, w, h);
+      renderAirportLabels(mapSvg, markerData, w, h);
     }
   }
 
