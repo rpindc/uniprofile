@@ -5622,6 +5622,14 @@ function renderArcs(svgEl, panels, viewportW, arcStripHeight, segments, options)
     });
   });
   console.log('[renderArcs] index built:', Object.keys(iataToPanel));
+  console.log('[renderArcs] iataToPanel keys:', Object.keys(iataToPanel));
+  console.log('[renderArcs] iataToPanel full:', JSON.stringify(iataToPanel, null, 2));
+  console.log('[renderArcs] panels count:', panels.length);
+  panels.forEach(function(p, i) {
+    console.log('[renderArcs] panel', i, 'alpha2:', p.alpha2,
+                'airports count:', p.airports ? p.airports.length : 'undefined',
+                'first airport:', p.airports && p.airports[0]);
+  });
 
   // Track seen routeKeys for overlap detection
   var seenRoutes = {};
