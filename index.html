@@ -1015,6 +1015,27 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   pointer-events: none;
   user-select: none;
 }
+.vpnr-globe-sphere {
+  fill: #FFFFFF;
+  stroke: var(--border);
+  stroke-width: 0.5;
+}
+.vpnr-globe-graticule {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 0.4;
+  opacity: 0.5;
+}
+.vpnr-globe-continent {
+  fill: #D5D2CC;
+  stroke: none;
+  opacity: 0.7;
+}
+.vpnr-globe-trip-country {
+  fill: #A8C3D9;
+  stroke: none;
+  opacity: 0.95;
+}
 .vpnr-timeline {
   padding: 24px 32px;
   overflow-y: auto;
@@ -5483,6 +5504,23 @@ function createPanelProjection(panel, countryBbox, globalLatRange, padding) {
   };
 }
 
+function createOrthographicProjection(centerLng, centerLat, centerX, centerY, radius) {
+  var λ0    = centerLng * Math.PI / 180;
+  var φ0    = centerLat * Math.PI / 180;
+  var sinφ0 = Math.sin(φ0);
+  var cosφ0 = Math.cos(φ0);
+
+  return function(lng, lat) {
+    var φ    = lat * Math.PI / 180;
+    var λ    = lng * Math.PI / 180;
+    var cosC = sinφ0 * Math.sin(φ) + cosφ0 * Math.cos(φ) * Math.cos(λ - λ0);
+    if (cosC < 0) return null;
+    var x = radius * Math.cos(φ) * Math.sin(λ - λ0);
+    var y = radius * (cosφ0 * Math.sin(φ) - sinφ0 * Math.cos(φ) * Math.cos(λ - λ0));
+    return [centerX + x, centerY - y];
+  };
+}
+
 function geomToPath(geom, projFn) {
   function ringToPath(ring) {
     var d = '';
@@ -5547,6 +5585,147 @@ function renderPanels(svgEl, panels, topoData, options) {
     var markerData = renderAirportMarkers(svgEl, panel.airports, proj.project, panelBounds);
     renderAirportLabels(svgEl, markerData, panelBounds);
   });
+}
+
+function orthographicGeomToPath(geom, projFn, fallbackPt) {
+  function ringToPath(ring) {
+    var d = '';
+    for (var i = 0; i < ring.length; i++) {
+      var pt = projFn(ring[i][0], ring[i][1]) || fallbackPt;
+      d += (i === 0 ? 'M' : 'L') + pt[0].toFixed(1) + ',' + pt[1].toFixed(1);
+    }
+    return d + 'Z';
+  }
+  function polygonToPath(coords) { return coords.map(ringToPath).join(''); }
+  if (geom.type === 'Polygon')      return polygonToPath(geom.coordinates);
+  if (geom.type === 'MultiPolygon') return geom.coordinates.map(polygonToPath).join('');
+  return '';
+}
+
+function renderGlobeGraticule(group, ortho, latStep, lngStep) {
+  var ns = 'http://www.w3.org/2000/svg';
+
+  function buildLinePath(coords) {
+    var d = '';
+    var penDown = false;
+    for (var i = 0; i < coords.length; i++) {
+      var pt = ortho(coords[i][0], coords[i][1]);
+      if (pt === null) { penDown = false; continue; }
+      d += (penDown ? 'L' : 'M') + pt[0].toFixed(1) + ',' + pt[1].toFixed(1);
+      penDown = true;
+    }
+    return d;
+  }
+
+  function appendLine(coords) {
+    var d = buildLinePath(coords);
+    if (!d) return;
+    var el = document.createElementNS(ns, 'path');
+    el.setAttribute('class', 'vpnr-globe-graticule');
+    el.setAttribute('d', d);
+    group.appendChild(el);
+  }
+
+  // Latitude lines: -60, -30, 0, 30, 60
+  for (var lat = -90 + latStep; lat < 90; lat += latStep) {
+    var latCoords = [];
+    for (var lng = -180; lng <= 180; lng += 5) latCoords.push([lng, lat]);
+    appendLine(latCoords);
+  }
+
+  // Longitude lines: -150, -120, ..., 150
+  for (var lng2 = -180 + lngStep; lng2 < 180; lng2 += lngStep) {
+    var lngCoords = [];
+    for (var lat2 = -90; lat2 <= 90; lat2 += 5) lngCoords.push([lng2, lat2]);
+    appendLine(lngCoords);
+  }
+}
+
+function renderGlobeInset(svgEl, viewportW, panels, landData, countriesData, options) {
+  options = options || {};
+  var radius      = options.radius      !== undefined ? options.radius      : 70;
+  var marginTop   = options.marginTop   !== undefined ? options.marginTop   : 20;
+  var marginRight = options.marginRight !== undefined ? options.marginRight : 20;
+  var latStep     = options.latStep     !== undefined ? options.latStep     : 30;
+  var lngStep     = options.lngStep     !== undefined ? options.lngStep     : 30;
+
+  var ns = 'http://www.w3.org/2000/svg';
+
+  // 1. Globe geometry
+  var centerX = viewportW - marginRight - radius;
+  var centerY = marginTop + radius;
+
+  // 2. Trip centroid from all panel airports
+  var allAirports = panels.reduce(function(acc, p) { return acc.concat(p.airports); }, []);
+  var lngSum = 0, latSum = 0;
+  allAirports.forEach(function(a) { lngSum += a.lng; latSum += a.lat; });
+  var centroidLng = lngSum / allAirports.length;
+  var centroidLat = latSum / allAirports.length;
+
+  // 3. Orthographic projection centered on trip
+  var ortho = createOrthographicProjection(centroidLng, centroidLat, centerX, centerY, radius);
+  var fallbackPt = [centerX, centerY];
+
+  // 4. ClipPath so continent shapes don't bleed outside sphere
+  var clipId = 'vpnr-globe-clip-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+  var defs = svgEl.querySelector('defs') ||
+             svgEl.insertBefore(document.createElementNS(ns, 'defs'), svgEl.firstChild);
+  var clipPath = document.createElementNS(ns, 'clipPath');
+  clipPath.setAttribute('id', clipId);
+  var clipCircle = document.createElementNS(ns, 'circle');
+  clipCircle.setAttribute('cx', centerX.toFixed(1));
+  clipCircle.setAttribute('cy', centerY.toFixed(1));
+  clipCircle.setAttribute('r', String(radius));
+  clipPath.appendChild(clipCircle);
+  defs.appendChild(clipPath);
+
+  // 5. Sphere background (outside clip group — defines visible area)
+  var sphere = document.createElementNS(ns, 'circle');
+  sphere.setAttribute('class', 'vpnr-globe-sphere');
+  sphere.setAttribute('cx', centerX.toFixed(1));
+  sphere.setAttribute('cy', centerY.toFixed(1));
+  sphere.setAttribute('r', String(radius));
+  svgEl.appendChild(sphere);
+
+  // 6. Clipped group: graticule + continents + trip countries
+  var group = document.createElementNS(ns, 'g');
+  group.setAttribute('clip-path', 'url(#' + clipId + ')');
+  svgEl.appendChild(group);
+
+  // 7. Graticule
+  renderGlobeGraticule(group, ortho, latStep, lngStep);
+
+  // 8. Continent silhouettes
+  topojson.feature(landData, landData.objects.land).features.forEach(function(feature) {
+    var d = orthographicGeomToPath(feature.geometry, ortho, fallbackPt);
+    if (!d) return;
+    var path = document.createElementNS(ns, 'path');
+    path.setAttribute('class', 'vpnr-globe-continent');
+    path.setAttribute('d', d);
+    group.appendChild(path);
+  });
+
+  // 9. Trip country highlights
+  var tripIds = panels.map(function(p) { return String(p.countryId); });
+  topojson.feature(countriesData, countriesData.objects.countries).features
+    .forEach(function(feature) {
+      if (tripIds.indexOf(String(feature.id)) === -1) return;
+      var d = orthographicGeomToPath(feature.geometry, ortho, fallbackPt);
+      if (!d) return;
+      var path = document.createElementNS(ns, 'path');
+      path.setAttribute('class', 'vpnr-globe-trip-country');
+      path.setAttribute('d', d);
+      group.appendChild(path);
+    });
+
+  // 10. Sphere border on top — stroke only, inline style overrides CSS class fill
+  var border = document.createElementNS(ns, 'circle');
+  border.setAttribute('class', 'vpnr-globe-sphere');
+  border.setAttribute('cx', centerX.toFixed(1));
+  border.setAttribute('cy', centerY.toFixed(1));
+  border.setAttribute('r', String(radius));
+  border.setAttribute('style', 'fill: none;');
+  svgEl.appendChild(border);
 }
 
 /* ── World map database ────────────────────────────────── */
@@ -6197,6 +6376,10 @@ async function openVisualPNR(trip) {
         maxPanelWidthFraction: 0.4
       });
       renderPanels(mapSvg, panels, countriesData, { padding: 0.08 });
+      var landData = await loadWorldMap();
+      if (landData) {
+        renderGlobeInset(mapSvg, w, panels, landData, countriesData);
+      }
     }
   }
 
