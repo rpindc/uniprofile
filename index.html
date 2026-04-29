@@ -1036,6 +1036,21 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   stroke: none;
   opacity: 0.95;
 }
+.vpnr-arc {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 1.2;
+  opacity: 0.85;
+}
+.vpnr-arc-return {
+  stroke-dasharray: 3 3;
+}
+.vpnr-arc-label {
+  font-size: 9px;
+  fill: var(--textDim);
+  text-anchor: middle;
+  pointer-events: none;
+}
 .vpnr-timeline {
   padding: 24px 32px;
   overflow-y: auto;
@@ -5330,6 +5345,7 @@ function computePanelLayout(airports, viewportW, viewportH, options) {
   var headerHeight      = options.headerHeight       !== undefined ? options.headerHeight       : 40;
   var minPanelWidth     = options.minPanelWidth      !== undefined ? options.minPanelWidth      : 100;
   var maxPanelWidthFrac = options.maxPanelWidthFraction !== undefined ? options.maxPanelWidthFraction : 0.4;
+  var arcStripHeight    = options.arcStripHeight        !== undefined ? options.arcStripHeight        : 50;
 
   if (options.topoData) buildCountryNameMap(options.topoData);
 
@@ -5401,8 +5417,10 @@ function computePanelLayout(airports, viewportW, viewportH, options) {
     var w = Math.round(widths[i]);
     panels.push({
       countryId: c.countryId, alpha2: c.alpha2, name: c.name, tier: c.tier,
-      x: x, y: headerHeight, width: w, height: viewportH - headerHeight,
-      headerY: 0, headerHeight: headerHeight, airports: c.airports
+      x: x, y: arcStripHeight + headerHeight, width: w,
+      height: viewportH - arcStripHeight - headerHeight,
+      headerY: arcStripHeight, headerHeight: headerHeight,
+      arcStripHeight: arcStripHeight, airports: c.airports
     });
     x += w + gutter;
   });
@@ -5559,6 +5577,8 @@ function renderPanels(svgEl, panels, topoData, options) {
     var bbox = computeCountryBbox(panel, topoData);
     if (!bbox) return;
     var proj = createPanelProjection(panel, bbox, globalLatRange, padding);
+    panel.project = proj.project;
+    panel.bounds  = proj.bounds;
 
     // Panel header: country name in header strip
     renderPanelHeader(svgEl, panel);
@@ -5584,6 +5604,67 @@ function renderPanels(svgEl, panels, topoData, options) {
     };
     var markerData = renderAirportMarkers(svgEl, panel.airports, proj.project, panelBounds);
     renderAirportLabels(svgEl, markerData, panelBounds);
+  });
+}
+
+function renderArcs(svgEl, panels, viewportW, arcStripHeight, segments, options) {
+  options = options || {};
+  var ns = 'http://www.w3.org/2000/svg';
+
+  // Build IATA → panel index
+  var iataToPanel = {};
+  panels.forEach(function(panel) {
+    panel.airports.forEach(function(airport) {
+      iataToPanel[airport.iata] = panel;
+    });
+  });
+
+  // Track seen routeKeys for overlap detection
+  var seenRoutes = {};
+
+  segments.forEach(function(seg) {
+    // Skip gap segments (no flight number / carrier)
+    if (!seg.carrier || !seg.flight_number) return;
+
+    var originPanel = iataToPanel[seg.origin_iata];
+    var destPanel   = iataToPanel[seg.destination_iata];
+    if (!originPanel || !destPanel) return;
+    if (!originPanel.project || !destPanel.project) return;
+
+    var originAirport = originPanel.airports.find(function(a) { return a.iata === seg.origin_iata; });
+    var destAirport   = destPanel.airports.find(function(a)   { return a.iata === seg.destination_iata; });
+    if (!originAirport || !destAirport) return;
+
+    var oPt = originPanel.project(originAirport.lng, originAirport.lat);
+    var dPt = destPanel.project(destAirport.lng, destAirport.lat);
+    if (!oPt || !dPt) return;
+
+    var x1 = oPt[0];
+    var x2 = dPt[0];
+    var y0 = arcStripHeight;
+
+    // Bow height: proportional to viewport fraction, clamped [10, arcStripHeight-5]
+    var dx = Math.abs(x2 - x1);
+    var rawBow = arcStripHeight * 2.0 * (dx / viewportW);
+    var bow = Math.max(10, Math.min(arcStripHeight - 5, rawBow));
+
+    // Overlap detection via sorted routeKey
+    var routeKey = [seg.origin_iata, seg.destination_iata].sort().join('-');
+    var isReturn = seenRoutes[routeKey];
+    seenRoutes[routeKey] = true;
+
+    // Quadratic Bezier: control point at midpoint x, top of bow
+    var cx = (x1 + x2) / 2;
+    var cy = y0 - bow;
+
+    var path = document.createElementNS(ns, 'path');
+    path.setAttribute('class', 'vpnr-arc' + (isReturn ? ' vpnr-arc-return' : ''));
+    path.setAttribute('d',
+      'M' + x1.toFixed(1) + ',' + y0.toFixed(1) +
+      ' Q' + cx.toFixed(1) + ',' + cy.toFixed(1) +
+      ' ' + x2.toFixed(1) + ',' + y0.toFixed(1)
+    );
+    svgEl.appendChild(path);
   });
 }
 
@@ -6376,6 +6457,7 @@ async function openVisualPNR(trip) {
         maxPanelWidthFraction: 0.4
       });
       renderPanels(mapSvg, panels, countriesData, { padding: 0.08 });
+      renderArcs(mapSvg, panels, w, panels[0] ? panels[0].arcStripHeight : 50, trip.segments || []);
       var landData = await loadWorldMap();
       if (landData) {
         renderGlobeInset(mapSvg, w, panels, landData, countriesData);
