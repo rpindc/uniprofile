@@ -1051,6 +1051,76 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   text-anchor: middle;
   pointer-events: none;
 }
+.vpnr-calendar {
+  padding: 16px 32px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  font-family: 'JetBrains Mono', monospace;
+}
+.vpnr-cal-stop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 60px;
+  padding: 0 4px;
+}
+.vpnr-cal-iata {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.05em;
+}
+.vpnr-cal-date {
+  font-size: 10px;
+  color: var(--textDim);
+  margin-top: 4px;
+}
+.vpnr-cal-time {
+  font-size: 11px;
+  color: var(--text);
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+.vpnr-cal-direction {
+  font-size: 10px;
+  color: var(--textDim);
+  margin-top: 2px;
+  opacity: 0.7;
+}
+.vpnr-cal-connector {
+  flex: 1 1 auto;
+  align-self: center;
+  height: 1px;
+  background: var(--border);
+  min-width: 20px;
+  position: relative;
+  top: -8px;
+}
+.vpnr-cal-gap {
+  flex: 2 1 auto;
+  align-self: center;
+  height: 1px;
+  border-top: 1px dashed var(--border);
+  min-width: 60px;
+  position: relative;
+  top: -8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.vpnr-cal-gap-text {
+  position: absolute;
+  background: var(--surface);
+  padding: 0 8px;
+  font-size: 10px;
+  color: var(--textDim);
+  font-style: italic;
+  white-space: nowrap;
+}
 .vpnr-timeline {
   padding: 24px 32px;
   overflow-y: auto;
@@ -6219,6 +6289,120 @@ async function getTripAirports(trip) {
   return results.filter(function(a) { return a !== null; });
 }
 
+function buildCalendarStops(trip, airports) {
+  if (!trip || !trip.segments) return [];
+
+  var airportMap = {};
+  (airports || []).forEach(function(a) {
+    if (a.iata) airportMap[a.iata] = a;
+  });
+
+  function localDate(utcStr, iata) {
+    if (!utcStr) return '';
+    var tz = (airportMap[iata] && airportMap[iata].timezone) ? airportMap[iata].timezone : 'UTC';
+    try {
+      return new Intl.DateTimeFormat('en-US', {
+        timeZone: tz, month: 'short', day: 'numeric'
+      }).format(new Date(utcStr));
+    } catch(e) { return utcStr.slice(0, 10); }
+  }
+
+  function localTime(utcStr, iata) {
+    if (!utcStr) return '';
+    var tz = (airportMap[iata] && airportMap[iata].timezone) ? airportMap[iata].timezone : 'UTC';
+    try {
+      return new Intl.DateTimeFormat('en-US', {
+        timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false
+      }).format(new Date(utcStr));
+    } catch(e) { return utcStr.slice(11, 16); }
+  }
+
+  var segs = trip.segments.filter(function(s) {
+    return s.carrier && s.flight_number;
+  }).sort(function(a, b) {
+    return (a.segment_order || 0) - (b.segment_order || 0);
+  });
+
+  if (segs.length === 0) return [];
+
+  var items = [];
+
+  for (var i = 0; i < segs.length; i++) {
+    var seg = segs[i];
+
+    if (i > 0) {
+      var prev = segs[i - 1];
+      var sameAirport = prev.destination_iata === seg.origin_iata;
+      var prevArr = prev.arrival_datetime ? new Date(prev.arrival_datetime) : null;
+      var currDep = seg.departure_datetime ? new Date(seg.departure_datetime) : null;
+      var diffHours = (prevArr && currDep) ? (currDep - prevArr) / 3600000 : null;
+
+      if (!sameAirport) {
+        var days = diffHours !== null ? Math.round(diffHours / 24) : null;
+        var label = (days !== null ? days + ' day' + (days !== 1 ? 's' : '') + ' · ' : '') + 'self-arranged';
+        items.push({ type: 'gap', days: days, label: label });
+      } else if (diffHours !== null && diffHours >= 24) {
+        var layDays = Math.round(diffHours / 24);
+        items.push({ type: 'gap', days: layDays, label: layDays + ' day' + (layDays !== 1 ? 's' : '') + ' layover' });
+      }
+    }
+
+    items.push({
+      type: 'stop', iata: seg.origin_iata,
+      dateLocal: localDate(seg.departure_datetime, seg.origin_iata),
+      timeLocal: localTime(seg.departure_datetime, seg.origin_iata),
+      direction: 'dep'
+    });
+    items.push({ type: 'flight' });
+    items.push({
+      type: 'stop', iata: seg.destination_iata,
+      dateLocal: localDate(seg.arrival_datetime, seg.destination_iata),
+      timeLocal: localTime(seg.arrival_datetime, seg.destination_iata),
+      direction: 'arr'
+    });
+  }
+
+  return items;
+}
+
+function renderCalendar(containerEl, items) {
+  containerEl.innerHTML = '';
+  items.forEach(function(item) {
+    var el;
+    if (item.type === 'stop') {
+      el = document.createElement('div');
+      el.className = 'vpnr-cal-stop';
+      var iata = document.createElement('div');
+      iata.className = 'vpnr-cal-iata';
+      iata.textContent = item.iata || '';
+      var date = document.createElement('div');
+      date.className = 'vpnr-cal-date';
+      date.textContent = item.dateLocal || '';
+      var time = document.createElement('div');
+      time.className = 'vpnr-cal-time';
+      time.textContent = item.timeLocal || '';
+      var dir = document.createElement('div');
+      dir.className = 'vpnr-cal-direction';
+      dir.textContent = item.direction === 'dep' ? '↑' : '↓';
+      el.appendChild(iata);
+      el.appendChild(date);
+      el.appendChild(time);
+      el.appendChild(dir);
+    } else if (item.type === 'flight') {
+      el = document.createElement('div');
+      el.className = 'vpnr-cal-connector';
+    } else if (item.type === 'gap') {
+      el = document.createElement('div');
+      el.className = 'vpnr-cal-gap';
+      var txt = document.createElement('div');
+      txt.className = 'vpnr-cal-gap-text';
+      txt.textContent = item.label || '';
+      el.appendChild(txt);
+    }
+    if (el) containerEl.appendChild(el);
+  });
+}
+
 /* ── Visual PNR helpers ────────────────────────────────── */
 async function formatLocalTime(utcIso, iata) {
   if (!utcIso) return '';
@@ -6437,6 +6621,7 @@ async function openVisualPNR(trip) {
       '<div class="vpnr-map-area" id="vpnr-map">' +
         '<svg viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet"></svg>' +
       '</div>' +
+      '<div class="vpnr-calendar" id="vpnr-calendar"></div>' +
       '<div class="vpnr-timeline">' + timelineHtml + '</div>' +
     '</div>';
 
@@ -6479,6 +6664,11 @@ async function openVisualPNR(trip) {
       if (landData) {
         renderGlobeInset(mapSvg, w, panels, landData, countriesData);
       }
+    }
+    var calendarEl = document.querySelector('#vpnr-calendar');
+    if (calendarEl && tripAirports) {
+      var calendarItems = buildCalendarStops(trip, tripAirports);
+      renderCalendar(calendarEl, calendarItems);
     }
   }
 
