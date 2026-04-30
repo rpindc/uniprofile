@@ -119,6 +119,44 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .stds-item-link:hover{background:rgba(166,124,82,0.08);}
 @media(max-width:680px){.land-inversion{grid-template-columns:repeat(2,1fr);}.land-footer-dual{grid-template-columns:1fr;}.stds-item{flex-direction:column;}}
 
+/* ── Preference cards ─────────────────────────────────────── */
+.pref-card{padding:0;overflow:hidden;}
+.pc-view{padding:24px 28px;}
+/* Empty state */
+.pc-empty{display:flex;flex-direction:column;gap:12px;}
+.pc-empty-title{font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:var(--textHint);font-weight:600;font-family:'DM Sans',sans-serif;}
+.pc-empty-desc{font-size:13px;color:var(--textDim);line-height:1.6;}
+.pc-cta{display:inline-block;padding:9px 18px;background:transparent;border:1px solid rgba(166,124,82,0.45);color:var(--gold);border-radius:var(--radius-sm);cursor:pointer;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;transition:background 0.15s,border-color 0.15s;align-self:flex-start;}
+.pc-cta:hover{background:var(--goldGlow);border-color:var(--goldDim);}
+/* Saved state header */
+.pc-saved-hd{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:16px;}
+.pc-saved-title{font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:var(--textHint);font-weight:600;font-family:'DM Sans',sans-serif;}
+.pc-saved-right{display:flex;align-items:center;gap:10px;}
+.pc-counter{font-size:10px;color:var(--textDim);font-family:'JetBrains Mono',monospace;white-space:nowrap;}
+.pc-counter.complete{color:var(--tealLt);}
+.pc-edit-btn{padding:5px 14px;background:transparent;border:1px solid var(--border2);color:var(--textMid);border-radius:var(--radius-sm);cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;transition:color 0.15s,border-color 0.15s;}
+.pc-edit-btn:hover{color:var(--text);border-color:var(--border3);}
+/* Saved field rows */
+.pc-saved-fields{display:flex;flex-direction:column;gap:7px;margin-bottom:4px;}
+.pc-field-row{display:flex;gap:14px;font-size:13px;line-height:1.5;}
+.pc-fl{color:var(--textDim);min-width:150px;flex-shrink:0;font-size:12px;}
+.pc-fv{color:var(--text);}
+/* Add more details */
+.pc-more-btn{background:none;border:none;font-size:12px;color:var(--gold);cursor:pointer;padding:10px 0 0;text-align:left;font-family:'DM Sans',sans-serif;display:block;}
+.pc-more-btn:hover{color:var(--goldLt);}
+.pc-more-list{display:flex;flex-wrap:wrap;gap:8px;padding-top:10px;}
+.pc-more-label{font-size:12px;color:var(--textDim);padding:4px 10px;border:1px dashed var(--border2);border-radius:var(--radius-sm);cursor:pointer;transition:all 0.15s;background:none;}
+.pc-more-label:hover{border-color:var(--gold);color:var(--gold);}
+/* Editing state */
+.pc-editing-title{font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:var(--textHint);font-weight:600;font-family:'DM Sans',sans-serif;margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.pc-editing-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.pc-edit-actions{display:flex;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
+.pc-cancel-btn{padding:8px 20px;background:transparent;border:1px solid var(--border2);color:var(--textMid);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;transition:color 0.15s,border-color 0.15s;}
+.pc-cancel-btn:hover{color:var(--text);border-color:var(--border3);}
+.pc-save-btn{padding:8px 20px;background:var(--gold);color:var(--ink);border:none;border-radius:var(--radius-sm);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background 0.15s;}
+.pc-save-btn:hover{background:var(--goldLt);}
+.pc-save-btn:disabled{opacity:0.5;cursor:not-allowed;}
+
 #screen-loading{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:20px;background:var(--ink);z-index:100;}
 .loading-ring{width:48px;height:48px;border:1.5px solid var(--border2);border-top-color:var(--gold);border-radius:50%;animation:spin 0.9s linear infinite;}
 .loading-label{font-size:12px;color:var(--textMid);letter-spacing:1px;text-transform:uppercase;}
@@ -1469,242 +1507,342 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 
         <!-- ── Tab: Essentials ─────────────────────────────── -->
         <div id="pref-tab-essentials" class="pref-tab-body">
-          <div class="form-section">
-            <div class="form-section-title">IDENTITY</div>
-            <div class="form-grid">
-              <div class="form-field"><label class="field-label">Full legal name (as on passport)</label><input class="field-input" id="f-legal_name" type="text" placeholder="As on passport"></div>
-              <div class="form-field"><label class="field-label">Preferred name</label><input class="field-input" id="f-preferred_name" type="text" placeholder="What you go by"></div>
-              <div class="form-field"><label class="field-label">Date of birth</label><input class="field-input" id="f-date_of_birth" type="date"></div>
-              <div class="form-field"><label class="field-label">Gender</label><select class="field-select" id="f-gender"><option value="MALE">Male</option><option value="FEMALE">Female</option><option value="X">X</option><option value="PREFER_NOT">Prefer not to say</option></select></div>
-              <div class="form-field"><label class="field-label">Nationality (primary)</label><input class="field-input" id="f-nationality_primary" type="text" placeholder="e.g. Philippine"></div>
-              <div class="form-field"><label class="field-label">Secondary nationality</label><input class="field-input" id="f-nationality_secondary" type="text" placeholder="If dual citizen"></div>
-            </div>
-          </div>
-          <div class="form-section">
-            <div class="form-section-title">PRIMARY PASSPORT</div>
-            <div class="form-grid">
-              <div class="form-field"><label class="field-label">Passport number</label><input class="field-input" id="f-passport_primary_number" type="text" placeholder="e.g. P12345678"></div>
-              <div class="form-field"><label class="field-label">Passport expiry</label><input class="field-input" id="f-passport_primary_expiry" type="date"></div>
-              <div class="form-field"><label class="field-label">Issuing country</label><input class="field-input" id="f-passport_primary_country" type="text" placeholder="e.g. Philippines"></div>
-            </div>
-          </div>
-          <div class="form-section">
-            <div class="form-section-title">SECONDARY PASSPORT <span style="font-size:9px;color:var(--textHint);font-weight:400;letter-spacing:0;text-transform:none;margin-left:6px">If dual citizen</span></div>
-            <div class="form-grid">
-              <div class="form-field"><label class="field-label">Passport number</label><input class="field-input" id="f-passport_secondary_number" type="text" placeholder="e.g. A98765432"></div>
-              <div class="form-field"><label class="field-label">Passport expiry</label><input class="field-input" id="f-passport_secondary_expiry" type="date"></div>
-              <div class="form-field"><label class="field-label">Issuing country</label><input class="field-input" id="f-passport_secondary_country" type="text" placeholder="e.g. United States"></div>
-            </div>
-          </div>
-          <div class="form-section">
-            <div class="form-section-title">TRUSTED TRAVELER</div>
-            <div class="form-grid">
-              <div class="form-field"><label class="field-label">TSA PreCheck KTN</label><input class="field-input" id="f-known_traveler_number" type="text" placeholder="e.g. 123456789"></div>
-              <div class="form-field"><label class="field-label">Global Entry / NEXUS / SENTRI</label><input class="field-input" id="f-global_entry_id" type="text" placeholder="e.g. 987654321"></div>
-              <div class="form-field"><label class="field-label">CLEAR ID</label><input class="field-input" id="f-clear_id" type="text" placeholder="CLEAR membership ID"></div>
-              <div class="form-field"><label class="field-label">Redress number</label><input class="field-input" id="f-redress_number" type="text" placeholder="DHS TRIP redress number"></div>
-            </div>
-          </div>
-          <div class="form-section">
-            <div class="form-section-title">EMERGENCY CONTACT</div>
-            <div class="form-grid">
-              <div class="form-field"><label class="field-label">Contact name</label><input class="field-input" id="f-emergency_name" type="text" placeholder="Full name"></div>
-              <div class="form-field"><label class="field-label">Relationship</label><input class="field-input" id="f-emergency_relationship" type="text" placeholder="e.g. Spouse, Parent"></div>
-              <div class="form-field"><label class="field-label">Phone</label><input class="field-input" id="f-emergency_phone" type="tel" placeholder="+1 571 555 0192"></div>
-              <div class="form-field"><label class="field-label">Email</label><input class="field-input" id="f-emergency_email" type="email" placeholder="contact@example.com"></div>
-            </div>
-          </div>
-          <div class="form-section">
-            <div class="form-section-title">DIETARY &amp; MEALS</div>
-            <div class="form-grid">
-              <div class="form-field"><label class="field-label">Standard meal preference</label><select class="field-select" id="f-primary_meal_code"><option value="AVML">AVML — Asian Vegetarian</option><option value="BBML">BBML — Baby Meal</option><option value="DBML">DBML — Diabetic</option><option value="FPML">FPML — Fruit Platter</option><option value="GFML">GFML — Gluten Free</option><option value="HNML">HNML — Hindu Non-Veg</option><option value="KSML">KSML — Kosher</option><option value="LCML">LCML — Low Calorie</option><option value="LFML">LFML — Low Fat</option><option value="LSML">LSML — Low Sodium</option><option value="MOML">MOML — Muslim Meal</option><option value="SFML">SFML — Seafood</option><option value="VGML">VGML — Vegan</option><option value="VLML">VLML — Vegetarian</option></select></div>
-              <div class="form-field"><label class="field-label">Beverage preference</label><select class="field-select" id="f-beverage_pref"><option value="NON_ALC">Non-alcoholic only</option><option value="ALCOHOL_OK">Alcohol permitted</option><option value="NO_PREF">No preference</option></select></div>
-              <div class="form-field"><label class="field-label">Religious observance affecting meals/timing</label><input class="field-input" id="f-religious_observance" type="text" placeholder="Sabbath, Ramadan, prayer times, etc."></div>
-              <div class="form-field"><label class="field-label">Other dietary notes</label><textarea class="field-input" id="f-dietary_notes" placeholder="Any other dietary requirements for airlines" rows="3" style="resize:vertical"></textarea></div>
-            </div>
-            <div style="margin-top:18px">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                <span style="font-size:11px;font-weight:600;color:var(--textDim);font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:1px">Allergies</span>
-                <button type="button" class="save-btn" style="font-size:11px;padding:5px 12px" onclick="addAllergyRow()">+ Add allergy</button>
+          <div class="form-section pref-card" id="card-identity">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">IDENTITY</div><p class="pc-empty-desc">Legal name, date of birth, gender, and nationality for travel documents</p><button class="pc-cta" onclick="pcEdit('identity')">Set up Identity →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">IDENTITY</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('identity')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('identity')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">IDENTITY</div>
+              <div class="form-grid">
+                <div class="form-field"><label class="field-label">Full legal name (as on passport)</label><input class="field-input" id="f-legal_name" type="text" placeholder="As on passport"></div>
+                <div class="form-field"><label class="field-label">Preferred name</label><input class="field-input" id="f-preferred_name" type="text" placeholder="What you go by"></div>
+                <div class="form-field"><label class="field-label">Date of birth</label><input class="field-input" id="f-date_of_birth" type="date"></div>
+                <div class="form-field"><label class="field-label">Gender</label><select class="field-select" id="f-gender"><option value="MALE">Male</option><option value="FEMALE">Female</option><option value="X">X</option><option value="PREFER_NOT">Prefer not to say</option></select></div>
+                <div class="form-field"><label class="field-label">Nationality (primary)</label><input class="field-input" id="f-nationality_primary" type="text" placeholder="e.g. Philippine"></div>
+                <div class="form-field"><label class="field-label">Secondary nationality</label><input class="field-input" id="f-nationality_secondary" type="text" placeholder="If dual citizen"></div>
               </div>
-              <div style="display:grid;grid-template-columns:1fr 140px 120px 28px;gap:10px;margin-bottom:6px;padding:0 2px">
-                <span style="font-size:10px;color:var(--textHint);font-family:'DM Sans',sans-serif">Allergen</span>
-                <span style="font-size:10px;color:var(--textHint);font-family:'DM Sans',sans-serif">Severity</span>
-                <span style="font-size:10px;color:var(--textHint);font-family:'DM Sans',sans-serif">X-contamination</span>
-                <span></span>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('identity')">Cancel</button><button class="pc-save-btn" onclick="pcSave('identity')">Save</button></div>
+            </div>
+          </div>
+          <div class="form-section pref-card" id="card-passport_primary">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">PRIMARY PASSPORT</div><p class="pc-empty-desc">Your main travel document — number, expiry, and issuing country</p><button class="pc-cta" onclick="pcEdit('passport_primary')">Set up Primary Passport →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">PRIMARY PASSPORT</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('passport_primary')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('passport_primary')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">PRIMARY PASSPORT</div>
+              <div class="form-grid">
+                <div class="form-field"><label class="field-label">Passport number</label><input class="field-input" id="f-passport_primary_number" type="text" placeholder="e.g. P12345678"></div>
+                <div class="form-field"><label class="field-label">Passport expiry</label><input class="field-input" id="f-passport_primary_expiry" type="date"></div>
+                <div class="form-field"><label class="field-label">Issuing country</label><input class="field-input" id="f-passport_primary_country" type="text" placeholder="e.g. Philippines"></div>
               </div>
-              <div id="allergy-list">
-                <div class="allergy-row" id="allergy-row-0" style="display:grid;grid-template-columns:1fr 140px 120px 28px;gap:10px;align-items:center;margin-bottom:8px">
-                  <input class="field-input" id="f-allergy_name_0" type="text" placeholder="e.g. peanuts">
-                  <select class="field-select" id="f-allergy_severity_0"><option value="MILD">Mild</option><option value="MODERATE">Moderate</option><option value="SEVERE">Severe</option><option value="ANAPHYLACTIC">Anaphylactic</option></select>
-                  <label class="mini-toggle" style="justify-self:start;margin-left:8px"><input type="checkbox" id="f-allergy_xcontam_0"><div class="mini-track"><div class="mini-knob"></div></div></label>
-                  <button type="button" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:18px;line-height:1;padding:0" onclick="removeAllergyRow(0)" title="Remove">×</button>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('passport_primary')">Cancel</button><button class="pc-save-btn" onclick="pcSave('passport_primary')">Save</button></div>
+            </div>
+          </div>
+          <div class="form-section pref-card" id="card-passport_secondary">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">SECONDARY PASSPORT</div><p class="pc-empty-desc">Second passport if you hold dual citizenship</p><button class="pc-cta" onclick="pcEdit('passport_secondary')">Set up Secondary Passport →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">SECONDARY PASSPORT</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('passport_secondary')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('passport_secondary')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">SECONDARY PASSPORT <span style="font-size:9px;color:var(--textHint);font-weight:400;letter-spacing:0;text-transform:none;margin-left:6px">If dual citizen</span></div>
+              <div class="form-grid">
+                <div class="form-field"><label class="field-label">Passport number</label><input class="field-input" id="f-passport_secondary_number" type="text" placeholder="e.g. A98765432"></div>
+                <div class="form-field"><label class="field-label">Passport expiry</label><input class="field-input" id="f-passport_secondary_expiry" type="date"></div>
+                <div class="form-field"><label class="field-label">Issuing country</label><input class="field-input" id="f-passport_secondary_country" type="text" placeholder="e.g. United States"></div>
+              </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('passport_secondary')">Cancel</button><button class="pc-save-btn" onclick="pcSave('passport_secondary')">Save</button></div>
+            </div>
+          </div>
+          <div class="form-section pref-card" id="card-trusted_traveler">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">TRUSTED TRAVELER</div><p class="pc-empty-desc">TSA PreCheck, Global Entry, CLEAR, and redress numbers</p><button class="pc-cta" onclick="pcEdit('trusted_traveler')">Set up Trusted Traveler →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">TRUSTED TRAVELER</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('trusted_traveler')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('trusted_traveler')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">TRUSTED TRAVELER</div>
+              <div class="form-grid">
+                <div class="form-field"><label class="field-label">TSA PreCheck KTN</label><input class="field-input" id="f-known_traveler_number" type="text" placeholder="e.g. 123456789"></div>
+                <div class="form-field"><label class="field-label">Global Entry / NEXUS / SENTRI</label><input class="field-input" id="f-global_entry_id" type="text" placeholder="e.g. 987654321"></div>
+                <div class="form-field"><label class="field-label">CLEAR ID</label><input class="field-input" id="f-clear_id" type="text" placeholder="CLEAR membership ID"></div>
+                <div class="form-field"><label class="field-label">Redress number</label><input class="field-input" id="f-redress_number" type="text" placeholder="DHS TRIP redress number"></div>
+              </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('trusted_traveler')">Cancel</button><button class="pc-save-btn" onclick="pcSave('trusted_traveler')">Save</button></div>
+            </div>
+          </div>
+          <div class="form-section pref-card" id="card-emergency">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">EMERGENCY CONTACT</div><p class="pc-empty-desc">Who to reach if something goes wrong on your trip</p><button class="pc-cta" onclick="pcEdit('emergency')">Set up Emergency Contact →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">EMERGENCY CONTACT</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('emergency')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('emergency')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">EMERGENCY CONTACT</div>
+              <div class="form-grid">
+                <div class="form-field"><label class="field-label">Contact name</label><input class="field-input" id="f-emergency_name" type="text" placeholder="Full name"></div>
+                <div class="form-field"><label class="field-label">Relationship</label><input class="field-input" id="f-emergency_relationship" type="text" placeholder="e.g. Spouse, Parent"></div>
+                <div class="form-field"><label class="field-label">Phone</label><input class="field-input" id="f-emergency_phone" type="tel" placeholder="+1 571 555 0192"></div>
+                <div class="form-field"><label class="field-label">Email</label><input class="field-input" id="f-emergency_email" type="email" placeholder="contact@example.com"></div>
+              </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('emergency')">Cancel</button><button class="pc-save-btn" onclick="pcSave('emergency')">Save</button></div>
+            </div>
+          </div>
+          <div class="form-section pref-card" id="card-dietary">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">DIETARY &amp; MEALS</div><p class="pc-empty-desc">Meal codes, allergies, and dietary requirements for airlines</p><button class="pc-cta" onclick="pcEdit('dietary')">Set up Dietary &amp; Meals →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">DIETARY &amp; MEALS</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('dietary')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('dietary')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">DIETARY &amp; MEALS</div>
+              <div class="form-grid">
+                <div class="form-field"><label class="field-label">Standard meal preference</label><select class="field-select" id="f-primary_meal_code"><option value="AVML">AVML — Asian Vegetarian</option><option value="BBML">BBML — Baby Meal</option><option value="DBML">DBML — Diabetic</option><option value="FPML">FPML — Fruit Platter</option><option value="GFML">GFML — Gluten Free</option><option value="HNML">HNML — Hindu Non-Veg</option><option value="KSML">KSML — Kosher</option><option value="LCML">LCML — Low Calorie</option><option value="LFML">LFML — Low Fat</option><option value="LSML">LSML — Low Sodium</option><option value="MOML">MOML — Muslim Meal</option><option value="SFML">SFML — Seafood</option><option value="VGML">VGML — Vegan</option><option value="VLML">VLML — Vegetarian</option></select></div>
+                <div class="form-field"><label class="field-label">Beverage preference</label><select class="field-select" id="f-beverage_pref"><option value="NON_ALC">Non-alcoholic only</option><option value="ALCOHOL_OK">Alcohol permitted</option><option value="NO_PREF">No preference</option></select></div>
+                <div class="form-field"><label class="field-label">Religious observance affecting meals/timing</label><input class="field-input" id="f-religious_observance" type="text" placeholder="Sabbath, Ramadan, prayer times, etc."></div>
+                <div class="form-field"><label class="field-label">Other dietary notes</label><textarea class="field-input" id="f-dietary_notes" placeholder="Any other dietary requirements for airlines" rows="3" style="resize:vertical"></textarea></div>
+              </div>
+              <div style="margin-top:18px">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                  <span style="font-size:11px;font-weight:600;color:var(--textDim);font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:1px">Allergies</span>
+                  <button type="button" class="save-btn" style="font-size:11px;padding:5px 12px" onclick="addAllergyRow()">+ Add allergy</button>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 140px 120px 28px;gap:10px;margin-bottom:6px;padding:0 2px">
+                  <span style="font-size:10px;color:var(--textHint);font-family:'DM Sans',sans-serif">Allergen</span>
+                  <span style="font-size:10px;color:var(--textHint);font-family:'DM Sans',sans-serif">Severity</span>
+                  <span style="font-size:10px;color:var(--textHint);font-family:'DM Sans',sans-serif">X-contamination</span>
+                  <span></span>
+                </div>
+                <div id="allergy-list">
+                  <div class="allergy-row" id="allergy-row-0" style="display:grid;grid-template-columns:1fr 140px 120px 28px;gap:10px;align-items:center;margin-bottom:8px">
+                    <input class="field-input" id="f-allergy_name_0" type="text" placeholder="e.g. peanuts">
+                    <select class="field-select" id="f-allergy_severity_0"><option value="MILD">Mild</option><option value="MODERATE">Moderate</option><option value="SEVERE">Severe</option><option value="ANAPHYLACTIC">Anaphylactic</option></select>
+                    <label class="mini-toggle" style="justify-self:start;margin-left:8px"><input type="checkbox" id="f-allergy_xcontam_0"><div class="mini-track"><div class="mini-knob"></div></div></label>
+                    <button type="button" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:18px;line-height:1;padding:0" onclick="removeAllergyRow(0)" title="Remove">×</button>
+                  </div>
                 </div>
               </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('dietary')">Cancel</button><button class="pc-save-btn" onclick="pcSave('dietary')">Save</button></div>
             </div>
           </div>
-          <div class="form-section">
-            <div class="form-section-title">MOBILITY &amp; ACCESSIBILITY</div>
-            <div class="form-grid">
-              <div class="form-field"><label class="field-label">Wheelchair service</label><select class="field-select" id="f-wheelchair_service"><option value="">None</option><option value="WCHR">WCHR — Ramp assistance, independent at gate</option><option value="WCHS">WCHS — Steps assistance, help to seat</option><option value="WCHC">WCHC — Cabin assistance, cannot self-transfer</option></select></div>
-              <div class="form-field"><label class="field-label">Visual impairment</label><select class="field-select" id="f-visual_impairment"><option value="">None</option><option value="LOW_VISION">Low vision</option><option value="BLIND">Blind</option><option value="OTHER">Other (specify in notes)</option></select></div>
-              <div class="form-field"><label class="field-label">Hearing impairment</label><select class="field-select" id="f-hearing_impairment"><option value="">None</option><option value="HARD_OF_HEARING">Hard of hearing</option><option value="DEAF">Deaf</option><option value="OTHER">Other (specify in notes)</option></select></div>
-              <div class="form-field"><label class="field-label">Service animal</label><select class="field-select" id="f-service_animal"><option value="">None</option><option value="SERVICE_DOG">Service dog</option><option value="ESA">Emotional support animal</option><option value="OTHER">Other</option></select></div>
-              <div class="form-field" style="grid-column:span 2"><label class="field-label">Other mobility/accessibility details</label><textarea class="field-input" id="f-mobility_notes" placeholder="Cognitive, sensory, mobility device specifics, etc." rows="3" style="resize:vertical"></textarea></div>
+          <div class="form-section pref-card" id="card-mobility">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">MOBILITY &amp; ACCESSIBILITY</div><p class="pc-empty-desc">Wheelchair service, sensory impairments, and boarding needs</p><button class="pc-cta" onclick="pcEdit('mobility')">Set up Mobility →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">MOBILITY &amp; ACCESSIBILITY</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('mobility')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('mobility')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">MOBILITY &amp; ACCESSIBILITY</div>
+              <div class="form-grid">
+                <div class="form-field"><label class="field-label">Wheelchair service</label><select class="field-select" id="f-wheelchair_service"><option value="">None</option><option value="WCHR">WCHR — Ramp assistance, independent at gate</option><option value="WCHS">WCHS — Steps assistance, help to seat</option><option value="WCHC">WCHC — Cabin assistance, cannot self-transfer</option></select></div>
+                <div class="form-field"><label class="field-label">Visual impairment</label><select class="field-select" id="f-visual_impairment"><option value="">None</option><option value="LOW_VISION">Low vision</option><option value="BLIND">Blind</option><option value="OTHER">Other (specify in notes)</option></select></div>
+                <div class="form-field"><label class="field-label">Hearing impairment</label><select class="field-select" id="f-hearing_impairment"><option value="">None</option><option value="HARD_OF_HEARING">Hard of hearing</option><option value="DEAF">Deaf</option><option value="OTHER">Other (specify in notes)</option></select></div>
+                <div class="form-field"><label class="field-label">Service animal</label><select class="field-select" id="f-service_animal"><option value="">None</option><option value="SERVICE_DOG">Service dog</option><option value="ESA">Emotional support animal</option><option value="OTHER">Other</option></select></div>
+                <div class="form-field" style="grid-column:span 2"><label class="field-label">Other mobility/accessibility details</label><textarea class="field-input" id="f-mobility_notes" placeholder="Cognitive, sensory, mobility device specifics, etc." rows="3" style="resize:vertical"></textarea></div>
+              </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('mobility')">Cancel</button><button class="pc-save-btn" onclick="pcSave('mobility')">Save</button></div>
             </div>
           </div>
-          <div class="form-section">
-            <div class="form-section-title">MEDICAL &amp; SPECIAL ASSISTANCE</div>
-            <div class="form-grid">
-              <div class="form-field" style="grid-column:span 2"><label class="field-label">Medical conditions to flag for travel</label><textarea class="field-input" id="f-medical_conditions" placeholder="Cardiac, diabetes, anxiety, recent surgery, etc." rows="3" style="resize:vertical"></textarea></div>
-              <div class="toggle-row"><div><div class="toggle-row-label">Medication requires refrigeration or power source</div></div><label class="mini-toggle"><input type="checkbox" id="f-medication_special"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-              <div class="toggle-row"><div><div class="toggle-row-label">Oxygen required in flight</div></div><label class="mini-toggle"><input type="checkbox" id="f-oxygen_required"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-              <div class="toggle-row"><div><div class="toggle-row-label">Stretcher required (medical clearance needed)</div></div><label class="mini-toggle"><input type="checkbox" id="f-stretcher_required"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-              <div class="form-field"><label class="field-label">Pregnancy week (if applicable)</label><input class="field-input" id="f-pregnancy_week" type="number" min="0" max="42" placeholder="0 if not applicable"></div>
-              <div class="toggle-row"><div><div class="toggle-row-label">DVT risk / long-flight mobility limitations</div></div><label class="mini-toggle"><input type="checkbox" id="f-dvt_risk"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+          <div class="form-section pref-card" id="card-medical">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">MEDICAL &amp; SPECIAL ASSISTANCE</div><p class="pc-empty-desc">Medical conditions, medication, and in-flight special assistance</p><button class="pc-cta" onclick="pcEdit('medical')">Set up Medical →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">MEDICAL &amp; SPECIAL ASSISTANCE</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('medical')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('medical')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">MEDICAL &amp; SPECIAL ASSISTANCE</div>
+              <div class="form-grid">
+                <div class="form-field" style="grid-column:span 2"><label class="field-label">Medical conditions to flag for travel</label><textarea class="field-input" id="f-medical_conditions" placeholder="Cardiac, diabetes, anxiety, recent surgery, etc." rows="3" style="resize:vertical"></textarea></div>
+                <div class="toggle-row"><div><div class="toggle-row-label">Medication requires refrigeration or power source</div></div><label class="mini-toggle"><input type="checkbox" id="f-medication_special"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+                <div class="toggle-row"><div><div class="toggle-row-label">Oxygen required in flight</div></div><label class="mini-toggle"><input type="checkbox" id="f-oxygen_required"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+                <div class="toggle-row"><div><div class="toggle-row-label">Stretcher required (medical clearance needed)</div></div><label class="mini-toggle"><input type="checkbox" id="f-stretcher_required"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+                <div class="form-field"><label class="field-label">Pregnancy week (if applicable)</label><input class="field-input" id="f-pregnancy_week" type="number" min="0" max="42" placeholder="0 if not applicable"></div>
+                <div class="toggle-row"><div><div class="toggle-row-label">DVT risk / long-flight mobility limitations</div></div><label class="mini-toggle"><input type="checkbox" id="f-dvt_risk"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+              </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('medical')">Cancel</button><button class="pc-save-btn" onclick="pcSave('medical')">Save</button></div>
             </div>
           </div>
-          <div class="form-section">
-            <div class="form-section-title">TRAVELING WITH</div>
-            <div class="form-grid">
-              <div style="grid-column:span 2;font-size:11px;font-weight:600;color:var(--textDim);font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Children</div>
-              <div class="form-field"><label class="field-label">Number of children traveling</label><input class="field-input" id="f-children_count" type="number" min="0" max="10" placeholder="0"></div>
-              <div class="form-field"><label class="field-label">Children's ages</label><input class="field-input" id="f-children_ages" type="text" placeholder="Comma-separated, e.g. 3, 7, 12"></div>
-              <div class="toggle-row"><div><div class="toggle-row-label">Infant under 2 (lap or own seat)</div></div><label class="mini-toggle"><input type="checkbox" id="f-infant_under_2"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-              <div class="toggle-row"><div><div class="toggle-row-label">Unaccompanied minor service required</div></div><label class="mini-toggle"><input type="checkbox" id="f-unaccompanied_minor"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-              <div style="grid-column:span 2;font-size:11px;font-weight:600;color:var(--textDim);font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:1px;margin-top:10px;margin-bottom:2px">Pet</div>
-              <div class="toggle-row"><div><div class="toggle-row-label">Traveling with a pet</div></div><label class="mini-toggle"><input type="checkbox" id="f-pet_traveling"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-              <div class="form-field"><label class="field-label">Pet type</label><select class="field-select" id="f-pet_type"><option value="">None</option><option value="DOG">Dog</option><option value="CAT">Cat</option><option value="BIRD">Bird</option><option value="OTHER">Other</option></select></div>
-              <div class="form-field"><label class="field-label">Pet location</label><select class="field-select" id="f-pet_location"><option value="">None</option><option value="CABIN">In cabin</option><option value="HOLD_CHECKED">In hold checked baggage</option><option value="HOLD_CARGO">In hold cargo</option></select></div>
-              <div class="form-field"><label class="field-label">Breed</label><input class="field-input" id="f-pet_breed" type="text" placeholder="e.g. Labrador"></div>
-              <div class="form-field"><label class="field-label">Weight (kg)</label><input class="field-input" id="f-pet_weight_kg" type="number" min="0" placeholder="e.g. 8"></div>
-              <div class="form-field"><label class="field-label">Carrier dimensions (L x W x H cm)</label><input class="field-input" id="f-pet_carrier_dimensions" type="text" placeholder="e.g. 48 x 32 x 28"></div>
-              <div style="grid-column:span 2;font-size:11px;font-weight:600;color:var(--textDim);font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:1px;margin-top:10px;margin-bottom:2px">Special Equipment</div>
-              <div class="toggle-row"><div><div class="toggle-row-label">Skis</div></div><label class="mini-toggle"><input type="checkbox" id="f-equip_skis"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-              <div class="toggle-row"><div><div class="toggle-row-label">Snowboard</div></div><label class="mini-toggle"><input type="checkbox" id="f-equip_snowboard"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-              <div class="toggle-row"><div><div class="toggle-row-label">Golf clubs</div></div><label class="mini-toggle"><input type="checkbox" id="f-equip_golf"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-              <div class="toggle-row"><div><div class="toggle-row-label">Surfboard</div></div><label class="mini-toggle"><input type="checkbox" id="f-equip_surfboard"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-              <div class="toggle-row"><div><div class="toggle-row-label">Bicycle</div></div><label class="mini-toggle"><input type="checkbox" id="f-equip_bicycle"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-              <div class="toggle-row"><div><div class="toggle-row-label">Musical instrument</div></div><label class="mini-toggle"><input type="checkbox" id="f-equip_musical"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-              <div class="toggle-row"><div><div class="toggle-row-label">Diving gear</div></div><label class="mini-toggle"><input type="checkbox" id="f-equip_diving"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-              <div class="toggle-row"><div><div class="toggle-row-label">Fishing rods</div></div><label class="mini-toggle"><input type="checkbox" id="f-equip_fishing"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-              <div class="toggle-row"><div><div class="toggle-row-label">Firearms (declared)</div></div><label class="mini-toggle"><input type="checkbox" id="f-equip_firearms"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-              <div class="form-field" style="grid-column:span 2"><label class="field-label">Other equipment</label><input class="field-input" id="f-equip_other" type="text" placeholder="Describe — dimensions, weight"></div>
+          <div class="form-section pref-card" id="card-traveling_with">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">TRAVELING WITH</div><p class="pc-empty-desc">Children, pets, and oversized equipment you bring on trips</p><button class="pc-cta" onclick="pcEdit('traveling_with')">Set up Traveling With →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">TRAVELING WITH</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('traveling_with')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('traveling_with')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">TRAVELING WITH</div>
+              <div class="form-grid">
+                <div style="grid-column:span 2;font-size:11px;font-weight:600;color:var(--textDim);font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Children</div>
+                <div class="form-field"><label class="field-label">Number of children traveling</label><input class="field-input" id="f-children_count" type="number" min="0" max="10" placeholder="0"></div>
+                <div class="form-field"><label class="field-label">Children's ages</label><input class="field-input" id="f-children_ages" type="text" placeholder="Comma-separated, e.g. 3, 7, 12"></div>
+                <div class="toggle-row"><div><div class="toggle-row-label">Infant under 2 (lap or own seat)</div></div><label class="mini-toggle"><input type="checkbox" id="f-infant_under_2"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+                <div class="toggle-row"><div><div class="toggle-row-label">Unaccompanied minor service required</div></div><label class="mini-toggle"><input type="checkbox" id="f-unaccompanied_minor"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+                <div style="grid-column:span 2;font-size:11px;font-weight:600;color:var(--textDim);font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:1px;margin-top:10px;margin-bottom:2px">Pet</div>
+                <div class="toggle-row"><div><div class="toggle-row-label">Traveling with a pet</div></div><label class="mini-toggle"><input type="checkbox" id="f-pet_traveling"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+                <div class="form-field"><label class="field-label">Pet type</label><select class="field-select" id="f-pet_type"><option value="">None</option><option value="DOG">Dog</option><option value="CAT">Cat</option><option value="BIRD">Bird</option><option value="OTHER">Other</option></select></div>
+                <div class="form-field"><label class="field-label">Pet location</label><select class="field-select" id="f-pet_location"><option value="">None</option><option value="CABIN">In cabin</option><option value="HOLD_CHECKED">In hold checked baggage</option><option value="HOLD_CARGO">In hold cargo</option></select></div>
+                <div class="form-field"><label class="field-label">Breed</label><input class="field-input" id="f-pet_breed" type="text" placeholder="e.g. Labrador"></div>
+                <div class="form-field"><label class="field-label">Weight (kg)</label><input class="field-input" id="f-pet_weight_kg" type="number" min="0" placeholder="e.g. 8"></div>
+                <div class="form-field"><label class="field-label">Carrier dimensions (L x W x H cm)</label><input class="field-input" id="f-pet_carrier_dimensions" type="text" placeholder="e.g. 48 x 32 x 28"></div>
+                <div style="grid-column:span 2;font-size:11px;font-weight:600;color:var(--textDim);font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:1px;margin-top:10px;margin-bottom:2px">Special Equipment</div>
+                <div class="toggle-row"><div><div class="toggle-row-label">Skis</div></div><label class="mini-toggle"><input type="checkbox" id="f-equip_skis"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+                <div class="toggle-row"><div><div class="toggle-row-label">Snowboard</div></div><label class="mini-toggle"><input type="checkbox" id="f-equip_snowboard"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+                <div class="toggle-row"><div><div class="toggle-row-label">Golf clubs</div></div><label class="mini-toggle"><input type="checkbox" id="f-equip_golf"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+                <div class="toggle-row"><div><div class="toggle-row-label">Surfboard</div></div><label class="mini-toggle"><input type="checkbox" id="f-equip_surfboard"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+                <div class="toggle-row"><div><div class="toggle-row-label">Bicycle</div></div><label class="mini-toggle"><input type="checkbox" id="f-equip_bicycle"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+                <div class="toggle-row"><div><div class="toggle-row-label">Musical instrument</div></div><label class="mini-toggle"><input type="checkbox" id="f-equip_musical"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+                <div class="toggle-row"><div><div class="toggle-row-label">Diving gear</div></div><label class="mini-toggle"><input type="checkbox" id="f-equip_diving"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+                <div class="toggle-row"><div><div class="toggle-row-label">Fishing rods</div></div><label class="mini-toggle"><input type="checkbox" id="f-equip_fishing"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+                <div class="toggle-row"><div><div class="toggle-row-label">Firearms (declared)</div></div><label class="mini-toggle"><input type="checkbox" id="f-equip_firearms"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+                <div class="form-field" style="grid-column:span 2"><label class="field-label">Other equipment</label><input class="field-input" id="f-equip_other" type="text" placeholder="Describe — dimensions, weight"></div>
+              </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('traveling_with')">Cancel</button><button class="pc-save-btn" onclick="pcSave('traveling_with')">Save</button></div>
             </div>
           </div>
         </div>
 
         <!-- ── Tab: How I Fly ─────────────────────────────── -->
         <div id="pref-tab-fly" class="pref-tab-body" style="display:none">
-          <div class="form-section">
-            <div class="form-section-title">FLIGHT CABIN &amp; POSITION</div>
-            <div class="form-grid">
-              <div class="form-field"><label class="field-label">Cabin — Domestic</label><select class="field-select" id="f-cabin_domestic"><option value="ECONOMY">Economy</option><option value="ECONOMY_PLUS">Economy Plus</option><option value="BUSINESS">Business</option><option value="FIRST">First Class</option></select></div>
-              <div class="form-field"><label class="field-label">Cabin — International</label><select class="field-select" id="f-cabin_international"><option value="ECONOMY">Economy</option><option value="PREMIUM_ECONOMY">Premium Economy</option><option value="BUSINESS">Business Class</option><option value="FIRST">First Class</option></select></div>
-              <div class="form-field"><label class="field-label">Seat Position</label><select class="field-select" id="f-seat_position"><option value="AISLE">Aisle</option><option value="WINDOW">Window</option><option value="MIDDLE">Middle</option><option value="NO_PREF">No Preference</option></select></div>
-              <div class="form-field"><label class="field-label">Row Preference</label><select class="field-select" id="f-row_preference"><option value="EXIT_ROW">Exit Row / Extra Legroom</option><option value="FRONT">Front of Cabin</option><option value="REAR">Rear of Cabin</option><option value="NO_PREF">No Preference</option></select></div>
+          <div class="form-section pref-card" id="card-cabin">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">FLIGHT CABIN &amp; POSITION</div><p class="pc-empty-desc">Preferred cabin class and seat position — domestic and international</p><button class="pc-cta" onclick="pcEdit('cabin')">Set up Cabin &amp; Position →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">FLIGHT CABIN &amp; POSITION</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('cabin')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('cabin')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">FLIGHT CABIN &amp; POSITION</div>
+              <div class="form-grid">
+                <div class="form-field"><label class="field-label">Cabin — Domestic</label><select class="field-select" id="f-cabin_domestic"><option value="ECONOMY">Economy</option><option value="ECONOMY_PLUS">Economy Plus</option><option value="BUSINESS">Business</option><option value="FIRST">First Class</option></select></div>
+                <div class="form-field"><label class="field-label">Cabin — International</label><select class="field-select" id="f-cabin_international"><option value="ECONOMY">Economy</option><option value="PREMIUM_ECONOMY">Premium Economy</option><option value="BUSINESS">Business Class</option><option value="FIRST">First Class</option></select></div>
+                <div class="form-field"><label class="field-label">Seat Position</label><select class="field-select" id="f-seat_position"><option value="AISLE">Aisle</option><option value="WINDOW">Window</option><option value="MIDDLE">Middle</option><option value="NO_PREF">No Preference</option></select></div>
+                <div class="form-field"><label class="field-label">Row Preference</label><select class="field-select" id="f-row_preference"><option value="EXIT_ROW">Exit Row / Extra Legroom</option><option value="FRONT">Front of Cabin</option><option value="REAR">Rear of Cabin</option><option value="NO_PREF">No Preference</option></select></div>
+              </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('cabin')">Cancel</button><button class="pc-save-btn" onclick="pcSave('cabin')">Save</button></div>
             </div>
           </div>
-          <div class="form-section">
-            <div class="form-section-title">SEAT COMFORT</div>
-            <div class="form-grid">
-              <div class="toggle-row"><div><div class="toggle-row-label">Avoid middle seats</div><div class="toggle-row-sub">Never place me in a middle seat</div></div><label class="mini-toggle"><input type="checkbox" id="f-avoid_middle_seats"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-              <div class="toggle-row"><div><div class="toggle-row-label">Avoid last row</div><div class="toggle-row-sub">Non-reclining seats at rear</div></div><label class="mini-toggle"><input type="checkbox" id="f-avoid_last_row"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
-              <div class="toggle-row"><div><div class="toggle-row-label">Wheelchair assistance</div><div class="toggle-row-sub">Airport mobility support needed</div></div><label class="mini-toggle"><input type="checkbox" id="f-wheelchair_needed"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+          <div class="form-section pref-card" id="card-seat_comfort">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">SEAT COMFORT</div><p class="pc-empty-desc">Seat restrictions — avoid middles, last rows, wheelchair boarding</p><button class="pc-cta" onclick="pcEdit('seat_comfort')">Set up Seat Comfort →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">SEAT COMFORT</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('seat_comfort')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('seat_comfort')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">SEAT COMFORT</div>
+              <div class="form-grid">
+                <div class="toggle-row"><div><div class="toggle-row-label">Avoid middle seats</div><div class="toggle-row-sub">Never place me in a middle seat</div></div><label class="mini-toggle"><input type="checkbox" id="f-avoid_middle_seats"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+                <div class="toggle-row"><div><div class="toggle-row-label">Avoid last row</div><div class="toggle-row-sub">Non-reclining seats at rear</div></div><label class="mini-toggle"><input type="checkbox" id="f-avoid_last_row"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+                <div class="toggle-row"><div><div class="toggle-row-label">Wheelchair assistance</div><div class="toggle-row-sub">Airport mobility support needed</div></div><label class="mini-toggle"><input type="checkbox" id="f-wheelchair_needed"><div class="mini-track"><div class="mini-knob"></div></div></label></div>
+              </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('seat_comfort')">Cancel</button><button class="pc-save-btn" onclick="pcSave('seat_comfort')">Save</button></div>
             </div>
           </div>
-          <div class="form-section">
-            <div class="form-section-title">ROUTING</div>
-            <div class="form-grid">
-              <div class="form-field"><label class="field-label">Nonstop preference</label><select class="field-select" id="f-nonstop_pref"><option value="STRONGLY_PREFER">Strongly prefer nonstop</option><option value="PREFER">Prefer nonstop</option><option value="NO_PREF">Don't mind connecting</option></select></div>
-              <div class="form-field"><label class="field-label">Max acceptable connections</label><select class="field-select" id="f-max_connections"><option value="0">0 (nonstop only)</option><option value="1">1</option><option value="2">2+</option></select></div>
-              <div class="form-field"><label class="field-label">Minimum connection time (minutes)</label><input class="field-input" id="f-min_connection_minutes" type="number" min="30" max="600" placeholder="e.g. 90"></div>
-              <div class="form-field"><label class="field-label">Maximum connection time (minutes)</label><input class="field-input" id="f-max_connection_minutes" type="number" min="30" max="600" placeholder="e.g. 240"></div>
-              <div class="form-field" style="grid-column:span 2"><label class="field-label">Preferred connecting hubs</label><input class="field-input" id="f-hubs_preferred" type="text" placeholder="Airport codes, comma-separated, e.g. LHR, FRA, DXB"></div>
-              <div class="form-field" style="grid-column:span 2"><label class="field-label">Hubs to avoid</label><input class="field-input" id="f-hubs_avoid" type="text" placeholder="Airport codes, comma-separated, e.g. ORD, ATL"></div>
-              <div class="form-field"><label class="field-label">Preferred departure time</label><select class="field-select" id="f-departure_time_pref"><option value="EARLY_MORNING">Early morning (before 8am)</option><option value="MORNING">Morning (8am–11am)</option><option value="MIDDAY">Midday (11am–2pm)</option><option value="AFTERNOON">Afternoon (2pm–5pm)</option><option value="EVENING">Evening (5pm–9pm)</option><option value="REDEYE">Red-eye OK (after 9pm)</option><option value="NO_PREF">No preference</option></select></div>
-              <div class="form-field"><label class="field-label">Arrival times to avoid</label><select class="field-select" id="f-arrival_time_avoid"><option value="NO_PREF">No preference</option><option value="AVOID_LATE_NIGHT">Avoid late-night (after 10pm)</option><option value="AVOID_PREDAWN">Avoid pre-dawn (before 6am)</option></select></div>
-              <div class="form-field"><label class="field-label">Max acceptable journey time (hours)</label><input class="field-input" id="f-max_journey_hours" type="number" min="1" max="36" placeholder="e.g. 14"></div>
+          <div class="form-section pref-card" id="card-routing">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">ROUTING</div><p class="pc-empty-desc">Connection limits, hub airports, and timing preferences</p><button class="pc-cta" onclick="pcEdit('routing')">Set up Routing →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">ROUTING</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('routing')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('routing')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">ROUTING</div>
+              <div class="form-grid">
+                <div class="form-field"><label class="field-label">Nonstop preference</label><select class="field-select" id="f-nonstop_pref"><option value="STRONGLY_PREFER">Strongly prefer nonstop</option><option value="PREFER">Prefer nonstop</option><option value="NO_PREF">Don't mind connecting</option></select></div>
+                <div class="form-field"><label class="field-label">Max acceptable connections</label><select class="field-select" id="f-max_connections"><option value="0">0 (nonstop only)</option><option value="1">1</option><option value="2">2+</option></select></div>
+                <div class="form-field"><label class="field-label">Minimum connection time (minutes)</label><input class="field-input" id="f-min_connection_minutes" type="number" min="30" max="600" placeholder="e.g. 90"></div>
+                <div class="form-field"><label class="field-label">Maximum connection time (minutes)</label><input class="field-input" id="f-max_connection_minutes" type="number" min="30" max="600" placeholder="e.g. 240"></div>
+                <div class="form-field" style="grid-column:span 2"><label class="field-label">Preferred connecting hubs</label><input class="field-input" id="f-hubs_preferred" type="text" placeholder="Airport codes, comma-separated, e.g. LHR, FRA, DXB"></div>
+                <div class="form-field" style="grid-column:span 2"><label class="field-label">Hubs to avoid</label><input class="field-input" id="f-hubs_avoid" type="text" placeholder="Airport codes, comma-separated, e.g. ORD, ATL"></div>
+                <div class="form-field"><label class="field-label">Preferred departure time</label><select class="field-select" id="f-departure_time_pref"><option value="EARLY_MORNING">Early morning (before 8am)</option><option value="MORNING">Morning (8am–11am)</option><option value="MIDDAY">Midday (11am–2pm)</option><option value="AFTERNOON">Afternoon (2pm–5pm)</option><option value="EVENING">Evening (5pm–9pm)</option><option value="REDEYE">Red-eye OK (after 9pm)</option><option value="NO_PREF">No preference</option></select></div>
+                <div class="form-field"><label class="field-label">Arrival times to avoid</label><select class="field-select" id="f-arrival_time_avoid"><option value="NO_PREF">No preference</option><option value="AVOID_LATE_NIGHT">Avoid late-night (after 10pm)</option><option value="AVOID_PREDAWN">Avoid pre-dawn (before 6am)</option></select></div>
+                <div class="form-field"><label class="field-label">Max acceptable journey time (hours)</label><input class="field-input" id="f-max_journey_hours" type="number" min="1" max="36" placeholder="e.g. 14"></div>
+              </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('routing')">Cancel</button><button class="pc-save-btn" onclick="pcSave('routing')">Save</button></div>
             </div>
           </div>
         </div>
 
         <!-- ── Tab: How I Travel ──────────────────────────── -->
         <div id="pref-tab-travel" class="pref-tab-body" style="display:none">
-          <div class="form-section">
-            <div class="form-section-title">TRIP CONTEXT</div>
-            <div class="form-grid">
-              <div class="form-field"><label class="field-label">Business travel %</label><input class="field-input" id="f-purpose_business_pct" type="number" min="0" max="100" placeholder="e.g. 60"></div>
-              <div class="form-field"><label class="field-label">Leisure travel %</label><input class="field-input" id="f-purpose_leisure_pct" type="number" min="0" max="100" placeholder="e.g. 40"></div>
-              <div class="form-field"><label class="field-label">Most common trip length</label><select class="field-select" id="f-trip_length_typical"><option value="DAY">Day trip</option><option value="2-3">2-3 days</option><option value="4-7">4-7 days</option><option value="8-14">8-14 days</option><option value="15+">15+ days</option><option value="MIXED">Mixed</option></select></div>
-              <div class="form-field"><label class="field-label">Home origin (city or airport code)</label><input class="field-input" id="f-home_origin" type="text" placeholder="e.g. SFO or San Francisco"></div>
+          <div class="form-section pref-card" id="card-trip_context">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">TRIP CONTEXT</div><p class="pc-empty-desc">Business/leisure split, typical trip length, and home origin</p><button class="pc-cta" onclick="pcEdit('trip_context')">Set up Trip Context →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">TRIP CONTEXT</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('trip_context')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('trip_context')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">TRIP CONTEXT</div>
+              <div class="form-grid">
+                <div class="form-field"><label class="field-label">Business travel %</label><input class="field-input" id="f-purpose_business_pct" type="number" min="0" max="100" placeholder="e.g. 60"></div>
+                <div class="form-field"><label class="field-label">Leisure travel %</label><input class="field-input" id="f-purpose_leisure_pct" type="number" min="0" max="100" placeholder="e.g. 40"></div>
+                <div class="form-field"><label class="field-label">Most common trip length</label><select class="field-select" id="f-trip_length_typical"><option value="DAY">Day trip</option><option value="2-3">2-3 days</option><option value="4-7">4-7 days</option><option value="8-14">8-14 days</option><option value="15+">15+ days</option><option value="MIXED">Mixed</option></select></div>
+                <div class="form-field"><label class="field-label">Home origin (city or airport code)</label><input class="field-input" id="f-home_origin" type="text" placeholder="e.g. SFO or San Francisco"></div>
+              </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('trip_context')">Cancel</button><button class="pc-save-btn" onclick="pcSave('trip_context')">Save</button></div>
             </div>
           </div>
-          <div class="form-section">
-            <div class="form-section-title">PACE &amp; STYLE</div>
-            <div class="form-grid">
-              <div class="form-field"><label class="field-label">Travel pace</label><select class="field-select" id="f-travel_pace"><option value="SLOW">Slow + immersive</option><option value="BALANCED">Balanced</option><option value="FAST">Fast + checklist</option></select></div>
-              <div class="form-field"><label class="field-label">Planning style</label><select class="field-select" id="f-planning_style"><option value="PLAN_ALL">Plan everything</option><option value="LOOSE">Loose framework</option><option value="SPONTANEOUS">Spontaneous</option></select></div>
-              <div class="form-field"><label class="field-label">Usual group</label><select class="field-select" id="f-group_preference"><option value="SOLO">Solo</option><option value="COUPLE">Couple</option><option value="FAMILY">Family</option><option value="FRIENDS">Friends</option><option value="GROUP_TOUR">Group tour</option><option value="MIX">Mix</option></select></div>
-              <div class="form-field"><label class="field-label">Daily activity load</label><select class="field-select" id="f-activity_load"><option value="LIGHT">Light</option><option value="MODERATE">Moderate</option><option value="PACKED">Packed</option></select></div>
-              <div class="form-field"><label class="field-label">Early riser or night owl</label><select class="field-select" id="f-circadian_pref"><option value="EARLY">Early riser</option><option value="MIXED">Mixed</option><option value="NIGHT">Night owl</option></select></div>
+          <div class="form-section pref-card" id="card-pace_style">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">PACE &amp; STYLE</div><p class="pc-empty-desc">Travel rhythm — slow or fast, planned or spontaneous</p><button class="pc-cta" onclick="pcEdit('pace_style')">Set up Pace &amp; Style →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">PACE &amp; STYLE</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('pace_style')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('pace_style')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">PACE &amp; STYLE</div>
+              <div class="form-grid">
+                <div class="form-field"><label class="field-label">Travel pace</label><select class="field-select" id="f-travel_pace"><option value="SLOW">Slow + immersive</option><option value="BALANCED">Balanced</option><option value="FAST">Fast + checklist</option></select></div>
+                <div class="form-field"><label class="field-label">Planning style</label><select class="field-select" id="f-planning_style"><option value="PLAN_ALL">Plan everything</option><option value="LOOSE">Loose framework</option><option value="SPONTANEOUS">Spontaneous</option></select></div>
+                <div class="form-field"><label class="field-label">Usual group</label><select class="field-select" id="f-group_preference"><option value="SOLO">Solo</option><option value="COUPLE">Couple</option><option value="FAMILY">Family</option><option value="FRIENDS">Friends</option><option value="GROUP_TOUR">Group tour</option><option value="MIX">Mix</option></select></div>
+                <div class="form-field"><label class="field-label">Daily activity load</label><select class="field-select" id="f-activity_load"><option value="LIGHT">Light</option><option value="MODERATE">Moderate</option><option value="PACKED">Packed</option></select></div>
+                <div class="form-field"><label class="field-label">Early riser or night owl</label><select class="field-select" id="f-circadian_pref"><option value="EARLY">Early riser</option><option value="MIXED">Mixed</option><option value="NIGHT">Night owl</option></select></div>
+              </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('pace_style')">Cancel</button><button class="pc-save-btn" onclick="pcSave('pace_style')">Save</button></div>
             </div>
           </div>
-          <div class="form-section">
-            <div class="form-section-title">BUDGET &amp; FLEXIBILITY</div>
-            <div class="form-grid">
-              <div class="form-field" style="grid-column:span 2"><label class="field-label">Budget priority</label><input class="field-slider" id="f-budget_priority" type="range" min="1" max="5" step="1" value="3" oninput="updateBudgetReadout(this.value)"><span class="slider-readout">Currently: <strong id="budget-readout">Balanced</strong></span></div>
-              <div class="form-field"><label class="field-label">If you splurge, where?</label><select class="field-select" id="f-splurge_target"><option value="FLIGHT">Flight</option><option value="HOTEL">Hotel</option><option value="EXPERIENCES">Experiences</option><option value="FOOD">Food</option><option value="EVEN">Even split</option><option value="NONE">Don't splurge</option></select></div>
-              <div class="form-field"><label class="field-label">Refundability importance</label><select class="field-select" id="f-refundability_priority"><option value="CRITICAL">Critical</option><option value="NICE">Nice to have</option><option value="DONT_CARE">Don't care</option></select></div>
-              <div class="form-field"><label class="field-label">Change fee tolerance</label><select class="field-select" id="f-change_fee_tolerance"><option value="WONT_PAY">Won't pay</option><option value="IF_NEEDED">Will pay if needed</option><option value="DONT_CARE">Don't care</option></select></div>
-              <div class="form-field"><label class="field-label">Payment style</label><select class="field-select" id="f-payment_style"><option value="CARD">Card</option><option value="POINTS">Points</option><option value="MIX">Mix</option><option value="CORPORATE">Corporate billed</option></select></div>
+          <div class="form-section pref-card" id="card-budget">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">BUDGET &amp; FLEXIBILITY</div><p class="pc-empty-desc">Budget tier, splurge targets, and refund priority</p><button class="pc-cta" onclick="pcEdit('budget')">Set up Budget →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">BUDGET &amp; FLEXIBILITY</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('budget')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('budget')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">BUDGET &amp; FLEXIBILITY</div>
+              <div class="form-grid">
+                <div class="form-field" style="grid-column:span 2"><label class="field-label">Budget priority</label><input class="field-slider" id="f-budget_priority" type="range" min="1" max="5" step="1" value="3" oninput="updateBudgetReadout(this.value)"><span class="slider-readout">Currently: <strong id="budget-readout">Balanced</strong></span></div>
+                <div class="form-field"><label class="field-label">If you splurge, where?</label><select class="field-select" id="f-splurge_target"><option value="FLIGHT">Flight</option><option value="HOTEL">Hotel</option><option value="EXPERIENCES">Experiences</option><option value="FOOD">Food</option><option value="EVEN">Even split</option><option value="NONE">Don't splurge</option></select></div>
+                <div class="form-field"><label class="field-label">Refundability importance</label><select class="field-select" id="f-refundability_priority"><option value="CRITICAL">Critical</option><option value="NICE">Nice to have</option><option value="DONT_CARE">Don't care</option></select></div>
+                <div class="form-field"><label class="field-label">Change fee tolerance</label><select class="field-select" id="f-change_fee_tolerance"><option value="WONT_PAY">Won't pay</option><option value="IF_NEEDED">Will pay if needed</option><option value="DONT_CARE">Don't care</option></select></div>
+                <div class="form-field"><label class="field-label">Payment style</label><select class="field-select" id="f-payment_style"><option value="CARD">Card</option><option value="POINTS">Points</option><option value="MIX">Mix</option><option value="CORPORATE">Corporate billed</option></select></div>
+              </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('budget')">Cancel</button><button class="pc-save-btn" onclick="pcSave('budget')">Save</button></div>
             </div>
           </div>
-          <div class="form-section">
-            <div class="form-section-title">RISK TOLERANCE</div>
-            <div class="form-grid">
-              <div class="form-field"><label class="field-label">Weather and seasonal risk</label><select class="field-select" id="f-weather_risk"><option value="AVOID">Avoid (no monsoon/hurricane/storm seasons)</option><option value="TOLERATE">Tolerate (will accept some weather risk for value)</option><option value="EMBRACE">Embrace (off-season is the point)</option></select></div>
-              <div class="form-field"><label class="field-label">Geopolitical risk threshold</label><select class="field-select" id="f-geopolitical_risk"><option value="LOW">Low (only stable destinations)</option><option value="MODERATE">Moderate (advisory level 1-2 OK)</option><option value="HIGH">High (will travel to advisory level 3 with caution)</option></select></div>
-              <div class="form-field"><label class="field-label">Health risk threshold</label><select class="field-select" id="f-health_risk"><option value="LOW">Low (avoid altitude, malaria zones, water-quality concerns)</option><option value="MODERATE">Moderate (will take precautions)</option><option value="HIGH">High (will travel anywhere with prep)</option></select></div>
-              <div class="form-field"><label class="field-label">Travel insurance level</label><select class="field-select" id="f-insurance_level"><option value="NONE">None</option><option value="STANDARD">Standard (medical, baggage, cancellation)</option><option value="COMPREHENSIVE">Comprehensive (cancel-for-any-reason, evacuation)</option></select></div>
+          <div class="form-section pref-card" id="card-risk">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">RISK TOLERANCE</div><p class="pc-empty-desc">Tolerance for weather, geopolitical, and health risk</p><button class="pc-cta" onclick="pcEdit('risk')">Set up Risk Tolerance →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">RISK TOLERANCE</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('risk')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('risk')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">RISK TOLERANCE</div>
+              <div class="form-grid">
+                <div class="form-field"><label class="field-label">Weather and seasonal risk</label><select class="field-select" id="f-weather_risk"><option value="AVOID">Avoid (no monsoon/hurricane/storm seasons)</option><option value="TOLERATE">Tolerate (will accept some weather risk for value)</option><option value="EMBRACE">Embrace (off-season is the point)</option></select></div>
+                <div class="form-field"><label class="field-label">Geopolitical risk threshold</label><select class="field-select" id="f-geopolitical_risk"><option value="LOW">Low (only stable destinations)</option><option value="MODERATE">Moderate (advisory level 1-2 OK)</option><option value="HIGH">High (will travel to advisory level 3 with caution)</option></select></div>
+                <div class="form-field"><label class="field-label">Health risk threshold</label><select class="field-select" id="f-health_risk"><option value="LOW">Low (avoid altitude, malaria zones, water-quality concerns)</option><option value="MODERATE">Moderate (will take precautions)</option><option value="HIGH">High (will travel anywhere with prep)</option></select></div>
+                <div class="form-field"><label class="field-label">Travel insurance level</label><select class="field-select" id="f-insurance_level"><option value="NONE">None</option><option value="STANDARD">Standard (medical, baggage, cancellation)</option><option value="COMPREHENSIVE">Comprehensive (cancel-for-any-reason, evacuation)</option></select></div>
+              </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('risk')">Cancel</button><button class="pc-save-btn" onclick="pcSave('risk')">Save</button></div>
             </div>
           </div>
-          <div class="form-section">
-            <div class="form-section-title">SUSTAINABILITY</div>
-            <div class="form-grid">
-              <div class="form-field" style="grid-column:span 2"><label class="field-label">Carbon footprint awareness</label><input class="field-slider" id="f-carbon_awareness" type="range" min="1" max="5" step="1" value="3" oninput="updateCarbonReadout(this.value)"><span class="slider-readout">Currently: <strong id="carbon-readout">Moderate</strong></span></div>
-              <div class="form-field"><label class="field-label">Willing to pay carbon offsets</label><select class="field-select" id="f-offset_willingness"><option value="YES">Yes always</option><option value="SOMETIMES">Sometimes (worth it for long-haul)</option><option value="NO">No</option></select></div>
-              <div class="form-field"><label class="field-label">Prefer carriers using sustainable aviation fuel (SAF)</label><select class="field-select" id="f-saf_preference"><option value="YES">Yes (will choose SAF carrier when available)</option><option value="INDIFFERENT">Indifferent</option></select></div>
-              <div class="form-field"><label class="field-label">Train alternative for short flights (under 4 hours)</label><select class="field-select" id="f-train_alternative"><option value="YES">Yes always</option><option value="SOMETIMES">Sometimes</option><option value="NO">No (always fly)</option></select></div>
+          <div class="form-section pref-card" id="card-sustainability">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">SUSTAINABILITY</div><p class="pc-empty-desc">Carbon awareness, offsets, and sustainable travel choices</p><button class="pc-cta" onclick="pcEdit('sustainability')">Set up Sustainability →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">SUSTAINABILITY</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('sustainability')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('sustainability')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">SUSTAINABILITY</div>
+              <div class="form-grid">
+                <div class="form-field" style="grid-column:span 2"><label class="field-label">Carbon footprint awareness</label><input class="field-slider" id="f-carbon_awareness" type="range" min="1" max="5" step="1" value="3" oninput="updateCarbonReadout(this.value)"><span class="slider-readout">Currently: <strong id="carbon-readout">Moderate</strong></span></div>
+                <div class="form-field"><label class="field-label">Willing to pay carbon offsets</label><select class="field-select" id="f-offset_willingness"><option value="YES">Yes always</option><option value="SOMETIMES">Sometimes (worth it for long-haul)</option><option value="NO">No</option></select></div>
+                <div class="form-field"><label class="field-label">Prefer carriers using sustainable aviation fuel (SAF)</label><select class="field-select" id="f-saf_preference"><option value="YES">Yes (will choose SAF carrier when available)</option><option value="INDIFFERENT">Indifferent</option></select></div>
+                <div class="form-field"><label class="field-label">Train alternative for short flights (under 4 hours)</label><select class="field-select" id="f-train_alternative"><option value="YES">Yes always</option><option value="SOMETIMES">Sometimes</option><option value="NO">No (always fly)</option></select></div>
+              </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('sustainability')">Cancel</button><button class="pc-save-btn" onclick="pcSave('sustainability')">Save</button></div>
             </div>
           </div>
-          <div class="form-section">
-            <div class="form-section-title">COMMS &amp; PRIVACY</div>
-            <div class="form-grid">
-              <div class="form-field"><label class="field-label">Preferred communication channel</label><select class="field-select" id="f-comm_channel"><option value="EMAIL">Email</option><option value="SMS">SMS</option><option value="PUSH">App push notification</option><option value="WHATSAPP">WhatsApp</option><option value="PHONE">Phone call</option></select></div>
-              <div class="form-field"><label class="field-label">Notification frequency</label><select class="field-select" id="f-comm_frequency"><option value="MINIMAL">Minimal (only critical alerts)</option><option value="STANDARD">Standard (status changes + reminders)</option><option value="DETAILED">Detailed (every update)</option></select></div>
-              <div class="form-field"><label class="field-label">Marketing communications</label><select class="field-select" id="f-marketing_optin"><option value="YES">Yes (deals, offers, recommendations)</option><option value="SELECTIVE">Selective (only categories I choose)</option><option value="NO">No</option></select></div>
-              <div class="form-field"><label class="field-label">Data sharing comfort</label><select class="field-select" id="f-data_sharing"><option value="OPEN">Open (share with travel partners for personalization)</option><option value="SELECTIVE">Selective (only when explicit benefit)</option><option value="STRICT">Strict (Uniprofile only)</option></select></div>
-              <div class="form-field"><label class="field-label">Biometric and facial recognition</label><select class="field-select" id="f-biometric_acceptance"><option value="COMFORTABLE">Comfortable (use at airports/borders)</option><option value="UNCOMFORTABLE">Uncomfortable (avoid where possible)</option></select></div>
+          <div class="form-section pref-card" id="card-comms">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">COMMS &amp; PRIVACY</div><p class="pc-empty-desc">How and how often UniProfile contacts you, and data sharing</p><button class="pc-cta" onclick="pcEdit('comms')">Set up Comms &amp; Privacy →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">COMMS &amp; PRIVACY</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('comms')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('comms')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">COMMS &amp; PRIVACY</div>
+              <div class="form-grid">
+                <div class="form-field"><label class="field-label">Preferred communication channel</label><select class="field-select" id="f-comm_channel"><option value="EMAIL">Email</option><option value="SMS">SMS</option><option value="PUSH">App push notification</option><option value="WHATSAPP">WhatsApp</option><option value="PHONE">Phone call</option></select></div>
+                <div class="form-field"><label class="field-label">Notification frequency</label><select class="field-select" id="f-comm_frequency"><option value="MINIMAL">Minimal (only critical alerts)</option><option value="STANDARD">Standard (status changes + reminders)</option><option value="DETAILED">Detailed (every update)</option></select></div>
+                <div class="form-field"><label class="field-label">Marketing communications</label><select class="field-select" id="f-marketing_optin"><option value="YES">Yes (deals, offers, recommendations)</option><option value="SELECTIVE">Selective (only categories I choose)</option><option value="NO">No</option></select></div>
+                <div class="form-field"><label class="field-label">Data sharing comfort</label><select class="field-select" id="f-data_sharing"><option value="OPEN">Open (share with travel partners for personalization)</option><option value="SELECTIVE">Selective (only when explicit benefit)</option><option value="STRICT">Strict (Uniprofile only)</option></select></div>
+                <div class="form-field"><label class="field-label">Biometric and facial recognition</label><select class="field-select" id="f-biometric_acceptance"><option value="COMFORTABLE">Comfortable (use at airports/borders)</option><option value="UNCOMFORTABLE">Uncomfortable (avoid where possible)</option></select></div>
+              </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('comms')">Cancel</button><button class="pc-save-btn" onclick="pcSave('comms')">Save</button></div>
             </div>
           </div>
-          <div class="form-section">
-            <div class="form-section-title">Hotel preferences</div>
-            <div class="form-grid">
-              <div class="form-field"><label class="field-label">Room Type</label><select class="field-select" id="f-hotel_room_type"><option value="KING">King bed</option><option value="QUEEN">Queen bed</option><option value="TWIN">Twin beds</option></select></div>
-              <div class="form-field"><label class="field-label">Floor Preference</label><select class="field-select" id="f-hotel_floor_pref"><option value="HIGH">High floor</option><option value="LOW">Low floor</option><option value="NO_PREF">No preference</option></select></div>
-              <div class="form-field" style="grid-column:1/-1"><label class="field-label">Smoking preference</label><div style="display:flex;gap:20px;margin-top:6px"><label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer"><input type="radio" name="smoking_preference" value="NON_SMOKING" checked> Non-smoking</label><label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer"><input type="radio" name="smoking_preference" value="SMOKING"> Smoking</label><label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer"><input type="radio" name="smoking_preference" value="NO_PREFERENCE"> No preference</label></div></div>
-              <div class="form-field"><label class="field-label">Pillow preference</label><select class="field-select" id="f-pillow_preference"><option value="NO_PREFERENCE" selected>No preference</option><option value="FOAM">Foam</option><option value="DOWN">Down</option><option value="FIRM">Firm</option><option value="SOFT">Soft</option><option value="HYPOALLERGENIC">Hypoallergenic</option></select></div>
-              <div class="form-field"><label class="field-label">Bed firmness</label><select class="field-select" id="f-bed_firmness_preference"><option value="NO_PREFERENCE" selected>No preference</option><option value="FIRM">Firm</option><option value="MEDIUM">Medium</option><option value="PLUSH">Plush</option></select></div>
-              <div class="form-field" style="grid-column:1/-1"><label class="field-label">Room view preferences</label><div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:6px"><label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="f-view_OCEAN"> Ocean</label><label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="f-view_CITY"> City</label><label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="f-view_POOL"> Pool</label><label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="f-view_GARDEN"> Garden</label><label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="f-view_MOUNTAIN"> Mountain</label><label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="f-view_COURTYARD"> Courtyard</label></div></div>
-              <div class="form-field" style="grid-column:1/-1"><div class="toggle-row"><div><div class="toggle-row-label">Request late checkout automatically</div></div><label class="mini-toggle"><input type="checkbox" id="f-late_checkout_auto_request"><div class="mini-track"><div class="mini-knob"></div></div></label></div></div>
-              <div class="form-field" style="grid-column:1/-1"><div class="toggle-row"><div><div class="toggle-row-label">ADA-accessible room required</div><div class="field-hint" style="margin-top:4px">ADA-accessible rooms have property features — wider doorways, roll-in showers, visual fire alarms, lower fixtures. These are different from your travel needs. Some travellers in wheelchairs don't need ADA rooms; some travellers with hearing impairments do. Tell us directly.</div></div><label class="mini-toggle"><input type="checkbox" id="f-ada_room_required"><div class="mini-track"><div class="mini-knob"></div></div></label></div></div>
+          <div class="form-section pref-card" id="card-hotel">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">HOTEL PREFERENCES</div><p class="pc-empty-desc">Room type, floor, smoking, views, pillow, bed firmness, and accessibility</p><button class="pc-cta" onclick="pcEdit('hotel')">Set up Hotel Preferences →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">HOTEL PREFERENCES</span><span class="pc-saved-right"><span class="pc-counter"></span><button class="pc-edit-btn" onclick="pcEdit('hotel')">Edit</button></span></div><div class="pc-saved-fields"></div><button class="pc-more-btn" style="display:none" onclick="pcToggleMore('hotel')">Add more details →</button><div class="pc-more-list" style="display:none"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">HOTEL PREFERENCES</div>
+              <div class="form-grid">
+                <div class="form-field"><label class="field-label">Room Type</label><select class="field-select" id="f-hotel_room_type"><option value="KING">King bed</option><option value="QUEEN">Queen bed</option><option value="TWIN">Twin beds</option></select></div>
+                <div class="form-field"><label class="field-label">Floor Preference</label><select class="field-select" id="f-hotel_floor_pref"><option value="HIGH">High floor</option><option value="LOW">Low floor</option><option value="NO_PREF">No preference</option></select></div>
+                <div class="form-field" style="grid-column:1/-1"><label class="field-label">Smoking preference</label><div style="display:flex;gap:20px;margin-top:6px"><label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer"><input type="radio" name="smoking_preference" value="NON_SMOKING" checked> Non-smoking</label><label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer"><input type="radio" name="smoking_preference" value="SMOKING"> Smoking</label><label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer"><input type="radio" name="smoking_preference" value="NO_PREFERENCE"> No preference</label></div></div>
+                <div class="form-field"><label class="field-label">Pillow preference</label><select class="field-select" id="f-pillow_preference"><option value="NO_PREFERENCE" selected>No preference</option><option value="FOAM">Foam</option><option value="DOWN">Down</option><option value="FIRM">Firm</option><option value="SOFT">Soft</option><option value="HYPOALLERGENIC">Hypoallergenic</option></select></div>
+                <div class="form-field"><label class="field-label">Bed firmness</label><select class="field-select" id="f-bed_firmness_preference"><option value="NO_PREFERENCE" selected>No preference</option><option value="FIRM">Firm</option><option value="MEDIUM">Medium</option><option value="PLUSH">Plush</option></select></div>
+                <div class="form-field" style="grid-column:1/-1"><label class="field-label">Room view preferences</label><div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:6px"><label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="f-view_OCEAN"> Ocean</label><label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="f-view_CITY"> City</label><label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="f-view_POOL"> Pool</label><label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="f-view_GARDEN"> Garden</label><label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="f-view_MOUNTAIN"> Mountain</label><label style="display:flex;align-items:center;gap:7px;font-size:13px;color:var(--text);cursor:pointer"><input type="checkbox" id="f-view_COURTYARD"> Courtyard</label></div></div>
+                <div class="form-field" style="grid-column:1/-1"><div class="toggle-row"><div><div class="toggle-row-label">Request late checkout automatically</div></div><label class="mini-toggle"><input type="checkbox" id="f-late_checkout_auto_request"><div class="mini-track"><div class="mini-knob"></div></div></label></div></div>
+                <div class="form-field" style="grid-column:1/-1"><div class="toggle-row"><div><div class="toggle-row-label">ADA-accessible room required</div><div class="field-hint" style="margin-top:4px">ADA-accessible rooms have property features — wider doorways, roll-in showers, visual fire alarms, lower fixtures. These are different from your travel needs. Some travellers in wheelchairs don't need ADA rooms; some travellers with hearing impairments do. Tell us directly.</div></div><label class="mini-toggle"><input type="checkbox" id="f-ada_room_required"><div class="mini-track"><div class="mini-knob"></div></div></label></div></div>
+              </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('hotel')">Cancel</button><button class="pc-save-btn" onclick="pcSave('hotel')">Save</button></div>
             </div>
           </div>
-          <div class="form-section">
-            <div class="form-section-title">GROUND TRANSPORT</div>
-            <div class="form-grid">
-              <div class="form-field"><label class="field-label">Car Type</label><select class="field-select" id="f-car_type_pref"><option value="COMPACT">Compact</option><option value="MIDSIZE">Midsize</option><option value="FULLSIZE">Full Size</option><option value="SUV">SUV</option><option value="LUXURY">Luxury</option></select></div>
+          <div class="form-section pref-card" id="card-ground">
+            <div class="pc-view pc-empty"><div class="pc-empty-title">GROUND TRANSPORT</div><p class="pc-empty-desc">Your preferred car type for rentals</p><button class="pc-cta" onclick="pcEdit('ground')">Set up Ground Transport →</button></div>
+            <div class="pc-view pc-saved" style="display:none"><div class="pc-saved-hd"><span class="pc-saved-title">GROUND TRANSPORT</span><span class="pc-saved-right"><button class="pc-edit-btn" onclick="pcEdit('ground')">Edit</button></span></div><div class="pc-saved-fields"></div></div>
+            <div class="pc-view pc-editing" style="display:none">
+              <div class="pc-editing-title">GROUND TRANSPORT</div>
+              <div class="form-grid">
+                <div class="form-field"><label class="field-label">Car Type</label><select class="field-select" id="f-car_type_pref"><option value="COMPACT">Compact</option><option value="MIDSIZE">Midsize</option><option value="FULLSIZE">Full Size</option><option value="SUV">SUV</option><option value="LUXURY">Luxury</option></select></div>
+              </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="pcCancel('ground')">Cancel</button><button class="pc-save-btn" onclick="pcSave('ground')">Save</button></div>
             </div>
           </div>
         </div>
@@ -2888,7 +3026,7 @@ const cb=id=>document.getElementById(id)?.checked||false;
 const s=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val??"";};
 const sc=(id,val)=>{const el=document.getElementById(id);if(el)el.checked=!!val;};
 const st=(id,txt)=>{const el=document.getElementById(id);if(el)el.textContent=txt??"—";};
-async function saveSection(){if(saving)return;const btn=document.getElementById("save-btn");saving=true;btn.disabled=true;btn.textContent="Saving...";setSaveState("saving");let module,data;try{if(section==="preferences"){const activeTab=document.querySelector('.pref-tab.active')?.id||'';if(activeTab==='ptab-essentials'){module="essentials";data={legal_name:v("f-legal_name"),preferred_name:v("f-preferred_name"),date_of_birth:v("f-date_of_birth")||null,gender:v("f-gender"),nationality_primary:v("f-nationality_primary"),nationality_secondary:v("f-nationality_secondary"),passport_primary_number:v("f-passport_primary_number"),passport_primary_expiry:v("f-passport_primary_expiry")||null,passport_primary_country:v("f-passport_primary_country"),passport_secondary_number:v("f-passport_secondary_number"),passport_secondary_expiry:v("f-passport_secondary_expiry")||null,passport_secondary_country:v("f-passport_secondary_country"),known_traveler_number:v("f-known_traveler_number"),global_entry_id:v("f-global_entry_id"),clear_id:v("f-clear_id"),redress_number:v("f-redress_number"),emergency_name:v("f-emergency_name"),emergency_relationship:v("f-emergency_relationship"),emergency_phone:v("f-emergency_phone"),emergency_email:v("f-emergency_email"),primary_meal_code:v("f-primary_meal_code"),beverage_pref:v("f-beverage_pref"),religious_observance:v("f-religious_observance"),dietary_notes:v("f-dietary_notes"),allergies:collectAllergies(),wheelchair_service:v("f-wheelchair_service"),visual_impairment:v("f-visual_impairment"),hearing_impairment:v("f-hearing_impairment"),service_animal:v("f-service_animal"),mobility_notes:v("f-mobility_notes"),medical_conditions:v("f-medical_conditions"),medication_special:cb("f-medication_special"),oxygen_required:cb("f-oxygen_required"),stretcher_required:cb("f-stretcher_required"),pregnancy_week:v("f-pregnancy_week")||null,dvt_risk:cb("f-dvt_risk"),children_count:v("f-children_count")||null,children_ages:v("f-children_ages"),infant_under_2:cb("f-infant_under_2"),unaccompanied_minor:cb("f-unaccompanied_minor"),pet_traveling:cb("f-pet_traveling"),pet_type:v("f-pet_type"),pet_location:v("f-pet_location"),pet_breed:v("f-pet_breed"),pet_weight_kg:v("f-pet_weight_kg")||null,pet_carrier_dimensions:v("f-pet_carrier_dimensions"),equip_skis:cb("f-equip_skis"),equip_snowboard:cb("f-equip_snowboard"),equip_golf:cb("f-equip_golf"),equip_surfboard:cb("f-equip_surfboard"),equip_bicycle:cb("f-equip_bicycle"),equip_musical:cb("f-equip_musical"),equip_diving:cb("f-equip_diving"),equip_fishing:cb("f-equip_fishing"),equip_firearms:cb("f-equip_firearms"),equip_other:v("f-equip_other")};}else if(activeTab==='ptab-fly'){module="fly_preferences";data={cabin_domestic:v("f-cabin_domestic"),cabin_international:v("f-cabin_international"),seat_position:v("f-seat_position"),row_preference:v("f-row_preference"),avoid_middle_seats:cb("f-avoid_middle_seats"),avoid_last_row:cb("f-avoid_last_row"),wheelchair_needed:cb("f-wheelchair_needed"),nonstop_pref:v("f-nonstop_pref"),max_connections:v("f-max_connections"),min_connection_minutes:v("f-min_connection_minutes")||null,max_connection_minutes:v("f-max_connection_minutes")||null,hubs_preferred:v("f-hubs_preferred"),hubs_avoid:v("f-hubs_avoid"),departure_time_pref:v("f-departure_time_pref"),arrival_time_avoid:v("f-arrival_time_avoid"),max_journey_hours:v("f-max_journey_hours")||null};}else if(activeTab==='ptab-travel'){module="travel_preferences";data={purpose_business_pct:v("f-purpose_business_pct")||null,purpose_leisure_pct:v("f-purpose_leisure_pct")||null,trip_length_typical:v("f-trip_length_typical"),home_origin:v("f-home_origin"),travel_pace:v("f-travel_pace"),planning_style:v("f-planning_style"),group_preference:v("f-group_preference"),activity_load:v("f-activity_load"),circadian_pref:v("f-circadian_pref"),budget_priority:v("f-budget_priority")||null,splurge_target:v("f-splurge_target"),refundability_priority:v("f-refundability_priority"),change_fee_tolerance:v("f-change_fee_tolerance"),payment_style:v("f-payment_style"),weather_risk:v("f-weather_risk"),geopolitical_risk:v("f-geopolitical_risk"),health_risk:v("f-health_risk"),insurance_level:v("f-insurance_level"),carbon_awareness:v("f-carbon_awareness")||null,offset_willingness:v("f-offset_willingness"),saf_preference:v("f-saf_preference"),train_alternative:v("f-train_alternative"),comm_channel:v("f-comm_channel"),comm_frequency:v("f-comm_frequency"),marketing_optin:v("f-marketing_optin"),data_sharing:v("f-data_sharing"),biometric_acceptance:v("f-biometric_acceptance"),hotel_room_type:v("f-hotel_room_type"),hotel_floor_pref:v("f-hotel_floor_pref"),smoking_preference:(document.querySelector('input[name="smoking_preference"]:checked')?.value)||"NON_SMOKING",room_view_preferences:collectRoomViews(),pillow_preference:v("f-pillow_preference"),bed_firmness_preference:v("f-bed_firmness_preference"),late_checkout_auto_request:cb("f-late_checkout_auto_request"),ada_room_required:cb("f-ada_room_required"),car_type_pref:v("f-car_type_pref")};}else{toast("Loyalty programs are managed above","success");saving=false;btn.disabled=false;btn.textContent="Save Changes";setSaveState("");return;}}else if(section==="payment"){const isCorp=document.getElementById("bleisure-toggle").checked;if(isCorp){module="payment_corporate";data={company_name:v("f-company_name"),corporate_card:v("f-corporate_card"),cost_center:v("f-cost_center"),policy_description:v("f-policy_description"),expense_platform:v("f-expense_platform")};}else{module="payment_personal";data={preferred_card:v("f-preferred_card")};}}else{toast("Navigate to a module tab to save");saving=false;btn.disabled=false;btn.textContent="Save Changes";setSaveState("");return;}const result=await api("PUT",`/api/v1/profile/${uuid}`,{module,data});if(result.success){profile=result.profile;toast("Saved successfully","success");setSaveState("saved");updateSidebar(result.profile);}else{toast("Save failed: "+(result.error||"unknown"),"error");setSaveState("");}}catch(e){toast("Error: "+e.message,"error");setSaveState("");}saving=false;btn.disabled=false;btn.textContent="Save Changes";}
+async function saveSection(){if(saving)return;const btn=document.getElementById("save-btn");saving=true;btn.disabled=true;btn.textContent="Saving...";setSaveState("saving");let module,data;try{if(section==="preferences"){const activeTab=document.querySelector('.pref-tab.active')?.id||'';if(activeTab==='ptab-essentials'){module="essentials";data={legal_name:v("f-legal_name"),preferred_name:v("f-preferred_name"),date_of_birth:v("f-date_of_birth")||null,gender:v("f-gender"),nationality_primary:v("f-nationality_primary"),nationality_secondary:v("f-nationality_secondary"),passport_primary_number:v("f-passport_primary_number"),passport_primary_expiry:v("f-passport_primary_expiry")||null,passport_primary_country:v("f-passport_primary_country"),passport_secondary_number:v("f-passport_secondary_number"),passport_secondary_expiry:v("f-passport_secondary_expiry")||null,passport_secondary_country:v("f-passport_secondary_country"),known_traveler_number:v("f-known_traveler_number"),global_entry_id:v("f-global_entry_id"),clear_id:v("f-clear_id"),redress_number:v("f-redress_number"),emergency_name:v("f-emergency_name"),emergency_relationship:v("f-emergency_relationship"),emergency_phone:v("f-emergency_phone"),emergency_email:v("f-emergency_email"),primary_meal_code:v("f-primary_meal_code"),beverage_pref:v("f-beverage_pref"),religious_observance:v("f-religious_observance"),dietary_notes:v("f-dietary_notes"),allergies:collectAllergies(),wheelchair_service:v("f-wheelchair_service"),visual_impairment:v("f-visual_impairment"),hearing_impairment:v("f-hearing_impairment"),service_animal:v("f-service_animal"),mobility_notes:v("f-mobility_notes"),medical_conditions:v("f-medical_conditions"),medication_special:cb("f-medication_special"),oxygen_required:cb("f-oxygen_required"),stretcher_required:cb("f-stretcher_required"),pregnancy_week:v("f-pregnancy_week")||null,dvt_risk:cb("f-dvt_risk"),children_count:v("f-children_count")||null,children_ages:v("f-children_ages"),infant_under_2:cb("f-infant_under_2"),unaccompanied_minor:cb("f-unaccompanied_minor"),pet_traveling:cb("f-pet_traveling"),pet_type:v("f-pet_type"),pet_location:v("f-pet_location"),pet_breed:v("f-pet_breed"),pet_weight_kg:v("f-pet_weight_kg")||null,pet_carrier_dimensions:v("f-pet_carrier_dimensions"),equip_skis:cb("f-equip_skis"),equip_snowboard:cb("f-equip_snowboard"),equip_golf:cb("f-equip_golf"),equip_surfboard:cb("f-equip_surfboard"),equip_bicycle:cb("f-equip_bicycle"),equip_musical:cb("f-equip_musical"),equip_diving:cb("f-equip_diving"),equip_fishing:cb("f-equip_fishing"),equip_firearms:cb("f-equip_firearms"),equip_other:v("f-equip_other")};}else if(activeTab==='ptab-fly'){module="fly_preferences";data={cabin_domestic:v("f-cabin_domestic"),cabin_international:v("f-cabin_international"),seat_position:v("f-seat_position"),row_preference:v("f-row_preference"),avoid_middle_seats:cb("f-avoid_middle_seats"),avoid_last_row:cb("f-avoid_last_row"),wheelchair_needed:cb("f-wheelchair_needed"),nonstop_pref:v("f-nonstop_pref"),max_connections:v("f-max_connections"),min_connection_minutes:v("f-min_connection_minutes")||null,max_connection_minutes:v("f-max_connection_minutes")||null,hubs_preferred:v("f-hubs_preferred"),hubs_avoid:v("f-hubs_avoid"),departure_time_pref:v("f-departure_time_pref"),arrival_time_avoid:v("f-arrival_time_avoid"),max_journey_hours:v("f-max_journey_hours")||null};}else if(activeTab==='ptab-travel'){module="travel_preferences";data={purpose_business_pct:v("f-purpose_business_pct")||null,purpose_leisure_pct:v("f-purpose_leisure_pct")||null,trip_length_typical:v("f-trip_length_typical"),home_origin:v("f-home_origin"),travel_pace:v("f-travel_pace"),planning_style:v("f-planning_style"),group_preference:v("f-group_preference"),activity_load:v("f-activity_load"),circadian_pref:v("f-circadian_pref"),budget_priority:v("f-budget_priority")||null,splurge_target:v("f-splurge_target"),refundability_priority:v("f-refundability_priority"),change_fee_tolerance:v("f-change_fee_tolerance"),payment_style:v("f-payment_style"),weather_risk:v("f-weather_risk"),geopolitical_risk:v("f-geopolitical_risk"),health_risk:v("f-health_risk"),insurance_level:v("f-insurance_level"),carbon_awareness:v("f-carbon_awareness")||null,offset_willingness:v("f-offset_willingness"),saf_preference:v("f-saf_preference"),train_alternative:v("f-train_alternative"),comm_channel:v("f-comm_channel"),comm_frequency:v("f-comm_frequency"),marketing_optin:v("f-marketing_optin"),data_sharing:v("f-data_sharing"),biometric_acceptance:v("f-biometric_acceptance"),hotel_room_type:v("f-hotel_room_type"),hotel_floor_pref:v("f-hotel_floor_pref"),smoking_preference:(document.querySelector('input[name="smoking_preference"]:checked')?.value)||"NON_SMOKING",room_view_preferences:collectRoomViews(),pillow_preference:v("f-pillow_preference"),bed_firmness_preference:v("f-bed_firmness_preference"),late_checkout_auto_request:cb("f-late_checkout_auto_request"),ada_room_required:cb("f-ada_room_required"),car_type_pref:v("f-car_type_pref")};}else{toast("Loyalty programs are managed above","success");saving=false;btn.disabled=false;btn.textContent="Save Changes";setSaveState("");return;}}else if(section==="payment"){const isCorp=document.getElementById("bleisure-toggle").checked;if(isCorp){module="payment_corporate";data={company_name:v("f-company_name"),corporate_card:v("f-corporate_card"),cost_center:v("f-cost_center"),policy_description:v("f-policy_description"),expense_platform:v("f-expense_platform")};}else{module="payment_personal";data={preferred_card:v("f-preferred_card")};}}else{toast("Navigate to a module tab to save");saving=false;btn.disabled=false;btn.textContent="Save Changes";setSaveState("");return;}const result=await api("PUT",`/api/v1/profile/${uuid}`,{module,data});if(result.success){profile=result.profile;toast("Saved successfully","success");setSaveState("saved");updateSidebar(result.profile);saving=false;btn.disabled=false;btn.textContent="Save Changes";return true;}else{toast("Save failed: "+(result.error||"unknown"),"error");setSaveState("");}}catch(e){toast("Error: "+e.message,"error");setSaveState("");}saving=false;btn.disabled=false;btn.textContent="Save Changes";return false;}
 function updateBudgetReadout(v){const labels={1:"Cheapest",2:"Value",3:"Balanced",4:"Premium",5:"Luxury"};const el=document.getElementById("budget-readout");if(el)el.textContent=labels[v]||"Balanced";}
 function updateCarbonReadout(v){const labels={1:"Don't think about it",2:"Mildly aware",3:"Moderate",4:"Highly aware",5:"Drives my choices"};const el=document.getElementById("carbon-readout");if(el)el.textContent=labels[v]||"Moderate";}
 let allergyRowCount=1;
@@ -2896,6 +3034,317 @@ function addAllergyRow(){const i=allergyRowCount++;const list=document.getElemen
 function removeAllergyRow(i){const row=document.getElementById('allergy-row-'+i);if(row&&document.querySelectorAll('.allergy-row').length>1)row.remove();}
 function collectAllergies(){const rows=document.querySelectorAll('.allergy-row');const result=[];rows.forEach(row=>{const idx=row.id.replace('allergy-row-','');const name=v('f-allergy_name_'+idx);if(name)result.push({name,severity:v('f-allergy_severity_'+idx),cross_contamination:cb('f-allergy_xcontam_'+idx)});});return result;}
 function collectRoomViews(){return["OCEAN","CITY","POOL","GARDEN","MOUNTAIN","COURTYARD"].filter(function(k){var el=document.getElementById("f-view_"+k);return el&&el.checked;});}
+
+/* ── Preference card state machine ──────────────────────── */
+const PREF_SECTIONS={
+  identity:{tab:'essentials',title:'IDENTITY',cta:'Set up Identity',desc:'Legal name, date of birth, gender, and nationality for travel documents',fields:[
+    {id:'f-legal_name',label:'Legal name',type:'text'},
+    {id:'f-preferred_name',label:'Preferred name',type:'text'},
+    {id:'f-date_of_birth',label:'Date of birth',type:'text'},
+    {id:'f-gender',label:'Gender',type:'select'},
+    {id:'f-nationality_primary',label:'Nationality',type:'text'},
+    {id:'f-nationality_secondary',label:'Secondary nationality',type:'text'}
+  ]},
+  passport_primary:{tab:'essentials',title:'PRIMARY PASSPORT',cta:'Set up Primary Passport',desc:'Your main travel document — number, expiry, and issuing country',fields:[
+    {id:'f-passport_primary_number',label:'Passport number',type:'text'},
+    {id:'f-passport_primary_expiry',label:'Expiry',type:'text'},
+    {id:'f-passport_primary_country',label:'Issuing country',type:'text'}
+  ]},
+  passport_secondary:{tab:'essentials',title:'SECONDARY PASSPORT',cta:'Set up Secondary Passport',desc:'Second passport if you hold dual citizenship',fields:[
+    {id:'f-passport_secondary_number',label:'Passport number',type:'text'},
+    {id:'f-passport_secondary_expiry',label:'Expiry',type:'text'},
+    {id:'f-passport_secondary_country',label:'Issuing country',type:'text'}
+  ]},
+  trusted_traveler:{tab:'essentials',title:'TRUSTED TRAVELER',cta:'Set up Trusted Traveler',desc:'TSA PreCheck, Global Entry, CLEAR, and redress numbers',fields:[
+    {id:'f-known_traveler_number',label:'TSA PreCheck KTN',type:'text'},
+    {id:'f-global_entry_id',label:'Global Entry / NEXUS',type:'text'},
+    {id:'f-clear_id',label:'CLEAR ID',type:'text'},
+    {id:'f-redress_number',label:'Redress number',type:'text'}
+  ]},
+  emergency:{tab:'essentials',title:'EMERGENCY CONTACT',cta:'Set up Emergency Contact',desc:'Who to reach if something goes wrong on your trip',fields:[
+    {id:'f-emergency_name',label:'Name',type:'text'},
+    {id:'f-emergency_relationship',label:'Relationship',type:'text'},
+    {id:'f-emergency_phone',label:'Phone',type:'text'},
+    {id:'f-emergency_email',label:'Email',type:'text'}
+  ]},
+  dietary:{tab:'essentials',title:'DIETARY & MEALS',cta:'Set up Dietary & Meals',desc:'Meal codes, allergies, and dietary requirements for airlines',fields:[
+    {id:'f-primary_meal_code',label:'Meal preference',type:'select'},
+    {id:'f-beverage_pref',label:'Beverage',type:'select'},
+    {id:'f-religious_observance',label:'Religious observance',type:'text'},
+    {id:'f-dietary_notes',label:'Dietary notes',type:'text'},
+    {id:'__allergies',label:'Allergies',type:'dynamic'}
+  ]},
+  mobility:{tab:'essentials',title:'MOBILITY & ACCESSIBILITY',cta:'Set up Mobility',desc:'Wheelchair service, sensory impairments, and boarding needs',fields:[
+    {id:'f-wheelchair_service',label:'Wheelchair service',type:'select'},
+    {id:'f-visual_impairment',label:'Visual impairment',type:'select'},
+    {id:'f-hearing_impairment',label:'Hearing impairment',type:'select'},
+    {id:'f-service_animal',label:'Service animal',type:'select'},
+    {id:'f-mobility_notes',label:'Notes',type:'text'}
+  ]},
+  medical:{tab:'essentials',title:'MEDICAL & SPECIAL ASSISTANCE',cta:'Set up Medical',desc:'Medical conditions, medication, and in-flight special assistance',fields:[
+    {id:'f-medical_conditions',label:'Medical conditions',type:'text'},
+    {id:'f-medication_special',label:'Medication needs power/refrigeration',type:'checkbox'},
+    {id:'f-oxygen_required',label:'Oxygen required in-flight',type:'checkbox'},
+    {id:'f-stretcher_required',label:'Stretcher required',type:'checkbox'},
+    {id:'f-pregnancy_week',label:'Pregnancy week',type:'text'},
+    {id:'f-dvt_risk',label:'DVT / long-flight mobility risk',type:'checkbox'}
+  ]},
+  traveling_with:{tab:'essentials',title:'TRAVELING WITH',cta:'Set up Traveling With',desc:'Children, pets, and oversized equipment you bring on trips',fields:[
+    {id:'f-children_count',label:'Children',type:'text'},
+    {id:'f-children_ages',label:'Children ages',type:'text'},
+    {id:'f-infant_under_2',label:'Infant under 2',type:'checkbox'},
+    {id:'f-unaccompanied_minor',label:'Unaccompanied minor service',type:'checkbox'},
+    {id:'f-pet_traveling',label:'Traveling with pet',type:'checkbox'},
+    {id:'f-pet_type',label:'Pet type',type:'select'},
+    {id:'f-pet_breed',label:'Breed',type:'text'},
+    {id:'f-pet_weight_kg',label:'Pet weight (kg)',type:'text'},
+    {id:'f-pet_carrier_dimensions',label:'Carrier dimensions',type:'text'},
+    {id:'f-equip_skis',label:'Skis',type:'checkbox'},
+    {id:'f-equip_snowboard',label:'Snowboard',type:'checkbox'},
+    {id:'f-equip_golf',label:'Golf clubs',type:'checkbox'},
+    {id:'f-equip_surfboard',label:'Surfboard',type:'checkbox'},
+    {id:'f-equip_bicycle',label:'Bicycle',type:'checkbox'},
+    {id:'f-equip_musical',label:'Musical instrument',type:'checkbox'},
+    {id:'f-equip_diving',label:'Diving gear',type:'checkbox'},
+    {id:'f-equip_fishing',label:'Fishing rods',type:'checkbox'},
+    {id:'f-equip_firearms',label:'Firearms (declared)',type:'checkbox'},
+    {id:'f-equip_other',label:'Other equipment',type:'text'}
+  ]},
+  cabin:{tab:'fly',title:'FLIGHT CABIN & POSITION',cta:'Set up Cabin & Position',desc:'Preferred cabin class and seat position — domestic and international',fields:[
+    {id:'f-cabin_domestic',label:'Cabin — Domestic',type:'select'},
+    {id:'f-cabin_international',label:'Cabin — International',type:'select'},
+    {id:'f-seat_position',label:'Seat position',type:'select'},
+    {id:'f-row_preference',label:'Row preference',type:'select'}
+  ]},
+  seat_comfort:{tab:'fly',title:'SEAT COMFORT',cta:'Set up Seat Comfort',desc:'Seat restrictions — avoid middles, last rows, wheelchair boarding',fields:[
+    {id:'f-avoid_middle_seats',label:'Avoid middle seats',type:'checkbox'},
+    {id:'f-avoid_last_row',label:'Avoid last row',type:'checkbox'},
+    {id:'f-wheelchair_needed',label:'Wheelchair assistance',type:'checkbox'}
+  ]},
+  routing:{tab:'fly',title:'ROUTING',cta:'Set up Routing',desc:'Connection limits, hub airports, and timing preferences',fields:[
+    {id:'f-nonstop_pref',label:'Nonstop preference',type:'select'},
+    {id:'f-max_connections',label:'Max connections',type:'select'},
+    {id:'f-min_connection_minutes',label:'Min connection time',type:'text'},
+    {id:'f-max_connection_minutes',label:'Max connection time',type:'text'},
+    {id:'f-hubs_preferred',label:'Preferred hubs',type:'text'},
+    {id:'f-hubs_avoid',label:'Hubs to avoid',type:'text'},
+    {id:'f-departure_time_pref',label:'Departure time',type:'select'},
+    {id:'f-arrival_time_avoid',label:'Arrival to avoid',type:'select'},
+    {id:'f-max_journey_hours',label:'Max journey (hrs)',type:'text'}
+  ]},
+  trip_context:{tab:'travel',title:'TRIP CONTEXT',cta:'Set up Trip Context',desc:'Business/leisure split, typical trip length, and home origin',fields:[
+    {id:'f-purpose_business_pct',label:'Business travel %',type:'text'},
+    {id:'f-purpose_leisure_pct',label:'Leisure travel %',type:'text'},
+    {id:'f-trip_length_typical',label:'Typical trip length',type:'select'},
+    {id:'f-home_origin',label:'Home origin',type:'text'}
+  ]},
+  pace_style:{tab:'travel',title:'PACE & STYLE',cta:'Set up Pace & Style',desc:'Travel rhythm — slow or fast, planned or spontaneous',fields:[
+    {id:'f-travel_pace',label:'Travel pace',type:'select'},
+    {id:'f-planning_style',label:'Planning style',type:'select'},
+    {id:'f-group_preference',label:'Usual group',type:'select'},
+    {id:'f-activity_load',label:'Daily activity load',type:'select'},
+    {id:'f-circadian_pref',label:'Early riser or night owl',type:'select'}
+  ]},
+  budget:{tab:'travel',title:'BUDGET & FLEXIBILITY',cta:'Set up Budget',desc:'Budget tier, splurge targets, and refund priority',fields:[
+    {id:'f-budget_priority',label:'Budget priority',type:'slider',labels:{1:'Cheapest',2:'Value',3:'Balanced',4:'Premium',5:'Luxury'}},
+    {id:'f-splurge_target',label:'If you splurge',type:'select'},
+    {id:'f-refundability_priority',label:'Refundability',type:'select'},
+    {id:'f-change_fee_tolerance',label:'Change fee tolerance',type:'select'},
+    {id:'f-payment_style',label:'Payment style',type:'select'}
+  ]},
+  risk:{tab:'travel',title:'RISK TOLERANCE',cta:'Set up Risk Tolerance',desc:'Tolerance for weather, geopolitical, and health risk',fields:[
+    {id:'f-weather_risk',label:'Weather risk',type:'select'},
+    {id:'f-geopolitical_risk',label:'Geopolitical risk',type:'select'},
+    {id:'f-health_risk',label:'Health risk',type:'select'},
+    {id:'f-insurance_level',label:'Travel insurance',type:'select'}
+  ]},
+  sustainability:{tab:'travel',title:'SUSTAINABILITY',cta:'Set up Sustainability',desc:'Carbon awareness, offsets, and sustainable travel choices',fields:[
+    {id:'f-carbon_awareness',label:'Carbon footprint awareness',type:'slider',labels:{1:"Don't think about it",2:'Mildly aware',3:'Moderate',4:'Highly aware',5:'Drives my choices'}},
+    {id:'f-offset_willingness',label:'Carbon offsets',type:'select'},
+    {id:'f-saf_preference',label:'Prefer SAF carriers',type:'select'},
+    {id:'f-train_alternative',label:'Train for short flights',type:'select'}
+  ]},
+  comms:{tab:'travel',title:'COMMS & PRIVACY',cta:'Set up Comms & Privacy',desc:'How and how often UniProfile contacts you, and data sharing',fields:[
+    {id:'f-comm_channel',label:'Communication channel',type:'select'},
+    {id:'f-comm_frequency',label:'Notification frequency',type:'select'},
+    {id:'f-marketing_optin',label:'Marketing comms',type:'select'},
+    {id:'f-data_sharing',label:'Data sharing',type:'select'},
+    {id:'f-biometric_acceptance',label:'Biometric acceptance',type:'select'}
+  ]},
+  hotel:{tab:'travel',title:'HOTEL PREFERENCES',cta:'Set up Hotel Preferences',desc:'Room type, floor, smoking, views, pillow, bed firmness, and accessibility',fields:[
+    {id:'f-hotel_room_type',label:'Room type',type:'select'},
+    {id:'f-hotel_floor_pref',label:'Floor preference',type:'select'},
+    {id:'__smoking',label:'Smoking preference',type:'radio',name:'smoking_preference'},
+    {id:'f-pillow_preference',label:'Pillow preference',type:'select'},
+    {id:'f-bed_firmness_preference',label:'Bed firmness',type:'select'},
+    {id:'__views',label:'Room views',type:'multicheck',ids:['f-view_OCEAN','f-view_CITY','f-view_POOL','f-view_GARDEN','f-view_MOUNTAIN','f-view_COURTYARD'],labels:{f_view_OCEAN:'Ocean',f_view_CITY:'City',f_view_POOL:'Pool',f_view_GARDEN:'Garden',f_view_MOUNTAIN:'Mountain',f_view_COURTYARD:'Courtyard'}},
+    {id:'f-late_checkout_auto_request',label:'Late checkout auto-request',type:'checkbox'},
+    {id:'f-ada_room_required',label:'ADA-accessible room required',type:'checkbox'}
+  ]},
+  ground:{tab:'travel',title:'GROUND TRANSPORT',cta:'Set up Ground Transport',desc:'Your preferred car type for rentals',single:true,fields:[
+    {id:'f-car_type_pref',label:'Car type',type:'select'}
+  ]}
+};
+
+const pcState={};
+const pcPrevState={};
+const pcSnap={};
+
+function pcGetFieldValue(f){
+  if(f.type==='checkbox'){const el=document.getElementById(f.id);return el?el.checked:false;}
+  if(f.type==='radio'){const el=document.querySelector('input[name="'+f.name+'"]:checked');return el?el.value:'';}
+  if(f.type==='multicheck'){const vals=[];(f.ids||[]).forEach(function(id){const el=document.getElementById(id);if(el&&el.checked){const key=id.replace(/-/g,'_');vals.push(f.labels[key]||id);}});return vals;}
+  if(f.type==='slider'){const el=document.getElementById(f.id);const v=el?parseInt(el.value):3;return(f.labels&&f.labels[v])||String(v);}
+  if(f.type==='dynamic'){const al=collectAllergies();return al.map(function(a){return a.name+(a.severity?' ('+a.severity+')':'');}).join(', ');}
+  const el=document.getElementById(f.id);
+  return el?(el.value||''):'';
+}
+
+function pcFieldFilled(f){
+  const val=pcGetFieldValue(f);
+  if(f.type==='checkbox')return val===true;
+  if(f.type==='multicheck')return Array.isArray(val)&&val.length>0;
+  if(f.type==='dynamic')return typeof val==='string'&&val.length>0;
+  if(f.type==='radio'||f.type==='slider'||f.type==='select')return true;
+  return typeof val==='string'&&val.trim().length>0;
+}
+
+function pcFieldDisplayValue(f){
+  const val=pcGetFieldValue(f);
+  if(f.type==='checkbox')return val?f.label:null;
+  if(f.type==='multicheck'){return Array.isArray(val)&&val.length>0?val.join(', '):null;}
+  if(f.type==='dynamic')return val||null;
+  if(typeof val==='string'&&val.trim()==='')return null;
+  return val||null;
+}
+
+function pcRenderSaved(id){
+  const cfg=PREF_SECTIONS[id];if(!cfg)return;
+  const card=document.getElementById('card-'+id);if(!card)return;
+  const fieldsEl=card.querySelector('.pc-saved-fields');
+  const moreBtn=card.querySelector('.pc-more-btn');
+  const moreList=card.querySelector('.pc-more-list');
+  const counter=card.querySelector('.pc-counter');
+  if(!fieldsEl)return;
+  const filled=[];const empty=[];
+  cfg.fields.forEach(function(f){
+    const disp=pcFieldDisplayValue(f);
+    if(disp!==null){filled.push({label:f.type==='checkbox'?null:f.label,val:disp,isCheck:f.type==='checkbox'});}
+    else{empty.push(f);}
+  });
+  fieldsEl.innerHTML=filled.map(function(r){
+    if(r.isCheck)return '<div class="pc-field-row"><span class="pc-fv">'+r.val+'</span></div>';
+    return '<div class="pc-field-row"><span class="pc-fl">'+r.label+'</span><span class="pc-fv">'+r.val+'</span></div>';
+  }).join('');
+  const total=cfg.fields.length;
+  const filledCount=cfg.fields.filter(function(f){return pcFieldFilled(f);}).length;
+  if(counter&&!cfg.single){
+    if(filledCount>=total){counter.textContent='✓ Complete';counter.className='pc-counter complete';}
+    else{counter.textContent=filledCount+' of '+total;counter.className='pc-counter';}
+  }
+  if(moreBtn&&moreList&&!cfg.single){
+    if(empty.length>0){
+      moreList.innerHTML=empty.map(function(f){return'<button class="pc-more-label" onclick="pcFocusField(\''+id+'\',\''+f.id+'\')">'+f.label+'</button>';}).join('');
+      moreBtn.style.display='block';
+    }else{moreBtn.style.display='none';}
+    moreList.style.display='none';
+    moreBtn.textContent='Add more details →';
+  }
+}
+
+function pcToggleMore(id){
+  const card=document.getElementById('card-'+id);if(!card)return;
+  const moreList=card.querySelector('.pc-more-list');
+  const moreBtn=card.querySelector('.pc-more-btn');
+  if(!moreList)return;
+  const open=moreList.style.display==='flex'||moreList.style.display==='block';
+  moreList.style.display=open?'none':'flex';
+  if(moreBtn)moreBtn.textContent=open?'Add more details →':'Show less';
+}
+
+function pcRender(id){
+  const card=document.getElementById('card-'+id);if(!card)return;
+  const state=pcState[id]||'empty';
+  card.querySelectorAll('.pc-view').forEach(function(v){v.style.display='none';});
+  if(state==='empty'){const v=card.querySelector('.pc-empty');if(v)v.style.display='';}
+  else if(state==='saved'){const v=card.querySelector('.pc-saved');if(v)v.style.display='';pcRenderSaved(id);}
+  else if(state==='editing'){const v=card.querySelector('.pc-editing');if(v)v.style.display='';}
+}
+
+function pcSnapshotSection(id){
+  const cfg=PREF_SECTIONS[id];if(!cfg)return;
+  const snap=[];
+  cfg.fields.forEach(function(f){
+    if(f.type==='checkbox'){const el=document.getElementById(f.id);snap.push({type:'checkbox',id:f.id,value:el?el.checked:false});}
+    else if(f.type==='radio'){const el=document.querySelector('input[name="'+f.name+'"]:checked');snap.push({type:'radio',name:f.name,value:el?el.value:''});}
+    else if(f.type==='multicheck'){(f.ids||[]).forEach(function(mid){const el=document.getElementById(mid);snap.push({type:'checkbox',id:mid,value:el?el.checked:false});});}
+    else if(f.type==='slider'){const el=document.getElementById(f.id);snap.push({type:'slider',id:f.id,value:el?el.value:'3'});}
+    else if(f.type==='dynamic'){snap.push({type:'dynamic',value:JSON.stringify(collectAllergies())});}
+    else{const el=document.getElementById(f.id);snap.push({type:'text',id:f.id,value:el?el.value:''});}
+  });
+  pcSnap[id]=snap;
+}
+
+function pcRestoreSnapshot(id){
+  const snap=pcSnap[id];if(!snap)return;
+  snap.forEach(function(entry){
+    if(entry.type==='checkbox'){const el=document.getElementById(entry.id);if(el)el.checked=entry.value;}
+    else if(entry.type==='radio'){document.querySelectorAll('input[name="'+entry.name+'"]').forEach(function(r){r.checked=r.value===entry.value;});}
+    else if(entry.type==='slider'){const el=document.getElementById(entry.id);if(el){el.value=entry.value;if(entry.id==='f-budget_priority')updateBudgetReadout(entry.value);if(entry.id==='f-carbon_awareness')updateCarbonReadout(entry.value);}}
+    else if(entry.type==='dynamic'){/* allergy restore skipped — complex; cancel returns to saved which re-renders */}
+    else{const el=document.getElementById(entry.id);if(el)el.value=entry.value;}
+  });
+}
+
+function pcEdit(id){
+  pcSnapshotSection(id);
+  pcPrevState[id]=pcState[id]||'empty';
+  pcState[id]='editing';
+  pcRender(id);
+  const card=document.getElementById('card-'+id);
+  if(card)card.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function pcCancel(id){
+  pcRestoreSnapshot(id);
+  pcState[id]=pcPrevState[id]||'empty';
+  pcRender(id);
+}
+
+function pcFocusField(id,fieldId){
+  pcEdit(id);
+  setTimeout(function(){
+    const el=document.getElementById(fieldId)||document.querySelector('input[name="'+fieldId+'"]');
+    if(el){el.focus();el.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  },50);
+}
+
+async function pcSave(id){
+  const cfg=PREF_SECTIONS[id];if(!cfg)return;
+  const btn=document.querySelector('#card-'+id+' .pc-save-btn');
+  if(btn){btn.disabled=true;btn.textContent='Saving...';}
+  const ok=await saveSection();
+  if(ok){pcState[id]='saved';pcRender(id);}
+  if(btn){btn.disabled=false;btn.textContent='Save';}
+}
+
+function pcInitStates(p){
+  const hasEssentials=!!(p.essentials);
+  const hasFly=!!(p.fly_preferences);
+  const hasTravel=!!(p.travel_preferences);
+  Object.keys(PREF_SECTIONS).forEach(function(id){
+    const tab=PREF_SECTIONS[id].tab;
+    let hasData=false;
+    if(tab==='essentials')hasData=hasEssentials;
+    else if(tab==='fly')hasData=hasFly;
+    else if(tab==='travel')hasData=hasTravel;
+    if(!pcState[id]||pcState[id]==='empty'||pcState[id]==='saved'){
+      pcState[id]=hasData?'saved':'empty';
+    }
+    pcRender(id);
+  });
+}
+
 function calcCompleteness(p){var checks=[{label:"Identity",weight:25,section:"identity",done:!!(p.identity&&p.identity.legal_first&&p.identity.legal_last&&p.identity.dob&&p.identity.nationality)},{label:"Passport",weight:20,section:"identity",done:!!(p.documents&&p.documents.some(function(d){return d.doc_type==="PASSPORT";}))},{label:"Seat preferences",weight:15,section:"preferences",done:!!(p.seat_preferences&&p.seat_preferences.cabin_domestic)},{label:"Meal preference",weight:10,section:"meals",done:!!(p.meal_preferences&&p.meal_preferences.primary_meal_code)},{label:"Loyalty program",weight:15,section:"loyalty",done:!!(p.loyalty_programs&&p.loyalty_programs.length)},{label:"Payment profile",weight:10,section:"payment",done:!!(p.payment_profiles&&p.payment_profiles.length)},{label:"First trip",weight:5,section:"trips",done:!!(p.trips&&p.trips.length)},];var pct=checks.reduce(function(s,c){return s+(c.done?c.weight:0);},0);var missing=checks.filter(function(c){return !c.done;});return{pct:pct,done:checks.length-missing.length,total:checks.length,missing:missing};}
 function navToSection(s){showSection(s,document.querySelector('.nav-btn[onclick*="\'"+s+"\'"]'));}
 function exportAllData(){if(!profile)return toast("Profile not loaded yet","error");const blob=new Blob([JSON.stringify(profile,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`uniprofile-export-${(profile.uniprofile_number||"data").toLowerCase()}.json`;a.click();URL.revokeObjectURL(url);toast("Export downloaded","success");}
@@ -2918,7 +3367,7 @@ const fly=p.fly_preferences||null;
 if(fly){const sp=p.seat_preferences;s("f-cabin_domestic",fly.cabin_domestic||(sp&&sp.cabin_domestic));s("f-cabin_international",fly.cabin_international||(sp&&sp.cabin_international));s("f-seat_position",fly.seat_position||(sp&&sp.seat_position));s("f-row_preference",fly.row_preference||(sp&&sp.row_preference));sc("f-avoid_middle_seats",fly.avoid_middle_seats!==undefined?fly.avoid_middle_seats:(sp&&sp.avoid_middle_seats));sc("f-avoid_last_row",fly.avoid_last_row!==undefined?fly.avoid_last_row:(sp&&sp.avoid_last_row));sc("f-wheelchair_needed",fly.wheelchair_needed!==undefined?fly.wheelchair_needed:(sp&&sp.wheelchair_needed));s("f-nonstop_pref",fly.nonstop_pref);s("f-max_connections",fly.max_connections);s("f-min_connection_minutes",fly.min_connection_minutes);s("f-max_connection_minutes",fly.max_connection_minutes);s("f-hubs_preferred",fly.hubs_preferred);s("f-hubs_avoid",fly.hubs_avoid);s("f-departure_time_pref",fly.departure_time_pref);s("f-arrival_time_avoid",fly.arrival_time_avoid);s("f-max_journey_hours",fly.max_journey_hours);}
 const tr=p.travel_preferences||null;
 if(tr){const sp=p.seat_preferences;s("f-purpose_business_pct",tr.purpose_business_pct);s("f-purpose_leisure_pct",tr.purpose_leisure_pct);s("f-trip_length_typical",tr.trip_length_typical);s("f-home_origin",tr.home_origin);s("f-travel_pace",tr.travel_pace);s("f-planning_style",tr.planning_style);s("f-group_preference",tr.group_preference);s("f-activity_load",tr.activity_load);s("f-circadian_pref",tr.circadian_pref);s("f-budget_priority",tr.budget_priority||3);updateBudgetReadout(tr.budget_priority||3);s("f-splurge_target",tr.splurge_target);s("f-refundability_priority",tr.refundability_priority);s("f-change_fee_tolerance",tr.change_fee_tolerance);s("f-payment_style",tr.payment_style);s("f-weather_risk",tr.weather_risk);s("f-geopolitical_risk",tr.geopolitical_risk);s("f-health_risk",tr.health_risk);s("f-insurance_level",tr.insurance_level);s("f-carbon_awareness",tr.carbon_awareness||3);updateCarbonReadout(tr.carbon_awareness||3);s("f-offset_willingness",tr.offset_willingness);s("f-saf_preference",tr.saf_preference);s("f-train_alternative",tr.train_alternative);s("f-comm_channel",tr.comm_channel);s("f-comm_frequency",tr.comm_frequency);s("f-marketing_optin",tr.marketing_optin);s("f-data_sharing",tr.data_sharing);s("f-biometric_acceptance",tr.biometric_acceptance);s("f-hotel_room_type",tr.hotel_room_type||(sp&&sp.hotel_room_type));s("f-hotel_floor_pref",tr.hotel_floor_pref||(sp&&sp.hotel_floor_pref));document.querySelectorAll('input[name="smoking_preference"]').forEach(function(r){r.checked=r.value===(tr.smoking_preference||"NON_SMOKING");});["OCEAN","CITY","POOL","GARDEN","MOUNTAIN","COURTYARD"].forEach(function(k){var el=document.getElementById("f-view_"+k);if(el)el.checked=(tr.room_view_preferences||[]).indexOf(k)>-1;});s("f-pillow_preference",tr.pillow_preference||"NO_PREFERENCE");s("f-bed_firmness_preference",tr.bed_firmness_preference||"NO_PREFERENCE");sc("f-late_checkout_auto_request",tr.late_checkout_auto_request);sc("f-ada_room_required",tr.ada_room_required);s("f-car_type_pref",tr.car_type_pref||(sp&&sp.car_type_pref));}
-renderLoyalty(p.loyalty_programs||[]);renderPayment(p.payment_profiles||[],p.identity);renderTrips(p.trips||[]);s("api-uuid",p.uuid);grpData=p.groups||[];if(!grpData.length)grpLoadLocal();consentData=p.consent||{};renderConsentPermissions();}
+renderLoyalty(p.loyalty_programs||[]);renderPayment(p.payment_profiles||[],p.identity);renderTrips(p.trips||[]);s("api-uuid",p.uuid);grpData=p.groups||[];if(!grpData.length)grpLoadLocal();consentData=p.consent||{};renderConsentPermissions();pcInitStates(p);}
 
 let editingLoyaltyId = null;
 
