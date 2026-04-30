@@ -37,3 +37,5 @@ yarn-debug.log*
 # Misc
 .cache/
 .parcel-cache/
+lambda/node_modules/
+lambda/package-lock.json
