@@ -115,6 +115,11 @@ async function updateModule(uuid,module,data){
     case "loyalty_delete":
       await sql("UPDATE loyalty_memberships SET is_active=FALSE WHERE id=:lid AND traveler_uuid=:u",[uuidParam("lid",data.loyalty_id),uuidParam("u",uuid)]);
       break;
+    case "trip_add":{
+      if(!data.destination_iata)throw {status:400,message:"destination_iata required"};
+      await sql("INSERT INTO trips (traveler_uuid,trip_name,trip_locator,departure_date,return_date,origin_iata,destination_iata,trip_context,source_platform,notes) VALUES (:u,:name,:pnr,:dep,:ret,:orig,:dest,:ctx,'manual',:notes)",[uuidParam("u",uuid),strParam("name",data.trip_name||(data.origin_iata||"?")+"-"+(data.destination_iata||"?")),strParam("pnr",data.trip_locator),dateParam("dep",data.departure_date),dateParam("ret",data.return_date),strParam("orig",data.origin_iata?data.origin_iata.toUpperCase().slice(0,3):null),strParam("dest",data.destination_iata?data.destination_iata.toUpperCase().slice(0,3):null),strParam("ctx",data.trip_context||"PERSONAL"),strParam("notes",data.notes)]);
+      break;
+    }
     case "trip_delete":
       await sql("DELETE FROM trips WHERE id=:tid AND traveler_uuid=:u",[uuidParam("tid",data.trip_id),uuidParam("u",uuid)]);
       break;
