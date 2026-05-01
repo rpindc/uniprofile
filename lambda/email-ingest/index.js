@@ -52,18 +52,17 @@ function parseMime(raw) {
     if (!headers[key]) headers[key] = val;
   }
 
-  const fromHeader = headers["from"] || "";
+  const toHeader   = headers["to"]   || "";
   const subjectRaw = headers["subject"] || "";
   const subject    = decodeEncodedWords(subjectRaw);
   const ct         = headers["content-type"] || "text/plain";
 
-  // Extract sender email address
-  const angleMatch = fromHeader.match(/<([^>]+@[^>]+)>/);
-  const bareMatch  = fromHeader.match(/([^\s<>"]+@[^\s<>"]+)/);
-  const fromEmail  = (angleMatch ? angleMatch[1] : bareMatch ? bareMatch[1] : "").toLowerCase().trim();
+  // Extract UniProfile number from To: header — e.g. UP-123456@trips.uniprofile.net
+  const upMatch  = toHeader.match(/UP-(\d{6})@/i);
+  const upNumber = upMatch ? "UP-" + upMatch[1] : null;
 
   const text = extractText(ct, bodyBlock, 10000);
-  return { fromEmail, subject, text };
+  return { upNumber, subject, text };
 }
 
 function decodeEncodedWords(str) {
@@ -231,18 +230,18 @@ exports.handler = async function(event) {
       const obj = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
       const rawEmail = await obj.Body.transformToString();
 
-      const { fromEmail, subject, text } = parseMime(rawEmail);
-      console.log("From:", fromEmail || "(none)", "| Subject:", subject.slice(0, 80));
+      const { upNumber, subject, text } = parseMime(rawEmail);
+      console.log("To UP:", upNumber || "(none)", "| Subject:", subject.slice(0, 80));
 
-      if (!fromEmail) { console.log("No sender address — skipping"); continue; }
+      if (!upNumber) { console.log("No UP number in To: header — skipping"); continue; }
 
-      // Identify traveler by registered email
+      // Identify traveler by UniProfile number
       const rows = await sql(
-        "SELECT uuid FROM travelers WHERE LOWER(email)=:e",
-        [strParam("e", fromEmail)]
+        "SELECT uuid FROM travelers WHERE uniprofile_number=:n",
+        [strParam("n", upNumber)]
       );
       if (!rows.length) {
-        console.log("No traveler found for:", fromEmail, "— ignoring email");
+        console.log("No traveler found for:", upNumber, "— ignoring email");
         continue;
       }
       const travelerUuid = rows[0].uuid;

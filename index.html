@@ -1949,11 +1949,11 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         <div style="background:var(--greenGlow);border:1px solid var(--greenBorder);border-radius:var(--radius-md);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px">
           <div style="font-size:24px">&#128231;</div>
           <div style="flex:1">
-            <div style="font-size:12px;font-weight:500;color:var(--green);margin-bottom:4px">Add trips instantly — forward any booking confirmation email</div>
-            <div style="font-size:13px;color:var(--text);font-family:JetBrains Mono,monospace;background:var(--surface);display:inline-block;padding:4px 10px;border-radius:4px;border:1px solid var(--border2)">trips@uniprofile.net</div>
-            <div style="font-size:11px;color:var(--textDim);margin-top:6px">Flights, hotels, car rentals from any airline or booking platform — parsed automatically</div>
+            <div style="font-size:12px;font-weight:500;color:var(--green);margin-bottom:4px">Your personal trip inbox — forward any booking confirmation here</div>
+            <div id="trip-fwd-address" style="font-size:13px;color:var(--text);font-family:JetBrains Mono,monospace;background:var(--surface);display:inline-block;padding:4px 10px;border-radius:4px;border:1px solid var(--border2)">loading…</div>
+            <div style="font-size:11px;color:var(--textDim);margin-top:6px">Flights, hotels, cruises, car rentals — parsed automatically from any booking platform</div>
           </div>
-          <button onclick="navigator.clipboard.writeText('trips@uniprofile.net').then(function(){toast('Copied!','success')})" style="padding:8px 14px;background:var(--ink);color:var(--goldDim);border:none;border-radius:var(--radius-sm);font-size:11px;cursor:pointer;white-space:nowrap;font-family:DM Sans,sans-serif">Copy Address</button>
+          <button id="trip-fwd-copy-btn" onclick="copyTripAddress()" style="padding:8px 14px;background:var(--ink);color:var(--goldDim);border:none;border-radius:var(--radius-sm);font-size:11px;cursor:pointer;white-space:nowrap;font-family:DM Sans,sans-serif">Copy Address</button>
         </div>
         <div class="trip-list" id="trip-list"><div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips in vault yet</div><div class="empty-sub">Forward any booking confirmation to trips@uniprofile.net — flights, hotels, cruises parsed automatically</div></div></div>
       </section>
@@ -3368,7 +3368,7 @@ const fly=p.fly_preferences||null;
 if(fly){const sp=p.seat_preferences;s("f-cabin_domestic",fly.cabin_domestic||(sp&&sp.cabin_domestic));s("f-cabin_international",fly.cabin_international||(sp&&sp.cabin_international));s("f-seat_position",fly.seat_position||(sp&&sp.seat_position));s("f-row_preference",fly.row_preference||(sp&&sp.row_preference));sc("f-avoid_middle_seats",fly.avoid_middle_seats!==undefined?fly.avoid_middle_seats:(sp&&sp.avoid_middle_seats));sc("f-avoid_last_row",fly.avoid_last_row!==undefined?fly.avoid_last_row:(sp&&sp.avoid_last_row));sc("f-wheelchair_needed",fly.wheelchair_needed!==undefined?fly.wheelchair_needed:(sp&&sp.wheelchair_needed));s("f-nonstop_pref",fly.nonstop_pref);s("f-max_connections",fly.max_connections);s("f-min_connection_minutes",fly.min_connection_minutes);s("f-max_connection_minutes",fly.max_connection_minutes);s("f-hubs_preferred",fly.hubs_preferred);s("f-hubs_avoid",fly.hubs_avoid);s("f-departure_time_pref",fly.departure_time_pref);s("f-arrival_time_avoid",fly.arrival_time_avoid);s("f-max_journey_hours",fly.max_journey_hours);}
 const tr=p.travel_preferences||null;
 if(tr){const sp=p.seat_preferences;s("f-purpose_business_pct",tr.purpose_business_pct);s("f-purpose_leisure_pct",tr.purpose_leisure_pct);s("f-trip_length_typical",tr.trip_length_typical);s("f-home_origin",tr.home_origin);s("f-travel_pace",tr.travel_pace);s("f-planning_style",tr.planning_style);s("f-group_preference",tr.group_preference);s("f-activity_load",tr.activity_load);s("f-circadian_pref",tr.circadian_pref);s("f-budget_priority",tr.budget_priority||3);updateBudgetReadout(tr.budget_priority||3);s("f-splurge_target",tr.splurge_target);s("f-refundability_priority",tr.refundability_priority);s("f-change_fee_tolerance",tr.change_fee_tolerance);s("f-payment_style",tr.payment_style);s("f-weather_risk",tr.weather_risk);s("f-geopolitical_risk",tr.geopolitical_risk);s("f-health_risk",tr.health_risk);s("f-insurance_level",tr.insurance_level);s("f-carbon_awareness",tr.carbon_awareness||3);updateCarbonReadout(tr.carbon_awareness||3);s("f-offset_willingness",tr.offset_willingness);s("f-saf_preference",tr.saf_preference);s("f-train_alternative",tr.train_alternative);s("f-comm_channel",tr.comm_channel);s("f-comm_frequency",tr.comm_frequency);s("f-marketing_optin",tr.marketing_optin);s("f-data_sharing",tr.data_sharing);s("f-biometric_acceptance",tr.biometric_acceptance);s("f-hotel_room_type",tr.hotel_room_type||(sp&&sp.hotel_room_type));s("f-hotel_floor_pref",tr.hotel_floor_pref||(sp&&sp.hotel_floor_pref));document.querySelectorAll('input[name="smoking_preference"]').forEach(function(r){r.checked=r.value===(tr.smoking_preference||"NON_SMOKING");});["OCEAN","CITY","POOL","GARDEN","MOUNTAIN","COURTYARD"].forEach(function(k){var el=document.getElementById("f-view_"+k);if(el)el.checked=(tr.room_view_preferences||[]).indexOf(k)>-1;});s("f-pillow_preference",tr.pillow_preference||"NO_PREFERENCE");s("f-bed_firmness_preference",tr.bed_firmness_preference||"NO_PREFERENCE");sc("f-late_checkout_auto_request",tr.late_checkout_auto_request);sc("f-ada_room_required",tr.ada_room_required);s("f-car_type_pref",tr.car_type_pref||(sp&&sp.car_type_pref));}
-renderLoyalty(p.loyalty_programs||[]);renderPayment(p.payment_profiles||[],p.identity);renderTrips(p.trips||[]);s("api-uuid",p.uuid);grpData=p.groups||[];if(!grpData.length)grpLoadLocal();consentData=p.consent||{};renderConsentPermissions();pcInitStates(p);}
+renderLoyalty(p.loyalty_programs||[]);renderPayment(p.payment_profiles||[],p.identity);renderTrips(p.trips||[]);renderTripInbox(p.uniprofile_number);s("api-uuid",p.uuid);grpData=p.groups||[];if(!grpData.length)grpLoadLocal();consentData=p.consent||{};renderConsentPermissions();pcInitStates(p);}
 
 let editingLoyaltyId = null;
 
@@ -3535,6 +3535,15 @@ const AIRLINE_COLORS={"UA":"#0066CC","AA":"#CC0000","DL":"#9B2335","AS":"#00693E
 const PASSPORT_REQUIRED=["LHR","CDG","NRT","SIN","DXB","SYD","GRU","JNB","DEL","PEK","ICN","BKK","KUL","DOH","AMS","FRA","ZRH","FCO","MAD","BCN"];
 function airlineColor(c){return AIRLINE_COLORS[c]||AIRLINE_COLORS.default;}
 function renderTrips(trips){allTrips=trips;applyTripFilter(activeFilter);}
+let _tripInboxAddr="";
+function renderTripInbox(upNumber){
+  _tripInboxAddr=upNumber?(upNumber+"@trips.uniprofile.net"):"trips@uniprofile.net";
+  const el=document.getElementById("trip-fwd-address");
+  if(el)el.textContent=_tripInboxAddr;
+}
+function copyTripAddress(){
+  navigator.clipboard.writeText(_tripInboxAddr).then(function(){toast("Copied!","success");});
+}
 function filterTrips(filter,btn){document.querySelectorAll(".trip-filter-btn").forEach(b=>b.classList.remove("active"));if(btn)btn.classList.add("active");activeFilter=filter;applyTripFilter(filter);}
 function applyTripFilter(filter){
   const list=document.getElementById("trip-list");if(!list)return;
