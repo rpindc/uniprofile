@@ -1955,7 +1955,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
           </div>
           <button id="trip-fwd-copy-btn" onclick="copyTripAddress()" style="padding:8px 14px;background:var(--ink);color:var(--goldDim);border:none;border-radius:var(--radius-sm);font-size:11px;cursor:pointer;white-space:nowrap;font-family:DM Sans,sans-serif">Copy Address</button>
         </div>
-        <div class="trip-list" id="trip-list"><div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips in vault yet</div><div class="empty-sub">Forward any booking confirmation to trips@uniprofile.net — flights, hotels, cruises parsed automatically</div></div></div>
+        <div class="trip-list" id="trip-list"><div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips in vault yet</div><div class="empty-sub">Forward any booking confirmation to your personal address above — flights, hotels, cruises, car rentals parsed automatically</div></div></div>
       </section>
 
       <section class="section" id="section-family">
@@ -3553,7 +3553,7 @@ function applyTripFilter(filter){
   else if(filter==="business")filtered=allTrips.filter(t=>t.trip_context==="CORPORATE");
   else if(filter==="personal")filtered=allTrips.filter(t=>t.trip_context==="PERSONAL");
   else if(filter==="bleisure")filtered=allTrips.filter(t=>t.trip_context==="BLEISURE");
-  if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips found</div><div class="empty-sub">Forward any booking confirmation to trips@uniprofile.net</div></div>';return;}
+  if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips found</div><div class="empty-sub">Forward any booking confirmation to <span style="font-family:JetBrains Mono,monospace">'+(_tripInboxAddr||"your trip inbox")+'</span></div></div>';return;}
   const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   function fmtDate(ds){if(!ds)return"";const d=new Date(ds);return d.getDate()+" "+months[d.getMonth()]+" "+d.getFullYear();}
   function fmtTime(ds){if(!ds)return"";const d=new Date(ds);return d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:false});}
