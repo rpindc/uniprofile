@@ -3602,6 +3602,22 @@ function applyTripFilter(filter){
 
     // Segment cards
     var segCards="";
+
+    // No-segment trips (hotel, cruise, car rental) — show a summary card instead
+    if(!segs.length){
+      var typeIcon=t.origin_iata===t.destination_iata?'🏨':'🗺';
+      var nights=r&&d?Math.round((r-d)/86400000):null;
+      segCards='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 18px;display:flex;align-items:center;gap:16px">'+
+        '<div style="font-size:28px">'+typeIcon+'</div>'+
+        '<div style="flex:1">'+
+          '<div style="font-size:13px;font-weight:500;color:var(--text)">'+(t.trip_name||"Booking")+'</div>'+
+          (t.trip_locator?'<div style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--accent);margin-top:2px">Ref: '+t.trip_locator+'</div>':"")+
+          (nights?'<div style="font-size:11px;color:var(--textDim);margin-top:2px">'+nights+' night'+(nights!==1?"s":"")+(d?" · check-in "+fmtDate(t.departure_date):"")+'</div>':"")+
+        '</div>'+
+        (t.total_fare?'<div style="text-align:right"><div style="font-size:11px;color:var(--textHint)">Fare</div><div style="font-family:JetBrains Mono,monospace;font-size:13px;font-weight:600;color:var(--text)">'+(t.currency||"USD")+" "+Number(t.total_fare).toLocaleString()+'</div></div>':"")+
+      '</div>';
+    }
+
     segs.forEach(function(s,si){
       var dep=s.departure_datetime?new Date(s.departure_datetime):null;
       var arr=s.arrival_datetime?new Date(s.arrival_datetime):null;
@@ -3744,7 +3760,7 @@ function applyTripFilter(filter){
               '<span style="font-size:22px;font-weight:600;color:#111827;letter-spacing:-0.5px">'+(t.origin_iata||"")+'</span>'+
               '<span style="font-size:14px;color:#9CA3AF">→</span>'+
               '<span style="font-size:22px;font-weight:600;color:#111827;letter-spacing:-0.5px">'+(t.destination_iata||"")+'</span>'+
-              '<span style="font-size:12px;color:#9CA3AF;margin-left:4px">'+segs.length+' flight'+(segs.length!==1?"s":"")+(r?" · "+(Math.round((r-d)/86400000))+" nights":"")+'</span>'+
+              '<span style="font-size:12px;color:var(--textHint);margin-left:4px">'+(segs.length?segs.length+' flight'+(segs.length!==1?"s":""):t.origin_iata===t.destination_iata?"Stay":"Trip")+(r&&d?" · "+(Math.round((r-d)/86400000))+" nights":"")+'</span>'+
             '</div>'+
             '<div style="font-size:12px;color:#6B7280;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(t.trip_name||"")+'</div>'+
             '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
