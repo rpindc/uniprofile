@@ -5,10 +5,12 @@
 const { RDSDataClient, ExecuteStatementCommand } = require("@aws-sdk/client-rds-data");
 const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
 const { SecretsManagerClient, GetSecretValueCommand } = require("@aws-sdk/client-secrets-manager");
+const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
 
 const rds = new RDSDataClient({ region: process.env.AWS_REGION || "us-east-1" });
 const s3  = new S3Client({ region: process.env.AWS_REGION || "us-east-1" });
 const sm  = new SecretsManagerClient({ region: process.env.AWS_REGION || "us-east-1" });
+const ses = new SESClient({ region: process.env.AWS_REGION || "us-east-1" });
 
 const DB = {
   resourceArn: process.env.AURORA_CLUSTER_ARN,
@@ -29,6 +31,12 @@ async function sql(query, params = []) {
 const strParam  = (n, v) => ({ name: n, value: (v != null && v !== "" && v !== "null") ? { stringValue: String(v) } : { isNull: true } });
 const uuidParam = (n, v) => ({ name: n, value: { stringValue: v }, typeHint: "UUID" });
 const dateParam = (n, v) => (v && v !== "" && v !== "null") ? { name: n, value: { stringValue: String(v) }, typeHint: "DATE" } : { name: n, value: { isNull: true } };
+const tsParam   = (n, v) => {
+  if (!v || v === "" || v === "null") return { name: n, value: { isNull: true } };
+  // Normalize YYYY-MM-DDTHH:MM → YYYY-MM-DD HH:MM:SS
+  const normalized = String(v).replace("T", " ").replace(/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2})$/, "$1:00");
+  return { name: n, value: { stringValue: normalized }, typeHint: "TIMESTAMP" };
+};
 const numParam  = (n, v) => ({ name: n, value: v != null ? { doubleValue: Number(v) } : { isNull: true } });
 const intParam  = (n, v) => ({ name: n, value: v != null ? { longValue: Number(v) } : { isNull: true } });
 
@@ -53,6 +61,7 @@ function parseMime(raw) {
   }
 
   const toHeader   = headers["to"]   || "";
+  const fromHeader = headers["from"] || "";
   const subjectRaw = headers["subject"] || "";
   const subject    = decodeEncodedWords(subjectRaw);
   const ct         = headers["content-type"] || "text/plain";
@@ -61,8 +70,12 @@ function parseMime(raw) {
   const upMatch  = toHeader.match(/UP-(\d{6})@/i);
   const upNumber = upMatch ? "UP-" + upMatch[1] : null;
 
+  // Extract plain email from From: header — handles "Name <email>" and bare email
+  const fromMatch = fromHeader.match(/<([^>]+)>/) || fromHeader.match(/([^\s]+@[^\s]+)/);
+  const fromEmail = fromMatch ? fromMatch[1].trim() : null;
+
   const text = extractText(ct, bodyBlock, 10000);
-  return { upNumber, subject, text };
+  return { upNumber, fromEmail, subject, text };
 }
 
 function decodeEncodedWords(str) {
@@ -139,7 +152,7 @@ function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
 
 // ── Claude Haiku extraction ───────────────────────────────────────────────────
 async function getAnthropicKey() {
-  const secret = await sm.send(new GetSecretValueCommand({ SecretId: "/uniprofile/anthropic/api_key" }));
+  const secret = await sm.send(new GetSecretValueCommand({ SecretId: "/uniprofile/anthropic/key" }));
   return secret.SecretString.trim();
 }
 
@@ -216,6 +229,63 @@ Rules:
   return JSON.parse(jsonMatch[0]);
 }
 
+// ── Confirmation email ────────────────────────────────────────────────────────
+async function sendConfirmation(toEmail, upNumber, addedTrips, originalSubject) {
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function fmtDate(ds) {
+    if (!ds) return "";
+    const d = new Date(ds);
+    return d.getDate() + " " + months[d.getMonth()] + " " + d.getFullYear();
+  }
+
+  let bodyText, bodyHtml;
+
+  if (!addedTrips.length) {
+    bodyText = `Hi,\n\nWe received your email "${originalSubject}" but could not find any travel bookings in it.\n\nIf this was a booking confirmation, please forward the original email from your airline, hotel, or travel provider directly to ${upNumber}@trips.uniprofile.net.\n\n— UniProfile TripVault`;
+    bodyHtml = `<p>Hi,</p><p>We received your email <em>${originalSubject}</em> but could not find any travel bookings in it.</p><p>If this was a booking confirmation, please forward the original email from your airline, hotel, or travel provider directly to <strong>${upNumber}@trips.uniprofile.net</strong>.</p><p style="color:#888;font-size:12px">— UniProfile TripVault</p>`;
+  } else {
+    const lines = addedTrips.map(({ tripName, trip }) => {
+      const from = trip.origin_iata || "";
+      const to   = trip.destination_iata || "";
+      const dep  = fmtDate(trip.departure_date);
+      const segs = (trip.segments || []);
+      const firstSeg = segs[0];
+      const flightInfo = firstSeg ? ` · ${firstSeg.flight_number || ""}`.trim() : "";
+      return `  • ${from} → ${to}${dep ? "  " + dep : ""}${flightInfo}  (${trip.confidence || "HIGH"} confidence)`;
+    });
+
+    bodyText = `Hi,\n\nThe following trip${addedTrips.length > 1 ? "s have" : " has"} been added to your TripVault:\n\n${lines.join("\n")}\n\nView your vault at https://www.uniprofile.net\n\n— UniProfile TripVault`;
+
+    const htmlLines = addedTrips.map(({ tripName, trip }) => {
+      const from = trip.origin_iata || "";
+      const to   = trip.destination_iata || "";
+      const dep  = fmtDate(trip.departure_date);
+      const firstSeg = (trip.segments || [])[0];
+      const flightInfo = firstSeg ? ` &middot; ${firstSeg.flight_number || ""}` : "";
+      return `<li style="padding:4px 0"><strong style="font-family:monospace">${from} &rarr; ${to}</strong>${dep ? "  " + dep : ""}${flightInfo}</li>`;
+    }).join("");
+
+    bodyHtml = `<p>Hi,</p><p>The following trip${addedTrips.length > 1 ? "s have" : " has"} been added to your TripVault:</p><ul style="padding-left:20px">${htmlLines}</ul><p><a href="https://www.uniprofile.net" style="color:#2563EB">View your vault →</a></p><p style="color:#888;font-size:12px">— UniProfile TripVault &nbsp;|&nbsp; Forward booking confirmations to ${upNumber}@trips.uniprofile.net</p>`;
+  }
+
+  try {
+    await ses.send(new SendEmailCommand({
+      Source: "TripVault <trips@uniprofile.net>",
+      Destination: { ToAddresses: [toEmail] },
+      Message: {
+        Subject: { Data: addedTrips.length ? `TripVault: ${addedTrips.length} trip${addedTrips.length > 1 ? "s" : ""} added` : "TripVault: no booking found" },
+        Body: {
+          Text: { Data: bodyText },
+          Html: { Data: bodyHtml },
+        },
+      },
+    }));
+    console.log("Confirmation sent to:", toEmail);
+  } catch (e) {
+    console.error("Failed to send confirmation:", e.message);
+  }
+}
+
 // ── Main handler ──────────────────────────────────────────────────────────────
 exports.handler = async function(event) {
   console.log("Email ingest triggered, records:", (event.Records || []).length);
@@ -230,7 +300,7 @@ exports.handler = async function(event) {
       const obj = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
       const rawEmail = await obj.Body.transformToString();
 
-      const { upNumber, subject, text } = parseMime(rawEmail);
+      const { upNumber, fromEmail, subject, text } = parseMime(rawEmail);
       console.log("To UP:", upNumber || "(none)", "| Subject:", subject.slice(0, 80));
 
       if (!upNumber) { console.log("No UP number in To: header — skipping"); continue; }
@@ -253,6 +323,13 @@ exports.handler = async function(event) {
       const parsed = await extractBookings(subject, text, apiKey);
       console.log("Extracted:", parsed.trips.length, "trip(s), confidence:", parsed.confidence);
 
+      const addedTrips = [];
+
+      if (parsed.confidence === "LOW" && !parsed.trips.length) {
+        if (fromEmail) await sendConfirmation(fromEmail, upNumber, [], subject);
+        continue;
+      }
+
       for (const trip of (parsed.trips || [])) {
         if (!trip.destination_iata) { console.log("Skipping trip — no destination_iata"); continue; }
 
@@ -263,7 +340,8 @@ exports.handler = async function(event) {
 
         const tripRows = await sql(
           "INSERT INTO trips (traveler_uuid,trip_name,trip_locator,departure_date,return_date,origin_iata,destination_iata,trip_context,source_platform,total_fare,currency,notes) " +
-          "VALUES (:u,:name,:pnr,:dep,:ret,:orig,:dest,:ctx,'email',:fare,:cur,:notes) RETURNING id",
+          "VALUES (:u,:name,:pnr,:dep,:ret,:orig,:dest,:ctx,'email',:fare,:cur,:notes) " +
+          "ON CONFLICT (traveler_uuid,trip_locator) WHERE trip_locator IS NOT NULL DO UPDATE SET trip_name=EXCLUDED.trip_name RETURNING id",
           [
             uuidParam("u",    travelerUuid),
             strParam ("name", tripName),
@@ -282,6 +360,7 @@ exports.handler = async function(event) {
         const tripId = tripRows[0] && tripRows[0].id;
         if (!tripId) { console.log("INSERT returned no id"); continue; }
         console.log("Inserted trip:", tripId, tripName);
+        addedTrips.push({ tripName, trip });
 
         // Insert segments
         let order = 1;
@@ -291,15 +370,15 @@ exports.handler = async function(event) {
             "INSERT INTO trip_segments (trip_id,segment_type,segment_order,carrier,flight_number,origin_iata,destination_iata,departure_datetime,arrival_datetime,cabin_class,booking_ref) " +
             "VALUES (:tid,:type,:ord,:car,:flt,:orig,:dest,:dep,:arr,:cab,:ref)",
             [
-              strParam("tid",  tripId),
+              uuidParam("tid",  tripId),
               strParam("type", seg.segment_type  || "FLIGHT"),
               intParam("ord",  seg.segment_order || order),
               strParam("car",  seg.carrier),
               strParam("flt",  seg.flight_number),
               strParam("orig", seg.origin_iata),
               strParam("dest", seg.destination_iata),
-              strParam("dep",  seg.departure_datetime),
-              strParam("arr",  seg.arrival_datetime),
+              tsParam ("dep",  seg.departure_datetime),
+              tsParam ("arr",  seg.arrival_datetime),
               strParam("cab",  seg.cabin_class),
               strParam("ref",  seg.booking_ref),
             ]
@@ -307,6 +386,12 @@ exports.handler = async function(event) {
           order++;
         }
       }
+
+      // Send confirmation back to sender
+      if (fromEmail && addedTrips.length) {
+        await sendConfirmation(fromEmail, upNumber, addedTrips, subject);
+      }
+
     } catch (e) {
       console.error("Error processing record:", e.message, e.stack && e.stack.slice(0, 400));
     }
