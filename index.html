@@ -1955,6 +1955,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
           </div>
           <button id="trip-fwd-copy-btn" onclick="copyTripAddress()" style="padding:8px 14px;background:var(--ink);color:var(--goldDim);border:none;border-radius:var(--radius-sm);font-size:11px;cursor:pointer;white-space:nowrap;font-family:DM Sans,sans-serif">Copy Address</button>
         </div>
+        <div id="trip-pending-section" style="display:none;margin-bottom:16px"></div>
         <div class="trip-list" id="trip-list"><div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips in vault yet</div><div class="empty-sub">Forward any booking confirmation to your personal address above — flights, hotels, cruises, car rentals parsed automatically</div></div></div>
       </section>
 
@@ -3534,7 +3535,52 @@ let allTrips=[];let activeFilter="all";
 const AIRLINE_COLORS={"UA":"#0066CC","AA":"#CC0000","DL":"#9B2335","AS":"#00693E","WN":"#304CB2","default":"var(--textDim)"};
 const PASSPORT_REQUIRED=["LHR","CDG","NRT","SIN","DXB","SYD","GRU","JNB","DEL","PEK","ICN","BKK","KUL","DOH","AMS","FRA","ZRH","FCO","MAD","BCN"];
 function airlineColor(c){return AIRLINE_COLORS[c]||AIRLINE_COLORS.default;}
-function renderTrips(trips){allTrips=trips;applyTripFilter(activeFilter);}
+function renderTrips(trips){
+  allTrips=trips.filter(t=>t.status!=="pending");
+  renderPendingTrips(trips.filter(t=>t.status==="pending"));
+  applyTripFilter(activeFilter);
+}
+function renderPendingTrips(pending){
+  const sec=document.getElementById("trip-pending-section");
+  if(!sec)return;
+  if(!pending.length){sec.style.display="none";sec.innerHTML="";return;}
+  const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function fmtD(ds){if(!ds)return"";const d=new Date(ds);return d.getDate()+" "+months[d.getMonth()]+" "+d.getFullYear();}
+  const items=pending.map(function(t){
+    const segs=t.segments||[];
+    const firstSeg=segs[0];
+    const flt=firstSeg?((firstSeg.flight_number||"").toUpperCase().startsWith((firstSeg.carrier||"").toUpperCase())?firstSeg.flight_number:(firstSeg.carrier||"")+" "+(firstSeg.flight_number||"")).trim():"";
+    return'<div style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:6px">'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="display:flex;align-items:baseline;gap:8px">'+
+          '<span style="font-family:JetBrains Mono,monospace;font-size:15px;font-weight:600;color:var(--text)">'+(t.origin_iata||"?")+'</span>'+
+          '<span style="color:var(--textHint);font-size:12px">→</span>'+
+          '<span style="font-family:JetBrains Mono,monospace;font-size:15px;font-weight:600;color:var(--text)">'+(t.destination_iata||"?")+'</span>'+
+          (flt?'<span style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--accent)">'+flt+'</span>':"")+
+          (t.departure_date?'<span style="font-size:11px;color:var(--textDim)">'+fmtD(t.departure_date)+'</span>':"")+
+        '</div>'+
+        '<div style="font-size:11px;color:var(--textHint);margin-top:2px">'+(t.trip_name||"")+(t.trip_locator?' · PNR '+t.trip_locator:"")+'</div>'+
+      '</div>'+
+      '<div style="display:flex;gap:6px;flex-shrink:0">'+
+        '<button onclick="verifyTrip(\''+t.id+'\',\'confirm\')" style="font-size:12px;padding:5px 14px;border-radius:var(--radius-sm);border:1px solid var(--greenBorder);background:var(--greenGlow);color:var(--green);cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">Add to vault</button>'+
+        '<button onclick="verifyTrip(\''+t.id+'\',\'reject\')" style="font-size:12px;padding:5px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--textMid);cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">Not mine</button>'+
+      '</div>'+
+    '</div>';
+  }).join("");
+  sec.style.display="block";
+  sec.innerHTML='<div style="background:var(--goldGlow);border:1px solid rgba(184,149,90,0.3);border-radius:var(--radius-md);padding:14px 18px;margin-bottom:8px">'+
+    '<div style="font-size:12px;font-weight:600;color:var(--gold);margin-bottom:8px">'+pending.length+' booking'+(pending.length!==1?"s":"")+' awaiting verification — we couldn\'t confirm the passenger name matches your profile</div>'+
+    items+
+  '</div>';
+}
+async function verifyTrip(tripId,action){
+  try{
+    await api("PUT","/api/v1/profile/"+profile.uuid,{module:"trip_verify",data:{trip_id:tripId,action:action}});
+    const data=await api("GET","/api/v1/me");
+    if(data.uuid){renderTrips(data.trips||[]);}
+    toast(action==="confirm"?"Trip added to vault":"Booking removed","success");
+  }catch(e){toast("Error","error");}
+}
 let _tripInboxAddr="";
 function renderTripInbox(upNumber){
   _tripInboxAddr=upNumber?(upNumber+"@trips.uniprofile.net"):"trips@uniprofile.net";

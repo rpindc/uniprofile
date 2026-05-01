@@ -176,6 +176,7 @@ Return this exact JSON (null for missing values):
       "trip_context": "PERSONAL",
       "total_fare": number or null,
       "currency": "3-letter ISO currency code or null",
+      "passenger_names": ["full name as it appears in the email, or empty array if not found"],
       "segments": [
         {
           "segment_type": "FLIGHT or TRAIN or CAR or FERRY",
@@ -286,6 +287,66 @@ async function sendConfirmation(toEmail, upNumber, addedTrips, originalSubject) 
   }
 }
 
+// ── Pending verification email ────────────────────────────────────────────────
+async function sendVerificationRequest(toEmail, upNumber, pendingTrips, originalSubject) {
+  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  function fmtDate(ds) {
+    if (!ds) return "";
+    const d = new Date(ds);
+    return d.getDate() + " " + months[d.getMonth()] + " " + d.getFullYear();
+  }
+
+  const appUrl = process.env.APP_URL || "https://www.uniprofile.net";
+
+  const htmlItems = pendingTrips.map(({ tripName, trip, tripId }) => {
+    const from = trip.origin_iata || "";
+    const to   = trip.destination_iata || "";
+    const dep  = fmtDate(trip.departure_date);
+    const firstSeg = (trip.segments || [])[0];
+    const flightInfo = firstSeg ? ` · ${firstSeg.flight_number || ""}` : "";
+    const confirmUrl = `${appUrl}?verify_trip=${tripId}&action=confirm`;
+    const rejectUrl  = `${appUrl}?verify_trip=${tripId}&action=reject`;
+    return `<tr>
+      <td style="padding:12px 0;border-bottom:1px solid #eee">
+        <strong style="font-family:monospace">${from} → ${to}</strong>${dep ? "  " + dep : ""}${flightInfo}<br>
+        <span style="font-size:12px;color:#888">${tripName}</span>
+      </td>
+      <td style="padding:12px 0 12px 16px;border-bottom:1px solid #eee;white-space:nowrap">
+        <a href="${confirmUrl}" style="background:#059669;color:#fff;padding:6px 14px;border-radius:4px;text-decoration:none;font-size:13px;font-weight:500;margin-right:8px">Add to vault</a>
+        <a href="${rejectUrl}" style="background:#f3f4f6;color:#374151;padding:6px 14px;border-radius:4px;text-decoration:none;font-size:13px">Not mine</a>
+      </td>
+    </tr>`;
+  }).join("");
+
+  const bodyHtml = `
+    <p>Hi,</p>
+    <p>We received a booking confirmation email (<em>${originalSubject}</em>) addressed to your TripVault address, but we couldn't verify the passenger name matches your profile.</p>
+    <p>Please confirm whether this booking belongs to you:</p>
+    <table style="border-collapse:collapse;width:100%;max-width:520px">${htmlItems}</table>
+    <p style="color:#888;font-size:12px;margin-top:24px">If you didn't expect this email, click "Not mine" — the booking will be removed. Your TripVault address is <strong>${upNumber}@trips.uniprofile.net</strong>.</p>`;
+
+  const bodyText = pendingTrips.map(({ tripName, trip }) =>
+    `${trip.origin_iata || "?"} → ${trip.destination_iata || "?"} ${fmtDate(trip.departure_date)} — ${tripName}`
+  ).join("\n");
+
+  try {
+    await ses.send(new SendEmailCommand({
+      Source: "TripVault <trips@uniprofile.net>",
+      Destination: { ToAddresses: [toEmail] },
+      Message: {
+        Subject: { Data: `TripVault: please verify a booking (${originalSubject.slice(0, 50)})` },
+        Body: {
+          Text: { Data: `Please verify this booking was meant for your profile:\n\n${bodyText}\n\nLog in to confirm or reject: ${appUrl}` },
+          Html: { Data: bodyHtml },
+        },
+      },
+    }));
+    console.log("Verification request sent to:", toEmail);
+  } catch (e) {
+    console.error("Failed to send verification request:", e.message);
+  }
+}
+
 // ── Main handler ──────────────────────────────────────────────────────────────
 exports.handler = async function(event) {
   console.log("Email ingest triggered, records:", (event.Records || []).length);
@@ -305,16 +366,25 @@ exports.handler = async function(event) {
 
       if (!upNumber) { console.log("No UP number in To: header — skipping"); continue; }
 
-      // Identify traveler by UniProfile number
+      // Identify traveler by UniProfile number — fetch email + name for verification
       const rows = await sql(
-        "SELECT uuid FROM travelers WHERE uniprofile_number=:n",
+        "SELECT t.uuid, t.email, ti.legal_first, ti.legal_last " +
+        "FROM travelers t LEFT JOIN traveler_identity ti ON ti.traveler_uuid=t.uuid " +
+        "WHERE t.uniprofile_number=:n",
         [strParam("n", upNumber)]
       );
       if (!rows.length) {
         console.log("No traveler found for:", upNumber, "— ignoring email");
         continue;
       }
-      const travelerUuid = rows[0].uuid;
+      const travelerUuid    = rows[0].uuid;
+      const travelerEmail   = rows[0].email   || null;
+      const travelerFirst   = (rows[0].legal_first || "").toLowerCase().trim();
+      const travelerLast    = (rows[0].legal_last  || "").toLowerCase().trim();
+
+      // Determine if sender is the registered user
+      const senderIsOwner = fromEmail && travelerEmail &&
+        fromEmail.toLowerCase() === travelerEmail.toLowerCase();
 
       if (!text.trim()) { console.log("Empty body — skipping"); continue; }
 
@@ -338,29 +408,47 @@ exports.handler = async function(event) {
           ((trip.origin_iata || "?") + " → " + trip.destination_iata +
            (trip.departure_date ? "  " + trip.departure_date : ""));
 
+        // Determine trip status: confirmed if sender is owner, or if passenger name matches
+        let tripStatus = "upcoming"; // default confirmed
+        let needsVerification = false;
+        if (!senderIsOwner) {
+          const names = (trip.passenger_names || []).map(n => n.toLowerCase());
+          const nameMatch = travelerFirst && travelerLast && names.some(n =>
+            n.includes(travelerFirst) && n.includes(travelerLast)
+          );
+          if (!nameMatch) {
+            tripStatus = "pending";
+            needsVerification = true;
+            console.log("Third-party sender, name not matched — marking pending");
+          } else {
+            console.log("Third-party sender, name matched — auto-confirming");
+          }
+        }
+
         const tripRows = await sql(
-          "INSERT INTO trips (traveler_uuid,trip_name,trip_locator,departure_date,return_date,origin_iata,destination_iata,trip_context,source_platform,total_fare,currency,notes) " +
-          "VALUES (:u,:name,:pnr,:dep,:ret,:orig,:dest,:ctx,'email',:fare,:cur,:notes) " +
+          "INSERT INTO trips (traveler_uuid,trip_name,trip_locator,departure_date,return_date,origin_iata,destination_iata,trip_context,source_platform,total_fare,currency,notes,status) " +
+          "VALUES (:u,:name,:pnr,:dep,:ret,:orig,:dest,:ctx,'email',:fare,:cur,:notes,:status) " +
           "ON CONFLICT (traveler_uuid,trip_locator) WHERE trip_locator IS NOT NULL DO UPDATE SET trip_name=EXCLUDED.trip_name RETURNING id",
           [
-            uuidParam("u",    travelerUuid),
-            strParam ("name", tripName),
-            strParam ("pnr",  trip.trip_locator),
-            dateParam("dep",  trip.departure_date),
-            dateParam("ret",  trip.return_date),
-            strParam ("orig", trip.origin_iata),
-            strParam ("dest", trip.destination_iata),
-            strParam ("ctx",  trip.trip_context || "PERSONAL"),
-            numParam ("fare", trip.total_fare),
-            strParam ("cur",  trip.currency || "USD"),
-            strParam ("notes","Parsed from: " + subject.slice(0, 200)),
+            uuidParam("u",      travelerUuid),
+            strParam ("name",   tripName),
+            strParam ("pnr",    trip.trip_locator),
+            dateParam("dep",    trip.departure_date),
+            dateParam("ret",    trip.return_date),
+            strParam ("orig",   trip.origin_iata),
+            strParam ("dest",   trip.destination_iata),
+            strParam ("ctx",    trip.trip_context || "PERSONAL"),
+            numParam ("fare",   trip.total_fare),
+            strParam ("cur",    trip.currency || "USD"),
+            strParam ("notes",  "Parsed from: " + subject.slice(0, 200)),
+            strParam ("status", tripStatus),
           ]
         );
 
         const tripId = tripRows[0] && tripRows[0].id;
         if (!tripId) { console.log("INSERT returned no id"); continue; }
-        console.log("Inserted trip:", tripId, tripName);
-        addedTrips.push({ tripName, trip });
+        console.log("Inserted trip:", tripId, tripName, "| status:", tripStatus);
+        addedTrips.push({ tripName, trip, tripId, needsVerification });
 
         // Insert segments
         let order = 1;
@@ -387,9 +475,16 @@ exports.handler = async function(event) {
         }
       }
 
-      // Send confirmation back to sender
-      if (fromEmail && addedTrips.length) {
-        await sendConfirmation(fromEmail, upNumber, addedTrips, subject);
+      // Confirmed trips → reply to sender
+      const confirmed = addedTrips.filter(t => !t.needsVerification);
+      if (fromEmail && confirmed.length) {
+        await sendConfirmation(fromEmail, upNumber, confirmed, subject);
+      }
+
+      // Pending trips → send verification request to the registered email
+      const pending = addedTrips.filter(t => t.needsVerification);
+      if (travelerEmail && pending.length) {
+        await sendVerificationRequest(travelerEmail, upNumber, pending, subject);
       }
 
     } catch (e) {

@@ -123,6 +123,16 @@ async function updateModule(uuid,module,data){
     case "trip_delete":
       await sql("DELETE FROM trips WHERE id=:tid AND traveler_uuid=:u",[uuidParam("tid",data.trip_id),uuidParam("u",uuid)]);
       break;
+    case "trip_verify":
+      if(!data.trip_id||!data.action)throw {status:400,message:"trip_id and action required"};
+      if(data.action==="confirm"){
+        await sql("UPDATE trips SET status=CASE WHEN departure_date>NOW() THEN 'upcoming' ELSE 'completed' END,updated_at=NOW() WHERE id=:tid AND traveler_uuid=:u AND status='pending'",[uuidParam("tid",data.trip_id),uuidParam("u",uuid)]);
+      } else if(data.action==="reject"){
+        await sql("DELETE FROM trips WHERE id=:tid AND traveler_uuid=:u AND status='pending'",[uuidParam("tid",data.trip_id),uuidParam("u",uuid)]);
+      } else {
+        throw {status:400,message:"action must be confirm or reject"};
+      }
+      break;
     case "groups":{
       const groups=Array.isArray(data.groups)?data.groups:[];
       await sql("DELETE FROM traveler_groups WHERE owner_uuid=:u",[uuidParam("u",uuid)]);
