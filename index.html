@@ -3600,55 +3600,89 @@ function applyTripFilter(filter){
     var passportDays=passport&&passport.expiry_date?Math.floor((new Date(passport.expiry_date)-now)/86400000):null;
     var docOk=passportDays===null?false:passportDays>180;
 
-    // Segment rows
-    var segRows="";
+    // Segment cards
+    var segCards="";
     segs.forEach(function(s,si){
-      // Layover between segments
-      if(si>0){
-        var prevArr=segs[si-1].arrival_datetime?new Date(segs[si-1].arrival_datetime):null;
-        var thisDep=s.departure_datetime?new Date(s.departure_datetime):null;
-        if(prevArr&&thisDep){
-          var layMins=Math.floor((thisDep-prevArr)/60000);
-          segRows+=layoverBadge(layMins,s.origin_iata);
-        }
-      }
       var dep=s.departure_datetime?new Date(s.departure_datetime):null;
       var arr=s.arrival_datetime?new Date(s.arrival_datetime):null;
+      var segDurMins=s.duration_minutes||(dep&&arr?Math.round((arr-dep)/60000):0);
+      var segMiles=segDurMins?Math.round(segDurMins*8.05):0;
       var depDay=dep?dep.getDate()+" "+months[dep.getMonth()]:"";
       var arrDay=arr?arr.getDate()+" "+months[arr.getMonth()]:"";
       var dayDiff=dep&&arr?Math.round((arr-dep)/86400000):0;
-      var dayNote=dayDiff>0?' <span style="font-size:9px;color:#9CA3AF">+'+dayDiff+'d</span>':dayDiff<0?' <span style="font-size:9px;color:#9CA3AF">'+dayDiff+'d</span>':"";
+      var dayNote=dayDiff>0?'<span style="font-size:9px;color:var(--gold);margin-left:3px">+'+dayDiff+'d</span>':dayDiff<0?'<span style="font-size:9px;color:var(--textHint);margin-left:3px">'+dayDiff+'d</span>':"";
+      var fltNum=(s.flight_number||"");
+      var fltDisplay=s.carrier&&!fltNum.toUpperCase().startsWith((s.carrier).toUpperCase())?s.carrier+" "+fltNum:fltNum;
 
-      segRows+='<tr style="border-bottom:1px solid #F3F4F6">'+
-        '<td style="padding:10px 8px 10px 0;vertical-align:middle">'+
-          '<div style="font-family:JetBrains Mono,monospace;font-size:12px;font-weight:500;color:#2563EB">'+(s.carrier||"")+" "+(s.flight_number||"")+'</div>'+
-          '<div style="font-size:10px;color:#9CA3AF;margin-top:1px">'+(s.aircraft_type||"")+'</div>'+
-        '</td>'+
-        '<td style="padding:10px 8px 10px 0;vertical-align:middle">'+
-          '<div style="font-family:JetBrains Mono,monospace;font-size:13px;font-weight:500;color:#111827">'+(s.origin_iata||"")+'</div>'+
-          '<div style="font-size:10px;color:#9CA3AF;margin-top:1px">'+(depDay?depDay+" · ":"")+fmtTime(s.departure_datetime)+'</div>'+
-        '</td>'+
-        '<td style="padding:10px 8px 10px 0;vertical-align:middle">'+
-          '<div style="font-family:JetBrains Mono,monospace;font-size:13px;font-weight:500;color:#111827">'+(s.destination_iata||"")+'</div>'+
-          '<div style="font-size:10px;color:#9CA3AF;margin-top:1px">'+(arrDay?arrDay+" · ":"")+fmtTime(s.arrival_datetime)+dayNote+'</div>'+
-        '</td>'+
-        '<td style="padding:10px 8px 10px 0;vertical-align:middle">'+
-          '<div style="font-size:11px;color:#374151">'+fmtDur(s.duration_minutes)+'</div>'+
-          '<div style="font-size:10px;color:#9CA3AF;margin-top:1px">'+
-            (s.duration_minutes?Math.round(s.duration_minutes*8.3)+"mi":"")+'</div>'+
-        '</td>'+
-        '<td style="padding:10px 8px 10px 0;vertical-align:middle">'+cabinClass(s.cabin_class)+'</td>'+
-        '<td style="padding:10px 8px 10px 0;vertical-align:middle">'+
-          '<div style="font-family:JetBrains Mono,monospace;font-size:12px;font-weight:500;color:#111827">'+(s.seat_number||"—")+'</div>'+
-        '</td>'+
-        '<td style="padding:10px 0 10px 0;vertical-align:middle;text-align:right">'+
-          baggageAllowance(s.cabin_class)+
-        '</td>'+
-      '</tr>';
+      // Layover badge between segments
+      if(si>0){
+        var prevArr=segs[si-1].arrival_datetime?new Date(segs[si-1].arrival_datetime):null;
+        if(prevArr&&dep){
+          var layMins=Math.floor((dep-prevArr)/60000);
+          var layH=Math.floor(layMins/60),layM=layMins%60;
+          var layStr=layH?""+layH+"h "+(layM?""+layM+"m":""):layM+"m";
+          segCards+='<div style="display:flex;align-items:center;gap:8px;padding:4px 0;margin:2px 0">'+
+            '<div style="flex:1;height:1px;background:var(--border)"></div>'+
+            '<div style="font-size:10px;color:var(--textDim);white-space:nowrap;background:var(--surface2);padding:2px 10px;border-radius:20px;border:1px solid var(--border)">'+
+              layStr+' layover · '+(s.origin_iata||"")+'</div>'+
+            '<div style="flex:1;height:1px;background:var(--border)"></div>'+
+          '</div>';
+        }
+      }
+
+      var aColor=airlineColor(s.carrier||"");
+      segCards+='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 16px;margin-bottom:4px">'+
+        '<div style="display:flex;align-items:center;gap:12px">'+
+
+          // Left: flight badge
+          '<div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:56px">'+
+            '<div style="width:8px;height:8px;border-radius:50%;background:'+aColor+';flex-shrink:0"></div>'+
+            '<div style="font-family:JetBrains Mono,monospace;font-size:11px;font-weight:600;color:var(--accent);white-space:nowrap">'+fltDisplay+'</div>'+
+            (s.cabin_class?'<div style="font-size:9px;color:var(--textHint);white-space:nowrap">'+s.cabin_class.charAt(0)+s.cabin_class.slice(1).toLowerCase()+'</div>':"")+
+          '</div>'+
+
+          // Divider
+          '<div style="width:1px;height:44px;background:var(--border);flex-shrink:0"></div>'+
+
+          // Origin
+          '<div style="flex-shrink:0;text-align:center;min-width:52px">'+
+            '<div style="font-family:JetBrains Mono,monospace;font-size:18px;font-weight:600;color:var(--text);line-height:1">'+(s.origin_iata||"")+'</div>'+
+            '<div style="font-size:10px;color:var(--textDim);margin-top:2px;white-space:nowrap">'+(depDay?depDay:"")+'</div>'+
+            '<div style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--textMid);font-weight:500">'+fmtTime(s.departure_datetime)+'</div>'+
+          '</div>'+
+
+          // Route arrow + duration
+          '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:60px">'+
+            '<div style="font-size:10px;color:var(--textHint);white-space:nowrap">'+fmtDur(segDurMins)+(segMiles?' · '+segMiles.toLocaleString()+'mi':"")+'</div>'+
+            '<div style="width:100%;display:flex;align-items:center;gap:0">'+
+              '<div style="flex:1;height:1px;background:var(--border2)"></div>'+
+              '<div style="font-size:10px;color:var(--textDim);padding:0 4px">✈</div>'+
+              '<div style="flex:1;height:1px;background:var(--border2)"></div>'+
+            '</div>'+
+            (s.seat_number?'<div style="font-size:10px;color:var(--textHint)">Seat <span style="font-family:JetBrains Mono,monospace;color:var(--textMid);font-weight:500">'+s.seat_number+'</span></div>':"<div></div>")+
+          '</div>'+
+
+          // Destination
+          '<div style="flex-shrink:0;text-align:center;min-width:52px">'+
+            '<div style="font-family:JetBrains Mono,monospace;font-size:18px;font-weight:600;color:var(--text);line-height:1">'+(s.destination_iata||"")+'</div>'+
+            '<div style="font-size:10px;color:var(--textDim);margin-top:2px;white-space:nowrap">'+(arrDay?arrDay:"")+dayNote+'</div>'+
+            '<div style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--textMid);font-weight:500">'+fmtTime(s.arrival_datetime)+'</div>'+
+          '</div>'+
+
+          // Right: baggage
+          '<div style="flex-shrink:0;text-align:right;min-width:60px">'+baggageAllowance(s.cabin_class)+'</div>'+
+
+        '</div>'+
+      '</div>';
     });
 
-    // Total miles
-    var totalMiles=segs.reduce(function(acc,s){return acc+(s.duration_minutes?Math.round(s.duration_minutes*8.3):0);},0);
+    // Total miles — compute from timestamps if duration_minutes missing
+    var totalMiles=segs.reduce(function(acc,s){
+      var d2=s.departure_datetime?new Date(s.departure_datetime):null;
+      var a2=s.arrival_datetime?new Date(s.arrival_datetime):null;
+      var m=s.duration_minutes||(d2&&a2?Math.round((a2-d2)/60000):0);
+      return acc+(m?Math.round(m*8.05):0);
+    },0);
 
     // Pax chips
     var paxChips=pax.map(function(p){
@@ -3674,7 +3708,7 @@ function applyTripFilter(filter){
             var pct=Math.max(8,Math.round(((s.duration_minutes||60)/totalDur)*100));
             timelineHtml+='<div style="font-family:JetBrains Mono,monospace;font-size:9px;color:#9CA3AF;padding-right:3px;flex-shrink:0;white-space:nowrap">'+(s.origin_iata||"")+'</div>';
             timelineHtml+='<div style="flex:'+pct+';height:6px;background:#2563EB;border-radius:3px;position:relative;min-width:20px">'+
-              '<div style="position:absolute;left:50%;transform:translateX(-50%);top:-14px;font-family:JetBrains Mono,monospace;font-size:8px;color:#2563EB;white-space:nowrap;font-weight:500">'+(s.carrier||"")+" "+(s.flight_number||"")+'</div>'+
+              '<div style="position:absolute;left:50%;transform:translateX(-50%);top:-14px;font-family:JetBrains Mono,monospace;font-size:8px;color:var(--accent);white-space:nowrap;font-weight:500">'+((s.flight_number||"").toUpperCase().startsWith((s.carrier||"").toUpperCase())?(s.flight_number||""):((s.carrier||"")+" "+(s.flight_number||"")).trim())+'</div>'+
               '<div style="position:absolute;left:50%;transform:translateX(-50%);bottom:-13px;font-size:8px;color:#9CA3AF;white-space:nowrap">'+fmtDur(s.duration_minutes)+'</div>'+
             '</div>';
             if(si<segs.length-1){
@@ -3724,53 +3758,42 @@ function applyTripFilter(filter){
             '<div style="font-size:11px;font-weight:500;color:'+cdColor+';margin-top:4px">'+cdText+'</div>'+
           '</div>'+
         '</div>'+
-        // Segment table
+        // Timeline strip + segment cards
         timelineHtml+
-        '<table style="width:100%;border-collapse:collapse;margin-bottom:4px">'+
-          '<thead><tr style="border-bottom:1.5px solid #F3F4F6">'+
-            '<th style="font-size:9px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.6px;padding:0 8px 6px 0;text-align:left">Flight</th>'+
-            '<th style="font-size:9px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.6px;padding:0 8px 6px 0;text-align:left">From</th>'+
-            '<th style="font-size:9px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.6px;padding:0 8px 6px 0;text-align:left">To</th>'+
-            '<th style="font-size:9px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.6px;padding:0 8px 6px 0;text-align:left">Duration · Miles</th>'+
-            '<th style="font-size:9px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.6px;padding:0 8px 6px 0;text-align:left">Cabin</th>'+
-            '<th style="font-size:9px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.6px;padding:0 8px 6px 0;text-align:left">Seat</th>'+
-            '<th style="font-size:9px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.6px;padding:0 0 6px 0;text-align:right">Baggage</th>'+
-          '</tr></thead>'+
-          '<tbody>'+segRows+'</tbody>'+
-        '</table>'+
+        '<div style="margin-bottom:12px">'+segCards+'</div>'+
 
         // Totals strip
-        '<div style="display:flex;gap:20px;padding:8px 0;border-top:1px solid #F3F4F6;margin-bottom:14px">'+
-          '<div style="font-size:10px;color:#9CA3AF">Total <span style="color:#111827;font-weight:600;font-size:12px;font-family:JetBrains Mono,monospace">'+totalMiles.toLocaleString()+'mi</span></div>'+
-          '<div style="font-size:10px;color:#9CA3AF">Segments <span style="color:#111827;font-weight:600;font-size:12px">'+segs.length+'</span></div>'+
-          (t.total_fare?'<div style="font-size:10px;color:#9CA3AF">Fare <span style="color:#111827;font-weight:600;font-size:12px">'+(t.currency||"USD")+" "+Number(t.total_fare).toLocaleString()+'</span> <span style="font-size:10px;color:#9CA3AF">· '+Math.round(t.total_fare/(pax.length||1)).toLocaleString()+'/pax</span></div>':"")+ 
+        '<div style="display:flex;gap:20px;padding:10px 0;border-top:1px solid var(--border);margin-bottom:14px">'+
+          (totalMiles?'<div style="font-size:10px;color:var(--textHint)">Miles <span style="color:var(--text);font-weight:600;font-size:12px;font-family:JetBrains Mono,monospace">'+totalMiles.toLocaleString()+'</span></div>':"")+
+          '<div style="font-size:10px;color:var(--textHint)">Segments <span style="color:var(--text);font-weight:600;font-size:12px">'+segs.length+'</span></div>'+
+          (t.total_fare?'<div style="font-size:10px;color:var(--textHint)">Fare <span style="color:var(--text);font-weight:600;font-size:12px">'+(t.currency||"USD")+" "+Number(t.total_fare).toLocaleString()+'</span><span style="font-size:10px;color:var(--textHint)"> · '+Math.round(t.total_fare/(pax.length||1)).toLocaleString()+'/pax</span></div>':"")+
         '</div>'+
 
         // Bottom strip
-        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid #F3F4F6;padding-top:14px;margin-bottom:14px">'+
-          '<div style="padding-right:16px"><div style="font-size:9px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px">Return</div><div style="font-size:13px;font-weight:500;color:#111827">'+(r?fmtDate(r):"—")+'</div></div>'+
-          '<div style="padding-right:16px"><div style="font-size:9px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px">Passengers</div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:2px">'+paxChips+'</div></div>'+
-          '<div style="padding-right:16px"><div style="font-size:9px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px">Doc Check</div>'+
-            (docOk?'<div style="font-size:13px;font-weight:500;color:#059669">✓ All clear</div>':'<div style="font-size:13px;font-weight:500;color:#D97706">⚠ Review</div>')+
-            '<div style="font-size:10px;color:#9CA3AF;margin-top:1px">Visa · Passport · Health</div>'+
+        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--border);padding-top:14px;margin-bottom:14px">'+
+          '<div style="padding-right:16px"><div style="font-size:9px;font-weight:600;color:var(--textHint);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px">Return</div><div style="font-size:13px;font-weight:500;color:var(--text)">'+(r?fmtDate(r):"—")+'</div></div>'+
+          '<div style="padding-right:16px"><div style="font-size:9px;font-weight:600;color:var(--textHint);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px">Passengers</div><div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:2px">'+paxChips+'</div></div>'+
+          '<div style="padding-right:16px"><div style="font-size:9px;font-weight:600;color:var(--textHint);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px">Doc Check</div>'+
+            (docOk?'<div style="font-size:13px;font-weight:500;color:var(--green)">✓ All clear</div>':'<div style="font-size:13px;font-weight:500;color:var(--gold)">⚠ Review</div>')+
+            '<div style="font-size:10px;color:var(--textHint);margin-top:1px">Visa · Passport · Health</div>'+
           '</div>'+
-          '<div><div style="font-size:9px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px">Notes</div><div style="font-size:12px;color:#6B7280">'+(t.notes||"—")+'</div></div>'+
+          '<div><div style="font-size:9px;font-weight:600;color:var(--textHint);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px">Notes</div><div style="font-size:12px;color:var(--textDim)">'+(t.notes||"—")+'</div></div>'+
         '</div>'+
 
         // Doc check panel
         '<div id="doccheck-'+i+'" style="display:none;margin-bottom:14px"></div>'+
 
         // Actions
-        '<div style="display:flex;gap:6px">'+
-          '<button class="act-btn primary" data-idx="'+i+'" data-dest="'+t.destination_iata+'" data-orig="'+t.origin_iata+'" data-date="'+(t.departure_date||"")+'" onclick="runDocCheck(parseInt(this.dataset.idx),this.dataset.dest,this.dataset.orig,this.dataset.date)" style="font-size:12px;padding:5px 14px;border-radius:6px;border:1px solid #BFDBFE;background:#EFF6FF;color:#2563EB;cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">Doc Check</button>'+
-          '<button onclick="openVisualPNR(allTrips.find(function(x){return x.id===\''+t.id+'\';}))" style="font-size:12px;padding:5px 14px;border-radius:6px;border:1px solid #E5E4E0;background:#fff;color:#374151;cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">Visual PNR</button>'+
-          '<button onclick="exportSingleTrip('+i+')" style="font-size:12px;padding:5px 14px;border-radius:6px;border:1px solid #E5E4E0;background:#fff;color:#374151;cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">Export</button>'+
-          '<select onchange="changeContext(\''+t.id+'\',\''+uuid+'\',this.value)" style="font-size:12px;padding:5px 14px;border-radius:6px;border:1px solid #E5E4E0;background:#fff;color:#374151;cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">'+
+        '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
+          '<button class="act-btn primary" data-idx="'+i+'" data-dest="'+t.destination_iata+'" data-orig="'+t.origin_iata+'" data-date="'+(t.departure_date||"")+'" onclick="runDocCheck(parseInt(this.dataset.idx),this.dataset.dest,this.dataset.orig,this.dataset.date)" style="font-size:12px;padding:5px 14px;border-radius:var(--radius-sm);border:1px solid var(--accentBorder);background:var(--accentLt);color:var(--accent);cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">Doc Check</button>'+
+          '<button onclick="openVisualPNR(allTrips.find(function(x){return x.id===\''+t.id+'\';}))" style="font-size:12px;padding:5px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:var(--textMid);cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">Visual PNR</button>'+
+          '<button onclick="exportSingleTrip('+i+')" style="font-size:12px;padding:5px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:var(--textMid);cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">Export</button>'+
+          '<select onchange="changeContext(\''+t.id+'\',\''+uuid+'\',this.value)" style="font-size:12px;padding:5px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:var(--textMid);cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">'+
             '<option value="PERSONAL"'+(t.trip_context==="PERSONAL"?" selected":"")+'>Personal</option>'+
             '<option value="CORPORATE"'+(t.trip_context==="CORPORATE"?" selected":"")+'>Business</option>'+
             '<option value="BLEISURE"'+(t.trip_context==="BLEISURE"?" selected":"")+'>Bleisure</option>'+
           '</select>'+
-          '<button onclick="deleteTrip(\''+t.id+'\')" style="font-size:12px;padding:5px 14px;border-radius:6px;border:1px solid #FECACA;background:#FEF2F2;color:#DC2626;cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500;margin-left:auto">Delete</button>'+
+          '<button onclick="deleteTrip(\''+t.id+'\')" style="font-size:12px;padding:5px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:#DC2626;cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500;margin-left:auto">Delete</button>'+
         '</div>'+
 
       '</div>'+
