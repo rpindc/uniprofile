@@ -1936,7 +1936,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         </div>
       </section>
       <section class="section" id="section-trips">
-        <div class="sec-header"><div class="sec-icon" style="background:var(--surface2)">📋</div><div style="flex:1"><div class="sec-title">Trip Vault</div><div class="sec-sub">IATA OneOrder Module 7 — Webhook-driven · Bleisure-tagged · Exportable</div></div><button class="save-btn" style="font-size:12px;padding:8px 18px;margin-top:4px" onclick="openAddTripModal()">+ Add Trip</button></div>
+        <div class="sec-header"><div class="sec-icon" style="background:var(--surface2)">📋</div><div><div class="sec-title">Trip Vault</div><div class="sec-sub">IATA OneOrder Module 7 — Webhook-driven · Bleisure-tagged · Exportable</div></div></div>
         <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap" id="trip-filters">
           <button class="trip-filter-btn active" onclick="filterTrips('all',this)">All</button>
           <button class="trip-filter-btn" onclick="filterTrips('upcoming',this)">Upcoming</button>
@@ -1955,64 +1955,8 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
           </div>
           <button onclick="navigator.clipboard.writeText('trips@uniprofile.net').then(function(){toast('Copied!','success')})" style="padding:8px 14px;background:var(--ink);color:var(--goldDim);border:none;border-radius:var(--radius-sm);font-size:11px;cursor:pointer;white-space:nowrap;font-family:DM Sans,sans-serif">Copy Address</button>
         </div>
-        <div class="trip-list" id="trip-list"><div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips in vault yet</div><div class="empty-sub">Forward a booking confirmation to trips@uniprofile.net, or click + Add Trip above</div></div></div>
+        <div class="trip-list" id="trip-list"><div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips in vault yet</div><div class="empty-sub">Forward any booking confirmation to trips@uniprofile.net — flights, hotels, cruises parsed automatically</div></div></div>
       </section>
-
-      <!-- Add Trip Modal -->
-      <div id="add-trip-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;align-items:center;justify-content:center" onclick="if(event.target===this)closeAddTripModal()">
-        <div style="background:var(--ink2);border:1px solid var(--border2);border-radius:var(--radius-xl);padding:32px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;margin:20px">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
-            <div style="font-family:Playfair Display,serif;font-size:22px;color:var(--white)">Add Trip</div>
-            <button onclick="closeAddTripModal()" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:20px">✕</button>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:16px">
-            <div class="form-field">
-              <label class="field-label">Trip Name</label>
-              <input class="field-input" id="atrip-name" type="text" placeholder="e.g. Tokyo business trip">
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              <div class="form-field">
-                <label class="field-label">Origin IATA <span style="color:var(--textDim);font-weight:400">(e.g. JFK)</span></label>
-                <input class="field-input" id="atrip-origin" type="text" placeholder="JFK" maxlength="3" style="text-transform:uppercase">
-              </div>
-              <div class="form-field">
-                <label class="field-label">Destination IATA <span style="color:var(--gold);font-weight:400">*</span></label>
-                <input class="field-input" id="atrip-dest" type="text" placeholder="NRT" maxlength="3" style="text-transform:uppercase">
-              </div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              <div class="form-field">
-                <label class="field-label">Departure Date</label>
-                <input class="field-input" id="atrip-dep" type="date">
-              </div>
-              <div class="form-field">
-                <label class="field-label">Return Date</label>
-                <input class="field-input" id="atrip-ret" type="date">
-              </div>
-            </div>
-            <div class="form-field">
-              <label class="field-label">Context</label>
-              <select class="field-select" id="atrip-ctx">
-                <option value="PERSONAL">Personal</option>
-                <option value="CORPORATE">Business</option>
-                <option value="BLEISURE">Bleisure</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label class="field-label">Booking Reference / PNR <span style="color:var(--textDim);font-weight:400">(optional)</span></label>
-              <input class="field-input" id="atrip-pnr" type="text" placeholder="e.g. ABC123" style="text-transform:uppercase">
-            </div>
-            <div class="form-field">
-              <label class="field-label">Notes <span style="color:var(--textDim);font-weight:400">(optional)</span></label>
-              <input class="field-input" id="atrip-notes" type="text" placeholder="Any additional notes">
-            </div>
-            <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
-              <button onclick="closeAddTripModal()" style="padding:10px 20px;background:none;border:1px solid var(--border2);color:var(--textDim);border-radius:var(--radius-md);cursor:pointer;font-size:13px;font-family:DM Sans,sans-serif">Cancel</button>
-              <button id="atrip-save-btn" onclick="saveManualTrip()" style="padding:10px 24px;background:var(--gold);color:#1a1208;border:none;border-radius:var(--radius-md);cursor:pointer;font-size:13px;font-weight:600;font-family:DM Sans,sans-serif">Save Trip</button>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <section class="section" id="section-family">
         <div class="sec-header">
@@ -4137,36 +4081,6 @@ async function deleteTrip(tripId){
     if(result.success){profile=result.profile;renderTrips(result.profile.trips||[]);toast("Trip deleted","success");}
     else{toast("Error: "+(result.error||"unknown"),"error");}
   }catch(e){toast("Error deleting trip","error");}
-}
-function openAddTripModal(){
-  ["atrip-name","atrip-origin","atrip-dest","atrip-dep","atrip-ret","atrip-pnr","atrip-notes"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
-  const ctx=document.getElementById("atrip-ctx");if(ctx)ctx.value="PERSONAL";
-  const modal=document.getElementById("add-trip-modal");if(modal){modal.style.display="flex";}
-}
-function closeAddTripModal(){
-  const modal=document.getElementById("add-trip-modal");if(modal)modal.style.display="none";
-}
-async function saveManualTrip(){
-  const dest=(document.getElementById("atrip-dest").value||"").trim().toUpperCase();
-  if(!dest){toast("Destination IATA is required","error");return;}
-  const btn=document.getElementById("atrip-save-btn");
-  if(btn){btn.disabled=true;btn.textContent="Saving…";}
-  try{
-    const data={
-      trip_name:document.getElementById("atrip-name").value.trim()||undefined,
-      origin_iata:(document.getElementById("atrip-origin").value||"").trim().toUpperCase()||undefined,
-      destination_iata:dest,
-      departure_date:document.getElementById("atrip-dep").value||undefined,
-      return_date:document.getElementById("atrip-ret").value||undefined,
-      trip_context:document.getElementById("atrip-ctx").value||"PERSONAL",
-      trip_locator:(document.getElementById("atrip-pnr").value||"").trim().toUpperCase()||undefined,
-      notes:document.getElementById("atrip-notes").value.trim()||undefined,
-    };
-    const result=await api("PUT","/api/v1/profile/"+uuid,{module:"trip_add",data});
-    if(result.success){closeAddTripModal();renderTrips(result.profile.trips||[]);toast("Trip added","success");}
-    else{toast("Error: "+(result.error||"unknown"),"error");}
-  }catch(e){toast("Error saving trip","error");}
-  finally{if(btn){btn.disabled=false;btn.textContent="Save Trip";}}
 }
 // ── Family Profiles ───────────────────────────────────────────────────────────
 const FAM_COLORS=["blue","green","purple","teal","amber"];
