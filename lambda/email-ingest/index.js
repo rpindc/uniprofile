@@ -402,7 +402,7 @@ exports.handler = async function(event) {
           try {
             const parsed = await pdfParse(buf);
             if (parsed.text && parsed.text.trim()) {
-              fullText += "\n\n--- PDF Attachment ---\n" + parsed.text.slice(0, 8000);
+              fullText += "\n\n--- PDF Attachment ---\n" + parsed.text.slice(0, 20000);
               console.log("PDF extracted:", parsed.text.slice(0, 80).replace(/\n/g, " ") + "...");
             }
           } catch (e) {
@@ -439,6 +439,7 @@ exports.handler = async function(event) {
       const apiKey = await getAnthropicKey();
       const parsed = await extractBookings(subject, fullText, apiKey);
       console.log("Extracted:", parsed.trips.length, "trip(s), confidence:", parsed.confidence);
+      console.log("Haiku raw:", JSON.stringify(parsed).slice(0, 1200));
 
       const addedTrips = [];
 
@@ -488,7 +489,7 @@ exports.handler = async function(event) {
         const tripRows = await sql(
           "INSERT INTO trips (traveler_uuid,trip_name,trip_locator,departure_date,return_date,origin_iata,destination_iata,trip_context,source_platform,total_fare,currency,notes,status) " +
           "VALUES (:u,:name,:pnr,:dep,:ret,:orig,:dest,:ctx,'email',:fare,:cur,:notes,:status) " +
-          "ON CONFLICT (traveler_uuid,trip_locator) WHERE trip_locator IS NOT NULL DO UPDATE SET trip_name=EXCLUDED.trip_name RETURNING id",
+          "ON CONFLICT (traveler_uuid,trip_locator) WHERE trip_locator IS NOT NULL DO UPDATE SET trip_name=EXCLUDED.trip_name,departure_date=COALESCE(EXCLUDED.departure_date,trips.departure_date),return_date=COALESCE(EXCLUDED.return_date,trips.return_date) RETURNING id",
           [
             uuidParam("u",      travelerUuid),
             strParam ("name",   tripName),
@@ -516,7 +517,8 @@ exports.handler = async function(event) {
           if (!seg.origin_iata && !seg.destination_iata) continue;
           await sql(
             "INSERT INTO trip_segments (trip_id,segment_type,segment_order,carrier,flight_number,origin_iata,destination_iata,departure_datetime,arrival_datetime,cabin_class,seat_number,booking_ref) " +
-            "VALUES (:tid,:type,:ord,:car,:flt,:orig,:dest,:dep,:arr,:cab,:seat,:ref)",
+            "VALUES (:tid,:type,:ord,:car,:flt,:orig,:dest,:dep,:arr,:cab,:seat,:ref) " +
+            "ON CONFLICT (trip_id,segment_order) DO UPDATE SET carrier=EXCLUDED.carrier,flight_number=EXCLUDED.flight_number,departure_datetime=EXCLUDED.departure_datetime,arrival_datetime=COALESCE(EXCLUDED.arrival_datetime,trip_segments.arrival_datetime),cabin_class=EXCLUDED.cabin_class,seat_number=COALESCE(EXCLUDED.seat_number,trip_segments.seat_number)",
             [
               uuidParam("tid",  tripId),
               strParam("type", seg.segment_type  || "FLIGHT"),
