@@ -3668,13 +3668,21 @@ function applyTripFilter(filter){
       var dep=s.departure_datetime?new Date(s.departure_datetime):null;
       var arr=s.arrival_datetime?new Date(s.arrival_datetime):null;
       var segDurMins=s.duration_minutes||(dep&&arr?Math.round((arr-dep)/60000):0);
-      var segMiles=segDurMins?Math.round(segDurMins*8.05):0;
+      var segMiles=(s.segment_type==="FLIGHT"||!s.segment_type)&&segDurMins?Math.round(segDurMins*8.05):0;
       var depDay=dep?dep.getDate()+" "+months[dep.getMonth()]:"";
       var arrDay=arr?arr.getDate()+" "+months[arr.getMonth()]:"";
       var dayDiff=dep&&arr?Math.round((arr-dep)/86400000):0;
       var dayNote=dayDiff>0?'<span style="font-size:9px;color:var(--gold);margin-left:3px">+'+dayDiff+'d</span>':dayDiff<0?'<span style="font-size:9px;color:var(--textHint);margin-left:3px">'+dayDiff+'d</span>':"";
       var fltNum=(s.flight_number||"");
       var fltDisplay=s.carrier&&!fltNum.toUpperCase().startsWith((s.carrier).toUpperCase())?s.carrier+" "+fltNum:fltNum;
+      var stype=(s.segment_type||"FLIGHT").toUpperCase();
+      var segIcon=stype==="CRUISE"?"🚢":stype==="HOTEL"?"🏨":stype==="CAR"?"🚗":stype==="TRAIN"?"🚆":stype==="FERRY"?"⛴":"✈";
+      var isCruiseOrHotelOrCar=(stype==="CRUISE"||stype==="HOTEL"||stype==="CAR"||stype==="TRAIN"||stype==="FERRY");
+      var leftLabel=isCruiseOrHotelOrCar?(s.carrier||stype):fltDisplay;
+      var leftSub=isCruiseOrHotelOrCar?(s.cabin_class||""):(s.cabin_class?s.cabin_class.charAt(0)+s.cabin_class.slice(1).toLowerCase():"");
+      var centerLabel=isCruiseOrHotelOrCar?(stype==="HOTEL"?"Check-in":"Embark"):"From";
+      var centerLabelR=isCruiseOrHotelOrCar?(stype==="HOTEL"?"Check-out":"Disembark"):"To";
+      var midLabel=isCruiseOrHotelOrCar&&dayDiff>0?dayDiff+" night"+(dayDiff!==1?"s":""):(segDurMins?fmtDur(segDurMins)+(segMiles?" · "+segMiles.toLocaleString()+"mi":""):"");
 
       // Layover badge between segments
       if(si>0){
@@ -3696,43 +3704,45 @@ function applyTripFilter(filter){
       segCards+='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:12px 16px;margin-bottom:4px">'+
         '<div style="display:flex;align-items:center;gap:12px">'+
 
-          // Left: flight badge
-          '<div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:56px">'+
-            '<div style="width:8px;height:8px;border-radius:50%;background:'+aColor+';flex-shrink:0"></div>'+
-            '<div style="font-family:JetBrains Mono,monospace;font-size:11px;font-weight:600;color:var(--accent);white-space:nowrap">'+fltDisplay+'</div>'+
-            (s.cabin_class?'<div style="font-size:9px;color:var(--textHint);white-space:nowrap">'+s.cabin_class.charAt(0)+s.cabin_class.slice(1).toLowerCase()+'</div>':"")+
+          // Left: service badge
+          '<div style="flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:64px">'+
+            '<div style="font-size:18px;line-height:1">'+segIcon+'</div>'+
+            '<div style="font-family:JetBrains Mono,monospace;font-size:10px;font-weight:600;color:var(--accent);white-space:nowrap;text-align:center;max-width:64px;overflow:hidden;text-overflow:ellipsis">'+leftLabel+'</div>'+
+            (leftSub?'<div style="font-size:9px;color:var(--textHint);white-space:nowrap">'+leftSub+'</div>':"")+
           '</div>'+
 
           // Divider
           '<div style="width:1px;height:44px;background:var(--border);flex-shrink:0"></div>'+
 
-          // Origin
+          // Origin / check-in
           '<div style="flex-shrink:0;text-align:center;min-width:52px">'+
+            (isCruiseOrHotelOrCar?'<div style="font-size:9px;color:var(--textHint);text-transform:uppercase;letter-spacing:0.5px">'+centerLabel+'</div>':"")+
             '<div style="font-family:JetBrains Mono,monospace;font-size:18px;font-weight:600;color:var(--text);line-height:1">'+(s.origin_iata||"")+'</div>'+
             '<div style="font-size:10px;color:var(--textDim);margin-top:2px;white-space:nowrap">'+(depDay?depDay:"")+'</div>'+
             '<div style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--textMid);font-weight:500">'+fmtTime(s.departure_datetime)+'</div>'+
           '</div>'+
 
-          // Route arrow + duration
+          // Middle: duration / nights
           '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:60px">'+
-            '<div style="font-size:10px;color:var(--textHint);white-space:nowrap">'+fmtDur(segDurMins)+(segMiles?' · '+segMiles.toLocaleString()+'mi':"")+'</div>'+
+            '<div style="font-size:10px;color:var(--textHint);white-space:nowrap">'+midLabel+'</div>'+
             '<div style="width:100%;display:flex;align-items:center;gap:0">'+
               '<div style="flex:1;height:1px;background:var(--border2)"></div>'+
-              '<div style="font-size:10px;color:var(--textDim);padding:0 4px">✈</div>'+
+              '<div style="font-size:10px;color:var(--textDim);padding:0 4px">'+segIcon+'</div>'+
               '<div style="flex:1;height:1px;background:var(--border2)"></div>'+
             '</div>'+
-            (s.seat_number?'<div style="font-size:10px;color:var(--textHint)">Seat <span style="font-family:JetBrains Mono,monospace;color:var(--textMid);font-weight:500">'+s.seat_number+'</span></div>':"<div></div>")+
+            (s.seat_number?'<div style="font-size:10px;color:var(--textHint)">'+(stype==="CRUISE"?"Stateroom":stype==="HOTEL"?"Room":"Seat")+' <span style="font-family:JetBrains Mono,monospace;color:var(--textMid);font-weight:500">'+s.seat_number+'</span></div>':"<div></div>")+
           '</div>'+
 
-          // Destination
+          // Destination / check-out
           '<div style="flex-shrink:0;text-align:center;min-width:52px">'+
+            (isCruiseOrHotelOrCar?'<div style="font-size:9px;color:var(--textHint);text-transform:uppercase;letter-spacing:0.5px">'+centerLabelR+'</div>':"")+
             '<div style="font-family:JetBrains Mono,monospace;font-size:18px;font-weight:600;color:var(--text);line-height:1">'+(s.destination_iata||"")+'</div>'+
             '<div style="font-size:10px;color:var(--textDim);margin-top:2px;white-space:nowrap">'+(arrDay?arrDay:"")+dayNote+'</div>'+
             '<div style="font-family:JetBrains Mono,monospace;font-size:11px;color:var(--textMid);font-weight:500">'+fmtTime(s.arrival_datetime)+'</div>'+
           '</div>'+
 
-          // Right: baggage
-          '<div style="flex-shrink:0;text-align:right;min-width:60px">'+baggageAllowance(s.cabin_class)+'</div>'+
+          // Right: baggage (flights only)
+          '<div style="flex-shrink:0;text-align:right;min-width:60px">'+(!isCruiseOrHotelOrCar?baggageAllowance(s.cabin_class):"")+'</div>'+
 
         '</div>'+
       '</div>';

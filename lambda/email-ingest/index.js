@@ -206,16 +206,17 @@ Return this exact JSON (null for missing values):
       "passenger_names": ["full name as it appears in the email, or empty array if not found"],
       "segments": [
         {
-          "segment_type": "FLIGHT or TRAIN or CAR or FERRY",
+          "segment_type": "FLIGHT or TRAIN or CAR or FERRY or CRUISE or HOTEL",
           "segment_order": 1,
-          "carrier": "2-letter IATA airline code or carrier name or null",
-          "flight_number": "e.g. UA123 or null",
-          "origin_iata": "3-letter code or null",
-          "destination_iata": "3-letter code or null",
-          "departure_datetime": "YYYY-MM-DDTHH:MM or null",
-          "arrival_datetime": "YYYY-MM-DDTHH:MM or null",
-          "cabin_class": "ECONOMY or PREMIUM_ECONOMY or BUSINESS or FIRST or null",
-          "booking_ref": "string or null"
+          "carrier": "airline code, ship name, hotel name, or rental company — whatever is the service provider",
+          "flight_number": "flight number for FLIGHT; null for others",
+          "origin_iata": "3-letter IATA code for departure/embarkation/checkin city or null",
+          "destination_iata": "3-letter IATA code for arrival/disembarkation/checkout city or null",
+          "departure_datetime": "YYYY-MM-DDTHH:MM — departure, embarkation, or check-in datetime or null",
+          "arrival_datetime": "YYYY-MM-DDTHH:MM — arrival, disembarkation, or check-out datetime or null",
+          "cabin_class": "ECONOMY/PREMIUM_ECONOMY/BUSINESS/FIRST for flights; room type or cabin category for hotels/cruises or null",
+          "booking_ref": "segment-level booking ref or null",
+          "seat_number": "seat, stateroom, or room number or null"
         }
       ]
     }
@@ -224,10 +225,12 @@ Return this exact JSON (null for missing values):
 }
 
 Rules:
-- A round-trip may be ONE trip with two segments, or TWO separate trips — use your judgement based on the email
-- Hotel: set origin_iata = destination_iata = nearest airport to the hotel city; no segments needed
-- Cruise: origin_iata = embarkation port's nearest airport; no segments needed
-- Car rental: origin_iata = pickup location's nearest airport; no segments needed
+- Flights: use FLIGHT segment with 2-letter IATA carrier, flight number, IATA airport codes
+- A round-trip may be ONE trip with two segments, or TWO separate trips — use judgement
+- Hotel: create ONE HOTEL segment — carrier=hotel name, origin_iata=destination_iata=nearest airport, departure_datetime=check-in, arrival_datetime=check-out, cabin_class=room type, seat_number=room number if shown
+- Cruise: create ONE CRUISE segment — carrier=ship name (e.g. "MSC DIVINA"), origin_iata=embarkation port nearest airport, destination_iata=disembarkation port nearest airport (same if round-trip), departure_datetime=embarkation date, arrival_datetime=disembarkation date if shown, cabin_class=cabin category, seat_number=stateroom number
+- Car rental: create ONE CAR segment — carrier=rental company, origin_iata=pickup location nearest airport, departure_datetime=pickup datetime, arrival_datetime=dropoff datetime
+- Set trip departure_date and return_date from the first and last segment dates
 - If no booking found, return { "trips": [], "confidence": "LOW" }
 - IATA codes must be exactly 3 uppercase letters`;
 
@@ -447,8 +450,21 @@ exports.handler = async function(event) {
       for (const trip of (parsed.trips || [])) {
         if (!trip.destination_iata) { console.log("Skipping trip — no destination_iata"); continue; }
 
+        // Fill departure/return dates from segments if missing at trip level
+        const segs = trip.segments || [];
+        if (!trip.departure_date && segs.length) {
+          const firstDep = segs[0].departure_datetime;
+          if (firstDep) trip.departure_date = firstDep.slice(0, 10);
+        }
+        if (!trip.return_date && segs.length > 0) {
+          const lastArr = segs[segs.length - 1].arrival_datetime;
+          if (lastArr) trip.return_date = lastArr.slice(0, 10);
+        }
+
         // Auto-generate name if missing
+        const firstSeg = segs[0];
         const tripName = trip.trip_name ||
+          (firstSeg && firstSeg.carrier ? firstSeg.carrier + " " + (firstSeg.segment_type || "") : "") ||
           ((trip.origin_iata || "?") + " → " + trip.destination_iata +
            (trip.departure_date ? "  " + trip.departure_date : ""));
 
@@ -499,8 +515,8 @@ exports.handler = async function(event) {
         for (const seg of (trip.segments || [])) {
           if (!seg.origin_iata && !seg.destination_iata) continue;
           await sql(
-            "INSERT INTO trip_segments (trip_id,segment_type,segment_order,carrier,flight_number,origin_iata,destination_iata,departure_datetime,arrival_datetime,cabin_class,booking_ref) " +
-            "VALUES (:tid,:type,:ord,:car,:flt,:orig,:dest,:dep,:arr,:cab,:ref)",
+            "INSERT INTO trip_segments (trip_id,segment_type,segment_order,carrier,flight_number,origin_iata,destination_iata,departure_datetime,arrival_datetime,cabin_class,seat_number,booking_ref) " +
+            "VALUES (:tid,:type,:ord,:car,:flt,:orig,:dest,:dep,:arr,:cab,:seat,:ref)",
             [
               uuidParam("tid",  tripId),
               strParam("type", seg.segment_type  || "FLIGHT"),
@@ -512,6 +528,7 @@ exports.handler = async function(event) {
               tsParam ("dep",  seg.departure_datetime),
               tsParam ("arr",  seg.arrival_datetime),
               strParam("cab",  seg.cabin_class),
+              strParam("seat", seg.seat_number),
               strParam("ref",  seg.booking_ref),
             ]
           );
