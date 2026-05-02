@@ -3751,6 +3751,8 @@ function applyTripFilter(filter){
 
     // Total miles — compute from timestamps if duration_minutes missing
     var totalMiles=segs.reduce(function(acc,s){
+      var st=(s.segment_type||"FLIGHT").toUpperCase();
+      if(st!=="FLIGHT")return acc;
       var d2=parseDate(s.departure_datetime);
       var a2=parseDate(s.arrival_datetime);
       var m=s.duration_minutes||(d2&&a2?Math.round((a2-d2)/60000):0);
