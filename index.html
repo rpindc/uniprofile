@@ -1940,7 +1940,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap" id="trip-filters">
           <button class="trip-filter-btn active" onclick="filterTrips('all',this)">All</button>
           <button class="trip-filter-btn" onclick="filterTrips('upcoming',this)">Upcoming</button>
-          <button class="trip-filter-btn" onclick="filterTrips('completed',this)">Past</button>
+          <button class="trip-filter-btn" onclick="filterTrips('past',this)">Past</button>
           <button class="trip-filter-btn" onclick="filterTrips('CORPORATE',this)">Business</button>
           <button class="trip-filter-btn" onclick="filterTrips('PERSONAL',this)">Personal</button>
           <button class="trip-filter-btn" onclick="filterTrips('BLEISURE',this)">Bleisure</button>
@@ -3601,8 +3601,9 @@ function applyTripFilter(filter){
   else if(filter==="bleisure")filtered=allTrips.filter(t=>t.trip_context==="BLEISURE");
   if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips found</div><div class="empty-sub">Forward any booking confirmation to <span style="font-family:JetBrains Mono,monospace">'+(_tripInboxAddr||"your trip inbox")+'</span></div></div>';return;}
   const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  function fmtDate(ds){if(!ds)return"";const d=new Date(ds);return d.getDate()+" "+months[d.getMonth()]+" "+d.getFullYear();}
-  function fmtTime(ds){if(!ds)return"";const d=new Date(ds);return d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:false});}
+  function parseDate(ds){if(!ds)return null;var s=String(ds).replace(" ","T").replace(/(\+00)$/,"+00:00");var d=new Date(s);return isNaN(d)?null:d;}
+  function fmtDate(ds){if(!ds)return"";var d=parseDate(ds)||new Date(ds);if(isNaN(d))return"";return d.getDate()+" "+months[d.getMonth()]+" "+d.getFullYear();}
+  function fmtTime(ds){if(!ds)return"";var d=parseDate(ds);if(!d)return"";return d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:false});}
   function fmtDur(mins){if(!mins)return"";return Math.floor(mins/60)+"h "+(mins%60)+"m";}
   function cabinClass(c){
     if(!c)return"";
@@ -3665,8 +3666,8 @@ function applyTripFilter(filter){
     }
 
     segs.forEach(function(s,si){
-      var dep=s.departure_datetime?new Date(s.departure_datetime):null;
-      var arr=s.arrival_datetime?new Date(s.arrival_datetime):null;
+      var dep=parseDate(s.departure_datetime);
+      var arr=parseDate(s.arrival_datetime);
       var segDurMins=s.duration_minutes||(dep&&arr?Math.round((arr-dep)/60000):0);
       var segMiles=(s.segment_type==="FLIGHT"||!s.segment_type)&&segDurMins?Math.round(segDurMins*8.05):0;
       var depDay=dep?dep.getDate()+" "+months[dep.getMonth()]:"";
@@ -3750,8 +3751,8 @@ function applyTripFilter(filter){
 
     // Total miles — compute from timestamps if duration_minutes missing
     var totalMiles=segs.reduce(function(acc,s){
-      var d2=s.departure_datetime?new Date(s.departure_datetime):null;
-      var a2=s.arrival_datetime?new Date(s.arrival_datetime):null;
+      var d2=parseDate(s.departure_datetime);
+      var a2=parseDate(s.arrival_datetime);
       var m=s.duration_minutes||(d2&&a2?Math.round((a2-d2)/60000):0);
       return acc+(m?Math.round(m*8.05):0);
     },0);
