@@ -6,6 +6,7 @@ const { RDSDataClient, ExecuteStatementCommand } = require("@aws-sdk/client-rds-
 const { S3Client, GetObjectCommand } = require("@aws-sdk/client-s3");
 const { SecretsManagerClient, GetSecretValueCommand } = require("@aws-sdk/client-secrets-manager");
 const { SESClient, SendEmailCommand } = require("@aws-sdk/client-ses");
+const pdfParse = require("pdf-parse");
 
 const rds = new RDSDataClient({ region: process.env.AWS_REGION || "us-east-1" });
 const s3  = new S3Client({ region: process.env.AWS_REGION || "us-east-1" });
@@ -75,7 +76,8 @@ function parseMime(raw) {
   const fromEmail = fromMatch ? fromMatch[1].trim() : null;
 
   const text = extractText(ct, bodyBlock, 10000);
-  return { upNumber, fromEmail, subject, text };
+  const pdfBuffers = extractPdfAttachments(ct, bodyBlock);
+  return { upNumber, fromEmail, subject, text, pdfBuffers };
 }
 
 function decodeEncodedWords(str) {
@@ -149,6 +151,31 @@ function stripHtml(html) {
 }
 
 function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+
+function extractPdfAttachments(contentType, body) {
+  const buffers = [];
+  const boundaryMatch = contentType.match(/boundary="?([^";\s\r\n]+)"?/i);
+  if (!boundaryMatch) return buffers;
+  const boundary = boundaryMatch[1];
+  const parts = body.split(new RegExp("--" + escapeRegex(boundary) + "(?:--)?\\n?"));
+  for (const part of parts) {
+    if (!part.trim() || part.trim() === "--") continue;
+    const partHeaderEnd = part.indexOf("\n\n");
+    if (partHeaderEnd < 0) continue;
+    const partHeaderRaw = part.slice(0, partHeaderEnd).replace(/\r\n/g, "\n").replace(/\n[ \t]+/g, " ");
+    const partBody      = part.slice(partHeaderEnd + 2);
+    const ctLine  = (partHeaderRaw.match(/content-type:\s*([^\n]+)/i)  || [])[1] || "";
+    const encLine = (partHeaderRaw.match(/content-transfer-encoding:\s*([^\n]+)/i) || [])[1] || "";
+    if (ctLine.toLowerCase().includes("application/pdf") || ctLine.toLowerCase().includes("application/octet-stream")) {
+      if (encLine.toLowerCase().trim() === "base64") {
+        try {
+          buffers.push(Buffer.from(partBody.replace(/\s/g, ""), "base64"));
+        } catch { /* skip malformed */ }
+      }
+    }
+  }
+  return buffers;
+}
 
 // ── Claude Haiku extraction ───────────────────────────────────────────────────
 async function getAnthropicKey() {
@@ -361,8 +388,25 @@ exports.handler = async function(event) {
       const obj = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
       const rawEmail = await obj.Body.transformToString();
 
-      const { upNumber, fromEmail, subject, text } = parseMime(rawEmail);
+      const { upNumber, fromEmail, subject, text, pdfBuffers } = parseMime(rawEmail);
       console.log("To UP:", upNumber || "(none)", "| Subject:", subject.slice(0, 80));
+
+      // Extract text from any PDF attachments and append to body
+      let fullText = text;
+      if (pdfBuffers.length) {
+        console.log("Found", pdfBuffers.length, "PDF attachment(s) — extracting text");
+        for (const buf of pdfBuffers) {
+          try {
+            const parsed = await pdfParse(buf);
+            if (parsed.text && parsed.text.trim()) {
+              fullText += "\n\n--- PDF Attachment ---\n" + parsed.text.slice(0, 8000);
+              console.log("PDF extracted:", parsed.text.slice(0, 80).replace(/\n/g, " ") + "...");
+            }
+          } catch (e) {
+            console.log("PDF parse failed:", e.message);
+          }
+        }
+      }
 
       if (!upNumber) { console.log("No UP number in To: header — skipping"); continue; }
 
@@ -386,11 +430,11 @@ exports.handler = async function(event) {
       const senderIsOwner = fromEmail && travelerEmail &&
         fromEmail.toLowerCase() === travelerEmail.toLowerCase();
 
-      if (!text.trim()) { console.log("Empty body — skipping"); continue; }
+      if (!fullText.trim()) { console.log("Empty body and no readable attachments — skipping"); continue; }
 
       // Parse with Claude Haiku
       const apiKey = await getAnthropicKey();
-      const parsed = await extractBookings(subject, text, apiKey);
+      const parsed = await extractBookings(subject, fullText, apiKey);
       console.log("Extracted:", parsed.trips.length, "trip(s), confidence:", parsed.confidence);
 
       const addedTrips = [];
