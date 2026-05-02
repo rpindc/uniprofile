@@ -228,7 +228,7 @@ Rules:
 - Flights: use FLIGHT segment with 2-letter IATA carrier, flight number, IATA airport codes
 - A round-trip may be ONE trip with two segments, or TWO separate trips — use judgement
 - Hotel: create ONE HOTEL segment — carrier=hotel name, origin_iata=destination_iata=nearest airport, departure_datetime=check-in, arrival_datetime=check-out, cabin_class=room type, seat_number=room number if shown
-- Cruise: create ONE CRUISE segment — carrier=ship name (e.g. "MSC DIVINA"), origin_iata=embarkation port nearest airport, destination_iata=disembarkation port nearest airport (same if round-trip), departure_datetime=embarkation date, arrival_datetime=disembarkation date if shown, cabin_class=cabin category, seat_number=stateroom number
+- Cruise: create one CRUISE segment PER LEG between ports — carrier=ship name, cabin_class=cabin category, seat_number=stateroom number. Each segment: origin_iata=departure port nearest airport, destination_iata=arrival port nearest airport, departure_datetime=sail time from that port, arrival_datetime=arrival at next port. First segment departure=embarkation, last segment arrival=disembarkation. Use best-known IATA for each port (e.g. Nassau=NAS, Cozumel=CZM, San Juan=SJU, Belize=BZE, Grand Cayman=GCM, St Thomas=STT, Barbados=BGI, Jamaica=MBJ). For private islands with no IATA use nearest airport.
 - Car rental: create ONE CAR segment — carrier=rental company, origin_iata=pickup location nearest airport, departure_datetime=pickup datetime, arrival_datetime=dropoff datetime
 - Set trip departure_date and return_date from the first and last segment dates
 - If no booking found, return { "trips": [], "confidence": "LOW" }
@@ -518,7 +518,7 @@ exports.handler = async function(event) {
           await sql(
             "INSERT INTO trip_segments (trip_id,segment_type,segment_order,carrier,flight_number,origin_iata,destination_iata,departure_datetime,arrival_datetime,cabin_class,seat_number,booking_ref) " +
             "VALUES (:tid,:type,:ord,:car,:flt,:orig,:dest,:dep,:arr,:cab,:seat,:ref) " +
-            "ON CONFLICT (trip_id,segment_order) DO UPDATE SET carrier=EXCLUDED.carrier,flight_number=EXCLUDED.flight_number,departure_datetime=EXCLUDED.departure_datetime,arrival_datetime=COALESCE(EXCLUDED.arrival_datetime,trip_segments.arrival_datetime),cabin_class=EXCLUDED.cabin_class,seat_number=COALESCE(EXCLUDED.seat_number,trip_segments.seat_number)",
+            "ON CONFLICT (trip_id,segment_order) DO UPDATE SET carrier=EXCLUDED.carrier,flight_number=EXCLUDED.flight_number,origin_iata=EXCLUDED.origin_iata,destination_iata=EXCLUDED.destination_iata,departure_datetime=EXCLUDED.departure_datetime,arrival_datetime=COALESCE(EXCLUDED.arrival_datetime,trip_segments.arrival_datetime),cabin_class=EXCLUDED.cabin_class,seat_number=COALESCE(EXCLUDED.seat_number,trip_segments.seat_number)",
             [
               uuidParam("tid",  tripId),
               strParam("type", seg.segment_type  || "FLIGHT"),
