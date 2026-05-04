@@ -421,6 +421,20 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .doccheck-label{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--textDim);margin-bottom:3px;}
 .doccheck-note{font-size:12px;color:var(--text);line-height:1.5;}
 .doccheck-link{font-size:11px;color:var(--gold);text-decoration:none;margin-top:4px;display:inline-block;}
+/* DocAlert */
+.docalert-hero{padding:18px 22px;border-radius:var(--radius-md);margin-bottom:20px;display:flex;align-items:center;gap:14px;}
+.docalert-hero.ok{background:var(--greenGlow);border:1px solid var(--greenBorder);}
+.docalert-hero.warn{background:var(--amberGlow);border:1px solid rgba(217,119,6,0.25);}
+.docalert-hero.urgent{background:var(--redGlow);border:1px solid var(--redBorder);}
+.docalert-icon-circle{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0;}
+.docalert-alert-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;margin-bottom:10px;}
+.docalert-card-header{display:flex;align-items:center;gap:12px;padding:15px 18px 8px;}
+.docalert-card-body{padding:0 18px 14px;}
+.docalert-type-pill{margin-left:auto;font-size:9px;font-weight:600;padding:2px 8px;border-radius:10px;white-space:nowrap;letter-spacing:0.5px;text-transform:uppercase;flex-shrink:0;}
+.docalert-card-actions{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;}
+.docalert-clear-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.docalert-clear-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;display:flex;gap:10px;align-items:flex-start;}
+@media(max-width:600px){.docalert-clear-grid{grid-template-columns:1fr;}}
 .trip-action-btn{padding:6px 14px;border-radius:var(--radius-sm);font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--surface2);color:var(--textMid);font-family:'DM Sans',sans-serif;transition:all 0.15s;}
 .trip-action-btn:hover{color:var(--text);border-color:var(--border3);}
 .trip-action-btn.gold{background:var(--goldGlow);color:var(--goldLt);border-color:rgba(184,149,90,0.3);}
@@ -1372,7 +1386,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
       </div>
       <div class="nav-group">
         <div class="nav-group-label">Identity Modules</div>
-        <button class="nav-btn" onclick="showSection('identity',this)"><span class="nav-icon"></span>Identity &amp; Documents<span class="nav-badge" id="badge-identity" style="display:none">!</span></button>
+        <button class="nav-btn" id="nav-identity" onclick="showSection('identity',this)"><span class="nav-icon"></span>Identity &amp; Documents<span class="nav-badge" id="badge-identity" style="display:none">!</span></button>
         <button class="nav-btn" id="nav-preferences" onclick="showSection('preferences',this)"><span class="nav-icon">✈</span>Preferences</button>
         <button class="nav-btn" onclick="showSection('payment',this)"><span class="nav-icon">💳</span><span>Payment &amp; Policy</span><span class="nav-tag" id="badge-payment" style="display:none">corp</span></button>
         <button class="nav-btn" onclick="showSection('trips',this)"><span class="nav-icon">📋</span>Trip History</button>
@@ -1380,6 +1394,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         <button class="nav-btn" onclick="showSection('groups',this)"><span class="nav-icon">⬡</span>Groups</button>
         <button class="nav-btn" onclick="showSection('insurance',this)"><span class="nav-icon">🛡</span>Insurance &amp; Tours</button>
         <button class="nav-btn" onclick="showSection('cruise',this)"><span class="nav-icon">🚢</span>Cruise Profile</button>
+        <button class="nav-btn" id="nav-docalert" onclick="showSection('docalert',this)"><span class="nav-icon">🔔</span>DocAlert<span class="nav-badge" id="badge-docalert" style="display:none">0</span></button>
       </div>
       <div class="nav-group">
         <div class="nav-group-label">Platform</div>
@@ -1934,6 +1949,10 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
           <div class="payment-card-display" style="background:linear-gradient(135deg,#1C1A2E 0%,#2A2040 100%)"><div class="card-chip" style="background:rgba(184,149,90,0.2);border-color:var(--goldDim)"></div><div class="card-number" id="corp-card-display">Corporate Account</div><div class="card-name" id="corp-name-display">Company</div><div class="card-type" style="color:var(--goldLt)">Corporate</div></div>
           <div class="form-section"><div class="form-section-title">Corporate Profile</div><div class="form-grid"><div class="form-field"><label class="field-label">Company Name</label><input class="field-input" id="f-company_name" type="text" placeholder="Company name" oninput="document.getElementById('corp-name-display').textContent=this.value||'Company'"></div><div class="form-field"><label class="field-label">Corporate Card</label><input class="field-input" id="f-corporate_card" type="text" placeholder="Corporate card" oninput="document.getElementById('corp-card-display').textContent=this.value||'Corporate Account'"></div><div class="form-field"><label class="field-label">Cost Center</label><input class="field-input" id="f-cost_center" type="text" placeholder="e.g. CC-3021"></div><div class="form-field"><label class="field-label">Travel Policy</label><input class="field-input" id="f-policy_description" type="text" placeholder="Policy description"></div><div class="form-field"><label class="field-label">Expense Platform</label><select class="field-select" id="f-expense_platform"><option>Not connected</option><option>Expensify</option><option>SAP Concur</option><option>Navan Expense</option><option>Brex</option><option>Ramp</option></select></div></div></div>
         </div>
+      </section>
+      <section class="section" id="section-docalert">
+        <div class="sec-header"><div class="sec-icon" style="background:var(--amberGlow)">🔔</div><div><div class="sec-title">DocAlert</div><div class="sec-sub">Proactive document monitoring — Expiry tracking · Trip readiness · Escalating alerts</div></div></div>
+        <div id="docalert-content"><div style="text-align:center;padding:48px;color:var(--textDim);font-size:13px">Loading document status...</div></div>
       </section>
       <section class="section" id="section-trips">
         <div class="sec-header"><div class="sec-icon" style="background:var(--surface2)">📋</div><div><div class="sec-title">Trip Vault</div><div class="sec-sub">IATA OneOrder Module 7 — Webhook-driven · Bleisure-tagged · Exportable</div></div></div>
@@ -3014,7 +3033,8 @@ function showSection(id,btn){
   if(el)el.classList.add("active");
   if(btn)btn.classList.add("active");
   section=id;
-  const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Preferences",payment:"Payment & Policy",trips:"Trip History",family:"Family Profiles",groups:"Groups",insurance:"Insurance & Tours",cruise:"Cruise Profile",consent:"Consent & Access",api:"API & Webhooks",account:"Account"};
+  if(id==="docalert")loadDocAlerts();
+  const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Preferences",payment:"Payment & Policy",trips:"Trip History",family:"Family Profiles",groups:"Groups",insurance:"Insurance & Tours",cruise:"Cruise Profile",docalert:"DocAlert",consent:"Consent & Access",api:"API & Webhooks",account:"Account"};
   document.getElementById("page-title").textContent=titles[id]||"UniProfile";
   document.querySelector(".content").scrollTop=0;
   if(id==="family")loadFamilyData();
@@ -3369,7 +3389,7 @@ const fly=p.fly_preferences||null;
 if(fly){const sp=p.seat_preferences;s("f-cabin_domestic",fly.cabin_domestic||(sp&&sp.cabin_domestic));s("f-cabin_international",fly.cabin_international||(sp&&sp.cabin_international));s("f-seat_position",fly.seat_position||(sp&&sp.seat_position));s("f-row_preference",fly.row_preference||(sp&&sp.row_preference));sc("f-avoid_middle_seats",fly.avoid_middle_seats!==undefined?fly.avoid_middle_seats:(sp&&sp.avoid_middle_seats));sc("f-avoid_last_row",fly.avoid_last_row!==undefined?fly.avoid_last_row:(sp&&sp.avoid_last_row));sc("f-wheelchair_needed",fly.wheelchair_needed!==undefined?fly.wheelchair_needed:(sp&&sp.wheelchair_needed));s("f-nonstop_pref",fly.nonstop_pref);s("f-max_connections",fly.max_connections);s("f-min_connection_minutes",fly.min_connection_minutes);s("f-max_connection_minutes",fly.max_connection_minutes);s("f-hubs_preferred",fly.hubs_preferred);s("f-hubs_avoid",fly.hubs_avoid);s("f-departure_time_pref",fly.departure_time_pref);s("f-arrival_time_avoid",fly.arrival_time_avoid);s("f-max_journey_hours",fly.max_journey_hours);}
 const tr=p.travel_preferences||null;
 if(tr){const sp=p.seat_preferences;s("f-purpose_business_pct",tr.purpose_business_pct);s("f-purpose_leisure_pct",tr.purpose_leisure_pct);s("f-trip_length_typical",tr.trip_length_typical);s("f-home_origin",tr.home_origin);s("f-travel_pace",tr.travel_pace);s("f-planning_style",tr.planning_style);s("f-group_preference",tr.group_preference);s("f-activity_load",tr.activity_load);s("f-circadian_pref",tr.circadian_pref);s("f-budget_priority",tr.budget_priority||3);updateBudgetReadout(tr.budget_priority||3);s("f-splurge_target",tr.splurge_target);s("f-refundability_priority",tr.refundability_priority);s("f-change_fee_tolerance",tr.change_fee_tolerance);s("f-payment_style",tr.payment_style);s("f-weather_risk",tr.weather_risk);s("f-geopolitical_risk",tr.geopolitical_risk);s("f-health_risk",tr.health_risk);s("f-insurance_level",tr.insurance_level);s("f-carbon_awareness",tr.carbon_awareness||3);updateCarbonReadout(tr.carbon_awareness||3);s("f-offset_willingness",tr.offset_willingness);s("f-saf_preference",tr.saf_preference);s("f-train_alternative",tr.train_alternative);s("f-comm_channel",tr.comm_channel);s("f-comm_frequency",tr.comm_frequency);s("f-marketing_optin",tr.marketing_optin);s("f-data_sharing",tr.data_sharing);s("f-biometric_acceptance",tr.biometric_acceptance);s("f-hotel_room_type",tr.hotel_room_type||(sp&&sp.hotel_room_type));s("f-hotel_floor_pref",tr.hotel_floor_pref||(sp&&sp.hotel_floor_pref));document.querySelectorAll('input[name="smoking_preference"]').forEach(function(r){r.checked=r.value===(tr.smoking_preference||"NON_SMOKING");});["OCEAN","CITY","POOL","GARDEN","MOUNTAIN","COURTYARD"].forEach(function(k){var el=document.getElementById("f-view_"+k);if(el)el.checked=(tr.room_view_preferences||[]).indexOf(k)>-1;});s("f-pillow_preference",tr.pillow_preference||"NO_PREFERENCE");s("f-bed_firmness_preference",tr.bed_firmness_preference||"NO_PREFERENCE");sc("f-late_checkout_auto_request",tr.late_checkout_auto_request);sc("f-ada_room_required",tr.ada_room_required);s("f-car_type_pref",tr.car_type_pref||(sp&&sp.car_type_pref));}
-renderLoyalty(p.loyalty_programs||[]);renderPayment(p.payment_profiles||[],p.identity);renderTrips(p.trips||[]);renderTripInbox(p.uniprofile_number);s("api-uuid",p.uuid);grpData=p.groups||[];if(!grpData.length)grpLoadLocal();consentData=p.consent||{};renderConsentPermissions();pcInitStates(p);}
+renderLoyalty(p.loyalty_programs||[]);renderPayment(p.payment_profiles||[],p.identity);renderTrips(p.trips||[]);renderTripInbox(p.uniprofile_number);s("api-uuid",p.uuid);grpData=p.groups||[];if(!grpData.length)grpLoadLocal();consentData=p.consent||{};renderConsentPermissions();pcInitStates(p);updateDocAlertBadge(p.documents||[]);}
 
 let editingLoyaltyId = null;
 
@@ -3927,6 +3947,133 @@ async function runDocCheck(idx,destination,origin,travelDate){
   }
 }
 function dlFile(content,filename){const a=document.createElement("a");a.href="data:text/csv;charset=utf-8,"+encodeURIComponent(content);a.download=filename;a.click();}
+
+/* ── DocAlert ──────────────────────────────────────────── */
+let _docAlertSnoozed=JSON.parse(localStorage.getItem("up_alert_snoozed")||"{}");
+function _saveAlertSnoozed(){localStorage.setItem("up_alert_snoozed",JSON.stringify(_docAlertSnoozed));}
+function _docTypeLabel(dt){var m={PASSPORT:"passport",NATIONAL_ID:"national ID",VISA:"visa",ESTA:"ESTA authorization",GLOBAL_ENTRY:"Global Entry",NEXUS:"NEXUS card",TSA_PRE:"TSA PreCheck",DRIVERS_LICENSE:"driver's license",RESIDENCE_CARD:"residence card",PASS_SECONDARY:"secondary passport"};return m[dt]||(dt||"document").toLowerCase().replace(/_/g," ");}
+function _alertTone(dt,days,level){
+  var lb=_docTypeLabel(dt);
+  var cap=function(s){return s.charAt(0).toUpperCase()+s.slice(1);};
+  var m=Math.ceil(Math.abs(days||0)/30);
+  if(level==="EXPIRED"||days<=0){
+    return{severity:"urgent",title:"Your "+lb+" has expired",
+      body:"Your "+lb+" expired "+Math.abs(days||0)+" day"+(Math.abs(days||0)===1?"":"s")+" ago. If you have upcoming international travel, you'll need to renew immediately — expedited renewal typically takes 2–3 weeks.",
+      primary:"Mark as in progress"};}
+  if(days<=30){
+    return{severity:"urgent",title:"Your "+lb+" expires in "+days+" day"+(days===1?"":"s"),
+      body:"If you have international travel coming up, you need to act now — expedited renewals take 2–3 weeks. You can start the renewal process, or mark this as already in progress.",
+      primary:"Mark as in progress"};}
+  if(days<=90){
+    return{severity:"action",title:"Time to renew your "+lb,
+      body:"Expires in "+days+" days (about "+m+" month"+(m===1?"":"s")+"). Routine renewals take 6–8 weeks; expedited 2–3 weeks. If you have international trips in the next 6 months, it's worth starting now.",
+      primary:"Mark as in progress"};}
+  if(days<=180){
+    return{severity:"watch",title:cap(lb)+" check: yours expires in about "+m+" months",
+      body:"Some countries require 6+ months validity from arrival, so it's worth thinking about renewal if you have international trips planned.",
+      primary:null};}
+  return{severity:"info",title:"Your "+lb+" expires in about "+m+" months",
+    body:"No action needed yet — most countries accept documents with at least 6 months validity before expiry. We'll remind you again when it's closer.",
+    primary:null};}
+async function loadDocAlerts(){
+  var el=document.getElementById("docalert-content");if(!el)return;
+  el.innerHTML='<div style="text-align:center;padding:48px;color:var(--textDim);font-size:13px">Checking your documents...</div>';
+  try{
+    var res=await api("GET","/api/v1/profile/"+uuid+"/alerts");
+    var alerts=(res.alerts||[]).filter(function(a){
+      var sn=_docAlertSnoozed[a.doc_type];
+      if(!sn)return true;
+      if(sn==="dismissed")return false;
+      return Date.now()>=sn;
+    });
+    var allDocs=(profile&&profile.documents)||[];
+    _renderDocAlerts(alerts,allDocs);
+    var badge=document.getElementById("badge-docalert");
+    if(badge){badge.textContent=alerts.length;badge.style.display=alerts.length?"":"none";}
+  }catch(e){el.innerHTML='<div style="text-align:center;padding:48px;color:var(--red);font-size:13px">Could not load alerts: '+e.message+'</div>';}
+}
+function _renderDocAlerts(alerts,allDocs){
+  var el=document.getElementById("docalert-content");if(!el)return;
+  var html="";
+  /* hero */
+  if(!alerts.length){
+    html+='<div class="docalert-hero ok"><div class="docalert-icon-circle" style="background:rgba(16,185,129,0.15);color:var(--green)">✓</div><div><div style="font-size:14px;font-weight:600;color:var(--green)">All documents in good standing</div><div style="font-size:12px;color:var(--textMid);margin-top:2px">We\'re watching your documents and upcoming trips. You\'re all clear.</div></div></div>';
+  }else{
+    var urg=alerts.filter(function(a){return a.alert_level==="EXPIRED"||a.days_remaining<=30;}).length;
+    var hc=urg?"urgent":"warn",hcolor=urg?"var(--red)":"var(--amber)";
+    html+='<div class="docalert-hero '+hc+'"><div class="docalert-icon-circle" style="background:'+(urg?"var(--redGlow)":"var(--amberGlow)")+';color:'+hcolor+'">!</div><div><div style="font-size:14px;font-weight:600;color:'+hcolor+'">'+alerts.length+' document'+(alerts.length===1?"":"s")+' need'+(alerts.length===1?"s":"")+" attention</div><div style='font-size:12px;color:var(--textMid);margin-top:2px'>Review the alerts below and take action where needed.</div></div></div>";
+  }
+  /* needs attention */
+  if(alerts.length){
+    html+='<div style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--textDim);margin-bottom:10px">Needs attention</div>';
+    alerts.forEach(function(a){
+      var tone=_alertTone(a.doc_type,a.days_remaining,a.alert_level);
+      var lbColor=tone.severity==="urgent"?"var(--red)":tone.severity==="action"?"var(--amber)":"var(--amber)";
+      var icBg=tone.severity==="urgent"?"var(--redGlow)":"var(--amberGlow)";
+      var typeLabel=a.alert_level==="EXPIRED"?"expired":(a.days_remaining<=30?"urgent":a.days_remaining<=90?"action needed":"watch");
+      html+='<div class="docalert-alert-card" style="border-left:3px solid '+lbColor+'">'+
+        '<div class="docalert-card-header">'+
+          '<div class="docalert-icon-circle" style="background:'+icBg+';color:'+lbColor+'">!</div>'+
+          '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--text)">'+tone.title+'</div></div>'+
+          '<span class="docalert-type-pill" style="background:#EFF6FF;color:#2563EB">doc validity · '+typeLabel+'</span>'+
+        '</div>'+
+        '<div class="docalert-card-body">'+
+          '<div style="font-size:12px;color:var(--textMid);line-height:1.6;margin-bottom:10px">'+tone.body+'</div>'+
+          '<div class="docalert-card-actions">'+
+            (tone.primary?'<button onclick="docalertAction(\'resolve\',\''+a.doc_type+'\')" style="font-size:11px;padding:5px 14px;border-radius:var(--radius-sm);border:1px solid var(--accentBorder);background:var(--accentLt);color:var(--accent);cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">'+tone.primary+'</button>':"")+
+            '<button onclick="docalertAction(\'defer\',\''+a.doc_type+'\')" style="font-size:11px;padding:5px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--textMid);cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">Remind me in 14 days</button>'+
+            '<button onclick="docalertAction(\'dismiss\',\''+a.doc_type+'\')" style="font-size:11px;padding:5px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:var(--textHint);cursor:pointer;font-family:DM Sans,sans-serif;font-weight:500">Dismiss</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    });
+  }
+  /* all clear */
+  var alertTypes=alerts.map(function(a){return a.doc_type;});
+  var clearDocs=allDocs.filter(function(d){return !alertTypes.includes(d.doc_type)&&d.expiry_date;});
+  var noDocs=allDocs.filter(function(d){return !alertTypes.includes(d.doc_type)&&!d.expiry_date;});
+  var clearAll=clearDocs.concat(noDocs);
+  if(clearAll.length){
+    html+='<div style="font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--textDim);margin:20px 0 10px">All clear</div>';
+    html+='<div class="docalert-clear-grid">';
+    clearAll.forEach(function(d){
+      var expDate=d.expiry_date?new Date(d.expiry_date):null;
+      var expStr=expDate?"Expires "+expDate.toLocaleDateString("en-US",{month:"short",year:"numeric"}):"No expiry";
+      var watchNote=d.days_remaining!==null?(d.days_remaining>270?"alert at 9 months":d.days_remaining>180?"alert at 6 months":"alert at 3 months"):"no expiry tracking";
+      var lb=_docTypeLabel(d.doc_type);
+      var masked=d.doc_number?" ···"+d.doc_number.slice(-3):"";
+      html+='<div class="docalert-clear-card">'+
+        '<div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:4px"></div>'+
+        '<div>'+
+          '<div style="font-size:12px;font-weight:500;color:var(--text)">'+lb.charAt(0).toUpperCase()+lb.slice(1)+masked+'</div>'+
+          '<div style="font-size:11px;color:var(--textDim);margin-top:2px">'+expStr+' · '+watchNote+'</div>'+
+        '</div>'+
+      '</div>';
+    });
+    html+='</div>';
+  }
+  if(!alerts.length&&!clearAll.length){
+    html+='<div style="margin:20px 0;padding:20px;text-align:center;color:var(--textDim);font-size:12px">No documents on file yet. Add your passport and other travel documents in <button onclick="showSection(\'identity\',document.getElementById(\'nav-identity\'))" style="background:none;border:none;color:var(--gold);cursor:pointer;font-family:DM Sans,sans-serif;font-size:12px;padding:0">Identity &amp; Documents</button>.</div>';
+  }
+  /* footer */
+  html+='<div style="margin-top:24px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">'+
+    '<div style="font-size:11px;color:var(--textHint)">Last checked '+new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"})+'</div>'+
+    '<button onclick="loadDocAlerts()" style="font-size:11px;padding:4px 12px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface);color:var(--textMid);cursor:pointer;font-family:DM Sans,sans-serif">Refresh</button>'+
+  '</div>';
+  el.innerHTML=html;
+}
+function docalertAction(action,docType){
+  if(action==="dismiss"){_docAlertSnoozed[docType]="dismissed";}
+  else if(action==="defer"){_docAlertSnoozed[docType]=Date.now()+14*86400000;}
+  else if(action==="resolve"){_docAlertSnoozed[docType]=Date.now()+90*86400000;toast("Marked as in progress — we'll check back in 90 days","success");}
+  _saveAlertSnoozed();loadDocAlerts();
+}
+function updateDocAlertBadge(docs){
+  if(!docs)return;
+  var count=docs.filter(function(d){return d.days_remaining!==null&&d.days_remaining<=180&&!(_docAlertSnoozed[d.doc_type]==="dismissed");}).length;
+  var badge=document.getElementById("badge-docalert");
+  if(badge){badge.textContent=count;badge.style.display=count?"":"none";}
+}
 function updateCardDisplay(val){const el=document.getElementById("card-number-display");if(!el)return;const parts=val.split("····").map(s=>s.trim());el.textContent=parts.length>1?`•••• •••• •••• ${parts[1]}`:"•••• •••• •••• ————";}
 
 let docTypes={};
