@@ -24,6 +24,7 @@
   --teal:#4A8FA8;--tealLt:#4A8FA8;--tealGlow:#EEF5F8;
   --purple:#6B5DD3;--purpleGlow:#F0EEFF;--purpleBorder:#C4BBF5;
   --coral:#C05A3A;--coralGlow:#FEF0EC;--coralBorder:#F2C2B5;
+  --archetype-workation:#C76A1F;--workationTint:#FFF0E0;--workationText:#8A4A00;
   --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;
   --surface3:#F0EEEA;--border3:#A8A5A0;
   --ink:#0A0A0A;--ink2:#141414;--ink3:#1C1C1C;--ink4:#242424;--goldDim:#C4A882;
@@ -452,6 +453,13 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .tv-search{width:100%;padding:8px 14px;border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--text);outline:none;margin-bottom:14px;}
 .tv-search:focus{border-color:var(--border3);}
 .tv-pat-stat{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px;}
+.dna-pattern-card{background:var(--white);border:0.5px solid var(--border);border-radius:12px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;}
+.dna-pattern-eyebrow{font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--textDim);font-weight:500;}
+.dna-pattern-title{font-size:16px;font-weight:500;color:var(--text);line-height:1.35;}
+.dna-pattern-caption{font-size:12px;color:var(--textMid);line-height:1.45;}
+.tv-route-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px;margin-bottom:8px;display:flex;align-items:center;gap:16px;}
+.tv-route-iata{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;color:var(--text);line-height:1;text-align:center;}
+.tv-route-arrow{font-size:12px;color:var(--textDim);margin:2px 0;}
 .tv-yit{border-radius:var(--radius-md);padding:20px 22px;color:#fff;flex:1;min-width:0;}
 .tv-yit.purple{background:var(--purple);}
 .tv-yit.coral{background:var(--coral);}
@@ -1410,7 +1418,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
       <div class="nav-group">
         <div class="nav-group-label">Identity Modules</div>
         <button class="nav-btn" id="nav-identity" onclick="showSection('identity',this)"><span class="nav-icon"></span>Identity &amp; Documents<span class="nav-badge" id="badge-identity" style="display:none">!</span></button>
-        <button class="nav-btn" id="nav-preferences" onclick="showSection('preferences',this)"><span class="nav-icon">✈</span>Preferences</button>
+        <button class="nav-btn" id="nav-preferences" onclick="showSection('preferences',this)"><span class="nav-icon">✈</span>How I travel</button>
         <button class="nav-btn" onclick="showSection('payment',this)"><span class="nav-icon">💳</span><span>Payment &amp; Policy</span><span class="nav-tag" id="badge-payment" style="display:none">corp</span></button>
         <button class="nav-btn" onclick="showSection('trips',this)"><span class="nav-icon">📋</span>TripVault</button>
         <button class="nav-btn" onclick="showSection('family',this)"><span class="nav-icon">👥</span>Family Profiles<span class="nav-badge" id="fam-nav-badge" style="display:none">0</span></button>
@@ -1532,7 +1540,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
       <section class="section" id="section-preferences">
         <div class="sec-header">
           <div class="sec-icon" style="background:var(--tealGlow)">✈</div>
-          <div><div class="sec-title">Preferences</div><div class="sec-sub">Cabin, seat, meal, hotel &amp; loyalty — pre-filled at checkout on every integrated platform</div></div>
+          <div><div class="sec-title">How I travel</div><div class="sec-sub">Your declared preferences — pre-filled at checkout on every integrated platform.</div></div>
         </div>
 
         <!-- Sub-nav pill tabs -->
@@ -1974,11 +1982,11 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         </div>
       </section>
       <section class="section" id="section-docalert">
-        <div class="sec-header"><div class="sec-icon" style="background:var(--amberGlow)">🔔</div><div><div class="sec-title">DocAlert</div><div class="sec-sub">Proactive document monitoring — Expiry tracking · Trip readiness · Escalating alerts</div></div></div>
+        <div class="sec-header"><div class="sec-icon" style="background:var(--amberGlow)">🔔</div><div><div class="sec-title">DocAlert</div><div class="sec-sub">We watch your documents and your trips, and tell you when something needs attention.</div></div></div>
         <div id="docalert-content"><div style="text-align:center;padding:48px;color:var(--textDim);font-size:13px">Loading document status...</div></div>
       </section>
       <section class="section" id="section-trips">
-        <div class="sec-header"><div class="sec-icon" style="background:var(--surface2)">📋</div><div><div class="sec-title">Trip Vault</div><div class="sec-sub">Now · Vault · Patterns — Webhook-driven · Bleisure-tagged · Exportable</div></div></div>
+        <div class="sec-header"><div class="sec-icon" style="background:var(--surface2)">📋</div><div><div class="sec-title">Trip Vault</div><div class="sec-sub">Your travel history, structured and searchable.</div></div></div>
         <!-- Sub-nav -->
         <div class="tv-subnav">
           <button class="tv-tab active" id="tv-tab-now" onclick="showTVTab('now')">Now</button>
@@ -1989,6 +1997,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         <div id="tv-now"><div id="tv-now-content"></div></div>
         <!-- Vault -->
         <div id="tv-vault" style="display:none">
+          <div id="tv-route-cards" style="display:none;margin-bottom:8px"></div>
           <input class="tv-search" id="tv-search" type="text" placeholder="Search trips by place, PNR, airline..." oninput="tvSearch(this.value)">
           <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap" id="trip-filters">
             <button class="trip-filter-btn active" onclick="filterTrips('all',this)">All</button>
@@ -3072,7 +3081,7 @@ function showSection(id,btn){
   if(btn)btn.classList.add("active");
   section=id;
   if(id==="docalert")loadDocAlerts();
-  const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Preferences",payment:"Payment & Policy",trips:"TripVault",family:"Family Profiles",groups:"Groups",insurance:"Insurance & Tours",cruise:"Cruise Profile",docalert:"DocAlert",consent:"Consent & Access",api:"API & Webhooks",account:"Account"};
+  const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"How I travel",payment:"Payment & Policy",trips:"TripVault",family:"Family Profiles",groups:"Groups",insurance:"Insurance & Tours",cruise:"Cruise Profile",docalert:"DocAlert",consent:"Consent & Access",api:"API & Webhooks",account:"Account"};
   document.getElementById("page-title").textContent=titles[id]||"UniProfile";
   document.querySelector(".content").scrollTop=0;
   if(id==="family")loadFamilyData();
@@ -3615,6 +3624,8 @@ function tripNarrative(t){
 function archetypeStyle(ctx){
   if(ctx==="CORPORATE")return{bg:"var(--purpleGlow)",color:"var(--purple)",label:"Business"};
   if(ctx==="BLEISURE")return{bg:"var(--accentLt)",color:"var(--accent)",label:"Bleisure"};
+  if(ctx==="WORKATION")return{bg:"var(--workationTint)",color:"var(--archetype-workation)",label:"Workation"};
+  if(ctx==="FAMILY")return{bg:"var(--greenGlow)",color:"var(--green)",label:"Family"};
   return{bg:"var(--coralGlow)",color:"var(--coral)",label:"Personal"};
 }
 
@@ -3628,7 +3639,55 @@ function showTVTab(tab){
     if(btn)btn.classList.toggle("active",t===tab);
   });
   if(tab==="now")renderTVNow();
+  if(tab==="vault")renderRouteCards();
   if(tab==="patterns")renderTVPatterns();
+}
+
+function renderRouteCards(){
+  var el=document.getElementById("tv-route-cards");if(!el)return;
+  var trips=allTrips||[];
+  var months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  // Build trip-level route pairs (origin → destination of whole trip, not segments)
+  var routeMap={};
+  trips.forEach(function(t){
+    if(!t.origin_iata||!t.destination_iata)return;
+    var key=t.origin_iata+"–"+t.destination_iata;
+    if(!routeMap[key])routeMap[key]={orig:t.origin_iata,dest:t.destination_iata,trips:[]};
+    routeMap[key].trips.push(t);
+  });
+  var routes=Object.values(routeMap).filter(function(r){return r.trips.length>=5;});
+  routes.sort(function(a,b){return b.trips.length-a.trips.length;});
+  if(!routes.length){el.style.display="none";return;}
+  el.style.display="block";
+  var html='<div class="tv-section-label">Frequent routes</div>';
+  routes.forEach(function(r){
+    var cnt=r.trips.length;
+    var sorted=r.trips.slice().sort(function(a,b){return new Date(b.departure_date||0)-new Date(a.departure_date||0);});
+    var last=sorted[0];
+    var lastDate=last&&last.departure_date?new Date(last.departure_date):null;
+    var lastStr=lastDate?months[lastDate.getMonth()]+" "+lastDate.getFullYear():"";
+    var carriers={};
+    (r.trips||[]).forEach(function(t){(t.segments||[]).forEach(function(s){if(s.carrier)carriers[s.carrier]=(carriers[s.carrier]||0)+1;});});
+    var topCar=Object.keys(carriers).sort(function(a,b){return carriers[b]-carriers[a];})[0]||"";
+    var st=archetypeStyle(r.trips[0]&&r.trips[0].trip_context);
+    html+='<div class="tv-route-card">'+
+      '<div style="width:56px;flex-shrink:0;text-align:center">'+
+        '<div class="tv-route-iata">'+r.orig+'</div>'+
+        '<div class="tv-route-arrow">↔</div>'+
+        '<div class="tv-route-iata">'+r.dest+'</div>'+
+      '</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:2px">'+iataCity(r.orig)+' to '+iataCity(r.dest)+'</div>'+
+        '<div style="font-size:11px;color:var(--textDim);margin-bottom:6px">'+cnt+' trip'+(cnt!==1?'s':'')+(topCar?' · '+topCar+' most often':'')+' · last '+lastStr+'</div>'+
+        '<span style="font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px;background:'+st.bg+';color:'+st.color+'">'+st.label+'</span>'+
+      '</div>'+
+      '<div style="text-align:right;flex-shrink:0">'+
+        '<div style="font-size:22px;font-weight:600;color:var(--text);letter-spacing:-0.5px">'+cnt+'</div>'+
+        '<div style="font-size:10px;color:var(--textDim)">trips →</div>'+
+      '</div>'+
+    '</div>';
+  });
+  el.innerHTML=html;
 }
 
 function renderTVNow(){
@@ -3753,111 +3812,181 @@ async function tvSaveMemory(tripId,rating,btn){
 function renderTVPatterns(){
   var el=document.getElementById("tv-patterns-content");if(!el)return;
   var trips=allTrips||[];
-  var now=new Date();
   if(!trips.length){
-    el.innerHTML='<div class="empty-state"><div class="empty-icon">✦</div><div class="empty-title">Patterns appear as you travel</div><div class="empty-sub">Add trips to your vault and we\'ll find the signals in your history.</div></div>';
+    el.innerHTML='<div class="empty-state"><div class="empty-icon">✦</div><div class="empty-title">Patterns appear as you travel</div><div class="empty-sub">Add a few trips to your vault and we\'ll find the signals in your history.</div></div>';
     return;
   }
   var months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  // Compute stats
-  var past=trips.filter(function(t){return t.status==="completed";});
-  var segsAll=trips.reduce(function(a,t){return a.concat(t.segments||[]);},{length:0,reduce:Array.prototype.reduce,filter:Array.prototype.filter,concat:Array.prototype.concat,forEach:Array.prototype.forEach,map:Array.prototype.map});
-  segsAll=trips.flatMap(function(t){return(t.segments||[]).filter(function(s){return(s.segment_type||"FLIGHT").toUpperCase()==="FLIGHT";});});
+  // ── Base stats ───────────────────────────────────────────
+  var segsAll=trips.flatMap(function(t){return(t.segments||[]).filter(function(s){return(s.segment_type||"FLIGHT").toUpperCase()==="FLIGHT";});});
   var totalHrs=Math.round(segsAll.reduce(function(a,s){return a+(s.duration_minutes||0);},0)/60);
   var destCounts={};
   trips.forEach(function(t){if(t.destination_iata)destCounts[t.destination_iata]=(destCounts[t.destination_iata]||0)+1;});
   var topDest=Object.keys(destCounts).sort(function(a,b){return destCounts[b]-destCounts[a];})[0]||null;
-  // Route counts
   var routeCounts={};
   segsAll.forEach(function(s){if(s.origin_iata&&s.destination_iata){var r=s.origin_iata+"–"+s.destination_iata;routeCounts[r]=(routeCounts[r]||0)+1;}});
   var topRoute=Object.keys(routeCounts).sort(function(a,b){return routeCounts[b]-routeCounts[a];})[0]||null;
-  // Longest trip
   var longest=null,longestNights=0;
-  trips.forEach(function(t){
-    if(t.departure_date&&t.return_date){
-      var n=Math.round((new Date(t.return_date)-new Date(t.departure_date))/86400000);
-      if(n>longestNights){longestNights=n;longest=t;}
-    }
-  });
-  // Best year (most trips)
+  trips.forEach(function(t){if(t.departure_date&&t.return_date){var n=Math.round((new Date(t.return_date)-new Date(t.departure_date))/86400000);if(n>longestNights){longestNights=n;longest=t;}}});
   var yearCounts={};
   trips.forEach(function(t){if(t.departure_date){var y=new Date(t.departure_date).getFullYear();yearCounts[y]=(yearCounts[y]||0)+1;}});
   var bestYear=Object.keys(yearCounts).sort(function(a,b){return yearCounts[b]-yearCounts[a];})[0]||null;
-  // Countries (rough from IATA prefix — just use unique destinations)
   var uniqueDests=Object.keys(destCounts).length;
-  // Carriers
   var carrierCounts={};
   segsAll.forEach(function(s){if(s.carrier)carrierCounts[s.carrier]=(carrierCounts[s.carrier]||0)+1;});
   var topCarrier=Object.keys(carrierCounts).sort(function(a,b){return carrierCounts[b]-carrierCounts[a];})[0]||null;
-  // Narrative
-  var narr="You've taken "+trips.length+" trip"+(trips.length!==1?"s":"")+" across "+uniqueDests+" destination"+(uniqueDests!==1?"s":"");
-  if(totalHrs>0)narr+=", logging "+totalHrs.toLocaleString()+" hour"+(totalHrs!==1?"s":"")+" in the air";
-  narr+=".";
-  if(topCarrier)narr+=" "+topCarrier+" is your most-used carrier.";
-  if(topDest)narr+=" "+iataCity(topDest)+" has been your most-visited destination.";
-  if(bestYear&&yearCounts[bestYear])narr+=" "+bestYear+" was your busiest travel year with "+yearCounts[bestYear]+" trip"+(yearCounts[bestYear]!==1?"s":"")+" that year.";
+  var topCarrierCount=topCarrier?carrierCounts[topCarrier]:0;
+  var totalSegs=segsAll.length;
+  // ── Cabin by duration ────────────────────────────────────
+  var cabinLong={},cabinShort={};
+  segsAll.forEach(function(s){
+    var dur=s.duration_minutes||0;var cab=(s.cabin_class||"ECONOMY").toUpperCase();
+    var k=cab.includes("FIRST")||cab==="F"?"First":cab.includes("BUSINESS")||cab==="J"||cab==="C"?"Business":cab.includes("PREMIUM")||cab==="W"?"Premium":"Economy";
+    if(dur>=360)cabinLong[k]=(cabinLong[k]||0)+1;else if(dur>0)cabinShort[k]=(cabinShort[k]||0)+1;
+  });
+  var topCabinLong=Object.keys(cabinLong).sort(function(a,b){return cabinLong[b]-cabinLong[a];})[0]||null;
+  // ── Monthly cadence ──────────────────────────────────────
+  var monthCounts=Array(12).fill(0);
+  trips.forEach(function(t){if(t.departure_date)monthCounts[new Date(t.departure_date).getMonth()]++;});
+  var topMonth=monthCounts.indexOf(Math.max.apply(null,monthCounts));
+  var topMonthCount=monthCounts[topMonth];
+  // ── Earliest trip date ───────────────────────────────────
+  var earlyDate=trips.reduce(function(min,t){var d=t.departure_date?new Date(t.departure_date):null;return d&&(!min||d<min)?d:min;},null);
+  var sinceStr=earlyDate?months[earlyDate.getMonth()]+" "+earlyDate.getFullYear():"";
+  // ── Confidence tier ──────────────────────────────────────
+  var n=trips.length;
+  var tier=n>=30?"rich":n>=16?"strong":n>=8?"moderate":n>=4?"hedged":"stub";
+  // ── Narrative generation ─────────────────────────────────
+  var narr="";
+  if(tier==="stub"){
+    narr="Patterns will appear as you add more trips. A few more and the signals start to emerge.";
+  } else if(tier==="hedged"){
+    var parts=[];
+    if(topCarrier&&totalSegs>=2)parts.push("you’re flying "+topCarrier+" most often");
+    if(topDest&&destCounts[topDest]>=2)parts.push(iataCity(topDest)+" is already repeating");
+    if(topCabinLong&&topCabinLong!=="Economy")parts.push(topCabinLong.toLowerCase()+" on longer flights");
+    narr="Early signals: "+(parts.length?parts.join(", ")+". ":"");
+    narr+="As you add more trips, the picture will get clearer.";
+  } else if(tier==="moderate"){
+    var sentences=[];
+    if(topCarrier&&totalSegs>=4){var pct=Math.round(topCarrierCount/totalSegs*100);sentences.push(topCarrier+" carries "+topCarrierCount+" of your "+totalSegs+" segments ("+pct+"%).");}
+    if(topDest&&destCounts[topDest]>=2)sentences.push(iataCity(topDest)+" has come up "+destCounts[topDest]+" time"+(destCounts[topDest]!==1?"s":"")+".");
+    if(topCabinLong&&topCabinLong!=="Economy")sentences.push("Long-haul you tend to sit in "+topCabinLong.toLowerCase()+".");
+    if(topRoute&&routeCounts[topRoute]>=2){var rp=topRoute.split("–");sentences.push(iataCity(rp[0])+" to "+iataCity(rp[1])+" is your most-flown segment, "+routeCounts[topRoute]+" time"+(routeCounts[topRoute]!==1?"s":"")+".");}
+    sentences.push("Patterns are sharpening; the more trips you add, the clearer this gets.");
+    narr=sentences.join(" ");
+  } else {
+    var sentences=[];
+    if(topCarrier&&totalSegs>=6){var pct=Math.round(topCarrierCount/totalSegs*100);sentences.push("You fly "+topCarrier+" — "+topCarrierCount+" of your "+totalSegs+" flight segment"+(totalSegs!==1?"s":"")+" have been on "+topCarrier+(pct>=60?" ("+pct+"%)":"")+".");}
+    if(topDest&&destCounts[topDest]>=2)sentences.push(iataCity(topDest)+" keeps reappearing — "+destCounts[topDest]+" trip"+(destCounts[topDest]!==1?"s":"")+" and counting.");
+    if(topRoute&&routeCounts[topRoute]>=3){var rp=topRoute.split("–");sentences.push(iataCity(rp[0])+" to "+iataCity(rp[1])+" is your most-flown route, "+routeCounts[topRoute]+" segment"+(routeCounts[topRoute]!==1?"s":"")+".");}
+    if(topCabinLong&&topCabinLong!=="Economy")sentences.push("Long-haul, you sit in "+topCabinLong.toLowerCase()+".");
+    if(topMonthCount>=2)sentences.push("You tend to travel in "+months[topMonth]+".");
+    sentences.push("Patterns are sharpening; expect more signals as you add trips.");
+    narr=sentences.join(" ");
+  }
   var html="";
-  // Narrative block
-  html+='<div class="tv-narrative">'+narr+'</div>';
-  // Stat grid
+  // ── Hero narrative ────────────────────────────────────────
+  html+='<div style="font-family:Georgia,serif;font-size:17px;line-height:1.7;color:var(--text);max-width:600px;margin-bottom:6px;padding:22px 24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md)">'+narr+'</div>';
+  html+='<div style="font-size:11px;color:var(--textDim);margin-bottom:28px;padding-left:2px">Based on '+n+' trip'+(n!==1?'s':'')+(sinceStr?' since '+sinceStr:'')+(n<8?' — patterns will sharpen with more':'')+'.</div>';
+  // ── At a glance ───────────────────────────────────────────
   html+='<div class="tv-section-label">At a glance</div>';
-  html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">';
-  html+=_patStat(trips.length.toString(),"Total trips","all time");
+  html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:28px">';
+  html+=_patStat(n.toString(),"Total trips","all time");
   html+=_patStat(uniqueDests.toString(),"Destinations","unique");
   html+=_patStat(totalHrs?totalHrs.toLocaleString()+"h":"—","Hours airborne","flight time");
   html+=_patStat(topDest?iataCity(topDest):"—","Most visited",topDest?destCounts[topDest]+" visits":"");
   html+='</div>';
-  // Year in Travel
+  // ── Pattern cards ─────────────────────────────────────────
+  var pCards=[];
+  if(topCarrier&&totalSegs>=4){
+    var pct=Math.round(topCarrierCount/totalSegs*100);
+    var bHtml='<div style="margin:6px 0">';
+    Object.entries(carrierCounts).sort(function(a,b){return b[1]-a[1];}).slice(0,4).forEach(function(e,i){
+      var p=Math.round(e[1]/totalSegs*100);
+      bHtml+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span style="font-size:11px;font-weight:'+(i===0?'600':'400')+';color:'+(i===0?'var(--text)':'var(--textDim)')+';min-width:32px">'+e[0]+'</span><div style="flex:1;background:var(--border);border-radius:3px;height:'+(i===0?'5':'4')+'px"><div style="width:'+p+'%;background:'+(i===0?'var(--accent)':'var(--border2)')+';height:'+(i===0?'5':'4')+'px;border-radius:3px"></div></div><span style="font-size:10px;color:var(--textDim);min-width:24px;text-align:right">'+p+'%</span></div>';
+    });
+    bHtml+='</div>';
+    pCards.push({eyebrow:'CARRIER',title:topCarrier+', mostly.',visual:bHtml,caption:topCarrierCount+' of '+totalSegs+' segments · '+pct+'% carrier share',sig:pct});
+  }
+  if(topDest&&destCounts[topDest]>=2){
+    var dTrips=trips.filter(function(t){return t.destination_iata===topDest;}).slice(0,3);
+    var dDates=dTrips.map(function(t){return t.departure_date?months[new Date(t.departure_date).getMonth()]+" "+new Date(t.departure_date).getFullYear():"";}).filter(Boolean).join(' · ');
+    var vHtml='<div style="display:flex;align-items:baseline;gap:10px;margin:8px 0"><span style="font-family:\'JetBrains Mono\',monospace;font-size:26px;font-weight:600;color:var(--accent)">'+topDest+'</span><span style="font-size:13px;color:var(--textMid)">'+iataCity(topDest)+'</span></div>';
+    pCards.push({eyebrow:'DESTINATION',title:iataCity(topDest)+', '+destCounts[topDest]+' time'+(destCounts[topDest]!==1?'s':'')+'.',visual:vHtml,caption:dDates,sig:destCounts[topDest]*15});
+  }
+  if(topRoute&&routeCounts[topRoute]>=2){
+    var rParts=topRoute.split("–");
+    var rHtml='<div style="font-size:11px;color:var(--textMid);margin:8px 0;padding:8px 12px;background:var(--surface2);border-radius:6px;font-family:\'JetBrains Mono\',monospace;letter-spacing:0.5px">'+rParts[0]+' ─── '+rParts[1]+'</div>';
+    pCards.push({eyebrow:'ROUTING',title:rParts[0]+' → '+rParts[1]+'.',visual:rHtml,caption:routeCounts[topRoute]+' segment'+(routeCounts[topRoute]!==1?'s':'')+' · '+iataCity(rParts[0])+' to '+iataCity(rParts[1]),sig:routeCounts[topRoute]*12});
+  }
+  if(totalSegs>=4&&topCabinLong){
+    var lngTotal=Object.values(cabinLong).reduce(function(a,b){return a+b;},0);
+    var cbHtml='<div style="margin:6px 0">';
+    Object.entries(cabinLong).sort(function(a,b){return cabinLong[b]-cabinLong[a];}).forEach(function(e){var p=lngTotal?Math.round(e[1]/lngTotal*100):0;cbHtml+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><span style="font-size:11px;color:var(--textMid);min-width:60px">'+e[0]+'</span><div style="flex:1;background:var(--border);border-radius:3px;height:4px"><div style="width:'+p+'%;background:var(--gold);height:4px;border-radius:3px"></div></div><span style="font-size:10px;color:var(--textDim);min-width:24px;text-align:right">'+p+'%</span></div>';});
+    cbHtml+='</div>';
+    var pctBiz=lngTotal?Math.round((cabinLong[topCabinLong]||0)/lngTotal*100):0;
+    pCards.push({eyebrow:'CABIN',title:topCabinLong+' on long-haul.',visual:cbHtml,caption:'Flights over 6 hours · '+lngTotal+' segment'+(lngTotal!==1?'s':''),sig:pctBiz});
+  }
+  if(trips.length>=4&&topMonthCount>=2){
+    var top2Months=monthCounts.map(function(c,i){return{m:i,c:c};}).sort(function(a,b){return b.c-a.c;}).slice(0,2);
+    var maxM=top2Months[0].c;
+    var mHtml='<div style="display:flex;align-items:flex-end;gap:2px;height:28px;margin:8px 0">';
+    months.forEach(function(mn,i){var h=maxM>0?Math.max(3,Math.round(monthCounts[i]/maxM*24)):3;var isTop=top2Months.some(function(t){return t.m===i;});mHtml+='<div title="'+mn+': '+monthCounts[i]+'" style="flex:1;background:'+(isTop?'var(--accent)':'var(--border)')+';height:'+h+'px;border-radius:2px 2px 0 0"></div>';});
+    mHtml+='</div><div style="display:flex;gap:2px">';
+    ["J","F","M","A","M","J","J","A","S","O","N","D"].forEach(function(l){mHtml+='<span style="flex:1;font-size:8px;color:var(--textHint);text-align:center">'+l+'</span>';});
+    mHtml+='</div>';
+    pCards.push({eyebrow:'CADENCE',title:'You travel in '+months[topMonth]+'.',visual:mHtml,caption:topMonthCount+' trip'+(topMonthCount!==1?'s':'')+' departed in '+months[topMonth]+' or nearby',sig:topMonthCount*10});
+  }
+  pCards.sort(function(a,b){return b.sig-a.sig;});
+  if(pCards.length){
+    html+='<div class="tv-section-label">Your patterns</div>';
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:28px">';
+    pCards.slice(0,6).forEach(function(c){
+      html+='<div class="dna-pattern-card"><div class="dna-pattern-eyebrow">'+c.eyebrow+'</div><div class="dna-pattern-title">'+c.title+'</div>'+c.visual+'<div class="dna-pattern-caption">'+c.caption+'</div></div>';
+    });
+    html+='</div>';
+  } else {
+    html+='<div class="tv-section-label">Your patterns</div>';
+    html+='<div style="padding:24px;text-align:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:28px;color:var(--textDim);font-size:13px">More patterns will appear with a few more trips.</div>';
+  }
+  // ── Year in Travel ────────────────────────────────────────
   html+='<div class="tv-section-label">Year in travel</div>';
-  html+='<div style="display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap">';
-  html+='<div class="tv-yit purple">'+
-    '<div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.7;margin-bottom:6px">Most-flown route</div>'+
-    '<div style="font-size:18px;font-weight:600;letter-spacing:1px;margin-bottom:4px">'+(topRoute?topRoute.replace("–"," → "):"—")+'</div>'+
-    '<div style="font-size:11px;opacity:0.75">'+(topRoute?routeCounts[topRoute]+" segment"+(routeCounts[topRoute]!==1?"s":"")+" flown":"no route data yet")+'</div>'+
-  '</div>';
-  html+='<div class="tv-yit coral">'+
-    '<div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.7;margin-bottom:6px">Longest trip</div>'+
-    '<div style="font-size:18px;font-weight:600;margin-bottom:4px">'+(longest?longestNights+" nights":"—")+'</div>'+
-    '<div style="font-size:11px;opacity:0.75">'+(longest?tripNarrative(longest):"no multi-day trips yet")+'</div>'+
-  '</div>';
-  html+='<div class="tv-yit teal">'+
-    '<div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.7;margin-bottom:6px">Busiest year</div>'+
-    '<div style="font-size:18px;font-weight:600;margin-bottom:4px">'+(bestYear||"—")+'</div>'+
-    '<div style="font-size:11px;opacity:0.75">'+(bestYear?yearCounts[bestYear]+" trip"+(yearCounts[bestYear]!==1?"s":""):"no year data yet")+'</div>'+
-  '</div>';
+  html+='<div style="display:flex;gap:10px;margin-bottom:28px;flex-wrap:wrap">';
+  html+='<div class="tv-yit purple"><div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.7;margin-bottom:6px">Most-flown route</div><div style="font-size:18px;font-weight:600;letter-spacing:1px;margin-bottom:4px">'+(topRoute?topRoute.replace("–"," → "):"—")+'</div><div style="font-size:11px;opacity:0.75">'+(topRoute?routeCounts[topRoute]+" segment"+(routeCounts[topRoute]!==1?"s":"")+" flown":"no route data yet")+'</div></div>';
+  html+='<div class="tv-yit coral"><div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.7;margin-bottom:6px">Longest trip</div><div style="font-size:18px;font-weight:600;margin-bottom:4px">'+(longest?longestNights+" nights":"—")+'</div><div style="font-size:11px;opacity:0.75">'+(longest?tripNarrative(longest):"no multi-day trips yet")+'</div></div>';
+  html+='<div class="tv-yit teal"><div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.7;margin-bottom:6px">Busiest year</div><div style="font-size:18px;font-weight:600;margin-bottom:4px">'+(bestYear||"—")+'</div><div style="font-size:11px;opacity:0.75">'+(bestYear?yearCounts[bestYear]+" trip"+(yearCounts[bestYear]!==1?"s":""):"no year data yet")+'</div></div>';
   html+='</div>';
-  // DNA bridge
-  html+='<div class="tv-section-label">Travel patterns</div>';
-  html+='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px">';
-  var ctxItems=["CORPORATE","PERSONAL","BLEISURE"].map(function(c){return{ctx:c,count:trips.filter(function(t){return t.trip_context===c;}).length};});
+  // ── Trip mix ──────────────────────────────────────────────
+  html+='<div class="tv-section-label">Trip mix</div>';
+  html+='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px;margin-bottom:28px">';
+  var ctxItems=["CORPORATE","PERSONAL","BLEISURE","WORKATION","FAMILY"].map(function(c){return{ctx:c,count:trips.filter(function(t){return t.trip_context===c;}).length};});
   var ctxTotal=trips.length||1;
   var ctxFloored=ctxItems.map(function(c){var ex=c.count/ctxTotal*100;return{ctx:c.ctx,count:c.count,pct:Math.floor(ex),rem:ex-Math.floor(ex)};});
   var ctxRem=100-ctxFloored.reduce(function(s,f){return s+f.pct;},0);
   ctxFloored.slice().sort(function(a,b){return b.rem-a.rem;}).forEach(function(f,i){if(i<ctxRem)f.pct++;});
   ctxFloored.sort(function(a,b){return b.count-a.count;});
   ctxFloored.forEach(function(c){
-    var st=archetypeStyle(c.ctx);
-    var pct=c.pct;
-    if(!c.count){
-      html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;opacity:0.45">'+
-        '<div style="font-size:11px;font-weight:500;color:'+st.color+';min-width:68px">'+st.label+'</div>'+
-        '<div style="flex:1;background:var(--border);border-radius:4px;height:5px"></div>'+
-        '<div style="font-size:11px;color:var(--textDim);min-width:40px;text-align:right">none yet</div>'+
-      '</div>';
-      return;
-    }
-    html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'+
-      '<div style="font-size:11px;font-weight:500;color:'+st.color+';min-width:68px">'+st.label+'</div>'+
-      '<div style="flex:1;background:var(--border);border-radius:4px;height:5px">'+
-        '<div style="width:'+pct+'%;background:'+st.color+';height:5px;border-radius:4px;transition:width 0.4s"></div>'+
-      '</div>'+
-      '<div style="font-size:11px;color:var(--textDim);min-width:52px;text-align:right">'+c.count+' · '+pct+'%</div>'+
-    '</div>';
+    var st=archetypeStyle(c.ctx);var pct=c.pct;
+    if(!c.count){html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;opacity:0.4"><div style="font-size:11px;font-weight:500;color:'+st.color+';min-width:72px">'+st.label+'</div><div style="flex:1;background:var(--border);border-radius:4px;height:4px"></div><div style="font-size:11px;color:var(--textDim);min-width:52px;text-align:right">none yet</div></div>';return;}
+    html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><div style="font-size:11px;font-weight:500;color:'+st.color+';min-width:72px">'+st.label+'</div><div style="flex:1;background:var(--border);border-radius:4px;height:5px"><div style="width:'+pct+'%;background:'+st.color+';height:5px;border-radius:4px;transition:width 0.4s"></div></div><div style="font-size:11px;color:var(--textDim);min-width:52px;text-align:right">'+c.count+' · '+pct+'%</div></div>';
   });
-  html+='<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--textHint)">Based on '+trips.length+' trip'+(trips.length!==1?'s':'')+' · <button onclick="showSection(\'preferences\',document.getElementById(\'nav-preferences\'))" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:11px;font-family:DM Sans,sans-serif;padding:0">Update How I Travel →</button></div>';
+  html+='<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--textHint)">Based on '+n+' trip'+(n!==1?'s':'')+' · <button onclick="showSection(\'preferences\',document.getElementById(\'nav-preferences\'))" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:11px;font-family:DM Sans,sans-serif;padding:0">Update how I travel →</button></div>';
+  html+='</div>';
+  // ── Posture ───────────────────────────────────────────────
+  html+='<div class="tv-section-label">Posture</div>';
+  html+='<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:0 18px;margin-bottom:24px">';
+  [{key:"posture_auto_attach",label:"Auto-attach documents",desc:"When a new trip appears, automatically attach the right documents."},{key:"posture_cross_traveler",label:"Cross-traveler alerts",desc:"Alert me if a linked traveler\'s documents affect our shared trips.",def:true},{key:"posture_notify_disclosure",label:"Notify on disclosure",desc:"Send a notification when your data is shared with a partner.",def:true}].forEach(function(p,i,arr){
+    var checked=localStorage.getItem(p.key)===null?(p.def!==false):localStorage.getItem(p.key)==="true";
+    html+='<div style="display:flex;align-items:center;gap:14px;padding:14px 0'+(i<arr.length-1?';border-bottom:1px solid var(--border)':'')+'">';
+    html+='<div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px">'+p.label+'</div><div style="font-size:12px;color:var(--textDim)">'+p.desc+'</div></div>';
+    html+='<label class="toggle"><input type="checkbox" '+(checked?'checked':'')+" onchange=\"savePosture('"+p.key+"',this.checked)\"><div class='toggle-track'><div class='toggle-knob'></div></div></label>";
+    html+='</div>';
+  });
   html+='</div>';
   el.innerHTML=html;
 }
+function savePosture(key,val){localStorage.setItem(key,String(val));}
 function _patStat(val,label,sub){
   return'<div class="tv-pat-stat">'+
     '<div style="font-size:22px;font-weight:600;color:var(--text);letter-spacing:-0.5px">'+val+'</div>'+
@@ -3881,10 +4010,10 @@ function renderTrips(trips){
   allTrips=trips.filter(t=>t.status!=="pending");
   renderPendingTrips(trips.filter(t=>t.status==="pending"));
   applyTripFilter(activeFilter);
+  renderRouteCards();
   if(_tvTab==="now")renderTVNow();
-  if(_tvTab==="patterns")renderTVPatterns();
-  else if(_tvTab==="now"){}
-  else renderTVNow(); // pre-render now tab even if not visible so it's ready
+  else if(_tvTab==="patterns")renderTVPatterns();
+  else renderTVNow();
 }
 function renderPendingTrips(pending){
   const sec=document.getElementById("trip-pending-section");
@@ -4157,10 +4286,7 @@ function applyTripFilter(filter){
 
         // Top row
         '<div style="display:flex;align-items:flex-start;gap:18px;margin-bottom:18px">'+
-          '<div style="flex-shrink:0;text-align:center;min-width:44px">'+
-            '<div style="font-size:28px;font-weight:600;color:#111827;line-height:1">'+(d?d.getDate():"")+'</div>'+
-            '<div style="font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.5px">'+(d?months[d.getMonth()]+" "+d.getFullYear():"")+'</div>'+
-          '</div>'+
+          (function(){var nts=d&&r?Math.round((r-d)/86400000):0;var isLongStay=nts>=14;return'<div style="flex-shrink:0;text-align:center;min-width:'+(isLongStay?56:44)+'px">'+(isLongStay?'<div style="font-size:15px;font-weight:600;color:#111827;line-height:1.2">'+(d?d.getDate()+" "+months[d.getMonth()].toUpperCase():"")+'</div><div style="font-size:10px;color:#9CA3AF;margin:1px 0">↓</div><div style="font-size:15px;font-weight:600;color:#111827;line-height:1.2">'+(r?r.getDate()+" "+months[r.getMonth()].toUpperCase():"")+'</div><div style="font-size:9px;color:var(--archetype-workation,#C76A1F);font-weight:600;margin-top:3px">long stay</div>':'<div style="font-size:28px;font-weight:600;color:#111827;line-height:1">'+(d?d.getDate():"")+'</div><div style="font-size:10px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.5px">'+(d?months[d.getMonth()]+" "+d.getFullYear():"")+'</div>')+'</div>';}())+
           '<div style="width:1px;background:#E5E4E0;align-self:stretch;flex-shrink:0"></div>'+
           '<div style="flex:1;min-width:0">'+
             '<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:3px">'+
