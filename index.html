@@ -1412,7 +1412,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         <button class="nav-btn" id="nav-identity" onclick="showSection('identity',this)"><span class="nav-icon"></span>Identity &amp; Documents<span class="nav-badge" id="badge-identity" style="display:none">!</span></button>
         <button class="nav-btn" id="nav-preferences" onclick="showSection('preferences',this)"><span class="nav-icon">✈</span>Preferences</button>
         <button class="nav-btn" onclick="showSection('payment',this)"><span class="nav-icon">💳</span><span>Payment &amp; Policy</span><span class="nav-tag" id="badge-payment" style="display:none">corp</span></button>
-        <button class="nav-btn" onclick="showSection('trips',this)"><span class="nav-icon">📋</span>Trip History</button>
+        <button class="nav-btn" onclick="showSection('trips',this)"><span class="nav-icon">📋</span>TripVault</button>
         <button class="nav-btn" onclick="showSection('family',this)"><span class="nav-icon">👥</span>Family Profiles<span class="nav-badge" id="fam-nav-badge" style="display:none">0</span></button>
         <button class="nav-btn" onclick="showSection('groups',this)"><span class="nav-icon">⬡</span>Groups</button>
         <button class="nav-btn" onclick="showSection('insurance',this)"><span class="nav-icon">🛡</span>Insurance &amp; Tours</button>
@@ -1444,7 +1444,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         <label class="toggle"><input type="checkbox" id="bleisure-toggle" onchange="switchContext(this)"><div class="toggle-track"><div class="toggle-knob"></div></div></label>
         <span class="bleisure-opt gold" id="lbl-business">Business</span>
       </div>
-      <div class="context-pill personal" id="context-pill">Personal Mode</div>
+      <div class="context-pill personal" id="context-pill">Personal</div>
       <div class="autosave-indicator"><div class="autosave-dot" id="save-dot"></div><span id="save-label" style="font-size:11px;color:var(--textDim)">All changes saved</span></div>
       <button class="save-btn" id="save-btn" onclick="saveSection()">Save Changes</button>
     </div>
@@ -3072,7 +3072,7 @@ function showSection(id,btn){
   if(btn)btn.classList.add("active");
   section=id;
   if(id==="docalert")loadDocAlerts();
-  const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Preferences",payment:"Payment & Policy",trips:"Trip History",family:"Family Profiles",groups:"Groups",insurance:"Insurance & Tours",cruise:"Cruise Profile",docalert:"DocAlert",consent:"Consent & Access",api:"API & Webhooks",account:"Account"};
+  const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"Preferences",payment:"Payment & Policy",trips:"TripVault",family:"Family Profiles",groups:"Groups",insurance:"Insurance & Tours",cruise:"Cruise Profile",docalert:"DocAlert",consent:"Consent & Access",api:"API & Webhooks",account:"Account"};
   document.getElementById("page-title").textContent=titles[id]||"UniProfile";
   document.querySelector(".content").scrollTop=0;
   if(id==="family")loadFamilyData();
@@ -3080,7 +3080,7 @@ function showSection(id,btn){
   if(id==="cruise"){loadCruiseData();}
   if(id==="consent"){renderConsentPermissions();loadConnectedPlatforms();}
 }
-async function switchContext(el){const ctx=el.checked?"CORPORATE":"PERSONAL";const pill=document.getElementById("context-pill"),lp=document.getElementById("lbl-personal"),lb=document.getElementById("lbl-business"),pp=document.getElementById("pay-personal"),pc=document.getElementById("pay-corporate"),nb=document.getElementById("badge-payment");if(el.checked){pill.textContent="Business Mode";pill.className="context-pill corporate";lp.className="bleisure-opt teal";lb.className="bleisure-opt gold on";if(pp)pp.style.display="none";if(pc)pc.style.display="block";if(nb)nb.style.display="inline";}else{pill.textContent="Personal Mode";pill.className="context-pill personal";lp.className="bleisure-opt teal on";lb.className="bleisure-opt gold";if(pp)pp.style.display="block";if(pc)pc.style.display="none";if(nb)nb.style.display="none";}try{await api("POST",`/api/v1/profile/${uuid}/bleisure`,{context:ctx});}catch(e){}}
+async function switchContext(el){const ctx=el.checked?"CORPORATE":"PERSONAL";const pill=document.getElementById("context-pill"),lp=document.getElementById("lbl-personal"),lb=document.getElementById("lbl-business"),pp=document.getElementById("pay-personal"),pc=document.getElementById("pay-corporate"),nb=document.getElementById("badge-payment");if(el.checked){pill.textContent="Business";pill.className="context-pill corporate";lp.className="bleisure-opt teal";lb.className="bleisure-opt gold on";if(pp)pp.style.display="none";if(pc)pc.style.display="block";if(nb)nb.style.display="inline";}else{pill.textContent="Personal";pill.className="context-pill personal";lp.className="bleisure-opt teal on";lb.className="bleisure-opt gold";if(pp)pp.style.display="block";if(pc)pc.style.display="none";if(nb)nb.style.display="none";}try{await api("POST",`/api/v1/profile/${uuid}/bleisure`,{context:ctx});}catch(e){}}
 const v=id=>document.getElementById(id)?.value?.trim()||"";
 const cb=id=>document.getElementById(id)?.checked||false;
 const s=(id,val)=>{const el=document.getElementById(id);if(el)el.value=val??"";};
@@ -3415,7 +3415,7 @@ const acctName=p.identity?`${p.identity.legal_first||""} ${p.identity.legal_last
 function renderProfile(p){profile=p;updateSidebar(p);var comp=calcCompleteness(p);var pct=comp.pct;st("ov-completeness",pct+"%");var trips=p.trips_count||0,loyal=(p.loyalty_programs||[]).length,docs=(p.documents||[]).length;st("ov-trips",trips);st("ov-loyalty",loyal);st("ov-docs",docs);var tn=document.getElementById("ov-trips-note"),th=document.getElementById("ov-trips-hint");if(tn)tn.style.display=trips?"":"none";if(th)th.style.display=trips?"none":"";var ln=document.getElementById("ov-loyalty-note"),lh=document.getElementById("ov-loyalty-hint");if(ln)ln.style.display=loyal?"":"none";if(lh)lh.style.display=loyal?"none":"";var dn=document.getElementById("ov-docs-note"),dh=document.getElementById("ov-docs-hint");if(dn)dn.style.display=docs?"":"none";if(dh)dh.style.display=docs?"none":"";
 var compNote=document.getElementById("ov-comp-note");if(compNote){var nx=comp.missing[0];compNote.textContent=pct>=100?"All modules complete":pct>=70?"Almost there — add "+(nx?nx.label:""):pct>=40?"Add "+(nx?nx.label+" (+"+nx.weight+"%)":""):"Start with "+(nx?nx.label:"identity");compNote.className="stat-note "+(pct>=80?"teal":pct>=50?"":"warn");}
 const expiring=(p.documents||[]).filter(d=>d.days_remaining!==null&&d.days_remaining<=180);const ac=document.getElementById("alert-container");if(ac&&expiring.length){ac.innerHTML=expiring.map(d=>`<div class="alert-banner ${d.days_remaining<0?"danger":"warn"}"><span class="alert-icon">${d.days_remaining<0?"⛔":"⚠"}</span><span class="alert-text">Your <strong>${d.doc_type}</strong> ${d.days_remaining<0?"has expired":`expires in ${d.days_remaining} days`}.</span><span class="alert-link" onclick="showSection('identity',document.querySelectorAll('.nav-btn')[1])">Update →</span></div>`).join("");}
-const modules=[{id:"identity",icon:"",iconBg:"var(--goldGlow)",name:"Identity & Documents",desc:"Passport, KTN, TSA PreCheck, visas and government IDs",status:p.identity?"complete":"empty",tags:(p.documents||[]).map(d=>({label:d.doc_type.replace(/_/g," "),filled:true}))},{id:"preferences",icon:"✈",iconBg:"var(--tealGlow)",name:"Preferences",desc:"Cabin, seat, meal, hotel &amp; loyalty — pre-filled at checkout",status:(p.seat_preferences||p.meal_preferences)?"complete":"empty",tags:[...(p.seat_preferences?[{label:p.seat_preferences.seat_position,filled:true},{label:p.seat_preferences.cabin_international,filled:true}]:[]),...(p.meal_preferences&&p.meal_preferences.primary_meal_code?[{label:p.meal_preferences.primary_meal_code,filled:true}]:[])].slice(0,4)},{id:"payment",icon:"💳",iconBg:"rgba(56,99,177,0.1)",name:"Payment & Policy",desc:"Personal and corporate payment profiles with context-aware switching",status:(p.payment_profiles||[]).length>0?"partial":"empty",tags:(p.payment_profiles||[]).map(pp=>({label:pp.context,filled:true}))},{id:"trips",icon:"📋",iconBg:"var(--surface2)",name:"Trip History & Vault",desc:"All bookings and PNRs — populated via webhook",status:(p.trips||[]).length>0?"complete":"empty",tags:[{label:(p.trips_count||0)+" trips",filled:(p.trips_count||0)>0}]},];
+const modules=[{id:"identity",icon:"",iconBg:"var(--goldGlow)",name:"Identity & Documents",desc:"Passport, KTN, TSA PreCheck, visas and government IDs",status:p.identity?"complete":"empty",tags:(p.documents||[]).map(d=>({label:d.doc_type.replace(/_/g," "),filled:true}))},{id:"preferences",icon:"✈",iconBg:"var(--tealGlow)",name:"Preferences",desc:"Cabin, seat, meal, hotel &amp; loyalty — pre-filled at checkout",status:(p.seat_preferences||p.meal_preferences)?"complete":"empty",tags:[...(p.seat_preferences?[{label:p.seat_preferences.seat_position,filled:true},{label:p.seat_preferences.cabin_international,filled:true}]:[]),...(p.meal_preferences&&p.meal_preferences.primary_meal_code?[{label:p.meal_preferences.primary_meal_code,filled:true}]:[])].slice(0,4)},{id:"payment",icon:"💳",iconBg:"rgba(56,99,177,0.1)",name:"Payment & Policy",desc:"Personal and corporate payment profiles with context-aware switching",status:(p.payment_profiles||[]).length>0?"partial":"empty",tags:(p.payment_profiles||[]).map(pp=>({label:pp.context,filled:true}))},{id:"trips",icon:"📋",iconBg:"var(--surface2)",name:"TripVault",desc:"All bookings and PNRs — populated via webhook",status:(p.trips||[]).length>0?"complete":"empty",tags:[{label:(p.trips_count||0)+" trips",filled:(p.trips_count||0)>0}]},];
 const mg=document.getElementById("module-grid");if(mg)mg.innerHTML=modules.map((m,i)=>`<div class="module-card ${m.status}" onclick="showSection('${m.id}',document.querySelectorAll('.nav-btn')[${i+1}])"><div class="module-top"><div class="module-icon-wrap" style="background:${m.iconBg}">${m.icon}</div><div class="module-status-pill pill-${m.status}">${m.status==="complete"?"Complete":m.status==="partial"?"Partial":"Empty"}</div></div><div class="module-name">${m.name}</div><div class="module-desc">${m.desc}</div>${m.tags.length?`<div class="module-tags">${m.tags.slice(0,4).map(t=>`<span class="module-tag${t.filled?" filled":""}">${t.label}</span>`).join("")}</div>`:""}</div>`).join("");
 if(p.identity){s("f-legal_first",p.identity.legal_first);s("f-legal_middle",p.identity.legal_middle);s("f-legal_last",p.identity.legal_last);s("f-dob",p.identity.dob?p.identity.dob.split("T")[0]:"");s("f-nationality",p.identity.nationality);s("f-gender_code",p.identity.gender_code||"M");s("f-home_airport",p.identity.home_airport);}
 renderDocumentVault(p.documents||[]);populateDocTypeDropdown(p.document_types||{});
@@ -3829,20 +3829,32 @@ function renderTVPatterns(){
   // DNA bridge
   html+='<div class="tv-section-label">Travel patterns</div>';
   html+='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px">';
-  var topCtx=["CORPORATE","PERSONAL","BLEISURE"].map(function(c){return{ctx:c,count:trips.filter(function(t){return t.trip_context===c;}).length};}).sort(function(a,b){return b.count-a.count;});
-  topCtx.forEach(function(c){
-    if(!c.count)return;
+  var ctxItems=["CORPORATE","PERSONAL","BLEISURE"].map(function(c){return{ctx:c,count:trips.filter(function(t){return t.trip_context===c;}).length};});
+  var ctxTotal=trips.length||1;
+  var ctxFloored=ctxItems.map(function(c){var ex=c.count/ctxTotal*100;return{ctx:c.ctx,count:c.count,pct:Math.floor(ex),rem:ex-Math.floor(ex)};});
+  var ctxRem=100-ctxFloored.reduce(function(s,f){return s+f.pct;},0);
+  ctxFloored.slice().sort(function(a,b){return b.rem-a.rem;}).forEach(function(f,i){if(i<ctxRem)f.pct++;});
+  ctxFloored.sort(function(a,b){return b.count-a.count;});
+  ctxFloored.forEach(function(c){
     var st=archetypeStyle(c.ctx);
-    var pct=Math.round(c.count/trips.length*100);
+    var pct=c.pct;
+    if(!c.count){
+      html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;opacity:0.45">'+
+        '<div style="font-size:11px;font-weight:500;color:'+st.color+';min-width:68px">'+st.label+'</div>'+
+        '<div style="flex:1;background:var(--border);border-radius:4px;height:5px"></div>'+
+        '<div style="font-size:11px;color:var(--textDim);min-width:40px;text-align:right">none yet</div>'+
+      '</div>';
+      return;
+    }
     html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'+
       '<div style="font-size:11px;font-weight:500;color:'+st.color+';min-width:68px">'+st.label+'</div>'+
       '<div style="flex:1;background:var(--border);border-radius:4px;height:5px">'+
         '<div style="width:'+pct+'%;background:'+st.color+';height:5px;border-radius:4px;transition:width 0.4s"></div>'+
       '</div>'+
-      '<div style="font-size:11px;color:var(--textDim);min-width:40px;text-align:right">'+pct+'%</div>'+
+      '<div style="font-size:11px;color:var(--textDim);min-width:52px;text-align:right">'+c.count+' · '+pct+'%</div>'+
     '</div>';
   });
-  html+='<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--textHint)">Based on '+trips.length+' trip"+(trips.length!==1?"s":"")+" · <button onclick="showSection(\'preferences\',document.getElementById(\'nav-preferences\'))" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:11px;font-family:DM Sans,sans-serif;padding:0">Update How I Travel →</button></div>';
+  html+='<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--textHint)">Based on '+trips.length+' trip'+(trips.length!==1?'s':'')+' · <button onclick="showSection(\'preferences\',document.getElementById(\'nav-preferences\'))" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:11px;font-family:DM Sans,sans-serif;padding:0">Update How I Travel →</button></div>';
   html+='</div>';
   el.innerHTML=html;
 }
@@ -3852,6 +3864,12 @@ function _patStat(val,label,sub){
     '<div style="font-size:11px;font-weight:500;color:var(--textMid);margin-top:3px">'+label+'</div>'+
     '<div style="font-size:10px;color:var(--textHint);margin-top:1px">'+sub+'</div>'+
   '</div>';
+}
+function tripNote(raw){
+  if(!raw)return"No notes yet · add a thought";
+  if(raw.startsWith("{")){try{var m=JSON.parse(raw);if(m.note&&m.note.trim())return m.note.trim();}catch(e){}return"No notes yet · add a thought";}
+  if(/^Parsed from:|^Confirmed:|^Your trip to/i.test(raw))return"No notes yet · add a thought";
+  return raw;
 }
 let _tvSearchQuery="";
 function tvSearch(q){
@@ -3951,7 +3969,7 @@ function applyTripFilter(filter){
     var style=isLong?"background:#FFFBEB;color:#D97706;border:1px solid #FDE68A":"background:#F0FDF4;color:#059669;border:1px solid #BBF7D0";
     return'<tr><td colspan="6" style="padding:5px 0"><div style="display:flex;align-items:center;gap:8px">'+
       '<div style="flex:1;height:1px;background:repeating-linear-gradient(90deg,#D1D5DB 0,#D1D5DB 4px,transparent 4px,transparent 8px)"></div>'+
-      '<span style="font-size:10px;font-weight:600;padding:3px 12px;border-radius:10px;white-space:nowrap;'+style+'">Layover '+txt+'</span>'+
+      '<span style="font-size:10px;font-weight:600;padding:3px 12px;border-radius:10px;white-space:nowrap;'+style+'">'+(h>=24?"Stay":"Layover")+' '+txt+'</span>'+
       '<div style="flex:1;height:1px;background:repeating-linear-gradient(90deg,#D1D5DB 0,#D1D5DB 4px,transparent 4px,transparent 8px)"></div>'+
       '</div></td></tr>';
   }
@@ -4021,10 +4039,11 @@ function applyTripFilter(filter){
           var layMins=Math.floor((dep-prevArr)/60000);
           var layH=Math.floor(layMins/60),layM=layMins%60;
           var layStr=layH?""+layH+"h "+(layM?""+layM+"m":""):layM+"m";
+          var layType=layMins>1440?"stay":"layover";
           segCards+='<div style="display:flex;align-items:center;gap:8px;padding:4px 0;margin:2px 0">'+
             '<div style="flex:1;height:1px;background:var(--border)"></div>'+
             '<div style="font-size:10px;color:var(--textDim);white-space:nowrap;background:var(--surface2);padding:2px 10px;border-radius:20px;border:1px solid var(--border)">'+
-              layStr+' layover · '+(s.origin_iata||"")+'</div>'+
+              layStr+' '+layType+' · '+(s.origin_iata||"")+'</div>'+
             '<div style="flex:1;height:1px;background:var(--border)"></div>'+
           '</div>';
         }
@@ -4181,7 +4200,7 @@ function applyTripFilter(filter){
             (docOk?'<div style="font-size:13px;font-weight:500;color:var(--green)">✓ All clear</div>':'<div style="font-size:13px;font-weight:500;color:var(--gold)">⚠ Review</div>')+
             '<div style="font-size:10px;color:var(--textHint);margin-top:1px">Visa · Passport · Health</div>'+
           '</div>'+
-          '<div><div style="font-size:9px;font-weight:600;color:var(--textHint);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px">Notes</div><div style="font-size:12px;color:var(--textDim)">'+(t.notes||"—")+'</div></div>'+
+          '<div><div style="font-size:9px;font-weight:600;color:var(--textHint);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px">Notes</div><div style="font-size:12px;color:var(--textDim)">'+tripNote(t.notes)+'</div></div>'+
         '</div>'+
 
         // Doc check panel
@@ -5390,7 +5409,7 @@ const PERM_MODULES = [
   { key:'meal_preferences', icon:'🍽', bg:'var(--greenGlow)', name:'Meal & Dietary',      desc:'IATA meal codes, allergies, avoid items' },
   { key:'loyalty_programs', icon:'✦',  bg:'var(--goldGlow)',  name:'Loyalty Programs',    desc:'Member numbers and tier status — auto-applied at checkout' },
   { key:'payment_profiles', icon:'💳', bg:'rgba(56,99,177,0.08)', name:'Payment Profiles', desc:'Card type and last 4 digits — not full card data' },
-  { key:'trips',            icon:'📋', bg:'var(--surface2)',  name:'Trip History',         desc:'Past and upcoming bookings and PNRs' },
+  { key:'trips',            icon:'📋', bg:'var(--surface2)',  name:'TripVault',            desc:'Past and upcoming bookings and PNRs' },
   { key:'groups',           icon:'👥', bg:'var(--tealGlow)',  name:'Groups',              desc:'Group trip manifests and member lists' },
 ];
 
