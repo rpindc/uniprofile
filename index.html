@@ -22,6 +22,8 @@
   --green:#4A7A5A;--greenGlow:#EEF5F0;--greenBorder:#B4D4BE;
   --amber:#B8860B;--amberGlow:#F7F0E0;--amberBorder:#DFC88A;
   --teal:#4A8FA8;--tealLt:#4A8FA8;--tealGlow:#EEF5F8;
+  --purple:#6B5DD3;--purpleGlow:#F0EEFF;--purpleBorder:#C4BBF5;
+  --coral:#C05A3A;--coralGlow:#FEF0EC;--coralBorder:#F2C2B5;
   --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-xl:16px;
   --surface3:#F0EEEA;--border3:#A8A5A0;
   --ink:#0A0A0A;--ink2:#141414;--ink3:#1C1C1C;--ink4:#242424;--goldDim:#C4A882;
@@ -435,6 +437,27 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .docalert-clear-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
 .docalert-clear-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;display:flex;gap:10px;align-items:flex-start;}
 @media(max-width:600px){.docalert-clear-grid{grid-template-columns:1fr;}}
+/* TripVault revamp */
+.tv-subnav{display:flex;gap:0;margin-bottom:24px;border-bottom:2px solid var(--border);}
+.tv-tab{padding:8px 20px;border:none;border-bottom:2px solid transparent;background:transparent;color:var(--textDim);cursor:pointer;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;transition:all 0.12s;margin-bottom:-2px;}
+.tv-tab.active{color:var(--text);border-bottom-color:var(--gold);}
+.tv-tab:hover:not(.active){color:var(--textMid);}
+.tv-now-hero{border:1px solid var(--greenBorder);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:10px;background:var(--white);}
+.tv-now-hero-top{background:var(--greenGlow);padding:12px 18px;display:flex;align-items:center;gap:10px;}
+.tv-coming-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:13px 18px;display:flex;align-items:center;gap:14px;margin-bottom:8px;cursor:pointer;transition:border-color 0.12s;}
+.tv-coming-card:hover{border-color:var(--border2);}
+.tv-jb-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px;margin-bottom:8px;}
+.tv-rating-btn{padding:7px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--textMid);cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;transition:all 0.12s;}
+.tv-rating-btn:hover,.tv-rating-btn.sel{border-color:var(--teal);background:var(--tealGlow);color:var(--teal);}
+.tv-search{width:100%;padding:8px 14px;border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--text);outline:none;margin-bottom:14px;}
+.tv-search:focus{border-color:var(--border3);}
+.tv-pat-stat{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px;}
+.tv-yit{border-radius:var(--radius-md);padding:20px 22px;color:#fff;flex:1;min-width:0;}
+.tv-yit.purple{background:var(--purple);}
+.tv-yit.coral{background:var(--coral);}
+.tv-yit.teal{background:var(--teal);}
+.tv-narrative{font-family:Georgia,'Times New Roman',serif;font-size:14px;line-height:1.85;color:var(--textMid);padding:20px 24px;background:var(--surface2);border-radius:var(--radius-md);border:1px solid var(--border);margin-bottom:20px;}
+.tv-section-label{font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--textDim);margin-bottom:10px;}
 .trip-action-btn{padding:6px 14px;border-radius:var(--radius-sm);font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--surface2);color:var(--textMid);font-family:'DM Sans',sans-serif;transition:all 0.15s;}
 .trip-action-btn:hover{color:var(--text);border-color:var(--border3);}
 .trip-action-btn.gold{background:var(--goldGlow);color:var(--goldLt);border-color:rgba(184,149,90,0.3);}
@@ -1955,27 +1978,42 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         <div id="docalert-content"><div style="text-align:center;padding:48px;color:var(--textDim);font-size:13px">Loading document status...</div></div>
       </section>
       <section class="section" id="section-trips">
-        <div class="sec-header"><div class="sec-icon" style="background:var(--surface2)">📋</div><div><div class="sec-title">Trip Vault</div><div class="sec-sub">IATA OneOrder Module 7 — Webhook-driven · Bleisure-tagged · Exportable</div></div></div>
-        <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap" id="trip-filters">
-          <button class="trip-filter-btn active" onclick="filterTrips('all',this)">All</button>
-          <button class="trip-filter-btn" onclick="filterTrips('upcoming',this)">Upcoming</button>
-          <button class="trip-filter-btn" onclick="filterTrips('past',this)">Past</button>
-          <button class="trip-filter-btn" onclick="filterTrips('CORPORATE',this)">Business</button>
-          <button class="trip-filter-btn" onclick="filterTrips('PERSONAL',this)">Personal</button>
-          <button class="trip-filter-btn" onclick="filterTrips('BLEISURE',this)">Bleisure</button>
-          <button class="trip-filter-btn" style="margin-left:auto;background:var(--goldGlow);color:var(--goldLt);border-color:rgba(184,149,90,0.3)" onclick="exportTrips()">⬇ Export CSV</button>
+        <div class="sec-header"><div class="sec-icon" style="background:var(--surface2)">📋</div><div><div class="sec-title">Trip Vault</div><div class="sec-sub">Now · Vault · Patterns — Webhook-driven · Bleisure-tagged · Exportable</div></div></div>
+        <!-- Sub-nav -->
+        <div class="tv-subnav">
+          <button class="tv-tab active" id="tv-tab-now" onclick="showTVTab('now')">Now</button>
+          <button class="tv-tab" id="tv-tab-vault" onclick="showTVTab('vault')">Vault</button>
+          <button class="tv-tab" id="tv-tab-patterns" onclick="showTVTab('patterns')">Patterns</button>
         </div>
-        <div style="background:var(--greenGlow);border:1px solid var(--greenBorder);border-radius:var(--radius-md);padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px">
-          <div style="font-size:24px">&#128231;</div>
-          <div style="flex:1">
-            <div style="font-size:12px;font-weight:500;color:var(--green);margin-bottom:4px">Your personal trip inbox — forward any booking confirmation here</div>
-            <div id="trip-fwd-address" style="font-size:13px;color:var(--text);font-family:JetBrains Mono,monospace;background:var(--surface);display:inline-block;padding:4px 10px;border-radius:4px;border:1px solid var(--border2)">loading…</div>
-            <div style="font-size:11px;color:var(--textDim);margin-top:6px">Flights, hotels, cruises, car rentals — parsed automatically from any booking platform</div>
+        <!-- Now -->
+        <div id="tv-now"><div id="tv-now-content"></div></div>
+        <!-- Vault -->
+        <div id="tv-vault" style="display:none">
+          <input class="tv-search" id="tv-search" type="text" placeholder="Search trips by place, PNR, airline..." oninput="tvSearch(this.value)">
+          <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap" id="trip-filters">
+            <button class="trip-filter-btn active" onclick="filterTrips('all',this)">All</button>
+            <button class="trip-filter-btn" onclick="filterTrips('upcoming',this)">Upcoming</button>
+            <button class="trip-filter-btn" onclick="filterTrips('past',this)">Past</button>
+            <button class="trip-filter-btn" onclick="filterTrips('CORPORATE',this)">Business</button>
+            <button class="trip-filter-btn" onclick="filterTrips('PERSONAL',this)">Personal</button>
+            <button class="trip-filter-btn" onclick="filterTrips('BLEISURE',this)">Bleisure</button>
+            <button class="trip-filter-btn" style="margin-left:auto;background:var(--goldGlow);color:var(--goldLt);border-color:rgba(184,149,90,0.3)" onclick="exportTrips()">⬇ Export CSV</button>
           </div>
-          <button id="trip-fwd-copy-btn" onclick="copyTripAddress()" style="padding:8px 14px;background:var(--ink);color:var(--goldDim);border:none;border-radius:var(--radius-sm);font-size:11px;cursor:pointer;white-space:nowrap;font-family:DM Sans,sans-serif">Copy Address</button>
+          <div style="background:var(--greenGlow);border:1px solid var(--greenBorder);border-radius:var(--radius-md);padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:14px">
+            <div style="font-size:22px">&#128231;</div>
+            <div style="flex:1">
+              <div style="font-size:12px;font-weight:500;color:var(--green);margin-bottom:3px">Your personal trip inbox</div>
+              <div id="trip-fwd-address" style="font-size:12px;color:var(--text);font-family:JetBrains Mono,monospace;background:var(--surface);display:inline-block;padding:3px 8px;border-radius:4px;border:1px solid var(--border2)">loading…</div>
+            </div>
+            <button onclick="copyTripAddress()" style="padding:7px 13px;background:var(--ink);color:var(--goldDim);border:none;border-radius:var(--radius-sm);font-size:11px;cursor:pointer;white-space:nowrap;font-family:DM Sans,sans-serif">Copy</button>
+          </div>
+          <div id="trip-pending-section" style="display:none;margin-bottom:16px"></div>
+          <div class="trip-list" id="trip-list"><div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips in vault yet</div><div class="empty-sub">Forward any booking confirmation to your personal address above</div></div></div>
         </div>
-        <div id="trip-pending-section" style="display:none;margin-bottom:16px"></div>
-        <div class="trip-list" id="trip-list"><div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips in vault yet</div><div class="empty-sub">Forward any booking confirmation to your personal address above — flights, hotels, cruises, car rentals parsed automatically</div></div></div>
+        <!-- Patterns -->
+        <div id="tv-patterns" style="display:none">
+          <div id="tv-patterns-content"></div>
+        </div>
       </section>
 
       <section class="section" id="section-family">
@@ -3555,10 +3593,280 @@ let allTrips=[];let activeFilter="all";
 const AIRLINE_COLORS={"UA":"#0066CC","AA":"#CC0000","DL":"#9B2335","AS":"#00693E","WN":"#304CB2","default":"var(--textDim)"};
 const PASSPORT_REQUIRED=["LHR","CDG","NRT","SIN","DXB","SYD","GRU","JNB","DEL","PEK","ICN","BKK","KUL","DOH","AMS","FRA","ZRH","FCO","MAD","BCN"];
 function airlineColor(c){return AIRLINE_COLORS[c]||AIRLINE_COLORS.default;}
+
+/* ── TripVault revamp ───────────────────────────────────── */
+const IATA_CITY={MIA:"Miami",JFK:"New York",LGA:"New York",EWR:"New York",LAX:"Los Angeles",ORD:"Chicago",MDW:"Chicago",DFW:"Dallas",DEN:"Denver",ATL:"Atlanta",SFO:"San Francisco",SJC:"San Jose",SEA:"Seattle",BOS:"Boston",MCI:"Kansas City",DCA:"Washington",IAD:"Washington",BWI:"Baltimore",PHX:"Phoenix",MCO:"Orlando",FLL:"Fort Lauderdale",TPA:"Tampa",SAN:"San Diego",PDX:"Portland",MSP:"Minneapolis",DTW:"Detroit",CLT:"Charlotte",PHL:"Philadelphia",LAS:"Las Vegas",HNL:"Honolulu",ANC:"Anchorage",MSY:"New Orleans",STL:"St. Louis",CLE:"Cleveland",PIT:"Pittsburgh",SLC:"Salt Lake City",MEM:"Memphis",BNA:"Nashville",RSW:"Fort Myers",RDU:"Raleigh",CMH:"Columbus",IND:"Indianapolis",MKE:"Milwaukee",OMA:"Omaha",ABQ:"Albuquerque",TUS:"Tucson",SNA:"Orange County",BUR:"Burbank",LGB:"Long Beach",OAK:"Oakland",SMF:"Sacramento",SJU:"San Juan",BGI:"Barbados",MBJ:"Montego Bay",NAS:"Nassau",GCM:"Grand Cayman",CZM:"Cozumel",MEX:"Mexico City",CUN:"Cancun",GDL:"Guadalajara",BOG:"Bogota",GRU:"São Paulo",GIG:"Rio de Janeiro",BSB:"Brasilia",EZE:"Buenos Aires",SCL:"Santiago",LIM:"Lima",UIO:"Quito",CCS:"Caracas",PTY:"Panama City",SJO:"San Jose CR",LHR:"London",LGW:"London",STN:"London",MAN:"Manchester",EDI:"Edinburgh",BRS:"Bristol",CDG:"Paris",ORY:"Paris",NCE:"Nice",LYS:"Lyon",MRS:"Marseille",AMS:"Amsterdam",BRU:"Brussels",FRA:"Frankfurt",MUC:"Munich",DUS:"Düsseldorf",TXL:"Berlin",BER:"Berlin",ZRH:"Zürich",GVA:"Geneva",FCO:"Rome",MXP:"Milan",LIN:"Milan",VCE:"Venice",NAP:"Naples",MAD:"Madrid",BCN:"Barcelona",AGP:"Málaga",IBZ:"Ibiza",LIS:"Lisbon",OPO:"Porto",ATH:"Athens",SKG:"Thessaloniki",IST:"Istanbul",SAW:"Istanbul",OSL:"Oslo",ARN:"Stockholm",CPH:"Copenhagen",HEL:"Helsinki",WAW:"Warsaw",PRG:"Prague",VIE:"Vienna",BUD:"Budapest",DUB:"Dublin",LED:"St. Petersburg",SVO:"Moscow",DME:"Moscow",DXB:"Dubai",AUH:"Abu Dhabi",DOH:"Doha",KWI:"Kuwait",BAH:"Bahrain",RUH:"Riyadh",JED:"Jeddah",TLV:"Tel Aviv",CAI:"Cairo",CMN:"Casablanca",JNB:"Johannesburg",CPT:"Cape Town",NBO:"Nairobi",ACC:"Accra",LOS:"Lagos",ADD:"Addis Ababa",DEL:"Delhi",BOM:"Mumbai",MAA:"Chennai",CCU:"Kolkata",BLR:"Bengaluru",HYD:"Hyderabad",GOI:"Goa",CMB:"Colombo",DAC:"Dhaka",KTM:"Kathmandu",BKK:"Bangkok",DMK:"Bangkok",SIN:"Singapore",KUL:"Kuala Lumpur",CGK:"Jakarta",SUB:"Surabaya",MNL:"Manila",CEB:"Cebu",HKG:"Hong Kong",TPE:"Taipei",NRT:"Tokyo",HND:"Tokyo",KIX:"Osaka",ITM:"Osaka",NGO:"Nagoya",FUK:"Fukuoka",PEK:"Beijing",PKX:"Beijing",PVG:"Shanghai",SHA:"Shanghai",CAN:"Guangzhou",SZX:"Shenzhen",CTU:"Chengdu",ICN:"Seoul",GMP:"Seoul",MEL:"Melbourne",SYD:"Sydney",BNE:"Brisbane",PER:"Perth",ADL:"Adelaide",AKL:"Auckland",CHC:"Christchurch",WLG:"Wellington",HAN:"Hanoi",SGN:"Ho Chi Minh",RGN:"Yangon",DAD:"Da Nang",REP:"Siem Reap",PNH:"Phnom Penh",VTE:"Vientiane",BZE:"Belize City",MGA:"Managua",SAP:"San Pedro Sula"};
+function iataCity(code){return IATA_CITY[code]||(code||"");}
+function tripNarrative(t){
+  var segs=t.segments||[];
+  var pts=[];
+  if(segs.length){
+    segs.forEach(function(s,i){if(i===0)pts.push(s.origin_iata);pts.push(s.destination_iata);});
+  } else {
+    if(t.origin_iata)pts.push(t.origin_iata);
+    if(t.destination_iata)pts.push(t.destination_iata);
+  }
+  // remove trailing duplicate of origin (round trip)
+  if(pts.length>2&&pts[pts.length-1]===pts[0])pts.pop();
+  // deduplicate consecutive
+  var uniq=pts.filter(function(c,i){return i===0||c!==pts[i-1];});
+  return uniq.map(iataCity).join(" · ")||t.trip_name||"Trip";
+}
+function archetypeStyle(ctx){
+  if(ctx==="CORPORATE")return{bg:"var(--purpleGlow)",color:"var(--purple)",label:"Business"};
+  if(ctx==="BLEISURE")return{bg:"var(--accentLt)",color:"var(--accent)",label:"Bleisure"};
+  return{bg:"var(--coralGlow)",color:"var(--coral)",label:"Personal"};
+}
+
+let _tvTab="now";
+function showTVTab(tab){
+  _tvTab=tab;
+  ["now","vault","patterns"].forEach(function(t){
+    var el=document.getElementById("tv-"+t);
+    var btn=document.getElementById("tv-tab-"+t);
+    if(el)el.style.display=t===tab?"":"none";
+    if(btn)btn.classList.toggle("active",t===tab);
+  });
+  if(tab==="now")renderTVNow();
+  if(tab==="patterns")renderTVPatterns();
+}
+
+function renderTVNow(){
+  var el=document.getElementById("tv-now-content");if(!el)return;
+  var now=new Date();
+  var months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var upcoming=(allTrips||[]).filter(function(t){return t.status==="upcoming"||t.status==="in-progress";})
+    .sort(function(a,b){return new Date(a.departure_date)-new Date(b.departure_date);});
+  var justBack=(allTrips||[]).filter(function(t){
+    if(t.status!=="completed"||!t.return_date)return false;
+    var rd=new Date(t.return_date);
+    return(now-rd)<21*86400000&&(now-rd)>0;
+  }).slice(0,3);
+  var html="";
+  if(!upcoming.length&&!justBack.length){
+    html='<div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">Nothing coming up</div><div class="empty-sub">Forward a booking confirmation to your trip inbox to get started.</div></div>';
+    el.innerHTML=html;return;
+  }
+  if(upcoming.length){
+    var hero=upcoming[0];
+    var hd=hero.departure_date?new Date(hero.departure_date):null;
+    var hr=hero.return_date?new Date(hero.return_date):null;
+    var daysUntil=hd?Math.floor((hd-now)/86400000):null;
+    var st=archetypeStyle(hero.trip_context);
+    var segs=hero.segments||[];
+    var segSummary=segs.length?segs.map(function(s){return(s.carrier||"")+(s.flight_number?" "+s.flight_number:"");}).filter(Boolean).join(", "):"";
+    var nights=hd&&hr?Math.round((hr-hd)/86400000):null;
+    var passport=profile&&profile.documents?profile.documents.find(function(d){return d.doc_type==="PASSPORT"&&d.is_primary;}):null;
+    var ppDays=passport&&passport.expiry_date?Math.floor((new Date(passport.expiry_date)-hd)/86400000):null;
+    var ppOk=ppDays===null?null:ppDays>180;
+    html+='<div class="tv-section-label">Next up</div>';
+    html+='<div class="tv-now-hero">'+
+      '<div class="tv-now-hero-top">'+
+        '<div style="font-size:11px;font-weight:600;color:var(--green)">'+
+          (daysUntil===0?"Departing today":daysUntil===1?"Departing tomorrow":daysUntil!==null?daysUntil+" days away":"")+
+        '</div>'+
+        '<div style="margin-left:auto;font-size:11px;padding:2px 9px;border-radius:10px;font-weight:500;background:'+st.bg+';color:'+st.color+'">'+st.label+'</div>'+
+      '</div>'+
+      '<div style="padding:18px 20px">'+
+        '<div style="font-size:22px;font-weight:600;color:var(--text);letter-spacing:-0.3px;margin-bottom:4px">'+tripNarrative(hero)+'</div>'+
+        '<div style="font-size:12px;color:var(--textDim);margin-bottom:14px">'+
+          (hd?hd.getDate()+" "+months[hd.getMonth()]+" "+hd.getFullYear():"")+(hr&&nights?" · "+nights+" night"+(nights!==1?"s":""):"")+(segSummary?" · "+segSummary:"")+
+        '</div>'+
+        '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">'+
+          _readinessCell("Passport",ppOk===null?"—":ppOk?"✓":"⚠",ppOk===null?"var(--textDim)":ppOk?"var(--green)":"var(--amber)")+
+          _readinessCell("Visa","check","var(--textDim)")+
+          _readinessCell("KTN",profile&&profile.essentials&&profile.essentials.known_traveler_number?"✓":"—",profile&&profile.essentials&&profile.essentials.known_traveler_number?"var(--green)":"var(--textDim)")+
+          _readinessCell("PNR",hero.trip_locator||"—","var(--textMid)")+
+        '</div>'+
+        '<div style="display:flex;gap:8px">'+
+          '<button onclick="showTVTab(\'vault\')" style="font-size:12px;padding:6px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--surface2);color:var(--textMid);cursor:pointer;font-family:DM Sans,sans-serif">Open in Vault</button>'+
+          '<button onclick="showTVTab(\'vault\');runDocCheck(0,\''+hero.destination_iata+'\',\''+hero.origin_iata+'\',\''+(hero.departure_date||'')+'\')" style="font-size:12px;padding:6px 14px;border-radius:var(--radius-sm);border:1px solid var(--accentBorder);background:var(--accentLt);color:var(--accent);cursor:pointer;font-family:DM Sans,sans-serif">Doc Check</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+    if(upcoming.length>1){
+      html+='<div class="tv-section-label" style="margin-top:20px">Coming up</div>';
+      upcoming.slice(1,4).forEach(function(t){
+        var dd=t.departure_date?new Date(t.departure_date):null;
+        var du=dd?Math.floor((dd-now)/86400000):null;
+        var st2=archetypeStyle(t.trip_context);
+        html+='<div class="tv-coming-card" onclick="showTVTab(\'vault\')">'+
+          '<div style="text-align:center;min-width:36px">'+
+            '<div style="font-size:18px;font-weight:600;color:var(--text)">'+(dd?dd.getDate():"")+'</div>'+
+            '<div style="font-size:9px;color:var(--textHint);text-transform:uppercase;letter-spacing:0.5px">'+(dd?months[dd.getMonth()]+" "+dd.getFullYear():"")+'</div>'+
+          '</div>'+
+          '<div style="width:1px;background:var(--border);align-self:stretch;flex-shrink:0"></div>'+
+          '<div style="flex:1;min-width:0">'+
+            '<div style="font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+tripNarrative(t)+'</div>'+
+            '<div style="font-size:11px;color:var(--textDim);margin-top:2px">'+(t.trip_name||"")+'</div>'+
+          '</div>'+
+          '<div style="text-align:right;flex-shrink:0">'+
+            '<div style="font-size:11px;font-weight:500;color:var(--green)">'+(du!==null?du+"d":"")+'</div>'+
+            '<div style="font-size:10px;padding:2px 7px;border-radius:10px;background:'+st2.bg+';color:'+st2.color+';margin-top:3px">'+st2.label+'</div>'+
+          '</div>'+
+        '</div>';
+      });
+    }
+  }
+  if(justBack.length){
+    html+='<div class="tv-section-label" style="margin-top:20px">Just back</div>';
+    justBack.forEach(function(t){
+      var rd=t.return_date?new Date(t.return_date):null;
+      var dBack=rd?Math.floor((now-rd)/86400000):null;
+      var hasMemory=t.notes&&t.notes.startsWith("{");
+      html+='<div class="tv-jb-card">'+
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'+
+          '<div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--text)">'+tripNarrative(t)+'</div>'+
+          '<div style="font-size:11px;color:var(--textDim);margin-top:2px">'+(dBack!==null?dBack+"d ago":"")+(t.trip_name?" · "+t.trip_name:"")+'</div></div>'+
+          (hasMemory?'<div style="font-size:11px;color:var(--green)">✓ Saved</div>':"")+
+        '</div>'+
+        (!hasMemory?
+          '<div style="font-size:11px;color:var(--textMid);margin-bottom:10px">How was it?</div>'+
+          '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+            '<button class="tv-rating-btn" onclick="tvSaveMemory(\''+t.id+'\',\'would_again\',this)">Would do again ★</button>'+
+            '<button class="tv-rating-btn" onclick="tvSaveMemory(\''+t.id+'\',\'fine\',this)">It was fine</button>'+
+            '<button class="tv-rating-btn" onclick="tvSaveMemory(\''+t.id+'\',\'never_again\',this)">Never again</button>'+
+          '</div>':
+          '<div style="font-size:12px;color:var(--textDim)">Memory saved — <button onclick="showTVTab(\'vault\')" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:12px;font-family:DM Sans,sans-serif;padding:0">view in vault</button></div>'
+        )+
+      '</div>';
+    });
+  }
+  el.innerHTML=html;
+}
+function _readinessCell(label,val,color){
+  return'<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 10px;text-align:center">'+
+    '<div style="font-size:14px;font-weight:600;color:'+color+'">'+val+'</div>'+
+    '<div style="font-size:9px;color:var(--textHint);margin-top:2px;text-transform:uppercase;letter-spacing:0.5px">'+label+'</div>'+
+  '</div>';
+}
+async function tvSaveMemory(tripId,rating,btn){
+  if(btn){btn.classList.add("sel");btn.parentElement.querySelectorAll(".tv-rating-btn").forEach(function(b){if(b!==btn)b.disabled=true;});}
+  try{
+    await api("PUT","/api/v1/profile/"+uuid,{module:"trip_memory",data:{trip_id:tripId,rating:rating}});
+    toast("Memory saved","success");
+    var res=await api("GET","/api/v1/me");
+    if(res.uuid){profile=res;renderTrips(res.trips||[]);}
+  }catch(e){toast("Could not save: "+e.message,"error");}
+}
+
+function renderTVPatterns(){
+  var el=document.getElementById("tv-patterns-content");if(!el)return;
+  var trips=allTrips||[];
+  var now=new Date();
+  if(!trips.length){
+    el.innerHTML='<div class="empty-state"><div class="empty-icon">✦</div><div class="empty-title">Patterns appear as you travel</div><div class="empty-sub">Add trips to your vault and we\'ll find the signals in your history.</div></div>';
+    return;
+  }
+  var months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  // Compute stats
+  var past=trips.filter(function(t){return t.status==="completed";});
+  var segsAll=trips.reduce(function(a,t){return a.concat(t.segments||[]);},{length:0,reduce:Array.prototype.reduce,filter:Array.prototype.filter,concat:Array.prototype.concat,forEach:Array.prototype.forEach,map:Array.prototype.map});
+  segsAll=trips.flatMap(function(t){return(t.segments||[]).filter(function(s){return(s.segment_type||"FLIGHT").toUpperCase()==="FLIGHT";});});
+  var totalHrs=Math.round(segsAll.reduce(function(a,s){return a+(s.duration_minutes||0);},0)/60);
+  var destCounts={};
+  trips.forEach(function(t){if(t.destination_iata)destCounts[t.destination_iata]=(destCounts[t.destination_iata]||0)+1;});
+  var topDest=Object.keys(destCounts).sort(function(a,b){return destCounts[b]-destCounts[a];})[0]||null;
+  // Route counts
+  var routeCounts={};
+  segsAll.forEach(function(s){if(s.origin_iata&&s.destination_iata){var r=s.origin_iata+"–"+s.destination_iata;routeCounts[r]=(routeCounts[r]||0)+1;}});
+  var topRoute=Object.keys(routeCounts).sort(function(a,b){return routeCounts[b]-routeCounts[a];})[0]||null;
+  // Longest trip
+  var longest=null,longestNights=0;
+  trips.forEach(function(t){
+    if(t.departure_date&&t.return_date){
+      var n=Math.round((new Date(t.return_date)-new Date(t.departure_date))/86400000);
+      if(n>longestNights){longestNights=n;longest=t;}
+    }
+  });
+  // Best year (most trips)
+  var yearCounts={};
+  trips.forEach(function(t){if(t.departure_date){var y=new Date(t.departure_date).getFullYear();yearCounts[y]=(yearCounts[y]||0)+1;}});
+  var bestYear=Object.keys(yearCounts).sort(function(a,b){return yearCounts[b]-yearCounts[a];})[0]||null;
+  // Countries (rough from IATA prefix — just use unique destinations)
+  var uniqueDests=Object.keys(destCounts).length;
+  // Carriers
+  var carrierCounts={};
+  segsAll.forEach(function(s){if(s.carrier)carrierCounts[s.carrier]=(carrierCounts[s.carrier]||0)+1;});
+  var topCarrier=Object.keys(carrierCounts).sort(function(a,b){return carrierCounts[b]-carrierCounts[a];})[0]||null;
+  // Narrative
+  var narr="You've taken "+trips.length+" trip"+(trips.length!==1?"s":"")+" across "+uniqueDests+" destination"+(uniqueDests!==1?"s":"");
+  if(totalHrs>0)narr+=", logging "+totalHrs.toLocaleString()+" hour"+(totalHrs!==1?"s":"")+" in the air";
+  narr+=".";
+  if(topCarrier)narr+=" "+topCarrier+" is your most-used carrier.";
+  if(topDest)narr+=" "+iataCity(topDest)+" has been your most-visited destination.";
+  if(bestYear&&yearCounts[bestYear])narr+=" "+bestYear+" was your busiest travel year with "+yearCounts[bestYear]+" trip"+(yearCounts[bestYear]!==1?"s":"")+" that year.";
+  var html="";
+  // Narrative block
+  html+='<div class="tv-narrative">'+narr+'</div>';
+  // Stat grid
+  html+='<div class="tv-section-label">At a glance</div>';
+  html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">';
+  html+=_patStat(trips.length.toString(),"Total trips","all time");
+  html+=_patStat(uniqueDests.toString(),"Destinations","unique");
+  html+=_patStat(totalHrs?totalHrs.toLocaleString()+"h":"—","Hours airborne","flight time");
+  html+=_patStat(topDest?iataCity(topDest):"—","Most visited",topDest?destCounts[topDest]+" visits":"");
+  html+='</div>';
+  // Year in Travel
+  html+='<div class="tv-section-label">Year in travel</div>';
+  html+='<div style="display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap">';
+  html+='<div class="tv-yit purple">'+
+    '<div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.7;margin-bottom:6px">Most-flown route</div>'+
+    '<div style="font-size:18px;font-weight:600;letter-spacing:1px;margin-bottom:4px">'+(topRoute?topRoute.replace("–"," → "):"—")+'</div>'+
+    '<div style="font-size:11px;opacity:0.75">'+(topRoute?routeCounts[topRoute]+" segment"+(routeCounts[topRoute]!==1?"s":"")+" flown":"no route data yet")+'</div>'+
+  '</div>';
+  html+='<div class="tv-yit coral">'+
+    '<div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.7;margin-bottom:6px">Longest trip</div>'+
+    '<div style="font-size:18px;font-weight:600;margin-bottom:4px">'+(longest?longestNights+" nights":"—")+'</div>'+
+    '<div style="font-size:11px;opacity:0.75">'+(longest?tripNarrative(longest):"no multi-day trips yet")+'</div>'+
+  '</div>';
+  html+='<div class="tv-yit teal">'+
+    '<div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.7;margin-bottom:6px">Busiest year</div>'+
+    '<div style="font-size:18px;font-weight:600;margin-bottom:4px">'+(bestYear||"—")+'</div>'+
+    '<div style="font-size:11px;opacity:0.75">'+(bestYear?yearCounts[bestYear]+" trip"+(yearCounts[bestYear]!==1?"s":""):"no year data yet")+'</div>'+
+  '</div>';
+  html+='</div>';
+  // DNA bridge
+  html+='<div class="tv-section-label">Travel patterns</div>';
+  html+='<div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px">';
+  var topCtx=["CORPORATE","PERSONAL","BLEISURE"].map(function(c){return{ctx:c,count:trips.filter(function(t){return t.trip_context===c;}).length};}).sort(function(a,b){return b.count-a.count;});
+  topCtx.forEach(function(c){
+    if(!c.count)return;
+    var st=archetypeStyle(c.ctx);
+    var pct=Math.round(c.count/trips.length*100);
+    html+='<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'+
+      '<div style="font-size:11px;font-weight:500;color:'+st.color+';min-width:68px">'+st.label+'</div>'+
+      '<div style="flex:1;background:var(--border);border-radius:4px;height:5px">'+
+        '<div style="width:'+pct+'%;background:'+st.color+';height:5px;border-radius:4px;transition:width 0.4s"></div>'+
+      '</div>'+
+      '<div style="font-size:11px;color:var(--textDim);min-width:40px;text-align:right">'+pct+'%</div>'+
+    '</div>';
+  });
+  html+='<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:11px;color:var(--textHint)">Based on '+trips.length+' trip"+(trips.length!==1?"s":"")+" · <button onclick="showSection(\'preferences\',document.getElementById(\'nav-preferences\'))" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:11px;font-family:DM Sans,sans-serif;padding:0">Update How I Travel →</button></div>';
+  html+='</div>';
+  el.innerHTML=html;
+}
+function _patStat(val,label,sub){
+  return'<div class="tv-pat-stat">'+
+    '<div style="font-size:22px;font-weight:600;color:var(--text);letter-spacing:-0.5px">'+val+'</div>'+
+    '<div style="font-size:11px;font-weight:500;color:var(--textMid);margin-top:3px">'+label+'</div>'+
+    '<div style="font-size:10px;color:var(--textHint);margin-top:1px">'+sub+'</div>'+
+  '</div>';
+}
+let _tvSearchQuery="";
+function tvSearch(q){
+  _tvSearchQuery=(q||"").toLowerCase().trim();
+  applyTripFilter(activeFilter);
+}
+
 function renderTrips(trips){
   allTrips=trips.filter(t=>t.status!=="pending");
   renderPendingTrips(trips.filter(t=>t.status==="pending"));
   applyTripFilter(activeFilter);
+  if(_tvTab==="now")renderTVNow();
+  if(_tvTab==="patterns")renderTVPatterns();
+  else if(_tvTab==="now"){}
+  else renderTVNow(); // pre-render now tab even if not visible so it's ready
 }
 function renderPendingTrips(pending){
   const sec=document.getElementById("trip-pending-section");
@@ -3616,9 +3924,10 @@ function applyTripFilter(filter){
   let filtered=allTrips;
   if(filter==="upcoming")filtered=allTrips.filter(t=>t.status==="upcoming"||t.status==="in-progress");
   else if(filter==="past")filtered=allTrips.filter(t=>t.status==="completed");
-  else if(filter==="business")filtered=allTrips.filter(t=>t.trip_context==="CORPORATE");
-  else if(filter==="personal")filtered=allTrips.filter(t=>t.trip_context==="PERSONAL");
-  else if(filter==="bleisure")filtered=allTrips.filter(t=>t.trip_context==="BLEISURE");
+  else if(filter==="CORPORATE"||filter==="business")filtered=allTrips.filter(t=>t.trip_context==="CORPORATE");
+  else if(filter==="PERSONAL"||filter==="personal")filtered=allTrips.filter(t=>t.trip_context==="PERSONAL");
+  else if(filter==="BLEISURE"||filter==="bleisure")filtered=allTrips.filter(t=>t.trip_context==="BLEISURE");
+  if(_tvSearchQuery){var q=_tvSearchQuery;filtered=filtered.filter(function(t){var hay=[(t.origin_iata||""),(t.destination_iata||""),(t.trip_name||""),(t.trip_locator||""),iataCity(t.origin_iata||""),iataCity(t.destination_iata||"")].join(" ").toLowerCase();return hay.indexOf(q)!==-1;});}
   if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="empty-icon">✈</div><div class="empty-title">No trips found</div><div class="empty-sub">Forward any booking confirmation to <span style="font-family:JetBrains Mono,monospace">'+(_tripInboxAddr||"your trip inbox")+'</span></div></div>';return;}
   const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   function parseDate(ds){if(!ds)return null;var s=String(ds).replace(" ","T").replace(/(\+00)$/,"+00:00");var d=new Date(s);return isNaN(d)?null:d;}
@@ -3786,7 +4095,7 @@ function applyTripFilter(filter){
     }).join("");
 
     // Context badge
-    var ctxColor=t.trip_context==="CORPORATE"?"background:#F0FDF4;color:#059669":t.trip_context==="BLEISURE"?"background:#FEF3C7;color:#D97706":"background:#EFF6FF;color:#2563EB";
+    var _as=archetypeStyle(t.trip_context);var ctxColor="background:"+_as.bg+";color:"+_as.color;
 
     // Countdown
     var cdText=daysUntil===null?"":daysUntil>0?daysUntil+"d away":daysUntil===0?"Today":Math.abs(daysUntil)+"d ago";
@@ -3843,7 +4152,7 @@ function applyTripFilter(filter){
             '</div>'+
             '<div style="font-size:12px;color:#6B7280;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(t.trip_name||"")+'</div>'+
             '<div style="display:flex;gap:6px;flex-wrap:wrap">'+
-              '<span style="font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;'+ctxColor+'">'+(t.trip_context||"Personal")+'</span>'+
+              '<span style="font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;'+ctxColor+'">'+_as.label+'</span>'+
               (t.source_platform?'<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:#F3F4F6;color:#374151">'+t.source_platform+'</span>':"")+
             '</div>'+
           '</div>'+
