@@ -2034,16 +2034,22 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         <div id="pay-corporate" style="display:none">
           <div class="payment-card-display" style="background:linear-gradient(135deg,#1C1A2E 0%,#2A2040 100%)"><div class="card-row-top"><div class="card-chip" style="background:linear-gradient(135deg,rgba(184,149,90,0.25) 0%,rgba(166,124,82,0.12) 100%);border-color:rgba(166,124,82,0.3)"></div><span class="card-type" style="color:rgba(184,149,90,0.85)">Corporate</span></div><div class="card-number" id="corp-card-display">•••• •••• •••• ————</div><div class="card-row-bottom"><div class="card-name" id="corp-name-display">Company</div><div style="font-size:9px;color:rgba(184,149,90,0.3);letter-spacing:1px;text-transform:uppercase;font-family:'DM Sans',sans-serif;position:relative;z-index:1">Business</div></div></div>
           <input type="hidden" id="f-corporate_card">
+          <div class="form-section pref-card">
+            <div id="corp-profile-saved" style="display:none">
+              <div class="pc-saved-hd"><span class="pc-saved-title">CORPORATE PROFILE</span><button class="pc-edit-btn" onclick="showCorpProfileEditing()">Edit</button></div>
+              <div class="pc-saved-fields" id="corp-profile-fields"></div>
+            </div>
+            <div id="corp-profile-editing">
+              <div class="pc-editing-title">CORPORATE PROFILE</div>
+              <div class="form-grid" style="margin-bottom:0">
+                <div class="form-field"><label class="field-label">Company name</label><input class="field-input" id="f-company_name" type="text" placeholder="Company name" oninput="document.getElementById('corp-name-display').textContent=this.value||'Company'"></div>
+                <div class="form-field"><label class="field-label">Cost center</label><input class="field-input" id="f-cost_center" type="text" placeholder="e.g. CC-3021"></div>
+                <div class="form-field"><label class="field-label">Expense platform</label><select class="field-select" id="f-expense_platform"><option>Not connected</option><option>Expensify</option><option>SAP Concur</option><option>Navan Expense</option><option>Brex</option><option>Ramp</option></select></div>
+              </div>
+              <div class="pc-edit-actions"><button class="pc-cancel-btn" onclick="cancelCorpProfile()">Cancel</button><button class="save-btn" id="corp-save-btn" onclick="saveCorporateProfile()">Save</button></div>
+            </div>
+          </div>
           <div class="form-section">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-              <div class="form-section-title" style="margin-bottom:0">Corporate profile</div>
-              <button class="save-btn" id="corp-save-btn" onclick="saveCorporateProfile()">Save</button>
-            </div>
-            <div class="form-grid" style="margin-bottom:16px">
-              <div class="form-field"><label class="field-label">Company name</label><input class="field-input" id="f-company_name" type="text" placeholder="Company name" oninput="document.getElementById('corp-name-display').textContent=this.value||'Company'"></div>
-              <div class="form-field"><label class="field-label">Cost center</label><input class="field-input" id="f-cost_center" type="text" placeholder="e.g. CC-3021"></div>
-              <div class="form-field"><label class="field-label">Expense platform</label><select class="field-select" id="f-expense_platform"><option>Not connected</option><option>Expensify</option><option>SAP Concur</option><option>Navan Expense</option><option>Brex</option><option>Ramp</option></select></div>
-            </div>
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
               <div class="form-section-title" style="margin-bottom:0">Corporate cards</div>
               <button onclick="openAddCorpCardForm()" style="padding:6px 14px;background:var(--surface);border:1px solid var(--border2);color:var(--textMid);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:DM Sans,sans-serif">+ Add card</button>
@@ -3840,10 +3846,27 @@ function removeCorpCard(idx){
   renderCorpCards();
 }
 
+function renderCorpProfileSaved(){
+  var fields=document.getElementById("corp-profile-fields");if(!fields)return;
+  var company=v("f-company_name")||"—";
+  var cost=v("f-cost_center")||"—";
+  var platform=v("f-expense_platform")||"Not connected";
+  fields.innerHTML='<div class="pc-field-row"><span style="color:var(--textDim);min-width:130px;font-size:12px">Company</span><span style="font-size:13px;color:var(--text)">'+company+'</span></div>'
+    +'<div class="pc-field-row"><span style="color:var(--textDim);min-width:130px;font-size:12px">Cost center</span><span style="font-size:13px;color:var(--text)">'+cost+'</span></div>'
+    +'<div class="pc-field-row"><span style="color:var(--textDim);min-width:130px;font-size:12px">Expense platform</span><span style="font-size:13px;color:var(--text)">'+platform+'</span></div>';
+}
+function showCorpProfileSaved(){
+  renderCorpProfileSaved();
+  var s=document.getElementById("corp-profile-saved"),e=document.getElementById("corp-profile-editing");
+  if(s)s.style.display="";if(e)e.style.display="none";
+}
+function showCorpProfileEditing(){
+  var s=document.getElementById("corp-profile-saved"),e=document.getElementById("corp-profile-editing");
+  if(s)s.style.display="none";if(e)e.style.display="";
+}
+function cancelCorpProfile(){if(v("f-company_name")){showCorpProfileSaved();}}
 function setCorpBtn(mode){
-  var btn=document.getElementById("corp-save-btn");if(!btn)return;
-  if(mode==="edit"){btn.className="pc-edit-btn";btn.textContent="Edit";btn.onclick=function(){setCorpBtn("save");};}
-  else{btn.className="save-btn";btn.textContent="Save";btn.onclick=saveCorporateProfile;}
+  if(mode==="edit"){showCorpProfileSaved();}else{showCorpProfileEditing();}
 }
 function setPolicyBtn(mode){
   var btn=document.getElementById("policy-save-btn");if(!btn)return;
