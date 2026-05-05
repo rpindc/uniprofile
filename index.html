@@ -365,7 +365,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .ctx-personal{background:var(--tealGlow);color:var(--tealLt);}
 .ctx-corporate{background:var(--goldGlow);color:var(--goldLt);}
 .ctx-bleisure{background:rgba(180,100,200,0.1);color:#C4A0E0;}
-.payment-card-display{background:linear-gradient(135deg,var(--ink3) 0%,var(--ink4) 100%);border:1px solid var(--border2);border-radius:var(--radius-xl);padding:24px 28px;margin-bottom:24px;position:relative;overflow:hidden;min-height:160px;}
+.payment-card-display{background:linear-gradient(135deg,var(--ink3) 0%,var(--ink4) 100%);border:1px solid var(--border2);border-radius:var(--radius-xl);padding:18px 20px;margin-bottom:24px;position:relative;overflow:hidden;min-height:180px;}
 .payment-card-display::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:var(--goldGlow);}
 .card-chip{width:32px;height:24px;background:var(--goldGlow);border:1px solid var(--goldDim);border-radius:4px;margin-bottom:24px;}
 .card-number{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--textMid);letter-spacing:2px;margin-bottom:16px;}
@@ -2033,7 +2033,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
           <div class="form-section">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
               <div class="form-section-title" style="margin-bottom:0">Corporate profile</div>
-              <button onclick="saveCorporateProfile()" style="padding:7px 16px;background:var(--ink);color:var(--goldDim);border:none;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:DM Sans,sans-serif">Save</button>
+              <button class="save-btn" onclick="saveCorporateProfile()">Save</button>
             </div>
             <div class="form-grid" style="margin-bottom:16px">
               <div class="form-field"><label class="field-label">Company name</label><input class="field-input" id="f-company_name" type="text" placeholder="Company name" oninput="document.getElementById('corp-name-display').textContent=this.value||'Company'"></div>
@@ -2046,7 +2046,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
           <div class="form-section">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
               <div class="form-section-title" style="margin-bottom:0">Travel Policy</div>
-              <button onclick="savePolicyCards()" style="padding:7px 16px;background:var(--ink);color:var(--goldDim);border:none;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:DM Sans,sans-serif">Save policy</button>
+              <button class="save-btn" onclick="savePolicyCards()">Save policy</button>
             </div>
             <div id="policy-compliance-strip"></div>
             <div id="policy-cards"></div>
