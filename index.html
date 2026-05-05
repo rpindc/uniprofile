@@ -365,12 +365,15 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .ctx-personal{background:var(--tealGlow);color:var(--tealLt);}
 .ctx-corporate{background:var(--goldGlow);color:var(--goldLt);}
 .ctx-bleisure{background:rgba(180,100,200,0.1);color:#C4A0E0;}
-.payment-card-display{background:linear-gradient(135deg,var(--ink3) 0%,var(--ink4) 100%);border:1px solid var(--border2);border-radius:var(--radius-xl);padding:18px 20px;margin-bottom:24px;position:relative;overflow:hidden;min-height:180px;}
-.payment-card-display::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:var(--goldGlow);}
-.card-chip{width:32px;height:24px;background:var(--goldGlow);border:1px solid var(--goldDim);border-radius:4px;margin-bottom:24px;}
-.card-number{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--textMid);letter-spacing:2px;margin-bottom:16px;}
-.card-name{font-size:13px;color:var(--text);font-weight:500;}
-.card-type{position:absolute;top:24px;right:28px;font-size:11px;color:var(--gold);font-weight:600;letter-spacing:0.5px;}
+.payment-card-display{background:linear-gradient(135deg,var(--ink3) 0%,var(--ink4) 100%);border:1px solid var(--border2);border-radius:16px;padding:20px 24px;margin-bottom:24px;position:relative;overflow:hidden;width:100%;max-width:360px;aspect-ratio:1.586;display:flex;flex-direction:column;justify-content:space-between;}
+.payment-card-display::before{content:'';position:absolute;top:-28px;right:-28px;width:110px;height:110px;border-radius:50%;background:var(--goldGlow);opacity:0.18;}
+.payment-card-display::after{content:'';position:absolute;bottom:-36px;left:-18px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,0.025);}
+.card-chip{width:32px;height:22px;background:linear-gradient(135deg,rgba(245,237,224,0.45) 0%,rgba(166,124,82,0.28) 100%);border:1px solid rgba(166,124,82,0.35);border-radius:4px;position:relative;z-index:1;}
+.card-row-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1;}
+.card-row-bottom{display:flex;justify-content:space-between;align-items:flex-end;position:relative;z-index:1;}
+.card-number{font-family:'JetBrains Mono',monospace;font-size:13px;color:rgba(255,255,255,0.5);letter-spacing:2.5px;position:relative;z-index:1;}
+.card-name{font-size:11px;color:rgba(255,255,255,0.82);font-weight:500;letter-spacing:0.3px;position:relative;z-index:1;}
+.card-type{font-size:9px;color:var(--gold);font-weight:700;letter-spacing:1.2px;text-transform:uppercase;position:relative;z-index:1;}
 .card-wallet{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:4px;}
 .wallet-card{background:linear-gradient(135deg,var(--ink3) 0%,var(--ink4) 100%);border:1px solid var(--border2);border-radius:12px;padding:16px;position:relative;overflow:hidden;cursor:pointer;transition:border-color 0.15s;}
 .wallet-card::before{content:'';position:absolute;top:-24px;right:-24px;width:90px;height:90px;border-radius:50%;background:var(--goldGlow);}
@@ -2006,7 +2009,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
       <section class="section" id="section-payment">
         <div class="sec-header"><div class="sec-icon" style="background:rgba(56,99,177,0.1)">💳</div><div><div class="sec-title">Payment &amp; Policy</div><div class="sec-sub">IATA OneOrder Module 5 — Context-aware switching with bleisure toggle</div></div></div>
         <div id="pay-personal">
-          <div class="payment-card-display"><div class="card-chip"></div><div class="card-number" id="card-number-display">•••• •••• •••• ————</div><div class="card-name" id="card-name-display">Your Name</div><div class="card-type">Personal</div></div>
+          <div class="payment-card-display"><div class="card-row-top"><div class="card-chip"></div><span class="card-type">Personal</span></div><div class="card-number" id="card-number-display">•••• •••• •••• ————</div><div class="card-row-bottom"><div class="card-name" id="card-name-display">Your Name</div><div style="font-size:9px;color:rgba(255,255,255,0.22);letter-spacing:1px;text-transform:uppercase;font-family:'DM Sans',sans-serif;position:relative;z-index:1">UniProfile</div></div></div>
           <input type="hidden" id="f-preferred_card">
           <div class="form-section">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
@@ -2029,7 +2032,8 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
           </div>
         </div>
         <div id="pay-corporate" style="display:none">
-          <div class="payment-card-display" style="background:linear-gradient(135deg,#1C1A2E 0%,#2A2040 100%)"><div class="card-chip" style="background:rgba(184,149,90,0.2);border-color:var(--goldDim)"></div><div class="card-number" id="corp-card-display">Corporate Account</div><div class="card-name" id="corp-name-display">Company</div><div class="card-type" style="color:var(--goldLt)">Corporate</div></div>
+          <div class="payment-card-display" style="background:linear-gradient(135deg,#1C1A2E 0%,#2A2040 100%)"><div class="card-row-top"><div class="card-chip" style="background:linear-gradient(135deg,rgba(184,149,90,0.25) 0%,rgba(166,124,82,0.12) 100%);border-color:rgba(166,124,82,0.3)"></div><span class="card-type" style="color:rgba(184,149,90,0.85)">Corporate</span></div><div class="card-number" id="corp-card-display">•••• •••• •••• ————</div><div class="card-row-bottom"><div class="card-name" id="corp-name-display">Company</div><div style="font-size:9px;color:rgba(184,149,90,0.3);letter-spacing:1px;text-transform:uppercase;font-family:'DM Sans',sans-serif;position:relative;z-index:1">Business</div></div></div>
+          <input type="hidden" id="f-corporate_card">
           <div class="form-section">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
               <div class="form-section-title" style="margin-bottom:0">Corporate profile</div>
@@ -2037,9 +2041,25 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
             </div>
             <div class="form-grid" style="margin-bottom:16px">
               <div class="form-field"><label class="field-label">Company name</label><input class="field-input" id="f-company_name" type="text" placeholder="Company name" oninput="document.getElementById('corp-name-display').textContent=this.value||'Company'"></div>
-              <div class="form-field"><label class="field-label">Corporate card</label><input class="field-input" id="f-corporate_card" type="text" placeholder="e.g. Amex Corporate ···· 8801" oninput="document.getElementById('corp-card-display').textContent=this.value||'Corporate Account'"></div>
               <div class="form-field"><label class="field-label">Cost center</label><input class="field-input" id="f-cost_center" type="text" placeholder="e.g. CC-3021"></div>
               <div class="form-field"><label class="field-label">Expense platform</label><select class="field-select" id="f-expense_platform"><option>Not connected</option><option>Expensify</option><option>SAP Concur</option><option>Navan Expense</option><option>Brex</option><option>Ramp</option></select></div>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <div class="form-section-title" style="margin-bottom:0">Corporate cards</div>
+              <button onclick="openAddCorpCardForm()" style="padding:6px 14px;background:var(--surface);border:1px solid var(--border2);color:var(--textMid);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:DM Sans,sans-serif">+ Add card</button>
+            </div>
+            <div id="corp-card-wallet"></div>
+            <div id="add-corp-card-form" style="display:none;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-md);padding:16px;margin-top:12px">
+              <div class="form-grid" style="margin-bottom:12px">
+                <div class="form-field"><label class="field-label">Card label</label><input class="field-input" id="cc-label" type="text" placeholder="e.g. Amex Corporate Gold"></div>
+                <div class="form-field"><label class="field-label">Last 4 digits</label><input class="field-input" id="cc-last4" type="text" placeholder="8801" maxlength="4"></div>
+                <div class="form-field"><label class="field-label">Network</label><select class="field-select" id="cc-type"><option>Visa</option><option>Mastercard</option><option>Amex</option><option>Diners</option><option>Other</option></select></div>
+                <div class="form-field"><label class="field-label">Card type</label><select class="field-select" id="cc-purpose"><option>Corporate</option><option>Purchasing</option><option>Fleet</option><option>Virtual</option><option>Lodge</option></select></div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button onclick="confirmAddCorpCard()" style="padding:7px 16px;background:var(--ink);color:var(--goldDim);border:none;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:DM Sans,sans-serif">Add card</button>
+                <button onclick="closeAddCorpCardForm()" style="padding:7px 14px;background:transparent;border:1px solid var(--border2);color:var(--textMid);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:DM Sans,sans-serif">Cancel</button>
+              </div>
             </div>
             <input type="hidden" id="f-policy_description">
           </div>
@@ -3755,6 +3775,71 @@ async function savePersonalCards(){
   }catch(e){}
 }
 
+/* ── Corporate card wallet ─────────────────────────────────── */
+var _corpCards=[];
+function loadCorpCards(raw){
+  if(!raw){_corpCards=[];return;}
+  if(raw.startsWith("[")){try{_corpCards=JSON.parse(raw);}catch(e){_corpCards=[];}}
+  else if(raw.trim()){_corpCards=[{label:raw.replace(/[·•]+.*/,"").trim()||raw,last4:(raw.split("····")[1]||"").trim().slice(0,4),type:"Amex",purpose:"Corporate",isDefault:true}];}
+}
+function renderCorpCards(){
+  var el=document.getElementById("corp-card-wallet");if(!el)return;
+  var numEl=document.getElementById("corp-card-display");
+  if(!_corpCards.length){
+    el.innerHTML='<div style="padding:20px;text-align:center;color:var(--textDim);font-size:12px;border:1px dashed var(--border2);border-radius:var(--radius-md)">No corporate cards yet — add one below.</div>';
+    if(numEl)numEl.textContent="•••• •••• •••• ————";
+    return;
+  }
+  el.innerHTML='<div class="card-wallet">'+_corpCards.map(function(c,i){
+    var deflt=!!c.isDefault;
+    return '<div class="wallet-card'+(deflt?" is-default":"")+'">'
+      +'<div class="wallet-card-actions">'
+      +(deflt?'':'<button class="wallet-card-action-btn" onclick="setDefaultCorpCard('+i+')" title="Set as default">★</button>')
+      +'<button class="wallet-card-action-btn" onclick="removeCorpCard('+i+')" title="Remove">×</button>'
+      +'</div>'
+      +'<div class="wallet-card-chip"></div>'
+      +'<div class="wallet-card-num">•••• •••• •••• '+(c.last4||"————")+'</div>'
+      +'<div class="wallet-card-label">'+(c.label||"Card")+'</div>'
+      +'<div class="wallet-card-footer">'
+      +'<div class="wallet-card-type">'+(c.type||"")+'</div>'
+      +(deflt?'<div class="wallet-card-default-badge">default</div>':'<div style="font-size:9px;color:var(--textDim)">'+(c.purpose||"")+'</div>')
+      +'</div></div>';
+  }).join("")+'</div>';
+  var def=_corpCards.find(function(c){return c.isDefault;})||_corpCards[0];
+  if(def&&numEl)numEl.textContent="•••• •••• •••• "+(def.last4||"————");
+  var hid=document.getElementById("f-corporate_card");
+  if(hid)hid.value=JSON.stringify(_corpCards);
+}
+function openAddCorpCardForm(){
+  var f=document.getElementById("add-corp-card-form");if(f)f.style.display="block";
+  var l=document.getElementById("cc-label");if(l)l.focus();
+}
+function closeAddCorpCardForm(){
+  var f=document.getElementById("add-corp-card-form");if(f)f.style.display="none";
+  ["cc-label","cc-last4"].forEach(function(id){var e=document.getElementById(id);if(e)e.value="";});
+}
+function confirmAddCorpCard(){
+  var label=(document.getElementById("cc-label")||{}).value||"";
+  var last4=((document.getElementById("cc-last4")||{}).value||"").replace(/\D/g,"").slice(-4);
+  var type=(document.getElementById("cc-type")||{}).value||"Amex";
+  var purpose=(document.getElementById("cc-purpose")||{}).value||"Corporate";
+  if(!label){toast("Enter a card label","error");return;}
+  var isFirst=_corpCards.length===0;
+  _corpCards.push({label,last4,type,purpose,isDefault:isFirst});
+  closeAddCorpCardForm();
+  renderCorpCards();
+}
+function setDefaultCorpCard(idx){
+  _corpCards.forEach(function(c,i){c.isDefault=i===idx;});
+  renderCorpCards();
+}
+function removeCorpCard(idx){
+  var wasDefault=_corpCards[idx]&&_corpCards[idx].isDefault;
+  _corpCards.splice(idx,1);
+  if(wasDefault&&_corpCards.length)_corpCards[0].isDefault=true;
+  renderCorpCards();
+}
+
 function setCorpBtn(mode){
   var btn=document.getElementById("corp-save-btn");if(!btn)return;
   if(mode==="edit"){btn.className="pc-edit-btn";btn.textContent="Edit";btn.onclick=function(){setCorpBtn("save");};}
@@ -3944,11 +4029,11 @@ function renderPayment(profiles,identity){
   if(personal){loadPersonalCards(personal.preferred_card||"");if(identity)document.getElementById("card-name-display").textContent=((identity.legal_first||"")+" "+(identity.legal_last||"")).trim()||"Your Name";renderPersonalCards();}
   if(corporate){
     s("f-company_name",corporate.company_name);
-    s("f-corporate_card",corporate.corporate_card);
     s("f-cost_center",corporate.cost_center);
     s("f-expense_platform",corporate.expense_platform||"Not connected");
     document.getElementById("corp-name-display").textContent=corporate.company_name||"Company";
-    document.getElementById("corp-card-display").textContent=corporate.corporate_card||"Corporate Account";
+    loadCorpCards(corporate.corporate_card||"");
+    renderCorpCards();
     loadPolicyData(corporate.policy_description);
     renderPolicyCards();
     setCorpBtn("edit");
