@@ -2033,7 +2033,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
           <div class="form-section">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
               <div class="form-section-title" style="margin-bottom:0">Corporate profile</div>
-              <button class="save-btn" onclick="saveCorporateProfile()">Save</button>
+              <button class="save-btn" id="corp-save-btn" onclick="saveCorporateProfile()">Save</button>
             </div>
             <div class="form-grid" style="margin-bottom:16px">
               <div class="form-field"><label class="field-label">Company name</label><input class="field-input" id="f-company_name" type="text" placeholder="Company name" oninput="document.getElementById('corp-name-display').textContent=this.value||'Company'"></div>
@@ -2046,7 +2046,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
           <div class="form-section">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
               <div class="form-section-title" style="margin-bottom:0">Travel Policy</div>
-              <button class="save-btn" onclick="savePolicyCards()">Save policy</button>
+              <button class="save-btn" id="policy-save-btn" onclick="savePolicyCards()">Save policy</button>
             </div>
             <div id="policy-compliance-strip"></div>
             <div id="policy-cards"></div>
@@ -3755,13 +3755,23 @@ async function savePersonalCards(){
   }catch(e){}
 }
 
+function setCorpBtn(mode){
+  var btn=document.getElementById("corp-save-btn");if(!btn)return;
+  if(mode==="edit"){btn.className="pc-edit-btn";btn.textContent="Edit";btn.onclick=function(){setCorpBtn("save");};}
+  else{btn.className="save-btn";btn.textContent="Save";btn.onclick=saveCorporateProfile;}
+}
+function setPolicyBtn(mode){
+  var btn=document.getElementById("policy-save-btn");if(!btn)return;
+  if(mode==="edit"){btn.className="pc-edit-btn";btn.textContent="Edit";btn.onclick=function(){setPolicyBtn("save");};}
+  else{btn.className="save-btn";btn.textContent="Save policy";btn.onclick=savePolicyCards;}
+}
 async function saveCorporateProfile(){
   if(!uuid){toast("Not signed in","error");return;}
-  saving=false; // clear any stuck flag
+  saving=false;
   var data={company_name:v("f-company_name"),corporate_card:v("f-corporate_card"),cost_center:v("f-cost_center"),policy_description:v("f-policy_description"),expense_platform:v("f-expense_platform")};
   try{
     var result=await api("PUT","/api/v1/profile/"+uuid,{module:"payment_corporate",data:data});
-    if(result&&result.success){toast("Saved","success");}else{toast("Save failed: "+((result&&result.error)||"unknown"),"error");}
+    if(result&&result.success){toast("Saved","success");setCorpBtn("edit");}else{toast("Save failed: "+((result&&result.error)||"unknown"),"error");}
   }catch(e){toast("Error: "+e.message,"error");}
 }
 
@@ -3924,7 +3934,7 @@ async function savePolicyCards(){
   var data={company_name:v("f-company_name"),corporate_card:v("f-corporate_card"),cost_center:v("f-cost_center"),policy_description:raw,expense_platform:v("f-expense_platform")};
   try{
     var result=await api("PUT","/api/v1/profile/"+uuid,{module:"payment_corporate",data:data});
-    if(result&&result.success){toast("Policy saved","success");}else{toast("Save failed","error");}
+    if(result&&result.success){toast("Policy saved","success");setPolicyBtn("edit");}else{toast("Save failed","error");}
   }catch(e){toast("Error: "+e.message,"error");}
 }
 
@@ -3941,6 +3951,8 @@ function renderPayment(profiles,identity){
     document.getElementById("corp-card-display").textContent=corporate.corporate_card||"Corporate Account";
     loadPolicyData(corporate.policy_description);
     renderPolicyCards();
+    setCorpBtn("edit");
+    setPolicyBtn("edit");
   }
   var nb=document.getElementById("badge-payment");
   if(nb)nb.style.display=corporate?"inline":"none";
