@@ -460,6 +460,25 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .tv-route-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px 18px;margin-bottom:8px;display:flex;align-items:center;gap:16px;}
 .tv-route-iata{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:600;color:var(--text);line-height:1;text-align:center;}
 .tv-route-arrow{font-size:12px;color:var(--textDim);margin:2px 0;}
+/* ── Policy cards ─────────────────────────────── */
+.policy-compliance{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:var(--radius-md);margin-bottom:20px;border:1px solid;}
+.policy-compliance.ok{background:var(--greenGlow);border-color:var(--greenBorder);}
+.policy-compliance.warn{background:var(--amberGlow);border-color:var(--amberBorder);}
+.policy-compliance.flag{background:var(--redGlow);border-color:var(--redBorder);}
+.policy-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:0;overflow:hidden;margin-bottom:12px;}
+.policy-card-head{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;}
+.policy-card-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.policy-card-title{font-size:13px;font-weight:500;color:var(--text);flex:1;}
+.policy-card-status{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;letter-spacing:0.03em;}
+.policy-card-body{padding:14px 16px;}
+.policy-rule-row{display:flex;align-items:baseline;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--surface2);}
+.policy-rule-row:last-child{border-bottom:none;}
+.policy-rule-label{font-size:11px;color:var(--textDim);min-width:140px;}
+.policy-rule-val{font-size:12px;font-weight:500;color:var(--text);text-align:right;}
+.policy-rule-val.ok{color:var(--green);}
+.policy-rule-val.warn{color:var(--amber);}
+.policy-edit-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+.policy-edit-row .form-field{margin:0;}
 .tv-yit{border-radius:var(--radius-md);padding:20px 22px;color:#fff;flex:1;min-width:0;}
 .tv-yit.purple{background:var(--purple);}
 .tv-yit.coral{background:var(--coral);}
@@ -1978,7 +1997,24 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         </div>
         <div id="pay-corporate" style="display:none">
           <div class="payment-card-display" style="background:linear-gradient(135deg,#1C1A2E 0%,#2A2040 100%)"><div class="card-chip" style="background:rgba(184,149,90,0.2);border-color:var(--goldDim)"></div><div class="card-number" id="corp-card-display">Corporate Account</div><div class="card-name" id="corp-name-display">Company</div><div class="card-type" style="color:var(--goldLt)">Corporate</div></div>
-          <div class="form-section"><div class="form-section-title">Corporate Profile</div><div class="form-grid"><div class="form-field"><label class="field-label">Company Name</label><input class="field-input" id="f-company_name" type="text" placeholder="Company name" oninput="document.getElementById('corp-name-display').textContent=this.value||'Company'"></div><div class="form-field"><label class="field-label">Corporate Card</label><input class="field-input" id="f-corporate_card" type="text" placeholder="Corporate card" oninput="document.getElementById('corp-card-display').textContent=this.value||'Corporate Account'"></div><div class="form-field"><label class="field-label">Cost Center</label><input class="field-input" id="f-cost_center" type="text" placeholder="e.g. CC-3021"></div><div class="form-field"><label class="field-label">Travel Policy</label><input class="field-input" id="f-policy_description" type="text" placeholder="Policy description"></div><div class="form-field"><label class="field-label">Expense Platform</label><select class="field-select" id="f-expense_platform"><option>Not connected</option><option>Expensify</option><option>SAP Concur</option><option>Navan Expense</option><option>Brex</option><option>Ramp</option></select></div></div></div>
+          <div class="form-section">
+            <div class="form-section-title">Corporate Profile</div>
+            <div class="form-grid" style="margin-bottom:16px">
+              <div class="form-field"><label class="field-label">Company Name</label><input class="field-input" id="f-company_name" type="text" placeholder="Company name" oninput="document.getElementById('corp-name-display').textContent=this.value||'Company'"></div>
+              <div class="form-field"><label class="field-label">Corporate Card</label><input class="field-input" id="f-corporate_card" type="text" placeholder="Corporate card" oninput="document.getElementById('corp-card-display').textContent=this.value||'Corporate Account'"></div>
+              <div class="form-field"><label class="field-label">Cost Center</label><input class="field-input" id="f-cost_center" type="text" placeholder="e.g. CC-3021"></div>
+              <div class="form-field"><label class="field-label">Expense Platform</label><select class="field-select" id="f-expense_platform"><option>Not connected</option><option>Expensify</option><option>SAP Concur</option><option>Navan Expense</option><option>Brex</option><option>Ramp</option></select></div>
+            </div>
+            <input type="hidden" id="f-policy_description">
+          </div>
+          <div class="form-section">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+              <div class="form-section-title" style="margin-bottom:0">Travel Policy</div>
+              <button onclick="savePolicyCards()" style="padding:7px 16px;background:var(--ink);color:var(--goldDim);border:none;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:DM Sans,sans-serif">Save policy</button>
+            </div>
+            <div id="policy-compliance-strip"></div>
+            <div id="policy-cards"></div>
+          </div>
         </div>
       </section>
       <section class="section" id="section-docalert">
@@ -3597,7 +3633,181 @@ function renderLoyalty(programs){
   if(eo) eo.innerHTML=other.map(renderCard).join("")+addBtn("OTHER");
 }
 
-function renderPayment(profiles,identity){const personal=profiles.find(p=>p.context==="PERSONAL"),corporate=profiles.find(p=>p.context==="CORPORATE");if(personal){s("f-preferred_card",personal.preferred_card);updateCardDisplay(personal.preferred_card||"");if(identity)document.getElementById("card-name-display").textContent=`${identity.legal_first||""} ${identity.legal_last||""}`.trim()||"Your Name";}if(corporate){s("f-company_name",corporate.company_name);s("f-corporate_card",corporate.corporate_card);s("f-cost_center",corporate.cost_center);s("f-policy_description",corporate.policy_description);s("f-expense_platform",corporate.expense_platform||"Not connected");document.getElementById("corp-name-display").textContent=corporate.company_name||"Company";document.getElementById("corp-card-display").textContent=corporate.corporate_card||"Corporate Account";}const nb=document.getElementById("badge-payment");if(nb)nb.style.display=corporate?"inline":"none";}
+/* ── Policy Cards ─────────────────────────────────────────── */
+var _policyData={
+  air:{cabin_domestic:"economy",cabin_long:"business",long_haul_hrs:6,advance_days:14,preferred_carriers:[]},
+  hotel:{rate_cap_tier1:250,rate_cap_tier2:180,preferred_chains:[]},
+  ground:{car_class_max:"midsize",rideshare_approved:true,personal_car_rate:0.67},
+  expense:{meal_per_diem:75,receipt_required_above:25,entertainment_cap:150},
+  approval:{approver_name:"",approver_email:"",pre_approval_threshold:3000,international_always:true}
+};
+
+function loadPolicyData(raw){
+  if(!raw)return;
+  if(raw.startsWith("{")){
+    try{var parsed=JSON.parse(raw);if(parsed.air||parsed.hotel)_policyData=Object.assign({},_policyData,parsed);}catch(e){}
+  }
+}
+
+function renderPolicyCards(){
+  var strip=document.getElementById("policy-compliance-strip");
+  var cards=document.getElementById("policy-cards");
+  if(!strip||!cards)return;
+  var compliance=checkPolicyCompliance();
+  var stripCls=compliance.level==="ok"?"ok":compliance.level==="warn"?"warn":"flag";
+  var stripIcon=compliance.level==="ok"?"✓":compliance.level==="warn"?"⚠":"!";
+  strip.innerHTML='<div class="policy-compliance '+stripCls+'"><div style="width:28px;height:28px;border-radius:50%;background:'+(stripCls==="ok"?"var(--green)":stripCls==="warn"?"var(--amber)":"var(--red)")+';color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">'+stripIcon+'</div><div><div style="font-size:13px;font-weight:500;color:var(--text)">'+compliance.headline+'</div><div style="font-size:11px;color:var(--textDim);margin-top:2px">'+compliance.detail+'</div></div></div>';
+
+  var DOMAINS=[
+    {key:"air",icon:"✈",label:"Air travel",color:"rgba(56,99,177,0.12)",iconColor:"var(--accent)",rows:[
+      {label:"Domestic cabin",val:_policyData.air.cabin_domestic,key:"cabin_domestic",type:"select",opts:["economy","premium economy","business","first"]},
+      {label:"Long-haul cabin",val:_policyData.air.cabin_long,key:"cabin_long",type:"select",opts:["economy","premium economy","business","first"]},
+      {label:"Long-haul threshold",val:_policyData.air.long_haul_hrs+"h+",key:"long_haul_hrs",type:"number",unit:"hrs"},
+      {label:"Book in advance",val:_policyData.air.advance_days+" days",key:"advance_days",type:"number",unit:"days"},
+    ]},
+    {key:"hotel",icon:"🏨",label:"Hotels",color:"rgba(15,157,88,0.1)",iconColor:"var(--green)",rows:[
+      {label:"Tier 1 city rate cap",val:"$"+_policyData.hotel.rate_cap_tier1+"/night",key:"rate_cap_tier1",type:"number",unit:"USD/night"},
+      {label:"Tier 2 city rate cap",val:"$"+_policyData.hotel.rate_cap_tier2+"/night",key:"rate_cap_tier2",type:"number",unit:"USD/night"},
+    ]},
+    {key:"ground",icon:"🚗",label:"Ground & car",color:"rgba(200,160,30,0.1)",iconColor:"var(--amber)",rows:[
+      {label:"Max car class",val:_policyData.ground.car_class_max,key:"car_class_max",type:"select",opts:["economy","compact","midsize","full-size","premium","luxury"]},
+      {label:"Rideshare approved",val:_policyData.ground.rideshare_approved?"Yes":"No",key:"rideshare_approved",type:"select",opts:["Yes","No"]},
+      {label:"Personal car rate",val:"$"+_policyData.ground.personal_car_rate+"/mi",key:"personal_car_rate",type:"number",unit:"USD/mi"},
+    ]},
+    {key:"expense",icon:"🧾",label:"Expenses",color:"rgba(184,149,90,0.1)",iconColor:"var(--goldLt)",rows:[
+      {label:"Meal per diem",val:"$"+_policyData.expense.meal_per_diem+"/day",key:"meal_per_diem",type:"number",unit:"USD/day"},
+      {label:"Receipt required above",val:"$"+_policyData.expense.receipt_required_above,key:"receipt_required_above",type:"number",unit:"USD"},
+      {label:"Entertainment cap",val:"$"+_policyData.expense.entertainment_cap+"/event",key:"entertainment_cap",type:"number",unit:"USD/event"},
+    ]},
+    {key:"approval",icon:"✔",label:"Approvals",color:"rgba(160,80,180,0.1)",iconColor:"var(--purple)",rows:[
+      {label:"Approver",val:_policyData.approval.approver_name||"Not set",key:"approver_name",type:"text"},
+      {label:"Approver email",val:_policyData.approval.approver_email||"Not set",key:"approver_email",type:"text"},
+      {label:"Pre-approval above",val:"$"+_policyData.approval.pre_approval_threshold,key:"pre_approval_threshold",type:"number",unit:"USD"},
+      {label:"International trips",val:_policyData.approval.international_always?"Always require approval":"Threshold only",key:"international_always",type:"select",opts:["Always require approval","Threshold only"]},
+    ]},
+  ];
+
+  cards.innerHTML=DOMAINS.map(function(d){
+    var rowsHtml=d.rows.map(function(r){
+      var dispVal=r.val;
+      var valCls="";
+      return '<div class="policy-rule-row"><span class="policy-rule-label">'+r.label+'</span><span class="policy-rule-val '+valCls+'">'+dispVal+'</span></div>';
+    }).join("");
+    return '<div class="policy-card"><div class="policy-card-head" onclick="togglePolicyCard(\''+d.key+'\')"><div class="policy-card-icon" style="background:'+d.color+';color:'+d.iconColor+'">'+d.icon+'</div><div class="policy-card-title">'+d.label+'</div><svg id="pc-chevron-'+d.key+'" style="transition:transform 0.2s;color:var(--textDim);flex-shrink:0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div><div class="policy-card-body" id="pc-body-'+d.key+'" style="display:none"><div id="pc-view-'+d.key+'">'+rowsHtml+'<button onclick="editPolicyCard(\''+d.key+'\')" style="margin-top:12px;padding:6px 14px;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:11px;color:var(--textMid);cursor:pointer;font-family:DM Sans,sans-serif">Edit</button></div><div id="pc-edit-'+d.key+'" style="display:none"></div></div></div>';
+  }).join("");
+}
+
+function togglePolicyCard(key){
+  var body=document.getElementById("pc-body-"+key);
+  var chev=document.getElementById("pc-chevron-"+key);
+  if(!body)return;
+  var open=body.style.display==="none";
+  body.style.display=open?"":"none";
+  if(chev)chev.style.transform=open?"rotate(180deg)":"";
+}
+
+function editPolicyCard(key){
+  var editDiv=document.getElementById("pc-edit-"+key);
+  var viewDiv=document.getElementById("pc-view-"+key);
+  if(!editDiv)return;
+  viewDiv.style.display="none";
+  editDiv.style.display="";
+  var d=_policyData[key];
+  var fields="";
+  if(key==="air"){
+    fields+=fieldPair("Domestic cabin","pc-cabin_domestic",cabinSelect("pc-cabin_domestic",d.cabin_domestic),"Long-haul cabin","pc-cabin_long",cabinSelect("pc-cabin_long",d.cabin_long));
+    fields+=fieldPair("Long-haul hrs","pc-long_haul_hrs",'<input class="field-input" id="pc-long_haul_hrs" type="number" value="'+d.long_haul_hrs+'" min="1" max="24">',
+      "Advance days","pc-advance_days",'<input class="field-input" id="pc-advance_days" type="number" value="'+d.advance_days+'" min="1">');
+  } else if(key==="hotel"){
+    fields+=fieldPair("Tier 1 cap (USD)","pc-rate_cap_tier1",'<input class="field-input" id="pc-rate_cap_tier1" type="number" value="'+d.rate_cap_tier1+'">',
+      "Tier 2 cap (USD)","pc-rate_cap_tier2",'<input class="field-input" id="pc-rate_cap_tier2" type="number" value="'+d.rate_cap_tier2+'">');
+  } else if(key==="ground"){
+    fields+=fieldPair("Max car class","pc-car_class_max",carClassSelect(d.car_class_max),"Rideshare","pc-rideshare_approved",rideshareSelect(d.rideshare_approved));
+    fields+='<div class="policy-edit-row"><div class="form-field"><label class="field-label">Personal car rate (USD/mi)</label><input class="field-input" id="pc-personal_car_rate" type="number" step="0.01" value="'+d.personal_car_rate+'"></div></div>';
+  } else if(key==="expense"){
+    fields+=fieldPair("Meal per diem","pc-meal_per_diem",'<input class="field-input" id="pc-meal_per_diem" type="number" value="'+d.meal_per_diem+'">',
+      "Receipt above","pc-receipt_required_above",'<input class="field-input" id="pc-receipt_required_above" type="number" value="'+d.receipt_required_above+'">');
+    fields+='<div class="policy-edit-row"><div class="form-field"><label class="field-label">Entertainment cap (USD)</label><input class="field-input" id="pc-entertainment_cap" type="number" value="'+d.entertainment_cap+'"></div></div>';
+  } else if(key==="approval"){
+    fields+=fieldPair("Approver name","pc-approver_name",'<input class="field-input" id="pc-approver_name" type="text" value="'+(d.approver_name||'')+'" placeholder="Full name">',
+      "Approver email","pc-approver_email",'<input class="field-input" id="pc-approver_email" type="email" value="'+(d.approver_email||'')+'" placeholder="email@company.com">');
+    fields+=fieldPair("Pre-approval above","pc-pre_approval_threshold",'<input class="field-input" id="pc-pre_approval_threshold" type="number" value="'+d.pre_approval_threshold+'">',
+      "International trips","pc-international_always",intlSelect(d.international_always));
+  }
+  editDiv.innerHTML=fields+'<div style="display:flex;gap:8px;margin-top:14px"><button onclick="applyPolicyEdit(\''+key+'\')" style="padding:7px 16px;background:var(--ink);color:var(--goldDim);border:none;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:DM Sans,sans-serif">Apply</button><button onclick="cancelPolicyEdit(\''+key+'\')" style="padding:7px 14px;background:transparent;border:1px solid var(--border2);color:var(--textMid);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:DM Sans,sans-serif">Cancel</button></div>';
+}
+
+function fieldPair(l1,id1,inp1,l2,id2,inp2){
+  return '<div class="policy-edit-row"><div class="form-field"><label class="field-label">'+l1+'</label>'+inp1+'</div><div class="form-field"><label class="field-label">'+l2+'</label>'+inp2+'</div></div>';
+}
+function cabinSelect(id,val){var opts=["economy","premium economy","business","first"];return'<select class="field-select" id="'+id+'">'+opts.map(function(o){return'<option'+(o===val?' selected':'')+'>'+o+'</option>';}).join("")+'</select>';}
+function carClassSelect(val){var opts=["economy","compact","midsize","full-size","premium","luxury"];return'<select class="field-select" id="pc-car_class_max">'+opts.map(function(o){return'<option'+(o===val?' selected':'')+'>'+o+'</option>';}).join("")+'</select>';}
+function rideshareSelect(val){return'<select class="field-select" id="pc-rideshare_approved"><option'+(val?' selected':'')+'>Yes</option><option'+(!val?' selected':'')+'>No</option></select>';}
+function intlSelect(val){return'<select class="field-select" id="pc-international_always"><option'+(val?' selected':'')+'>Always require approval</option><option'+(!val?' selected':'')+'>Threshold only</option></select>';}
+
+function applyPolicyEdit(key){
+  function gv(id){var el=document.getElementById(id);return el?el.value:"";}
+  function gn(id){return parseFloat(gv(id))||0;}
+  if(key==="air"){_policyData.air.cabin_domestic=gv("pc-cabin_domestic");_policyData.air.cabin_long=gv("pc-cabin_long");_policyData.air.long_haul_hrs=gn("pc-long_haul_hrs");_policyData.air.advance_days=gn("pc-advance_days");}
+  else if(key==="hotel"){_policyData.hotel.rate_cap_tier1=gn("pc-rate_cap_tier1");_policyData.hotel.rate_cap_tier2=gn("pc-rate_cap_tier2");}
+  else if(key==="ground"){_policyData.ground.car_class_max=gv("pc-car_class_max");_policyData.ground.rideshare_approved=gv("pc-rideshare_approved")==="Yes";_policyData.ground.personal_car_rate=gn("pc-personal_car_rate");}
+  else if(key==="expense"){_policyData.expense.meal_per_diem=gn("pc-meal_per_diem");_policyData.expense.receipt_required_above=gn("pc-receipt_required_above");_policyData.expense.entertainment_cap=gn("pc-entertainment_cap");}
+  else if(key==="approval"){_policyData.approval.approver_name=gv("pc-approver_name");_policyData.approval.approver_email=gv("pc-approver_email");_policyData.approval.pre_approval_threshold=gn("pc-pre_approval_threshold");_policyData.approval.international_always=gv("pc-international_always")==="Always require approval";}
+  renderPolicyCards();
+  setTimeout(function(){togglePolicyCard(key);},50);
+}
+
+function cancelPolicyEdit(key){
+  document.getElementById("pc-edit-"+key).style.display="none";
+  document.getElementById("pc-view-"+key).style.display="";
+}
+
+function checkPolicyCompliance(){
+  var trips=allTrips||[];
+  var issues=[];
+  var warns=[];
+  var recent=trips.filter(function(t){var d=new Date(t.departure_date||t.created_at);return(Date.now()-d.getTime())<(180*86400000);}).slice(0,20);
+  recent.forEach(function(t){
+    if(t.context!=="CORPORATE")return;
+    if(t.cabin_class){
+      var segs=t.segments||[];
+      segs.forEach(function(s){
+        if(s.duration_minutes&&s.duration_minutes>_policyData.air.long_haul_hrs*60){
+          if(t.cabin_class==="first"&&_policyData.air.cabin_long!=="first")issues.push("First class on long-haul");
+        }
+      });
+    }
+  });
+  if(!_policyData.approval.approver_name)warns.push("No approver set");
+  if(issues.length>0)return{level:"flag",headline:issues.length+" policy flag"+(issues.length>1?"s":""),detail:issues[0]+(issues.length>1?" + "+(issues.length-1)+" more":"")};
+  if(warns.length>0)return{level:"warn",headline:"Policy complete with notes",detail:warns.join(" · ")};
+  return{level:"ok",headline:"Policy configured",detail:"Covers air, hotel, ground, expenses, approvals"};
+}
+
+function savePolicyCards(){
+  var raw=JSON.stringify(_policyData);
+  var el=document.getElementById("f-policy_description");
+  if(el)el.value=raw;
+  saveSection();
+}
+
+function renderPayment(profiles,identity){
+  var personal=profiles.find(function(p){return p.context==="PERSONAL";});
+  var corporate=profiles.find(function(p){return p.context==="CORPORATE";});
+  if(personal){s("f-preferred_card",personal.preferred_card);updateCardDisplay(personal.preferred_card||"");if(identity)document.getElementById("card-name-display").textContent=((identity.legal_first||"")+" "+(identity.legal_last||"")).trim()||"Your Name";}
+  if(corporate){
+    s("f-company_name",corporate.company_name);
+    s("f-corporate_card",corporate.corporate_card);
+    s("f-cost_center",corporate.cost_center);
+    s("f-expense_platform",corporate.expense_platform||"Not connected");
+    document.getElementById("corp-name-display").textContent=corporate.company_name||"Company";
+    document.getElementById("corp-card-display").textContent=corporate.corporate_card||"Corporate Account";
+    loadPolicyData(corporate.policy_description);
+    renderPolicyCards();
+  }
+  var nb=document.getElementById("badge-payment");
+  if(nb)nb.style.display=corporate?"inline":"none";
+}
 let allTrips=[];let activeFilter="all";
 const AIRLINE_COLORS={"UA":"#0066CC","AA":"#CC0000","DL":"#9B2335","AS":"#00693E","WN":"#304CB2","default":"var(--textDim)"};
 const PASSPORT_REQUIRED=["LHR","CDG","NRT","SIN","DXB","SYD","GRU","JNB","DEL","PEK","ICN","BKK","KUL","DOH","AMS","FRA","ZRH","FCO","MAD","BCN"];
