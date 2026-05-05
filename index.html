@@ -3756,10 +3756,12 @@ async function savePersonalCards(){
 }
 
 async function saveCorporateProfile(){
+  if(!uuid){toast("Not signed in","error");return;}
+  saving=false; // clear any stuck flag
   var data={company_name:v("f-company_name"),corporate_card:v("f-corporate_card"),cost_center:v("f-cost_center"),policy_description:v("f-policy_description"),expense_platform:v("f-expense_platform")};
   try{
-    var result=await api("PUT","/api/v1/profile/"+uuid,{module:"payment_corporate",data});
-    if(result.success)toast("Saved","success");else toast("Save failed","error");
+    var result=await api("PUT","/api/v1/profile/"+uuid,{module:"payment_corporate",data:data});
+    if(result&&result.success){toast("Saved","success");}else{toast("Save failed: "+((result&&result.error)||"unknown"),"error");}
   }catch(e){toast("Error: "+e.message,"error");}
 }
 
@@ -3914,11 +3916,16 @@ function checkPolicyCompliance(){
   return{level:"ok",headline:"Policy configured",detail:"Covers air, hotel, ground, expenses, approvals"};
 }
 
-function savePolicyCards(){
+async function savePolicyCards(){
+  if(!uuid){toast("Not signed in","error");return;}
   var raw=JSON.stringify(_policyData);
   var el=document.getElementById("f-policy_description");
   if(el)el.value=raw;
-  saveSection();
+  var data={company_name:v("f-company_name"),corporate_card:v("f-corporate_card"),cost_center:v("f-cost_center"),policy_description:raw,expense_platform:v("f-expense_platform")};
+  try{
+    var result=await api("PUT","/api/v1/profile/"+uuid,{module:"payment_corporate",data:data});
+    if(result&&result.success){toast("Policy saved","success");}else{toast("Save failed","error");}
+  }catch(e){toast("Error: "+e.message,"error");}
 }
 
 function renderPayment(profiles,identity){
