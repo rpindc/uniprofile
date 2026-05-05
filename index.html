@@ -3684,7 +3684,7 @@ function renderPersonalCards(){
   if(!_personalCards.length){el.innerHTML='<div style="padding:20px;text-align:center;color:var(--textDim);font-size:12px;border:1px dashed var(--border2);border-radius:var(--radius-md)">No cards yet — add one below.</div>';return;}
   el.innerHTML='<div class="card-wallet">'+_personalCards.map(function(c,i){
     var deflt=!!c.isDefault;
-    return '<div class="wallet-card'+(deflt?" is-default")+'">'
+    return '<div class="wallet-card'+(deflt?" is-default":"")+'">'
       +'<div class="wallet-card-actions">'
       +(deflt?'':'<button class="wallet-card-action-btn" onclick="setDefaultCard('+i+')" title="Set as default">★</button>')
       +'<button class="wallet-card-action-btn" onclick="removePersonalCard('+i+')" title="Remove">×</button>'
