@@ -529,6 +529,8 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   .sec-sub{overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
   .sec-header{margin-bottom:20px;}
   #doc-modal>div,#loyalty-modal>div,#fam-invite-modal>div,#add-insurance-modal>div,#add-tour-modal>div,#add-cruise-modal>div,#add-excursion-modal>div,#integration-request-modal>div{width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;margin:0!important;border-radius:0!important;overflow-y:auto!important;}
+  .legal-modal-overlay{padding:0!important;}
+  .legal-modal{max-width:100%!important;border-radius:0!important;min-height:100vh!important;}
   .field-input{font-size:12px!important;}
   #api-uuid,input[readonly]{overflow:hidden;text-overflow:ellipsis;}
   .integration-row{flex-wrap:wrap;gap:8px;}
@@ -1067,6 +1069,53 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .acct-danger:hover{background:rgba(220,50,50,0.06)!important;}
 .acct-signout-btn{display:block;width:100%;padding:13px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-md);color:var(--textDim);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:center;transition:all 0.15s;margin-top:4px;}
 .acct-signout-btn:hover{border-color:var(--red);color:var(--red);}
+/* ── Plans ──────────────────────────────────────────────── */
+.plan-tiers{display:flex;gap:10px;margin-bottom:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+.plan-tiers::-webkit-scrollbar{display:none;}
+.plan-tier-card{flex:0 0 auto;width:190px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-md);padding:15px 13px;display:flex;flex-direction:column;gap:6px;transition:border-color 0.2s;}
+.plan-tier-card.current{border-color:var(--gold);}
+.plan-tier-card.featured{border-color:var(--teal);}
+.plan-tier-badge-lbl{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);}
+.plan-tier-name{font-size:13px;font-weight:700;color:var(--text);}
+.plan-tier-price{font-size:17px;font-weight:700;color:var(--text);line-height:1.1;}
+.plan-tier-price span{font-size:10px;font-weight:400;color:var(--textHint);}
+.plan-tier-feats{list-style:none;padding:0;margin:5px 0 0;display:flex;flex-direction:column;gap:3px;flex:1;}
+.plan-tier-feats li{font-size:11px;color:var(--textDim);padding-left:13px;position:relative;}
+.plan-tier-feats li::before{content:'✓';position:absolute;left:0;color:var(--teal);font-size:10px;font-weight:700;}
+.plan-cta-btn{margin-top:10px;padding:8px;border-radius:var(--radius-sm);font-size:11px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;border:1.5px solid var(--gold);background:var(--goldGlow);color:var(--gold);transition:all 0.15s;text-align:center;}
+.plan-cta-btn:hover{background:var(--gold);color:#fff;}
+.plan-cta-btn.inactive{border-color:var(--border);background:transparent;color:var(--textHint);cursor:default;pointer-events:none;}
+.plan-faq{margin-top:4px;margin-bottom:20px;border-top:1px solid var(--border);}
+.plan-faq-item{border-bottom:1px solid var(--border);}
+.plan-faq-q{width:100%;background:none;border:none;padding:11px 0;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--text);font-family:'DM Sans',sans-serif;cursor:pointer;text-align:left;gap:10px;}
+.plan-faq-q:hover{color:var(--gold);}
+.plan-faq-chevron{font-size:9px;color:var(--textHint);flex-shrink:0;transition:transform 0.2s;display:inline-block;}
+.plan-faq-a{max-height:0;overflow:hidden;transition:max-height 0.25s ease;}
+.plan-faq-a.open{max-height:300px;}
+.plan-faq-a-inner{padding-bottom:12px;font-size:12px;color:var(--textDim);line-height:1.65;}
+/* ── Legal modal ────────────────────────────────────────── */
+.legal-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:2000;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:30px 16px 50px;}
+.legal-modal-overlay.open{display:flex;}
+.legal-modal{background:var(--white);border-radius:var(--radius-xl);width:100%;max-width:700px;box-shadow:0 24px 80px rgba(0,0,0,0.18);display:flex;flex-direction:column;flex-shrink:0;}
+.legal-modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--white);border-radius:var(--radius-xl) var(--radius-xl) 0 0;z-index:1;}
+.legal-modal-title{font-family:'Playfair Display',serif;font-size:17px;color:var(--text);font-weight:700;}
+.legal-modal-x{width:30px;height:30px;border-radius:50%;border:none;background:var(--surface);color:var(--textHint);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.15s;flex-shrink:0;}
+.legal-modal-x:hover{background:var(--border);}
+.legal-modal-body{padding:22px;font-size:13px;color:var(--textDim);line-height:1.7;}
+.legal-modal-body h2{font-family:'Playfair Display',serif;font-size:15px;color:var(--text);margin:22px 0 7px;font-weight:700;}
+.legal-modal-body h2:first-child{margin-top:0;}
+.legal-modal-body h3{font-size:13px;color:var(--text);margin:14px 0 5px;font-weight:700;}
+.legal-modal-body p{margin:0 0 9px;}
+.legal-modal-body ul,.legal-modal-body ol{margin:0 0 9px;padding-left:18px;}
+.legal-modal-body li{margin-bottom:3px;}
+.legal-modal-body strong{color:var(--text);font-weight:600;}
+.legal-modal-body table{width:100%;border-collapse:collapse;font-size:11px;margin:10px 0;}
+.legal-modal-body th{text-align:left;padding:7px 9px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-weight:600;}
+.legal-modal-body td{padding:6px 9px;border:1px solid var(--border);color:var(--textDim);vertical-align:top;}
+.legal-modal-body code{font-family:'JetBrains Mono',monospace;font-size:11px;background:var(--surface);padding:1px 4px;border-radius:3px;color:var(--text);}
+.legal-modal-body a{color:var(--gold);text-decoration:none;}
+.legal-modal-body a:hover{text-decoration:underline;}
+.legal-draft-note{margin:0 22px 16px;padding:10px 13px;background:rgba(220,160,0,0.07);border:1px solid rgba(220,160,0,0.2);border-radius:var(--radius-sm);font-size:11px;color:var(--textDim);line-height:1.5;}
 .sidebar-footer .traveler-card{cursor:pointer;transition:border-color 0.15s,background 0.15s;}
 .sidebar-footer .traveler-card:hover{border-color:var(--gold);background:var(--goldGlow);}
 /* ── Visual PNR modal ───────────────────────────────────── */
@@ -2512,6 +2561,20 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         </div>
         <div id="tours-section-list" style="display:flex;flex-direction:column;gap:8px"></div>
       </section>
+<!-- Legal Document Modal -->
+<div id="legal-modal" class="legal-modal-overlay" onclick="if(event.target===this)closeLegalModal()">
+  <div class="legal-modal">
+    <div class="legal-modal-hdr">
+      <div class="legal-modal-title" id="legal-modal-title">Document</div>
+      <button class="legal-modal-x" onclick="closeLegalModal()">✕</button>
+    </div>
+    <div class="legal-draft-note" id="legal-draft-note" style="display:none">
+      <strong>Draft for legal review.</strong> This document is a starting draft and has not been reviewed by qualified legal counsel. Do not treat it as finalised.
+    </div>
+    <div class="legal-modal-body" id="legal-modal-body"></div>
+  </div>
+</div>
+
       <!-- Add Insurance Modal -->
       <div id="add-insurance-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center">
         <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-xl);padding:32px;width:100%;max-width:500px;margin:20px;box-shadow:0 20px 60px rgba(0,0,0,0.12)">
@@ -2821,25 +2884,95 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
           </div>
         </div>
 
+        <!-- Plans & Premium -->
+        <div class="form-section-title">Your Plan</div>
+        <div class="plan-tiers">
+          <div class="plan-tier-card current">
+            <div class="plan-tier-badge-lbl">★ Current plan</div>
+            <div class="plan-tier-name">Free</div>
+            <div class="plan-tier-price">$0 <span>/forever</span></div>
+            <ul class="plan-tier-feats">
+              <li>Full identity &amp; document vault</li>
+              <li>All travel preferences</li>
+              <li>Loyalty tracker — unlimited</li>
+              <li>Trip Vault</li>
+              <li>Up to 5 connected operators</li>
+              <li>Data export anytime</li>
+            </ul>
+            <div class="plan-cta-btn inactive">Current plan</div>
+          </div>
+          <div class="plan-tier-card featured">
+            <div class="plan-tier-name">Premium</div>
+            <div class="plan-tier-price">$4.99 <span>/mo · $49/yr</span></div>
+            <ul class="plan-tier-feats">
+              <li>Proactive trip monitoring</li>
+              <li>Bleisure dual-context</li>
+              <li>Unlimited operators</li>
+              <li>Family Profiles (up to 8)</li>
+              <li>Priority support (24h)</li>
+              <li>Early access to new features</li>
+            </ul>
+            <button class="plan-cta-btn" onclick="toast('Plan upgrades launching soon — stay tuned','')">Upgrade to Premium</button>
+          </div>
+          <div class="plan-tier-card">
+            <div class="plan-tier-name">Premium Plus</div>
+            <div class="plan-tier-price">$9.99 <span>/mo · $99/yr</span></div>
+            <ul class="plan-tier-feats">
+              <li>Live disruption support 24/7</li>
+              <li>Insurance pre-qualification</li>
+              <li>Concierge document services</li>
+              <li>Cross-operator credit chase</li>
+              <li>Annual identity audit</li>
+              <li>Premium API access</li>
+            </ul>
+            <button class="plan-cta-btn" onclick="toast('Plan upgrades launching soon — stay tuned','')">Upgrade to Plus</button>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--textHint);margin-bottom:16px;text-align:center">
+          All plans include full data ownership and GDPR-level privacy rights. Export your data and leave any time.
+        </div>
+        <div class="plan-faq">
+          <div class="plan-faq-item">
+            <button class="plan-faq-q" onclick="togglePlanFaq(this)"><span>Will Free always be free?</span><span class="plan-faq-chevron">▾</span></button>
+            <div class="plan-faq-a"><div class="plan-faq-a-inner">Yes. The Free tier stays free forever. We may add features to Premium over time, but core identity management, document vault, loyalty tracker, and Trip Vault are permanently free.</div></div>
+          </div>
+          <div class="plan-faq-item">
+            <button class="plan-faq-q" onclick="togglePlanFaq(this)"><span>What happens to my data if I cancel?</span><span class="plan-faq-chevron">▾</span></button>
+            <div class="plan-faq-a"><div class="plan-faq-a-inner">Your data stays with you. Cancelling a Premium subscription moves you back to Free with all your data intact. Deleting your account removes your data within 30 days.</div></div>
+          </div>
+          <div class="plan-faq-item">
+            <button class="plan-faq-q" onclick="togglePlanFaq(this)"><span>Is there a free trial?</span><span class="plan-faq-chevron">▾</span></button>
+            <div class="plan-faq-a"><div class="plan-faq-a-inner">Yes — 14 days free on Premium and Premium Plus. Cancel anytime during the trial and you will not be charged.</div></div>
+          </div>
+          <div class="plan-faq-item">
+            <button class="plan-faq-q" onclick="togglePlanFaq(this)"><span>Student or senior discount?</span><span class="plan-faq-chevron">▾</span></button>
+            <div class="plan-faq-a"><div class="plan-faq-a-inner">Yes — 50% off Premium and Premium Plus with verified status. Email <a href="mailto:support@uniprofile.net">support@uniprofile.net</a> with your verification.</div></div>
+          </div>
+          <div class="plan-faq-item">
+            <button class="plan-faq-q" onclick="togglePlanFaq(this)"><span>What payment methods are accepted?</span><span class="plan-faq-chevron">▾</span></button>
+            <div class="plan-faq-a"><div class="plan-faq-a-inner">Visa, Mastercard, Amex, Discover, Apple Pay, Google Pay, PayPal, and SEPA Direct Debit for European customers.</div></div>
+          </div>
+        </div>
+
         <!-- Legal & Privacy -->
         <div class="form-section-title">Legal &amp; Privacy</div>
         <div class="acct-links">
-          <a class="acct-link-row" href="https://www.uniprofile.net/terms" target="_blank" rel="noopener">
+          <button class="acct-link-row" onclick="openLegalModal('terms')">
             <span>Terms of Service</span>
-            <span class="acct-link-arrow">↗</span>
-          </a>
-          <a class="acct-link-row" href="https://www.uniprofile.net/privacy" target="_blank" rel="noopener">
+            <span class="acct-link-arrow">→</span>
+          </button>
+          <button class="acct-link-row" onclick="openLegalModal('privacy')">
             <span>Privacy Policy</span>
-            <span class="acct-link-arrow">↗</span>
-          </a>
-          <a class="acct-link-row" href="https://www.uniprofile.net/cookies" target="_blank" rel="noopener">
+            <span class="acct-link-arrow">→</span>
+          </button>
+          <button class="acct-link-row" onclick="openLegalModal('cookies')">
             <span>Cookie Policy</span>
-            <span class="acct-link-arrow">↗</span>
-          </a>
-          <a class="acct-link-row" href="https://www.uniprofile.net/gdpr" target="_blank" rel="noopener">
+            <span class="acct-link-arrow">→</span>
+          </button>
+          <button class="acct-link-row" onclick="openLegalModal('gdpr')">
             <span>GDPR &amp; Data Rights</span>
-            <span class="acct-link-arrow">↗</span>
-          </a>
+            <span class="acct-link-arrow">→</span>
+          </button>
         </div>
 
         <!-- Data -->
@@ -3520,6 +3653,240 @@ function pcInitStates(p){
 
 function calcCompleteness(p){var checks=[{label:"Identity",weight:25,section:"identity",done:!!(p.identity&&p.identity.legal_first&&p.identity.legal_last&&p.identity.dob&&p.identity.nationality)},{label:"Passport",weight:20,section:"identity",done:!!(p.documents&&p.documents.some(function(d){return d.doc_type==="PASSPORT";}))},{label:"Seat preferences",weight:15,section:"preferences",done:!!(p.seat_preferences&&p.seat_preferences.cabin_domestic)},{label:"Meal preference",weight:10,section:"meals",done:!!(p.meal_preferences&&p.meal_preferences.primary_meal_code)},{label:"Loyalty program",weight:15,section:"loyalty",done:!!(p.loyalty_programs&&p.loyalty_programs.length)},{label:"Payment profile",weight:10,section:"payment",done:!!(p.payment_profiles&&p.payment_profiles.length)},{label:"First trip",weight:5,section:"trips",done:!!(p.trips&&p.trips.length)},];var pct=checks.reduce(function(s,c){return s+(c.done?c.weight:0);},0);var missing=checks.filter(function(c){return !c.done;});return{pct:pct,done:checks.length-missing.length,total:checks.length,missing:missing};}
 function navToSection(s){showSection(s,document.querySelector('.nav-btn[onclick*="\'"+s+"\'"]'));}
+
+/* ── Plan FAQ accordion ──────────────────────────────────── */
+function togglePlanFaq(btn){
+  var a=btn.nextElementSibling;
+  var ch=btn.querySelector('.plan-faq-chevron');
+  var open=a.classList.contains('open');
+  document.querySelectorAll('.plan-faq-a.open').forEach(function(el){
+    el.classList.remove('open');
+    var c=el.previousElementSibling.querySelector('.plan-faq-chevron');
+    if(c)c.style.transform='';
+  });
+  if(!open){a.classList.add('open');if(ch)ch.style.transform='rotate(180deg)';}
+}
+
+/* ── Legal document modal ───────────────────────────────── */
+var LEGAL_DOCS={
+  terms:{
+    title:'Terms of Service',
+    html:`<h2>1. About UniProfile</h2>
+<p>UniProfile is a traveler-sovereign identity platform. We store and manage your travel-related identity, documents, preferences, loyalty memberships, payment instruments, and consent grants — and share that information with travel operators on your terms.</p>
+<p>We are not a travel agent, tour operator, airline, or booking service. You retain ownership of all data you provide to UniProfile. We act as a custodian, not an owner.</p>
+<h2>2. Eligibility and accounts</h2>
+<h3>2.1 Eligibility</h3>
+<p>You must be at least 16 years old to create a UniProfile account independently. Users between 13–16 may use UniProfile with parental consent. Users under 13 may only have a managed family profile under a verified parent or guardian account.</p>
+<h3>2.2 Account creation</h3>
+<p>You must provide accurate, current, and complete information. You are responsible for keeping your credentials secure. You may not share your account with another person except through Family or Group profile features.</p>
+<h2>3. Plans and payment</h2>
+<p><strong>Free plan:</strong> Core identity and document management features, free forever.</p>
+<p><strong>Premium / Premium Plus:</strong> Paid subscription plans. By subscribing, you authorise us to charge your chosen payment method on a recurring basis until you cancel.</p>
+<p><strong>Refunds:</strong> Annual subscriptions are refundable on a prorated basis if cancelled within 30 days of the most recent renewal. Monthly subscriptions are not refundable but you can cancel anytime and continue using Premium features until the end of the current period.</p>
+<p><strong>Price changes:</strong> Existing subscribers will be notified at least 30 days before any price increase takes effect.</p>
+<h2>4. Your data and ownership</h2>
+<p>All data you provide to UniProfile remains your property. We use it to provide the Service, store it securely, and share it with travel operators only when you have given specific consent for that operator.</p>
+<p>We do <strong>not</strong> sell your individual data, provide it to advertisers, share it without your specific consent, or use it to train AI models without your specific consent.</p>
+<p>You may export your data at any time in standards-aligned formats and delete your account at any time.</p>
+<h2>5. Connected operators and third parties</h2>
+<p>When you grant a travel operator access to your UniProfile, they receive only the data scoped in your consent grant, only for the duration you specified, and only for the purposes you authorised. Your relationship with any operator for bookings or travel services is governed by the operator's own terms — UniProfile is not a party to those agreements.</p>
+<h2>6. Acceptable use</h2>
+<p>You may not use UniProfile to facilitate unlawful travel, provide false identity information, harvest data about other Users, reverse engineer the Service, or gain unauthorised access to any account or system.</p>
+<h2>7. Limitations of liability</h2>
+<p>UniProfile's total liability for any claim is limited to the greater of the amount you paid in the preceding 12 months or USD $100. We are not liable for indirect, incidental, or consequential damages. Some jurisdictions (notably EU/UK) do not permit these limitations; statutory rights remain unaffected.</p>
+<h2>8. Termination</h2>
+<p>You may delete your account at any time from within the application or by emailing <code>support@uniprofile.net</code>. We may suspend or terminate accounts for material Terms violations, legal requirements, or if we discontinue the Service (with at least 60 days' notice and the opportunity to export your data).</p>
+<h2>9. Disputes and governing law</h2>
+<p>Before filing any legal action, contact us at <code>legal@uniprofile.net</code> and attempt informal resolution for at least 30 days. Governing law and jurisdiction are to be confirmed by legal counsel. EU/UK consumers retain the right to bring disputes in their country of residence.</p>
+<h2>10. Changes to these Terms</h2>
+<p>Material changes will be notified by email and in the Service at least 30 days before they take effect. Continued use after the effective date constitutes acceptance.</p>
+<h2>11. Contact</h2>
+<p>General: <code>support@uniprofile.net</code> · Legal: <code>legal@uniprofile.net</code> · Abuse: <code>abuse@uniprofile.net</code> · Privacy: <code>privacy@uniprofile.net</code></p>`
+  },
+  privacy:{
+    title:'Privacy Policy',
+    html:`<h2>Our core commitments</h2>
+<ul>
+<li><strong>Your data is yours.</strong> You can see it, export it, correct it, and delete it at any time.</li>
+<li><strong>We never sell your individual data.</strong> Not to advertisers, not to data brokers, not to anyone.</li>
+<li><strong>We never share without your specific consent.</strong> Operators receive only what you authorised and you can revoke at any time.</li>
+<li><strong>We never use your individual data to train AI models</strong> without your explicit consent.</li>
+<li><strong>We log every access.</strong> A consent ledger shows every grant, revocation, and sharing event.</li>
+</ul>
+<h2>1. What data we collect</h2>
+<h3>Data you provide directly</h3>
+<ul>
+<li><strong>Identity:</strong> legal name, date of birth, gender (for documents), nationality, country of residence</li>
+<li><strong>Travel documents:</strong> passport, visa numbers, ETA/ESTA, Known Traveler Number, redress number, national ID</li>
+<li><strong>Document images:</strong> scans or photos you upload to your document vault</li>
+<li><strong>Loyalty data:</strong> frequent flyer numbers, hotel/cruise/rail memberships and tiers</li>
+<li><strong>Payment data:</strong> tokenised card information (full card numbers are never stored), billing address</li>
+<li><strong>Travel preferences:</strong> cabin, seat, meal codes (IATA SPML), accessibility needs (IATA SSR), dietary restrictions, room preferences, communication preferences</li>
+<li><strong>Medical data for travel:</strong> mobility devices, oxygen requirements, service animals — treated as special category under GDPR Art. 9</li>
+<li><strong>Family and group data:</strong> family member information where they have consented</li>
+</ul>
+<h3>Data collected automatically</h3>
+<p>Account/authentication events, service usage data, technical data (IP, device, browser), and anonymised diagnostic/error data.</p>
+<h3>Data from third parties</h3>
+<p>Booking confirmation data forwarded to <code>trips@uniprofile.net</code>, operator-provided booking updates (with your consent), and verification results from identity verification services you opt into.</p>
+<h2>2. Legal basis for processing</h2>
+<ul>
+<li><strong>Contract performance (Art. 6(1)(b)):</strong> processing necessary to provide the Service</li>
+<li><strong>Consent (Art. 6(1)(a)):</strong> sharing with operators, processing special category data, marketing</li>
+<li><strong>Legitimate interests (Art. 6(1)(f)):</strong> fraud prevention, aggregated analytics, service communications</li>
+<li><strong>Legal obligation (Art. 6(1)(c)):</strong> responding to lawful requests, retaining tax records</li>
+</ul>
+<h2>3. How we use your data</h2>
+<p>To provide the Service (profile storage, operator data sharing, trip monitoring, consent ledger, authentication). To improve the Service using aggregated, anonymised analytics. To communicate about your account and the Service. To meet legal and security obligations.</p>
+<p>We do <strong>not</strong> use your data for targeted advertising, sell it to third parties, or use individual profiles to train AI models.</p>
+<h2>4. Who we share your data with</h2>
+<p><strong>Connected Operators</strong> receive only the data fields you authorise, for the duration and purpose you specified. They become a separate data controller for data they receive.</p>
+<p><strong>Service providers</strong> (data processors): AWS (hosting, database, authentication), PCI-compliant payment processor, email delivery provider, customer support platform, privacy-respecting analytics provider — all bound by GDPR-compliant data processing agreements.</p>
+<p>We do not use Facebook Pixel, Google Ads conversion tracking, or similar advertising trackers.</p>
+<h2>5. International data transfers</h2>
+<p>Data may be transferred outside your country. For EU/EEA data, we rely on Standard Contractual Clauses approved by the European Commission. EU users' identity and document data is stored in AWS EU regions. UK transfers use the UK International Data Transfer Agreement.</p>
+<h2>6. Data retention</h2>
+<table><tr><th>Data category</th><th>After account deletion</th></tr>
+<tr><td>Identity, documents, preferences</td><td>Deleted within 30 days</td></tr>
+<tr><td>Transaction records</td><td>7 years (tax law)</td></tr>
+<tr><td>Audit log entries</td><td>7 years (compliance), non-identifiable form</td></tr>
+<tr><td>Backups</td><td>Purged within 90 days on next rotation</td></tr>
+</table>
+<h2>7. Your rights</h2>
+<p>You have the right to: access all data we hold, correct inaccuracies, delete your account and data, restrict processing, export your data, object to processing based on legitimate interests, and withdraw consent at any time. EU/UK users can lodge complaints with their supervisory authority. California residents have additional CCPA rights.</p>
+<p>Exercise rights in Settings → Data Rights or email <code>privacy@uniprofile.net</code>.</p>
+<h2>8. Security</h2>
+<p>TLS 1.2+ for data in transit. AES-256 encryption at rest. Role-based access controls, MFA for all admin access. Full audit logging. Documented breach notification procedures — we notify affected users and supervisory authorities within 72 hours of discovery.</p>
+<h2>9. Children</h2>
+<p>UniProfile is not intended for children under 13. Users 13–16 require parental consent. We comply with COPPA, GDPR Art. 8, and the UK Children's Code.</p>
+<h2>10. Changes</h2>
+<p>Material changes are notified by email at least 30 days before taking effect. You can review prior versions at a policy archive URL (to be set up).</p>
+<h2>11. Contact</h2>
+<p>Email: <code>privacy@uniprofile.net</code> · DPO: <code>dpo@uniprofile.net</code> · In-app: Settings → Data Rights</p>`
+  },
+  cookies:{
+    title:'Cookie Policy',
+    html:`<h2>UniProfile's approach</h2>
+<p>We use cookies sparingly and only for clear purposes. We do <strong>not</strong> use third-party advertising cookies, behavioural profiling cookies, cross-site tracking, or cookies that enable the sale of your data to advertising networks.</p>
+<p>We do use: strictly necessary cookies (login, session, CSRF protection), functional cookies (language and display preferences), and limited privacy-respecting analytics cookies.</p>
+<h2>1. Consent</h2>
+<p>On your first visit, a cookie consent banner gives you three choices: <strong>Accept all</strong>, <strong>Reject non-essential</strong> (only strictly necessary cookies), or <strong>Customize</strong> (category by category). You can change your preferences at any time via the footer link "Cookie preferences" or in Settings.</p>
+<p>Strictly necessary cookies are always set — the Service cannot function without them. Non-essential cookies require your explicit consent under the ePrivacy Directive.</p>
+<h2>2. Cookies we use</h2>
+<h3>Strictly necessary (always active)</h3>
+<table><tr><th>Cookie</th><th>Purpose</th><th>Duration</th></tr>
+<tr><td><code>up_session</code></td><td>Authenticated session</td><td>Session</td></tr>
+<tr><td><code>up_token</code></td><td>Authentication token</td><td>7 days, refreshed on activity</td></tr>
+<tr><td><code>up_csrf</code></td><td>CSRF protection</td><td>Session</td></tr>
+<tr><td><code>cookie_consent</code></td><td>Your consent choice</td><td>12 months</td></tr>
+</table>
+<h3>Functional (with your consent)</h3>
+<table><tr><th>Cookie</th><th>Purpose</th><th>Duration</th></tr>
+<tr><td><code>up_language</code></td><td>Language preference</td><td>12 months</td></tr>
+<tr><td><code>up_display_prefs</code></td><td>Interface preferences</td><td>12 months</td></tr>
+<tr><td><code>up_last_section</code></td><td>Returns you to your last section</td><td>30 days</td></tr>
+</table>
+<h3>Analytics (with your consent)</h3>
+<p>We use a privacy-respecting analytics provider (no Google Analytics). Analytics cookies use an anonymised identifier for aggregation — they do not collect personally identifiable data.</p>
+<h2>3. Cookies we do not use</h2>
+<p>We do not set advertising cookies (DoubleClick, Facebook Pixel, LinkedIn Insight Tag, TikTok Pixel, Twitter conversion tracking), behavioural profiling cookies, or any cookies for selling or sharing your data with data brokers. If you ever see an unexpected cookie on uniprofile.net, report it to <code>privacy@uniprofile.net</code>.</p>
+<h2>4. Mobile apps and browser extension</h2>
+<p>Mobile apps use device storage rather than browser cookies — the same consent principles apply. The browser extension stores your authentication token, per-domain trust settings, and a local fill audit log. It does not set cookies on the websites it fills forms on.</p>
+<h2>5. Browser-level controls</h2>
+<p>You can manage cookies in browser settings: Chrome → Privacy and security; Firefox → Privacy &amp; Security; Safari → Privacy; Edge → Cookies and site permissions. Blocking all cookies may prevent the Service from working.</p>
+<h2>6. Do Not Track / Global Privacy Control</h2>
+<p>UniProfile does not engage in behavioural tracking regardless of DNT signals. We are exploring GPC support as it gains adoption.</p>
+<h2>7. Contact</h2>
+<p>Email: <code>privacy@uniprofile.net</code></p>`
+  },
+  gdpr:{
+    title:'GDPR & Data Rights',
+    html:`<h2>What you can do right now</h2>
+<table>
+<tr><th>I want to…</th><th>How</th><th>Time</th></tr>
+<tr><td>See all data UniProfile holds about me</td><td>Settings → Data Rights → Download my data</td><td>Instant export</td></tr>
+<tr><td>Correct something wrong</td><td>Edit directly in your profile</td><td>Instant</td></tr>
+<tr><td>Delete one field</td><td>Edit the field and leave it blank, then save</td><td>Instant</td></tr>
+<tr><td>Delete my entire account</td><td>Settings → Data Rights → Delete my account</td><td>30 days</td></tr>
+<tr><td>Stop a Connected Operator from accessing my data</td><td>Settings → Connected Operators → Revoke access</td><td>Instant from UniProfile</td></tr>
+<tr><td>Stop receiving marketing emails</td><td>Click "unsubscribe" in any marketing email</td><td>Instant</td></tr>
+<tr><td>Opt out of analytics</td><td>Settings → Cookie Preferences → Analytics: Off</td><td>Instant</td></tr>
+<tr><td>Object to a specific use of my data</td><td>Email <code>privacy@uniprofile.net</code></td><td>30 days</td></tr>
+<tr><td>File a complaint with a regulator</td><td>Contact your data protection authority</td><td>Varies</td></tr>
+</table>
+<h2>1. Your rights (all UniProfile users, worldwide)</h2>
+<h3>1.1 Right to access</h3>
+<p>You can see all data we hold about you at any time. For a full machine-readable export including audit logs and historical data: Settings → Data Rights → Download my data. The export includes your identity and document data, travel preferences, loyalty memberships, payment instruments (tokenised), trip vault, consent grants, and your full audit log.</p>
+<h3>1.2 Right to rectification</h3>
+<p>Most fields are directly editable in the application. For system fields you cannot edit, email <code>privacy@uniprofile.net</code> describing what is wrong and what it should say.</p>
+<h3>1.3 Right to erasure</h3>
+<p><strong>Single field:</strong> edit any field and leave it blank.<br>
+<strong>Account deletion:</strong> Settings → Data Rights → Delete my account. This permanently deletes your identity, document, preference, and trip data within 30 days; retains audit log entries (non-identifiable) and transaction records for 7 years for legal compliance; purges from backups within 90 days.</p>
+<h3>1.4 Right to restrict processing</h3>
+<p>Email <code>privacy@uniprofile.net</code> to request restriction while a dispute is being resolved.</p>
+<h3>1.5 Right to data portability</h3>
+<p>Settings → Data Rights → Download my data. Formats: W3C Verifiable Credentials (where supported), JSON (general profile), CSV (tabular data), original file uploads (documents).</p>
+<h3>1.6 Right to object</h3>
+<p>For marketing, unsubscribe from any marketing email or use Settings → Communications. For other processing, email <code>privacy@uniprofile.net</code> — we will stop unless we can demonstrate compelling legitimate grounds.</p>
+<h3>1.7 Right to withdraw consent</h3>
+<p>For Connected Operator consent: Settings → Connected Operators → [Operator] → Revoke access. For other consents: Settings. Withdrawal takes effect immediately for future processing.</p>
+<h2>2. Making a formal request</h2>
+<p>Email <code>privacy@uniprofile.net</code> with subject "Data Subject Request — [type]". Include your full name, account email, description of the right you are exercising, and a way to verify your identity.</p>
+<p>We will: acknowledge within 5 business days; respond substantively within 30 days (or 90 days for complex requests, with a status update at day 30); never charge a fee for normal requests.</p>
+<h2>3. Regional rights</h2>
+<h3>California (CCPA/CPRA)</h3>
+<p>Right to know, right to delete, right to correct, right to opt out of "sale" or "sharing" (UniProfile does not sell or share for cross-context behavioural advertising — nothing to opt out of), right to limit use of sensitive personal information, right to non-discrimination. Respond within 45 days.</p>
+<h3>EU (GDPR)</h3>
+<p>All rights in section 1. Supervisory authority is the data protection authority of your country of residence, work, or where the alleged infringement occurred. See <a href="https://edpb.europa.eu/about-edpb/board/members" target="_blank" rel="noopener">edpb.europa.eu</a> for the full list.</p>
+<h3>UK</h3>
+<p>All rights in section 1. Supervisory authority: Information Commissioner's Office (ICO), <a href="https://ico.org.uk" target="_blank" rel="noopener">ico.org.uk</a>.</p>
+<h3>Brazil (LGPD)</h3>
+<p>LGPD rights honoured. Supervisory authority: ANPD.</p>
+<h3>Canada (PIPEDA)</h3>
+<p>PIPEDA and provincial laws (including Quebec Law 25) honoured. Federal authority: Office of the Privacy Commissioner of Canada, <a href="https://www.priv.gc.ca" target="_blank" rel="noopener">priv.gc.ca</a>.</p>
+<h2>4. Consent ledger</h2>
+<p>Your consent ledger records every grant and revocation: date/time, operator, data fields covered, duration, result, IP address and device type at the time. View it at Settings → Consent Ledger. It is included in every data export and is your authoritative record if an operator disputes what you authorised.</p>
+<h2>5. Data retention summary</h2>
+<table>
+<tr><th>Category</th><th>While active</th><th>After deletion</th></tr>
+<tr><td>Identity, contact, document data</td><td>While needed</td><td>Up to 30 days, then deleted</td></tr>
+<tr><td>Travel preferences, loyalty, trips</td><td>While needed</td><td>Up to 30 days, then deleted</td></tr>
+<tr><td>Payment info (tokenised)</td><td>While needed for billing</td><td>Closed and removed within 30 days</td></tr>
+<tr><td>Consent ledger &amp; audit log</td><td>While needed</td><td>7 years (compliance), non-identifiable</td></tr>
+<tr><td>Subscription transactions</td><td>While needed</td><td>7 years (tax law)</td></tr>
+<tr><td>Backups</td><td>Continuously rotated</td><td>Purged within 90 days on rotation</td></tr>
+</table>
+<h2>6. Three commitments that cannot be retracted</h2>
+<ol>
+<li><strong>You can always exercise your rights, regardless of jurisdiction.</strong> UniProfile gives all users worldwide the full set of GDPR rights.</li>
+<li><strong>We will never charge you for exercising a right.</strong> Single, normal requests are always free.</li>
+<li><strong>We will never retaliate for exercising a right.</strong> Your account, service quality, and feature access are not affected by data-rights requests.</li>
+</ol>
+<h2>7. Filing a complaint</h2>
+<p>EU: contact your country's supervisory authority. UK: ICO (<a href="https://ico.org.uk" target="_blank" rel="noopener">ico.org.uk</a>). California: CPPA (<a href="https://cppa.ca.gov" target="_blank" rel="noopener">cppa.ca.gov</a>) or Attorney General. Canada: <a href="https://www.priv.gc.ca" target="_blank" rel="noopener">priv.gc.ca</a>. Brazil: ANPD. Others: email <code>privacy@uniprofile.net</code>.</p>
+<p>We hope you contact us first at <code>privacy@uniprofile.net</code> so we can resolve concerns directly — but you do not have to.</p>
+<h2>8. Data Protection Officer</h2>
+<p>Email: <code>dpo@uniprofile.net</code>. The DPO is independent and reports directly to UniProfile's leadership on privacy matters.</p>
+<h2>9. Contact</h2>
+<p>Email: <code>privacy@uniprofile.net</code> · DPO: <code>dpo@uniprofile.net</code> · In-app: Settings → Data Rights</p>`
+  }
+};
+
+function openLegalModal(type){
+  var doc=LEGAL_DOCS[type];
+  if(!doc)return;
+  document.getElementById('legal-modal-title').textContent=doc.title;
+  document.getElementById('legal-modal-body').innerHTML=doc.html;
+  document.getElementById('legal-draft-note').style.display='block';
+  var overlay=document.getElementById('legal-modal');
+  overlay.classList.add('open');
+  overlay.scrollTop=0;
+  document.body.style.overflow='hidden';
+}
+function closeLegalModal(){
+  document.getElementById('legal-modal').classList.remove('open');
+  document.body.style.overflow='';
+}
 function exportAllData(){if(!profile)return toast("Profile not loaded yet","error");const blob=new Blob([JSON.stringify(profile,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`uniprofile-export-${(profile.uniprofile_number||"data").toLowerCase()}.json`;a.click();URL.revokeObjectURL(url);toast("Export downloaded","success");}
 async function requestAccountDeletion(){if(!confirm("This will permanently delete your UniProfile account and all your data. This action cannot be undone.\n\nAre you sure?"))return;if(!confirm("Last confirmation — delete my UniProfile account and all data permanently?"))return;try{await api("DELETE",`/api/v1/profile/${uuid}`);toast("Deletion request submitted. You will receive a confirmation email.","success");}catch(e){toast("Deletion request sent — our team will process it within 30 days (GDPR Art. 17).","success");}setTimeout(()=>logout(),3000);}
 function updateSidebar(p){st("sid-uuid",p.uniprofile_number||"UP-??????");var comp=calcCompleteness(p);var pct=comp.pct;st("sid-pct",pct+"%");var sublabel=document.getElementById("sid-modules");if(sublabel){if(comp.missing.length){var nx=comp.missing[0];sublabel.innerHTML=comp.done+" of "+comp.total+' — <span style="color:var(--accent);cursor:pointer;text-decoration:underline" onclick="navToSection(this.dataset.s)" data-s="'+nx.section+'">Add '+nx.label+"</span>";}else{sublabel.textContent="Profile complete \u2713";}}
