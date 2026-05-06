@@ -6030,14 +6030,41 @@ const GRP_AVATAR_COLORS = [
 
 /* ── Consent / Permissions ───────────────────────────────── */
 const PERM_MODULES = [
-  { key:'identity',         icon:'🪪', bg:'var(--goldGlow)',  name:'Identity',           desc:'Legal name, date of birth, nationality, home airport' },
-  { key:'documents',        icon:'📄', bg:'var(--goldGlow)',  name:'Documents',           desc:'Passport, visas, Known Traveller Numbers' },
-  { key:'seat_preferences', icon:'💺', bg:'var(--tealGlow)',  name:'Seat Preferences',    desc:'Seat position, cabin class, accessibility needs' },
-  { key:'meal_preferences', icon:'🍽', bg:'var(--greenGlow)', name:'Meal & Dietary',      desc:'IATA meal codes, allergies, avoid items' },
-  { key:'loyalty_programs', icon:'✦',  bg:'var(--goldGlow)',  name:'Loyalty Programs',    desc:'Member numbers and tier status — auto-applied at checkout' },
-  { key:'payment_profiles', icon:'💳', bg:'rgba(56,99,177,0.08)', name:'Payment Profiles', desc:'Card type and last 4 digits — not full card data' },
-  { key:'trips',            icon:'📋', bg:'var(--surface2)',  name:'TripVault',            desc:'Past and upcoming bookings and PNRs' },
-  { key:'groups',           icon:'👥', bg:'var(--tealGlow)',  name:'Groups',              desc:'Group trip manifests and member lists' },
+  { key:'identity', icon:'🪪', bg:'var(--goldGlow)', name:'Identity & Documents', desc:'Core traveler identity, travel documents and trusted traveler programs',
+    sub:[
+      {key:'core',            label:'Legal name & DOB'},
+      {key:'nationality',     label:'Nationality'},
+      {key:'passports',       label:'Passports'},
+      {key:'trusted_traveler',label:'Trusted Traveler #'},
+      {key:'visas',           label:'Visas'},
+      {key:'emergency',       label:'Emergency contact'},
+    ]
+  },
+  { key:'seat_preferences', icon:'💺', bg:'var(--tealGlow)',  name:'Seat Preferences',  desc:'Seat position, cabin class, row preference, accessibility needs' },
+  { key:'meal_preferences', icon:'🍽', bg:'var(--greenGlow)', name:'Meal & Dietary',    desc:'IATA meal codes, allergies, dietary restrictions and avoid items' },
+  { key:'loyalty_programs', icon:'✦',  bg:'var(--goldGlow)',  name:'Loyalty Programs',  desc:'Loyalty memberships shared at checkout for automatic application',
+    sub:[
+      {key:'member_numbers', label:'Member numbers'},
+      {key:'tier_status',    label:'Tier status'},
+      {key:'points_balance', label:'Points balance'},
+    ]
+  },
+  { key:'payment_profiles', icon:'💳', bg:'rgba(56,99,177,0.08)', name:'Payment Profiles', desc:'Payment preferences — card type and last 4 digits only, never full PAN',
+    sub:[
+      {key:'personal_cards',    label:'Personal cards'},
+      {key:'corporate_profile', label:'Corporate profile'},
+      {key:'travel_policy',     label:'Travel policy'},
+    ]
+  },
+  { key:'trips',  icon:'📋', bg:'var(--surface2)',  name:'TripVault', desc:'Past and upcoming bookings, PNRs and travel patterns' },
+  { key:'cruise', icon:'🚢', bg:'var(--tealGlow)',  name:'Cruise Profile', desc:'Cruise cabin preferences, confirmed bookings and shore excursions',
+    sub:[
+      {key:'preferences', label:'Cabin preferences'},
+      {key:'bookings',    label:'Cruise bookings'},
+      {key:'excursions',  label:'Shore excursions'},
+    ]
+  },
+  { key:'groups', icon:'👥', bg:'var(--tealGlow)',  name:'Groups', desc:'Group trip manifests and shared member lists' },
 ];
 
 let consentData = {};
@@ -6048,13 +6075,20 @@ function renderConsentPermissions() {
   const perms = consentData.module_permissions || {};
 
   grid.innerHTML = PERM_MODULES.map(m => {
-    const on = perms[m.key] !== false; // default on
+    const on = perms[m.key] !== false;
+    const subChips = m.sub ? `<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;${on?'':'opacity:0.38;pointer-events:none'}">
+      ${m.sub.map(s => {
+        const subOn = on && perms[m.key+'.'+s.key] !== false;
+        return `<span class="consent-chip${subOn?' on':''}" onclick="toggleConsentSubPerm('${m.key}','${s.key}',${!subOn})" title="${subOn?'Sharing — click to restrict':'Not sharing — click to allow'}">${s.label}</span>`;
+      }).join('')}
+    </div>` : '';
     return `
     <div class="perm-card${on ? ' sharing' : ''}" id="perm-card-${m.key}">
       <div class="perm-icon" style="background:${m.bg}">${m.icon}</div>
       <div class="perm-body">
         <div class="perm-name">${m.name}</div>
         <div class="perm-desc">${m.desc}</div>
+        ${subChips}
       </div>
       <label class="perm-toggle" title="${on ? 'Sharing — click to restrict' : 'Not shared — click to allow'}">
         <input type="checkbox" ${on ? 'checked' : ''} onchange="toggleConsentPerm('${m.key}', this.checked)">
@@ -6064,16 +6098,9 @@ function renderConsentPermissions() {
   }).join('');
 }
 
-async function toggleConsentPerm(key, value) {
-  consentData.module_permissions = consentData.module_permissions || {};
-  consentData.module_permissions[key] = value;
-
-  const card = document.getElementById('perm-card-' + key);
-  if (card) card.classList.toggle('sharing', value);
-
+async function saveConsentPerms() {
   const status = document.getElementById('perm-save-status');
   if (status) status.textContent = 'Saving…';
-
   try {
     const result = await api('PUT', '/api/v1/profile/' + uuid, {
       module: 'consent',
@@ -6082,13 +6109,22 @@ async function toggleConsentPerm(key, value) {
     if (result && result.success) {
       if (result.profile && result.profile.consent) consentData = result.profile.consent;
       if (status) { status.textContent = 'Saved'; setTimeout(() => { if(status) status.textContent = ''; }, 2000); }
-    } else {
-      if (status) status.textContent = '';
-    }
-  } catch(e) {
-    console.error('toggleConsentPerm:', e);
-    if (status) status.textContent = '';
-  }
+    } else { if (status) status.textContent = ''; }
+  } catch(e) { if (status) status.textContent = ''; }
+}
+
+async function toggleConsentPerm(key, value) {
+  consentData.module_permissions = consentData.module_permissions || {};
+  consentData.module_permissions[key] = value;
+  renderConsentPermissions();
+  await saveConsentPerms();
+}
+
+async function toggleConsentSubPerm(moduleKey, subKey, value) {
+  consentData.module_permissions = consentData.module_permissions || {};
+  consentData.module_permissions[moduleKey + '.' + subKey] = value;
+  renderConsentPermissions();
+  await saveConsentPerms();
 }
 
 const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
