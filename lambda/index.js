@@ -12,6 +12,30 @@ const strParam=(n,v)=>({name:n,value:(v!=null&&v!==''&&v!=='null')?{stringValue:
 const boolParam=(n,v)=>({name:n,value:v!=null?{booleanValue:Boolean(v)}:{isNull:true}});
 const numParam=(n,v)=>({name:n,value:v!=null?{doubleValue:Number(v)}:{isNull:true}});
 const dateParam=(n,v)=>(v&&v!==''&&v!=='null')?{name:n,value:{stringValue:String(v)},typeHint:"DATE"}:{name:n,value:{isNull:true}};
+/* ── UniProfile ID — spec v1.0 ───────────────────────────────────────────── */
+const UP_ALPHABET='23456789ABCDEFGHJKMNPQRSTVWXYZ'; // 30 chars, no 0/O/1/I/L/U
+const UP_WEIGHTS=[2,3,5,7,11,13,17];
+function generateUpId(){
+  const {randomBytes}=require('crypto');
+  const body=[];
+  for(let i=0;i<7;i++){
+    const v=randomBytes(4).readUInt32BE(0)%UP_ALPHABET.length;
+    body.push(UP_ALPHABET[v]);
+  }
+  const sum=body.reduce((acc,ch,i)=>acc+UP_ALPHABET.indexOf(ch)*UP_WEIGHTS[i],0);
+  body.push(UP_ALPHABET[sum%UP_ALPHABET.length]);
+  return'UP-'+body.slice(0,4).join('')+'-'+body.slice(4).join('');
+}
+function validateUpId(id){
+  if(!id||id.length!==12)return false;
+  if(!id.startsWith('UP-'))return false;
+  if(id[7]!=='-')return false;
+  const body=id.slice(3,7)+id.slice(8);
+  if(![...body].every(c=>UP_ALPHABET.includes(c)))return false;
+  const sum=[...body.slice(0,7)].reduce((acc,ch,i)=>acc+UP_ALPHABET.indexOf(ch)*UP_WEIGHTS[i],0);
+  return body[7]===UP_ALPHABET[sum%UP_ALPHABET.length];
+}
+/* ─────────────────────────────────────────────────────────────────────────── */
 const ORIGINS=["https://www.uniprofile.net","https://main.d3dngzji06baij.amplifyapp.com","http://localhost:3000","http://localhost:5173"];
 const cors=(o)=>{const a=ORIGINS.includes(o)?o:ORIGINS[0];return{"Content-Type":"application/json","Access-Control-Allow-Origin":a,"Access-Control-Allow-Headers":"Content-Type,Authorization,x-uniprofile-key","Access-Control-Allow-Methods":"GET,POST,PUT,DELETE,OPTIONS","Access-Control-Allow-Credentials":"true"};};
 const go=(e)=>(e.headers&&(e.headers.origin||e.headers.Origin))||"";
@@ -25,7 +49,13 @@ async function verifyToken(event){
 async function getOrCreateTraveler(sub,email){
   let rows=await sql("SELECT uuid FROM travelers WHERE cognito_sub=:sub",[strParam("sub",sub)]);
   if(rows.length)return rows[0].uuid;
-  rows=await sql("INSERT INTO travelers (cognito_sub,email,tier,gdpr_consent_at,uniprofile_number) VALUES (:sub,:email,'free',NOW(),'UP-'||LPAD(FLOOR(RANDOM()*1000000)::TEXT,6,'0')) ON CONFLICT (cognito_sub) DO UPDATE SET email=:email RETURNING uuid",[strParam("sub",sub),strParam("email",email||"")]);
+  let upId=generateUpId();
+  for(let retry=0;retry<5;retry++){
+    const clash=await sql("SELECT 1 FROM travelers WHERE uniprofile_number=:id",[strParam("id",upId)]);
+    if(!clash.length)break;
+    upId=generateUpId();
+  }
+  rows=await sql("INSERT INTO travelers (cognito_sub,email,tier,gdpr_consent_at,uniprofile_number) VALUES (:sub,:email,'free',NOW(),:upid) ON CONFLICT (cognito_sub) DO UPDATE SET email=:email RETURNING uuid",[strParam("sub",sub),strParam("email",email||""),strParam("upid",upId)]);
   return rows[0]&&rows[0].uuid;
 }
 async function buildProfile(uuid){
@@ -140,6 +170,14 @@ async function updateModule(uuid,module,data){
         if(!g.id)continue;
         await sql("INSERT INTO traveler_groups (id,owner_uuid,name,type,destination,dep,ret,members,flights,hotel,notes,updated_at) VALUES (:id,:u,:name,:type,:dest,:dep,:ret,:members::jsonb,:flights::jsonb,:hotel::jsonb,:notes::jsonb,NOW())",[strParam("id",g.id),uuidParam("u",uuid),strParam("name",g.name||""),strParam("type",g.type||"other"),strParam("dest",g.destination),dateParam("dep",g.dep),dateParam("ret",g.ret),strParam("members",JSON.stringify(g.members||[])),strParam("flights",JSON.stringify(g.flights||[])),strParam("hotel",g.hotel?JSON.stringify(g.hotel):null),strParam("notes",JSON.stringify(g.notes||[]))]);
       }
+      break;
+    }
+    case "trip_memory":{
+      if(!data.trip_id)throw{status:400,message:"trip_id required"};
+      const existing=await sql("SELECT notes FROM trips WHERE id=:tid AND traveler_uuid=:u",[uuidParam("tid",data.trip_id),uuidParam("u",uuid)]);
+      const prev=existing[0]&&existing[0].notes?JSON.parse(existing[0].notes.startsWith("{")?existing[0].notes:"{}"):{};
+      const merged=Object.assign({},prev,{rating:data.rating||prev.rating,tags:data.tags||prev.tags,note:data.note||prev.note,feel:data.feel||prev.feel,saved_at:new Date().toISOString()});
+      await sql("UPDATE trips SET notes=:n WHERE id=:tid AND traveler_uuid=:u",[strParam("n",JSON.stringify(merged)),uuidParam("tid",data.trip_id),uuidParam("u",uuid)]);
       break;
     }
     case "essentials":
@@ -497,6 +535,7 @@ exports.handler=async function(event){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
       if(myUuid!==uuid)return err("Access denied",event,403);
+      console.log("PUT module=",body.module,"hasData=",!!body.data,"isBase64=",event.isBase64Encoded,"rawBody=",event.body?String(event.body).slice(0,300):"null");
       if(!body.module||!body.data)return err("Missing module or data",event,400);
       await updateModule(uuid,body.module,body.data);
       return ok({success:true,module:body.module,profile:await buildProfile(uuid)},event);
@@ -523,7 +562,7 @@ exports.handler=async function(event){
       if(tripId&&t.carrier)await sql("INSERT INTO trip_segments (trip_id,segment_type,segment_order,carrier,flight_number,origin_iata,destination_iata,cabin_class,booking_ref) VALUES (:tid,'FLIGHT',1,:car,:flt,:orig,:dest,:cab,:ref)",[strParam("tid",tripId),strParam("car",t.carrier),strParam("flt",t.flight_number),strParam("orig",t.origin_iata),strParam("dest",t.destination_iata),strParam("cab",t.cabin_class),strParam("ref",t.pnr)]);
       return ok({success:true,trip_id:tripId},event,201);
     }
-    if(method==="GET"&&path.indexOf("/alerts/")!==-1){
+    if(method==="GET"&&(path.indexOf("/alerts/")!==-1||path.endsWith("/alerts"))){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
       if(myUuid!==uuid)return err("Access denied",event,403);
@@ -845,7 +884,7 @@ exports.handler=async function(event){
       const{uniprofile_id,message:shareMsg}=body;
       if(!uniprofile_id)return err("uniprofile_id required",event,400);
       const upid=uniprofile_id.trim().toUpperCase();
-      if(!/^UP-\d{6}$/.test(upid))return err("Invalid UniProfile ID format — expected UP-XXXXXX",event,400);
+      if(!validateUpId(upid))return err("That UniProfile ID doesn't look right — please check it.",event,400);
       // Verify caller owns this group
       const grpRows=await sql("SELECT id FROM traveler_groups WHERE id=:gid AND owner_uuid=:u",[strParam("gid",grpId),uuidParam("u",myUuid)]);
       if(!grpRows.length)return err("Group not found or access denied",event,404);
@@ -887,6 +926,20 @@ exports.handler=async function(event){
         }));
       }catch(emailErr){console.warn("Share notification email failed:",emailErr.message);}
       return ok({success:true,shared_with_name:targetName},event);
+    }
+    if(method==="POST"&&path.match(/\/profile\/[^/]+\/reissue-up-id$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      if(myUuid!==uuid)return err("Access denied",event,403);
+      let newId=generateUpId();
+      for(let retry=0;retry<5;retry++){
+        const clash=await sql("SELECT 1 FROM travelers WHERE uniprofile_number=:id",[strParam("id",newId)]);
+        if(!clash.length)break;
+        newId=generateUpId();
+        if(retry===4)return err("ID generation failed — please try again",event,500);
+      }
+      await sql("UPDATE travelers SET uniprofile_number=:id WHERE uuid=:u",[strParam("id",newId),uuidParam("u",uuid)]);
+      return ok({success:true,uniprofile_number:newId},event);
     }
     return err("Not found",event,404);
   }catch(e){

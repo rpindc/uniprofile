@@ -3032,7 +3032,10 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         <div class="acct-grid">
           <div class="acct-row">
             <span class="acct-label">UniProfile ID</span>
-            <span class="acct-value mono" id="acct-upid">—</span>
+            <span style="display:flex;align-items:center;gap:10px">
+              <span class="acct-value mono" id="acct-upid" style="letter-spacing:0.08em">—</span>
+              <button id="reissue-up-btn" onclick="reissueUpId()" style="font-size:10px;color:var(--textDim);background:none;border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px 8px;cursor:pointer;font-family:DM Sans,sans-serif;transition:all 0.15s" title="Generate a new UniProfile ID" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--textDim)'">Reissue</button>
+            </span>
           </div>
           <div class="acct-row">
             <span class="acct-label">UUID</span>
@@ -4048,6 +4051,22 @@ function closeLegalModal(){
   document.body.style.overflow='';
 }
 function exportAllData(){if(!profile)return toast("Profile not loaded yet","error");const blob=new Blob([JSON.stringify(profile,null,2)],{type:"application/json"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`uniprofile-export-${(profile.uniprofile_number||"data").toLowerCase()}.json`;a.click();URL.revokeObjectURL(url);toast("Export downloaded","success");}
+const UP_ALPHA='23456789ABCDEFGHJKMNPQRSTVWXYZ';
+const UP_W=[2,3,5,7,11,13,17];
+function validateUpId(id){if(!id||id.length!==12)return false;if(!id.startsWith('UP-'))return false;if(id[7]!=='-')return false;const b=id.slice(3,7)+id.slice(8);if(![...b].every(c=>UP_ALPHA.includes(c)))return false;const sum=[...b.slice(0,7)].reduce((a,c,i)=>a+UP_ALPHA.indexOf(c)*UP_W[i],0);return b[7]===UP_ALPHA[sum%UP_ALPHA.length];}
+async function reissueUpId(){
+  if(!confirm("Generate a new UniProfile ID? Your current ID will no longer work for family links or group shares."))return;
+  const btn=document.getElementById("reissue-up-btn");
+  btn.textContent="Issuing...";btn.disabled=true;
+  try{
+    const res=await api("POST",`/api/v1/profile/${uuid}/reissue-up-id`,{});
+    const newId=res.uniprofile_number;
+    st("acct-upid",newId);st("sid-uuid",newId);
+    if(profile)profile.uniprofile_number=newId;
+    toast("New UniProfile ID issued: "+newId,"success");
+  }catch(e){toast("Could not reissue ID — try again","error");}
+  btn.textContent="Reissue";btn.disabled=false;
+}
 async function requestAccountDeletion(){if(!confirm("This will permanently delete your UniProfile account and all your data. This action cannot be undone.\n\nAre you sure?"))return;if(!confirm("Last confirmation — delete my UniProfile account and all data permanently?"))return;try{await api("DELETE",`/api/v1/profile/${uuid}`);toast("Deletion request submitted. You will receive a confirmation email.","success");}catch(e){toast("Deletion request sent — our team will process it within 30 days (GDPR Art. 17).","success");}setTimeout(()=>logout(),3000);}
 function updateSidebar(p){st("sid-uuid",p.uniprofile_number||"UP-??????");var comp=calcCompleteness(p);var pct=comp.pct;st("sid-pct",pct+"%");var sublabel=document.getElementById("sid-modules");if(sublabel){if(comp.missing.length){var nx=comp.missing[0];sublabel.innerHTML=comp.done+" of "+comp.total+' — <span style="color:var(--accent);cursor:pointer;text-decoration:underline" onclick="navToSection(this.dataset.s)" data-s="'+nx.section+'">Add '+nx.label+"</span>";}else{sublabel.textContent="Profile complete \u2713";}}
 document.getElementById("sid-name").textContent=p.identity?`${p.identity.legal_first||""} ${p.identity.legal_last||""}`.trim()||p.email:p.email||"Traveler";document.getElementById("sid-initials").textContent=p.identity&&p.identity.legal_first?(p.identity.legal_first[0]+(p.identity.legal_last?p.identity.legal_last[0]:"")).toUpperCase():"?";document.getElementById("sid-tier").textContent="★ "+(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1);var circumference=2*Math.PI*18,offset=circumference-(pct/100)*circumference;var ring=document.getElementById("ring-fill");if(ring){ring.style.strokeDashoffset=offset;ring.className="ring-fill"+(pct>=80?" good":pct<40?" danger":"");}var expiring=(p.documents||[]).filter(function(d){return d.days_remaining!==null&&d.days_remaining<=90;});var badge=document.getElementById("badge-identity");if(badge)badge.style.display=expiring.length?"inline":"none";
