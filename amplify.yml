@@ -11,6 +11,7 @@ frontend:
     files:
       - index.html
       - welcome.html
+      - feedback.html
       - data/**/*
   cache:
     paths: []

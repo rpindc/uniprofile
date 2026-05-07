@@ -1607,6 +1607,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
           <div class="traveler-tier" id="sid-tier">★ Free</div>
         </div>
       </div>
+      <a id="feedback-link" href="#" target="_blank" style="display:block;text-align:center;font-size:11px;color:var(--textDim);text-decoration:none;padding:8px 0 2px;letter-spacing:0.3px;transition:color 0.15s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--textDim)'">💬 Send feedback</a>
       <button class="logout-btn" onclick="logout()">Sign out of UniProfile</button>
     </div>
   </aside>
@@ -6599,6 +6600,7 @@ async function deleteExcursion(id){
 function parseInviteHash(){var h=window.location.hash||"";var m=h.match(/[#&]invite=([a-f0-9-]+)/i);return m?m[1]:null;}
 async function init(){
   document.getElementById("login-btn").href=loginUrl();
+  document.getElementById("feedback-link").href=window.location.origin+"/feedback.html";
   const pendingInvite=parseInviteHash();
   if(pendingInvite)localStorage.setItem("up_pending_invite",pendingInvite);
   const hashToken=parseHash();

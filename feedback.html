@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Feedback — UniProfile</title>
+<meta name="description" content="Tell us what's broken, awkward, or unclear." />
+<meta name="robots" content="noindex,nofollow" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --ink-soft: #4a4a48;
+    --ink-mute: #8a8a86;
+    --ink-faint: #b8b8b3;
+    --paper: #faf8f4;
+    --paper-warm: #f3efe7;
+    --rule: rgba(26, 26, 26, 0.08);
+    --rule-strong: rgba(26, 26, 26, 0.18);
+    --field-bg: #ffffff;
+    --green: #2d6a4f;
+    --green-soft: #e8efe9;
+    --error: #8a2c2c;
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'Inter Tight', -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.55;
+    font-size: 16px;
+    overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 32px;
+    width: 100%;
+  }
+
+  /* Top bar */
+  .topbar {
+    padding: 32px 0 24px;
+    border-bottom: 0.5px solid var(--rule);
+  }
+
+  .topbar-inner {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .wordmark {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .wordmark em {
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .badge {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    font-weight: 500;
+  }
+
+  main {
+    flex: 1;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 72px 0 48px;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    font-weight: 500;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .eyebrow::before {
+    content: "";
+    display: block;
+    width: 32px;
+    height: 0.5px;
+    background: var(--ink-mute);
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: clamp(36px, 5vw, 52px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 24px;
+  }
+
+  h1 em {
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .lede {
+    font-family: var(--serif);
+    font-size: clamp(17px, 1.8vw, 19px);
+    font-weight: 300;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    letter-spacing: -0.005em;
+  }
+
+  /* Form */
+  .form-wrap {
+    padding: 24px 0 72px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  label {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    letter-spacing: 0.01em;
+  }
+
+  .label-hint {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--ink-mute);
+    margin-left: 6px;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  textarea {
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink);
+    background: var(--field-bg);
+    border: 0.5px solid var(--rule-strong);
+    border-radius: 2px;
+    padding: 14px 16px;
+    width: 100%;
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  input[type="text"]:focus,
+  input[type="email"]:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.06);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--ink-faint);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 180px;
+    font-family: var(--sans);
+  }
+
+  /* Submit */
+  .submit-row {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .btn-primary {
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--paper);
+    background: var(--ink);
+    border: none;
+    padding: 16px 28px;
+    border-radius: 2px;
+    cursor: pointer;
+    letter-spacing: -0.005em;
+    transition: background 160ms ease, transform 160ms ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: #2a2a2a;
+    transform: translateY(-1px);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-primary .arrow {
+    transition: transform 160ms ease;
+  }
+
+  .btn-primary:hover:not(:disabled) .arrow {
+    transform: translateX(3px);
+  }
+
+  .submit-note {
+    font-size: 13px;
+    color: var(--ink-mute);
+    line-height: 1.5;
+  }
+
+  /* Success / error states */
+  .message {
+    display: none;
+    padding: 32px 36px;
+    border-radius: 4px;
+    margin-top: 8px;
+  }
+
+  .message.show { display: block; }
+
+  .message.success {
+    background: var(--green-soft);
+  }
+
+  .message.success .message-label {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 18px;
+    color: var(--green);
+    margin-bottom: 10px;
+  }
+
+  .message.success .message-body {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  .message.error {
+    background: #f4e8e8;
+  }
+
+  .message.error .message-label {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 18px;
+    color: var(--error);
+    margin-bottom: 10px;
+  }
+
+  .message.error .message-body {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  /* Footer */
+  footer {
+    border-top: 0.5px solid var(--rule);
+    padding: 32px 0 48px;
+    margin-top: auto;
+  }
+
+  .footer-inner {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--ink-mute);
+    letter-spacing: 0.02em;
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .container, .topbar-inner, .footer-inner { padding: 0 24px; }
+    .hero { padding: 56px 0 40px; }
+    .form-wrap { padding-bottom: 56px; }
+    .footer-inner { flex-direction: column; gap: 12px; align-items: flex-start; }
+  }
+
+  /* Subtle reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: reveal 700ms cubic-bezier(0.2, 0.6, 0.2, 1) forwards;
+  }
+
+  .reveal-1 { animation-delay: 80ms; }
+  .reveal-2 { animation-delay: 180ms; }
+  .reveal-3 { animation-delay: 280ms; }
+  .reveal-4 { animation-delay: 380ms; }
+
+  @keyframes reveal {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .reveal-1, .reveal-2, .reveal-3, .reveal-4 {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a id="wordmark-link" href="#" class="wordmark">Uni<em>Profile</em></a>
+    <div class="badge">Feedback</div>
+  </div>
+</div>
+
+<main>
+  <div class="container">
+
+    <section class="hero">
+      <div class="eyebrow reveal reveal-1">Tell us what you saw</div>
+      <h1 class="reveal reveal-2">What's broken,<br />awkward, or <em>unclear</em>?</h1>
+      <p class="lede reveal reveal-3">
+        We'd rather hear it now than later. Bugs, confusing screens,
+        missing features, things that surprised you — it all helps. Be as
+        blunt as you'd like.
+      </p>
+    </section>
+
+    <section class="form-wrap reveal reveal-4">
+
+      <!-- 
+        DEPLOYMENT NOTE FOR DEVELOPER:
+        
+        This form posts to Formspree (https://formspree.io). To activate:
+        
+        1. Sign up at formspree.io (free tier supports 50 submissions/month, 
+           which covers Circle 1 and 2 easily).
+        2. Create a new form and copy your form ID (looks like "xyzpqrst").
+        3. Replace YOUR_FORMSPREE_ID below with that ID.
+        4. Set the destination email in your Formspree dashboard.
+        
+        TO MIGRATE TO YOUR OWN BACKEND LATER:
+        Replace the action URL with your own endpoint (e.g., AWS Lambda + 
+        SES, or an API Gateway endpoint). The form posts standard 
+        application/x-www-form-urlencoded data with fields: name, email, 
+        message.
+      -->
+
+      <form id="feedback-form" action="https://formspree.io/f/YOUR_FORMSPREE_ID" method="POST">
+
+        <div class="field">
+          <label for="name">Your name</label>
+          <input type="text" id="name" name="name" required autocomplete="name" placeholder="Jane Doe" />
+        </div>
+
+        <div class="field">
+          <label for="email">Email <span class="label-hint">so we can follow up</span></label>
+          <input type="email" id="email" name="email" required autocomplete="email" placeholder="jane@example.com" />
+        </div>
+
+        <div class="field">
+          <label for="message">What would you like to tell us?</label>
+          <textarea id="message" name="message" required placeholder="The good, the bad, the confusing. Or just a question."></textarea>
+        </div>
+
+        <!-- Honeypot field for spam prevention - hidden from users -->
+        <input type="text" name="_gotcha" style="display:none" tabindex="-1" autocomplete="off" />
+
+        <div class="submit-row">
+          <button type="submit" class="btn-primary" id="submit-btn">
+            Send feedback
+            <span class="arrow">→</span>
+          </button>
+          <span class="submit-note">We read every message.</span>
+        </div>
+
+      </form>
+
+      <div class="message success" id="success-message">
+        <div class="message-label">Thank you.</div>
+        <div class="message-body">We've got your message and will read it carefully. If it needs a reply, we'll be in touch within a few days.</div>
+      </div>
+
+      <div class="message error" id="error-message">
+        <div class="message-label">Something went wrong.</div>
+        <div class="message-body">The form didn't go through. Please try again, or email us directly at <a href="mailto:hello@uniprofile.net" style="color: var(--ink); text-decoration: underline;">hello@uniprofile.net</a>.</div>
+      </div>
+
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div>UniProfile</div>
+    <div>By invitation only</div>
+  </div>
+</footer>
+
+<script>
+  (function() {
+    document.getElementById('wordmark-link').href = window.location.origin + '/';
+
+    var form = document.getElementById('feedback-form');
+    var submitBtn = document.getElementById('submit-btn');
+    var successMsg = document.getElementById('success-message');
+    var errorMsg = document.getElementById('error-message');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'Sending...';
+      successMsg.classList.remove('show');
+      errorMsg.classList.remove('show');
+
+      var formData = new FormData(form);
+
+      fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: { 'Accept': 'application/json' }
+      })
+      .then(function(response) {
+        if (response.ok) {
+          form.style.display = 'none';
+          successMsg.classList.add('show');
+          successMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          throw new Error('Submission failed');
+        }
+      })
+      .catch(function() {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Send feedback <span class="arrow">→</span>';
+        errorMsg.classList.add('show');
+      });
+    });
+  })();
+</script>
+
+</body>
+</html>
