@@ -1069,6 +1069,75 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .acct-danger:hover{background:rgba(220,50,50,0.06)!important;}
 .acct-signout-btn{display:block;width:100%;padding:13px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-md);color:var(--textDim);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:center;transition:all 0.15s;margin-top:4px;}
 .acct-signout-btn:hover{border-color:var(--red);color:var(--red);}
+/* ── Insurance & Tours redesign ─────────────────────────── */
+.section-header{margin-bottom:24px;}
+.section-header h2{font-size:22px;font-weight:600;margin:0 0 5px;color:var(--text);font-family:'Playfair Display',serif;}
+.section-sub{font-size:13px;color:var(--textHint);margin:0;}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:7px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);background:transparent;color:var(--textDim);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.15s;}
+.btn:hover{background:var(--surface2);}
+.btn-primary{background:var(--gold);border-color:var(--gold);color:#fff;}
+.btn-primary:hover{opacity:0.9;}
+.iat-block{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-md);padding:20px 22px;margin-bottom:16px;}
+.iat-block-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:14px;}
+.iat-block-title{font-size:14px;font-weight:600;margin:0;color:var(--text);}
+.iat-block-meta{font-size:12px;color:var(--textHint);margin:4px 0 0;}
+.iat-empty{background:var(--surface);border-radius:var(--radius-sm);padding:20px;}
+.iat-empty-headline{font-size:14px;font-weight:600;margin:0 0 7px;color:var(--text);font-family:'Playfair Display',serif;}
+.iat-empty-body{font-size:12px;color:var(--textDim);line-height:1.65;margin:0 0 12px;}
+.iat-empty-bullets{list-style:none;padding:0;margin:0;font-size:12px;color:var(--textDim);}
+.iat-empty-bullets li{padding-left:12px;position:relative;margin-bottom:4px;}
+.iat-empty-bullets li:before{content:"·";position:absolute;left:4px;}
+.iat-empty-bullets code{background:rgba(0,0,0,0.05);padding:1px 5px;border-radius:3px;font-size:11px;}
+.iat-list{display:flex;flex-direction:column;gap:10px;}
+.iat-policy-card,.iat-tour-card{border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;background:var(--white);}
+.iat-policy-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px;}
+.iat-policy-id{display:flex;align-items:center;gap:10px;min-width:0;}
+.iat-policy-icon{width:30px;height:30px;border-radius:50%;background:var(--greenGlow);color:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.iat-policy-name{font-size:13px;font-weight:600;margin:0;color:var(--text);}
+.iat-policy-region-dates{font-size:11px;color:var(--textHint);margin:2px 0 0;}
+.iat-pill{font-size:10px;padding:3px 9px;border-radius:999px;font-weight:600;white-space:nowrap;letter-spacing:0.3px;}
+.iat-pill-active{background:var(--greenGlow);color:var(--green);}
+.iat-pill-expired{background:rgba(220,50,50,0.08);color:var(--red);}
+.iat-pill-future{background:var(--surface2);color:var(--textDim);}
+.iat-pill-live{background:var(--greenGlow);color:var(--green);}
+.iat-pill-relative{background:var(--surface);color:var(--textDim);}
+.iat-policy-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;}
+.iat-policy-grid-label{font-size:10px;color:var(--textHint);margin:0 0 2px;text-transform:uppercase;letter-spacing:0.06em;}
+.iat-policy-grid-value{margin:0;color:var(--text);font-size:12px;}
+.iat-policy-grid-value.mono{font-family:'JetBrains Mono',monospace;font-size:11px;}
+.iat-policy-grid-value.link{color:var(--tealLt);}
+.iat-trips-row{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;gap:6px;font-size:12px;color:var(--textDim);flex-wrap:wrap;}
+.iat-trip-tag{padding:2px 8px;background:var(--surface);border-radius:4px;font-size:11px;}
+.iat-policy-actions{display:flex;gap:6px;margin-top:10px;}
+.iat-policy-actions button{font-size:11px;padding:4px 10px;background:transparent;border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;color:var(--textDim);font-family:'DM Sans',sans-serif;}
+.iat-policy-actions button:hover{background:var(--surface2);}
+.iat-tour-card.is-live{border-color:rgba(16,185,129,0.3);background:linear-gradient(180deg,rgba(16,185,129,0.03),transparent);}
+.iat-tour-meta{display:flex;align-items:center;gap:7px;margin-bottom:5px;flex-wrap:wrap;}
+.iat-tour-time{font-size:11px;color:var(--textHint);}
+.iat-live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;animation:iat-pulse 2s ease-in-out infinite;}
+@keyframes iat-pulse{0%,100%{opacity:1;}50%{opacity:0.45;}}
+.iat-tour-name{font-size:13px;font-weight:600;margin:3px 0 2px;color:var(--text);}
+.iat-tour-detail{font-size:11px;color:var(--textHint);margin:0;}
+.iat-modal{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;}
+.iat-modal[hidden]{display:none;}
+.iat-modal-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-xl);width:100%;max-width:540px;max-height:90vh;overflow-y:auto;padding:26px;box-shadow:0 20px 60px rgba(0,0,0,0.14);}
+.iat-modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.iat-modal-title{font-size:17px;font-weight:600;margin:0;color:var(--text);font-family:'Playfair Display',serif;}
+.iat-close{background:transparent;border:none;font-size:22px;color:var(--textDim);cursor:pointer;padding:0;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.iat-close:hover{background:var(--surface2);}
+.iat-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+.iat-field{display:flex;flex-direction:column;gap:5px;}
+.iat-field-full{grid-column:1/-1;}
+.iat-field span{font-size:11px;color:var(--textDim);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;}
+.iat-field input,.iat-field select{font-size:13px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--white);color:var(--text);font-family:'DM Sans',sans-serif;}
+.iat-field input:focus,.iat-field select:focus{outline:none;border-color:var(--gold);}
+.iat-hint{font-size:11px;color:var(--textHint);font-weight:400;}
+.iat-checkbox-list{display:flex;flex-direction:column;gap:6px;margin-top:4px;}
+.iat-checkbox-list label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer;}
+.iat-checkbox-list input[type="checkbox"]{width:15px;height:15px;}
+.iat-modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
+.iat-empty-list-msg{font-size:12px;color:var(--textHint);font-style:italic;}
+@media(max-width:600px){.iat-form-grid,.iat-policy-grid{grid-template-columns:1fr;}}
 /* ── Plans ──────────────────────────────────────────────── */
 .plan-tiers{display:flex;gap:10px;margin-bottom:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
 .plan-tiers::-webkit-scrollbar{display:none;}
@@ -2546,20 +2615,128 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 </div>
 
       <section class="section" id="section-insurance">
-        <div class="sec-header">
-          <div class="sec-icon" style="background:var(--greenGlow)">🛡</div>
-          <div style="flex:1"><div class="sec-title">Insurance &amp; Tours</div><div class="sec-sub">Manage your travel insurance policies and tour bookings — share with linked family members</div></div>
+
+        <header class="section-header">
+          <h2>Coverage and itineraries</h2>
+          <p class="section-sub">Your travel insurance and tour bookings, visible to linked family members in real time.</p>
+        </header>
+
+        <!-- INSURANCE BLOCK -->
+        <div class="iat-block" id="iat-insurance-block">
+          <div class="iat-block-header">
+            <div>
+              <p class="iat-block-title">Insurance policies</p>
+              <p class="iat-block-meta" id="iat-insurance-meta">0 active</p>
+            </div>
+            <button class="btn btn-primary" type="button" onclick="iatOpenPolicyForm()">+ Add policy</button>
+          </div>
+          <div class="iat-empty" id="iat-insurance-empty">
+            <p class="iat-empty-headline">When something goes wrong, your family knows where to find your policy.</p>
+            <p class="iat-empty-body">Add a travel insurance policy once. Linked family members can see the policy number, claim hotline, and coverage details — without ringing you while you're already in trouble.</p>
+            <ul class="iat-empty-bullets">
+              <li>Policy number and 24-hour hotline at a glance</li>
+              <li>Auto-link to upcoming trips that fall within coverage</li>
+              <li>Family sees coverage instantly during a claim</li>
+            </ul>
+          </div>
+          <div class="iat-list" id="iat-insurance-list" hidden></div>
         </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <div class="form-section-title" style="margin:0">Insurance Policies</div>
-          <button class="save-btn" style="font-size:11px;padding:6px 14px" onclick="openAddInsuranceModal()">+ Add Policy</button>
+
+        <!-- TOURS BLOCK -->
+        <div class="iat-block" id="iat-tours-block">
+          <div class="iat-block-header">
+            <div>
+              <p class="iat-block-title">Tours and activities</p>
+              <p class="iat-block-meta" id="iat-tours-meta">Your itinerary, shared with family in real time</p>
+            </div>
+            <button class="btn btn-primary" type="button" onclick="iatOpenTourForm()">+ Add tour</button>
+          </div>
+          <div class="iat-empty" id="iat-tours-empty">
+            <p class="iat-empty-headline">"Where is dad right now?"</p>
+            <p class="iat-empty-body">Log a tour or excursion and your linked family sees it on their dashboard — start time, location, operator, return time. No texting from a moving boat.</p>
+            <ul class="iat-empty-bullets">
+              <li>Forward booking confirmations to <code>trips@uniprofile.net</code> and we log them automatically</li>
+              <li>Family timeline updates the moment you save</li>
+              <li>"Live now" badge during the actual tour</li>
+            </ul>
+          </div>
+          <div class="iat-list" id="iat-tours-list" hidden></div>
         </div>
-        <div id="ins-section-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:32px"></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
-          <div class="form-section-title" style="margin:0">Tours &amp; Activities</div>
-          <button class="save-btn" style="font-size:11px;padding:6px 14px" onclick="openAddTourModal()">+ Add Tour</button>
+
+        <!-- POLICY FORM MODAL -->
+        <div class="iat-modal" id="iat-policy-form" hidden>
+          <div class="iat-modal-card">
+            <div class="iat-modal-header">
+              <p class="iat-modal-title" id="iat-policy-form-title">Add policy</p>
+              <button class="iat-close" onclick="iatClosePolicyForm()" type="button" aria-label="Close">×</button>
+            </div>
+            <div class="iat-form-grid">
+              <label class="iat-field iat-field-full"><span>Insurer</span><input id="f-policy-insurer" type="text" placeholder="e.g. AXA, World Nomads, Allianz" /></label>
+              <label class="iat-field iat-field-full"><span>Policy name</span><input id="f-policy-name" type="text" placeholder="e.g. Smart Traveller Annual" /></label>
+              <label class="iat-field"><span>Policy number</span><input id="f-policy-number" type="text" placeholder="AX-44291-7" /></label>
+              <label class="iat-field"><span>Region covered</span>
+                <select id="f-policy-region">
+                  <option value="">Select…</option>
+                  <option value="WORLDWIDE">Worldwide</option>
+                  <option value="WORLDWIDE_EX_USA">Worldwide ex. USA/Canada</option>
+                  <option value="EUROPE">Europe</option>
+                  <option value="DOMESTIC">Domestic only</option>
+                  <option value="OTHER">Other (note in name)</option>
+                </select>
+              </label>
+              <label class="iat-field"><span>Coverage starts</span><input id="f-policy-start" type="date" /></label>
+              <label class="iat-field"><span>Coverage ends</span><input id="f-policy-end" type="date" /></label>
+              <label class="iat-field"><span>24-hour emergency line</span><input id="f-policy-hotline" type="tel" placeholder="+44 20 7880 8855" /></label>
+              <label class="iat-field"><span>Medical limit (optional)</span><input id="f-policy-medical" type="text" placeholder="£10,000,000" /></label>
+              <label class="iat-field iat-field-full">
+                <span>Visible to family members</span>
+                <small class="iat-hint">Linked family members you select see this policy. You can change this any time.</small>
+                <div class="iat-checkbox-list" id="iat-policy-family-list"></div>
+              </label>
+            </div>
+            <div class="iat-modal-footer">
+              <button class="btn" type="button" onclick="iatClosePolicyForm()">Cancel</button>
+              <button class="btn btn-primary" type="button" onclick="iatSavePolicy()">Save policy</button>
+            </div>
+          </div>
         </div>
-        <div id="tours-section-list" style="display:flex;flex-direction:column;gap:8px"></div>
+
+        <!-- TOUR FORM MODAL -->
+        <div class="iat-modal" id="iat-tour-form" hidden>
+          <div class="iat-modal-card">
+            <div class="iat-modal-header">
+              <p class="iat-modal-title" id="iat-tour-form-title">Add tour or activity</p>
+              <button class="iat-close" onclick="iatCloseTourForm()" type="button" aria-label="Close">×</button>
+            </div>
+            <div class="iat-form-grid">
+              <label class="iat-field iat-field-full"><span>Tour name</span><input id="f-tour-name" type="text" placeholder="e.g. Tsukiji outer market food walk" /></label>
+              <label class="iat-field"><span>City or region</span><input id="f-tour-location" type="text" placeholder="Tokyo" /></label>
+              <label class="iat-field"><span>Operator</span><input id="f-tour-operator" type="text" placeholder="GetYourGuide / Viator / direct" /></label>
+              <label class="iat-field"><span>Date</span><input id="f-tour-date" type="date" /></label>
+              <label class="iat-field"><span>Time zone</span>
+                <select id="f-tour-tz">
+                  <option value="">Local time</option>
+                  <option value="local">Local to destination</option>
+                  <option value="home">My home time zone</option>
+                </select>
+              </label>
+              <label class="iat-field"><span>Start time</span><input id="f-tour-start" type="time" /></label>
+              <label class="iat-field"><span>End time</span><input id="f-tour-end" type="time" /></label>
+              <label class="iat-field"><span>Party size</span><input id="f-tour-party" type="number" min="1" value="1" /></label>
+              <label class="iat-field"><span>Booking reference</span><input id="f-tour-ref" type="text" placeholder="optional" /></label>
+              <label class="iat-field iat-field-full">
+                <span>Visible to family members</span>
+                <small class="iat-hint">Linked family members you select see this tour live during the activity.</small>
+                <div class="iat-checkbox-list" id="iat-tour-family-list"></div>
+              </label>
+            </div>
+            <div class="iat-modal-footer">
+              <button class="btn" type="button" onclick="iatCloseTourForm()">Cancel</button>
+              <button class="btn btn-primary" type="button" onclick="iatSaveTour()">Save tour</button>
+            </div>
+          </div>
+        </div>
+
       </section>
 <!-- Legal Document Modal -->
 <div id="legal-modal" class="legal-modal-overlay" onclick="if(event.target===this)closeLegalModal()">
@@ -2575,54 +2752,6 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
   </div>
 </div>
 
-      <!-- Add Insurance Modal -->
-      <div id="add-insurance-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center">
-        <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-xl);padding:32px;width:100%;max-width:500px;margin:20px;box-shadow:0 20px 60px rgba(0,0,0,0.12)">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-            <div style="font-size:18px;font-weight:600;color:var(--text)">Add Insurance Policy</div>
-            <button onclick="closeAddInsuranceModal()" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:20px;line-height:1">✕</button>
-          </div>
-          <div class="form-grid">
-            <div class="form-field"><label class="field-label">Provider *</label><input class="field-input" id="ins-provider" placeholder="e.g. Allianz Travel" style="width:100%"></div>
-            <div class="form-field"><label class="field-label">Policy Number</label><input class="field-input" id="ins-policy-number" placeholder="e.g. ATI-2026-88421" style="width:100%"></div>
-          </div>
-          <div class="form-field" style="margin-top:12px"><label class="field-label">Coverage Summary</label><input class="field-input" id="ins-coverage" placeholder="e.g. Comprehensive — Trip Cancellation, Medical, Baggage" style="width:100%"></div>
-          <div class="form-grid" style="margin-top:12px">
-            <div class="form-field"><label class="field-label">Valid From</label><input class="field-input" id="ins-valid-from" type="date" style="width:100%"></div>
-            <div class="form-field"><label class="field-label">Valid Until</label><input class="field-input" id="ins-valid-until" type="date" style="width:100%"></div>
-          </div>
-          <div class="form-field" style="margin-top:12px;margin-bottom:24px"><label class="field-label">Emergency Phone</label><input class="field-input" id="ins-emergency-phone" placeholder="+1-800-555-0199" style="width:100%"></div>
-          <div style="display:flex;gap:10px">
-            <button class="save-btn" id="ins-save-btn" onclick="saveInsurance()">Save Policy</button>
-            <button onclick="closeAddInsuranceModal()" style="padding:8px 20px;background:transparent;border:1px solid var(--border2);color:var(--textMid);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:DM Sans,sans-serif">Cancel</button>
-          </div>
-        </div>
-      </div>
-      <!-- Add Tour Modal -->
-      <div id="add-tour-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center">
-        <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius-xl);padding:32px;width:100%;max-width:500px;margin:20px;box-shadow:0 20px 60px rgba(0,0,0,0.12)">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-            <div style="font-size:18px;font-weight:600;color:var(--text)">Add Tour / Activity</div>
-            <button onclick="closeAddTourModal()" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:20px;line-height:1">✕</button>
-          </div>
-          <div class="form-grid">
-            <div class="form-field"><label class="field-label">Operator *</label><input class="field-input" id="tour-operator" placeholder="e.g. GetYourGuide" style="width:100%"></div>
-            <div class="form-field"><label class="field-label">Tour Name *</label><input class="field-input" id="tour-name" placeholder="e.g. Paris City & Eiffel Tower Tour" style="width:100%"></div>
-          </div>
-          <div class="form-grid" style="margin-top:12px">
-            <div class="form-field"><label class="field-label">Date</label><input class="field-input" id="tour-date" type="date" style="width:100%"></div>
-            <div class="form-field"><label class="field-label">Duration</label><input class="field-input" id="tour-duration" placeholder="e.g. 4 hours" style="width:100%"></div>
-          </div>
-          <div class="form-grid" style="margin-top:12px">
-            <div class="form-field"><label class="field-label">Booking Reference</label><input class="field-input" id="tour-reference" placeholder="e.g. GYG-2026-44891" style="width:100%"></div>
-            <div class="form-field"><label class="field-label">Meeting Point</label><input class="field-input" id="tour-meeting-point" placeholder="e.g. Trocadéro Gardens" style="width:100%"></div>
-          </div>
-          <div style="display:flex;gap:10px;margin-top:24px">
-            <button class="save-btn" id="tour-save-btn" onclick="saveTour()">Save Tour</button>
-            <button onclick="closeAddTourModal()" style="padding:8px 20px;background:transparent;border:1px solid var(--border2);color:var(--textMid);border-radius:var(--radius-sm);cursor:pointer;font-size:12px;font-family:DM Sans,sans-serif">Cancel</button>
-          </div>
-        </div>
-      </div>
       <section class="section" id="section-cruise">
         <div class="sec-header">
           <div class="sec-icon" style="background:var(--tealGlow)">🚢</div>
@@ -3322,7 +3451,7 @@ function showSection(id,btn){
   document.getElementById("page-title").textContent=titles[id]||"UniProfile";
   document.querySelector(".content").scrollTop=0;
   if(id==="family")loadFamilyData();
-  if(id==="insurance"){renderMyInsurance();renderMyTours();}
+  if(id==="insurance"){iatRenderInsurance();iatRenderTours();}
   if(id==="cruise"){loadCruiseData();}
   if(id==="consent"){renderConsentPermissions();loadConnectedPlatforms();}
 }
@@ -3907,7 +4036,7 @@ const fly=p.fly_preferences||null;
 if(fly){const sp=p.seat_preferences;s("f-cabin_domestic",fly.cabin_domestic||(sp&&sp.cabin_domestic));s("f-cabin_international",fly.cabin_international||(sp&&sp.cabin_international));s("f-seat_position",fly.seat_position||(sp&&sp.seat_position));s("f-row_preference",fly.row_preference||(sp&&sp.row_preference));sc("f-avoid_middle_seats",fly.avoid_middle_seats!==undefined?fly.avoid_middle_seats:(sp&&sp.avoid_middle_seats));sc("f-avoid_last_row",fly.avoid_last_row!==undefined?fly.avoid_last_row:(sp&&sp.avoid_last_row));sc("f-wheelchair_needed",fly.wheelchair_needed!==undefined?fly.wheelchair_needed:(sp&&sp.wheelchair_needed));s("f-nonstop_pref",fly.nonstop_pref);s("f-max_connections",fly.max_connections);s("f-min_connection_minutes",fly.min_connection_minutes);s("f-max_connection_minutes",fly.max_connection_minutes);s("f-hubs_preferred",fly.hubs_preferred);s("f-hubs_avoid",fly.hubs_avoid);s("f-departure_time_pref",fly.departure_time_pref);s("f-arrival_time_avoid",fly.arrival_time_avoid);s("f-max_journey_hours",fly.max_journey_hours);}
 const tr=p.travel_preferences||null;
 if(tr){const sp=p.seat_preferences;s("f-purpose_business_pct",tr.purpose_business_pct);s("f-purpose_leisure_pct",tr.purpose_leisure_pct);s("f-trip_length_typical",tr.trip_length_typical);s("f-home_origin",tr.home_origin);s("f-travel_pace",tr.travel_pace);s("f-planning_style",tr.planning_style);s("f-group_preference",tr.group_preference);s("f-activity_load",tr.activity_load);s("f-circadian_pref",tr.circadian_pref);s("f-budget_priority",tr.budget_priority||3);updateBudgetReadout(tr.budget_priority||3);s("f-splurge_target",tr.splurge_target);s("f-refundability_priority",tr.refundability_priority);s("f-change_fee_tolerance",tr.change_fee_tolerance);s("f-payment_style",tr.payment_style);s("f-weather_risk",tr.weather_risk);s("f-geopolitical_risk",tr.geopolitical_risk);s("f-health_risk",tr.health_risk);s("f-insurance_level",tr.insurance_level);s("f-carbon_awareness",tr.carbon_awareness||3);updateCarbonReadout(tr.carbon_awareness||3);s("f-offset_willingness",tr.offset_willingness);s("f-saf_preference",tr.saf_preference);s("f-train_alternative",tr.train_alternative);s("f-comm_channel",tr.comm_channel);s("f-comm_frequency",tr.comm_frequency);s("f-marketing_optin",tr.marketing_optin);s("f-data_sharing",tr.data_sharing);s("f-biometric_acceptance",tr.biometric_acceptance);s("f-hotel_room_type",tr.hotel_room_type||(sp&&sp.hotel_room_type));s("f-hotel_floor_pref",tr.hotel_floor_pref||(sp&&sp.hotel_floor_pref));document.querySelectorAll('input[name="smoking_preference"]').forEach(function(r){r.checked=r.value===(tr.smoking_preference||"NON_SMOKING");});["OCEAN","CITY","POOL","GARDEN","MOUNTAIN","COURTYARD"].forEach(function(k){var el=document.getElementById("f-view_"+k);if(el)el.checked=(tr.room_view_preferences||[]).indexOf(k)>-1;});s("f-pillow_preference",tr.pillow_preference||"NO_PREFERENCE");s("f-bed_firmness_preference",tr.bed_firmness_preference||"NO_PREFERENCE");sc("f-late_checkout_auto_request",tr.late_checkout_auto_request);sc("f-ada_room_required",tr.ada_room_required);s("f-car_type_pref",tr.car_type_pref||(sp&&sp.car_type_pref));}
-renderLoyalty(p.loyalty_programs||[]);renderPayment(p.payment_profiles||[],p.identity);renderTrips(p.trips||[]);renderTripInbox(p.uniprofile_number);s("api-uuid",p.uuid);grpData=p.groups||[];if(!grpData.length)grpLoadLocal();consentData=p.consent||{};renderConsentPermissions();pcInitStates(p);updateDocAlertBadge(p.documents||[]);}
+renderLoyalty(p.loyalty_programs||[]);renderPayment(p.payment_profiles||[],p.identity);renderTrips(p.trips||[]);renderTripInbox(p.uniprofile_number);s("api-uuid",p.uuid);grpData=p.groups||[];if(!grpData.length)grpLoadLocal();consentData=p.consent||{};renderConsentPermissions();pcInitStates(p);updateDocAlertBadge(p.documents||[]);iatRender(p.insurance_and_tours||{});}
 
 let editingLoyaltyId = null;
 
@@ -5664,8 +5793,8 @@ async function loadFamilyData(){
         received:(data.received||data.pending_received||[]).map(function(inv,i){return Object.assign({initials:nameInitials(inv.from_name||inv.from_email),color:FAM_COLORS[i%FAM_COLORS.length]},inv);}),
         sent:data.sent||data.pending_sent||[]
       };
-      myInsurance=data.my_insurance||[];
-      myTours=data.my_tours||[];
+      if(data.insurance_and_tours)iatRender(data.insurance_and_tours);
+      else if(data.my_insurance||data.my_tours)iatRender({policies:data.my_insurance||[],tours:data.my_tours||[]});
     }
   }catch(e){/* API not live — using mock state */}
   renderFamily();updateFamilyNavBadge();
@@ -5893,134 +6022,274 @@ async function unlinkFamilyMember(memberId){
   renderFamily();toast(m.name+" unlinked","success");
 }
 
-// ── Insurance & Tours ─────────────────────────────────────────────────────────
-let myInsurance=[];
-let myTours=[];
+// ── Insurance & Tours redesign ────────────────────────────────────────────────
+window.iatState={policies:[],tours:[]};
+window.iatEditingPolicyIdx=null;
+window.iatEditingTourIdx=null;
 
-function renderMyInsurance(){
-  var months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  var fmtDate=function(ds){if(!ds)return"";var d=new Date(ds);return months[d.getMonth()]+" "+d.getDate()+", "+d.getFullYear();};
-  var listEl=document.getElementById("my-insurance-list");
-  var secEl=document.getElementById("ins-section-list");
-  var html=myInsurance.length?myInsurance.map(function(ins){
-    return '<div style="background:var(--white);border:1px solid var(--border);border-left:2px solid var(--green);border-radius:var(--radius-md);padding:14px 18px;display:flex;align-items:center;gap:14px">'+
-      '<div style="font-size:22px">🛡</div>'+
-      '<div style="flex:1">'+
-        '<div style="font-size:13px;font-weight:500;color:var(--text)">'+ins.provider+'</div>'+
-        (ins.policy_number?'<div style="font-size:11px;font-family:JetBrains Mono,monospace;color:var(--green);margin-top:2px">'+ins.policy_number+'</div>':'')+
-        (ins.coverage_summary?'<div style="font-size:11px;color:var(--textDim);margin-top:4px">'+ins.coverage_summary+'</div>':'')+
-      '</div>'+
-      '<div style="text-align:right;flex-shrink:0;margin-right:10px">'+
-        (ins.valid_until?'<div style="font-size:10px;color:var(--textDim)">Valid to '+fmtDate(ins.valid_until)+'</div>':'')+
-        (ins.emergency_phone?'<div style="font-size:10px;color:var(--textDim);margin-top:2px">☎ '+ins.emergency_phone+'</div>':'')+
-      '</div>'+
-      '<button onclick="deleteInsurance(\''+ins.id+'\')" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:18px;padding:0 2px;flex-shrink:0" title="Delete">×</button>'+
-    '</div>';
-  }).join(""):
-  '<div class="empty-state" style="padding:24px 0"><div class="empty-icon">🛡</div><div class="empty-title">No insurance policies yet</div><div class="empty-sub">Add your travel insurance policies and tour bookings here. Linked family members can see and reference them for emergency contacts and shared itineraries.</div></div>';
-  if(listEl)listEl.innerHTML=html;
-  if(secEl)secEl.innerHTML=html;
+function iatRender(data){
+  window.iatState.policies=Array.isArray(data.policies)?data.policies:[];
+  window.iatState.tours=Array.isArray(data.tours)?data.tours:[];
+  iatRenderInsurance();
+  iatRenderTours();
 }
 
-function renderMyTours(){
-  var months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  var fmtDate=function(ds){if(!ds)return"";var d=new Date(ds);return months[d.getMonth()]+" "+d.getDate()+", "+d.getFullYear();};
-  var listEl=document.getElementById("my-tours-list");
-  var secEl=document.getElementById("tours-section-list");
-  var html=myTours.length?myTours.map(function(tour){
-    return '<div style="background:var(--white);border:1px solid var(--border);border-left:2px solid var(--tealLt);border-radius:var(--radius-md);padding:14px 18px;display:flex;align-items:center;gap:14px">'+
-      '<div style="font-size:22px">🗺</div>'+
-      '<div style="flex:1">'+
-        '<div style="font-size:13px;font-weight:500;color:var(--text)">'+tour.tour_name+'</div>'+
-        '<div style="font-size:11px;color:var(--textDim);margin-top:2px">'+tour.operator+(tour.duration?' · '+tour.duration:'')+'</div>'+
-        (tour.meeting_point?'<div style="font-size:11px;color:var(--textDim)">📍 '+tour.meeting_point+'</div>':'')+
-      '</div>'+
-      '<div style="text-align:right;flex-shrink:0;margin-right:10px">'+
-        (tour.tour_date?'<div style="font-size:11px;font-weight:500;color:var(--text)">'+fmtDate(tour.tour_date)+'</div>':'')+
-        (tour.reference?'<div style="font-size:10px;font-family:JetBrains Mono,monospace;color:var(--tealLt);margin-top:2px">'+tour.reference+'</div>':'')+
-      '</div>'+
-      '<button onclick="deleteTour(\''+tour.id+'\')" style="background:none;border:none;color:var(--textDim);cursor:pointer;font-size:18px;padding:0 2px;flex-shrink:0" title="Delete">×</button>'+
-    '</div>';
-  }).join(""):
-  '<div class="empty-state" style="padding:24px 0"><div class="empty-icon">🗺</div><div class="empty-title">No tours or activities yet</div><div class="empty-sub">Log a tour or activity booking to share the details with linked family members travelling with you.</div></div>';
-  if(listEl)listEl.innerHTML=html;
-  if(secEl)secEl.innerHTML=html;
+function iatRenderInsurance(){
+  var list=document.getElementById('iat-insurance-list');
+  var empty=document.getElementById('iat-insurance-empty');
+  var meta=document.getElementById('iat-insurance-meta');
+  if(!list||!empty||!meta)return;
+  var policies=window.iatState.policies;
+  if(!policies.length){list.hidden=true;empty.hidden=false;meta.textContent='0 active';return;}
+  empty.hidden=true;list.hidden=false;
+  var today=new Date().toISOString().slice(0,10);
+  var active=policies.filter(function(p){return(!p.start||p.start<=today)&&(!p.end||p.end>=today);}).length;
+  meta.textContent=active+' active'+(policies.length>active?' · '+(policies.length-active)+' inactive':'');
+  list.innerHTML=policies.map(iatPolicyCardHtml).join('');
 }
 
-function openAddInsuranceModal(){
-  ["ins-provider","ins-policy-number","ins-coverage","ins-valid-from","ins-valid-until","ins-emergency-phone"].forEach(function(id){var el=document.getElementById(id);if(el)el.value="";});
-  document.getElementById("add-insurance-modal").style.display="flex";
+function iatRenderTours(){
+  var list=document.getElementById('iat-tours-list');
+  var empty=document.getElementById('iat-tours-empty');
+  var meta=document.getElementById('iat-tours-meta');
+  if(!list||!empty||!meta)return;
+  var tours=window.iatState.tours;
+  if(!tours.length){list.hidden=true;empty.hidden=false;meta.textContent='Your itinerary, shared with family in real time';return;}
+  empty.hidden=true;list.hidden=false;
+  var sorted=tours.slice().sort(iatTourSortFn);
+  var liveCount=0,upcomingCount=0;
+  sorted.forEach(function(t){var st=iatTourStatus(t);if(st.kind==='live')liveCount++;else if(st.kind==='upcoming')upcomingCount++;});
+  var parts=[];
+  if(liveCount)parts.push(liveCount+' live now');
+  if(upcomingCount)parts.push(upcomingCount+' upcoming');
+  if(!parts.length)parts.push(sorted.length+' past');
+  meta.textContent=parts.join(' · ');
+  list.innerHTML=sorted.map(iatTourCardHtml).join('');
 }
-function closeAddInsuranceModal(){document.getElementById("add-insurance-modal").style.display="none";}
 
-async function saveInsurance(){
-  var provider=document.getElementById("ins-provider").value.trim();
-  if(!provider){toast("Provider is required","error");return;}
-  var btn=document.getElementById("ins-save-btn");btn.textContent="Saving...";btn.disabled=true;
-  var payload={
-    provider:provider,
-    policy_number:document.getElementById("ins-policy-number").value.trim(),
-    coverage_summary:document.getElementById("ins-coverage").value.trim(),
-    valid_from:document.getElementById("ins-valid-from").value||null,
-    valid_until:document.getElementById("ins-valid-until").value||null,
-    emergency_phone:document.getElementById("ins-emergency-phone").value.trim()
+function iatPolicyCardHtml(p,idx){
+  var status=iatPolicyStatus(p);
+  var visibleNames=iatFamilyNames(p.visibleTo||[]);
+  var coveredTrips=iatTripsCoveredBy(p);
+  return '<div class="iat-policy-card">'
+    +'<div class="iat-policy-top">'
+    +'<div class="iat-policy-id">'
+    +'<div class="iat-policy-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L4 6v6c0 5 3.5 9 8 10 4.5-1 8-5 8-10V6l-8-4z"/></svg></div>'
+    +'<div style="min-width:0"><p class="iat-policy-name">'+iatEsc(p.name||'Policy')+(p.insurer?' — '+iatEsc(p.insurer):'')+'</p>'
+    +'<p class="iat-policy-region-dates">'+iatEsc(iatRegionLabel(p.region))+' · '+iatEsc(iatCoverageWindow(p))+'</p></div>'
+    +'</div>'
+    +'<span class="iat-pill iat-pill-'+status.cls+'">'+status.label+'</span>'
+    +'</div>'
+    +'<div class="iat-policy-grid">'
+    +'<div><p class="iat-policy-grid-label">Policy number</p><p class="iat-policy-grid-value mono">'+iatEsc(p.number||'—')+'</p></div>'
+    +'<div><p class="iat-policy-grid-label">24h emergency</p><p class="iat-policy-grid-value link">'+iatEsc(p.hotline||'—')+'</p></div>'
+    +'<div><p class="iat-policy-grid-label">Medical limit</p><p class="iat-policy-grid-value">'+iatEsc(p.medical||'—')+'</p></div>'
+    +'<div><p class="iat-policy-grid-label">Visible to family</p><p class="iat-policy-grid-value">'+(visibleNames.length?iatEsc(visibleNames.join(', ')):'—')+'</p></div>'
+    +'</div>'
+    +(coveredTrips.length?'<div class="iat-trips-row">'+coveredTrips.map(function(t){return'<span class="iat-trip-tag">'+iatEsc(t)+'</span>';}).join('')+'</div>':'')
+    +'<div class="iat-policy-actions">'
+    +'<button type="button" onclick="iatEditPolicy('+idx+')">Edit</button>'
+    +'<button type="button" onclick="iatDeletePolicy('+idx+')">Delete</button>'
+    +'</div>'
+    +'</div>';
+}
+
+function iatTourCardHtml(t,idx){
+  var status=iatTourStatus(t);
+  var liveBadge=status.kind==='live'
+    ?'<span class="iat-live-dot"></span><span class="iat-pill iat-pill-live">Live now</span>'
+    :'<span class="iat-pill iat-pill-relative">'+status.label+'</span>';
+  var timeStr=(t.start||'')+(t.end?' – '+t.end:'');
+  var detail=[t.location||'',timeStr,t.operator||'',t.party?'party of '+t.party:''].filter(Boolean).join(' · ');
+  return '<div class="iat-tour-card'+(status.kind==='live'?' is-live':'')+'">'
+    +'<div class="iat-tour-meta">'+liveBadge
+    +(status.kind!=='live'?'<span class="iat-tour-time">'+iatEsc(iatLocalTimeLabel(t))+'</span>':'<span class="iat-tour-time">ends '+iatEsc(t.end||'—')+' local</span>')
+    +'</div>'
+    +'<p class="iat-tour-name">'+iatEsc(t.name||'Tour')+'</p>'
+    +'<p class="iat-tour-detail">'+iatEsc(detail)+'</p>'
+    +'<div class="iat-policy-actions">'
+    +'<button type="button" onclick="iatEditTour('+idx+')">Edit</button>'
+    +'<button type="button" onclick="iatDeleteTour('+idx+')">Delete</button>'
+    +'</div>'
+    +'</div>';
+}
+
+function iatPolicyStatus(p){
+  var today=new Date().toISOString().slice(0,10);
+  if(p.start&&p.start>today)return{cls:'future',label:'Starts '+iatHumanDate(p.start)};
+  if(p.end&&p.end<today)return{cls:'expired',label:'Expired'};
+  return{cls:'active',label:'Active'};
+}
+
+function iatTourStatus(t){
+  if(!t.date)return{kind:'past',label:'No date'};
+  var now=new Date();
+  var startDate=new Date(t.date+'T'+(t.start||'00:00')+':00');
+  var endDate=new Date(t.date+'T'+(t.end||t.start||'23:59')+':00');
+  if(now>=startDate&&now<=endDate)return{kind:'live',label:'Live now'};
+  if(now<startDate){
+    var diff=Math.floor((startDate-now)/(864e5));
+    if(diff===0)return{kind:'upcoming',label:'Today'};
+    if(diff===1)return{kind:'upcoming',label:'Tomorrow'};
+    if(diff<7)return{kind:'upcoming',label:'In '+diff+' days'};
+    if(diff<14)return{kind:'upcoming',label:'In a week'};
+    if(diff<60)return{kind:'upcoming',label:'In '+Math.round(diff/7)+' weeks'};
+    return{kind:'upcoming',label:iatHumanDate(t.date)};
+  }
+  return{kind:'past',label:iatHumanDate(t.date)};
+}
+
+function iatTourSortFn(a,b){
+  return((a.date||'9999-12-31')+'T'+(a.start||'23:59')).localeCompare((b.date||'9999-12-31')+'T'+(b.start||'23:59'));
+}
+
+function iatLocalTimeLabel(t){return t.start?t.start+' local':'';}
+
+function iatTripsCoveredBy(policy){
+  if(!window.up_trips||!Array.isArray(window.up_trips))return[];
+  if(!policy.start&&!policy.end)return[];
+  var covered=window.up_trips.filter(function(trip){
+    if(!trip.start_date)return false;
+    var te=trip.end_date||trip.start_date;
+    return(!policy.start||trip.start_date>=policy.start)&&(!policy.end||te<=policy.end);
+  });
+  var labels=covered.slice(0,2).map(function(trip){
+    return(trip.destination||'Trip')+' · '+iatShortDateRange(trip.start_date,trip.end_date);
+  });
+  if(covered.length>2)labels.push('+'+(covered.length-2)+' more');
+  return labels;
+}
+
+function iatOpenPolicyForm(idx){
+  window.iatEditingPolicyIdx=(typeof idx==='number')?idx:null;
+  iatLoadFamilyCheckboxes('iat-policy-family-list',window.iatEditingPolicyIdx!==null?(window.iatState.policies[idx].visibleTo||[]):[]);
+  document.getElementById('iat-policy-form-title').textContent=window.iatEditingPolicyIdx!==null?'Edit policy':'Add policy';
+  if(window.iatEditingPolicyIdx!==null){
+    var p=window.iatState.policies[idx];
+    iatSet('f-policy-insurer',p.insurer);iatSet('f-policy-name',p.name);iatSet('f-policy-number',p.number);
+    iatSet('f-policy-region',p.region);iatSet('f-policy-start',p.start);iatSet('f-policy-end',p.end);
+    iatSet('f-policy-hotline',p.hotline);iatSet('f-policy-medical',p.medical);
+  }else{
+    ['f-policy-insurer','f-policy-name','f-policy-number','f-policy-region','f-policy-start','f-policy-end','f-policy-hotline','f-policy-medical'].forEach(function(id){iatSet(id,'');});
+  }
+  document.getElementById('iat-policy-form').hidden=false;
+}
+function iatClosePolicyForm(){document.getElementById('iat-policy-form').hidden=true;window.iatEditingPolicyIdx=null;}
+function iatEditPolicy(idx){iatOpenPolicyForm(idx);}
+
+async function iatSavePolicy(){
+  var policy={
+    insurer:iatGet('f-policy-insurer'),name:iatGet('f-policy-name'),number:iatGet('f-policy-number'),
+    region:iatGet('f-policy-region'),start:iatGet('f-policy-start'),end:iatGet('f-policy-end'),
+    hotline:iatGet('f-policy-hotline'),medical:iatGet('f-policy-medical'),
+    visibleTo:iatGetCheckedFamily('iat-policy-family-list')
   };
-  try{
-    var res=await api("POST","/api/v1/insurance/"+uuid,payload);
-    payload.id=res.id||("ins-"+Date.now());
-  }catch(e){payload.id="ins-"+Date.now();}
-  myInsurance.unshift(payload);
-  renderMyInsurance();
-  closeAddInsuranceModal();
-  toast("Insurance policy saved","success");
-  btn.textContent="Save Policy";btn.disabled=false;
+  if(!policy.name&&!policy.insurer){toast('Add at least an insurer or policy name','error');return;}
+  if(window.iatEditingPolicyIdx!==null){window.iatState.policies[window.iatEditingPolicyIdx]=policy;}
+  else{window.iatState.policies.push(policy);}
+  await iatPersist();
+  iatClosePolicyForm();iatRenderInsurance();
 }
 
-async function deleteInsurance(id){
-  if(!confirm("Delete this insurance policy?"))return;
-  try{await api("DELETE","/api/v1/insurance/"+uuid+"/"+id);}catch(e){}
-  myInsurance=myInsurance.filter(function(x){return x.id!==id;});
-  renderMyInsurance();
-  toast("Policy removed","success");
+async function iatDeletePolicy(idx){
+  if(!confirm('Delete this policy? Linked family members will lose visibility.'))return;
+  window.iatState.policies.splice(idx,1);
+  await iatPersist();
+  iatRenderInsurance();
 }
 
-function openAddTourModal(){
-  ["tour-operator","tour-name","tour-date","tour-duration","tour-reference","tour-meeting-point"].forEach(function(id){var el=document.getElementById(id);if(el)el.value="";});
-  document.getElementById("add-tour-modal").style.display="flex";
+function iatOpenTourForm(idx){
+  window.iatEditingTourIdx=(typeof idx==='number')?idx:null;
+  iatLoadFamilyCheckboxes('iat-tour-family-list',window.iatEditingTourIdx!==null?(window.iatState.tours[idx].visibleTo||[]):[]);
+  document.getElementById('iat-tour-form-title').textContent=window.iatEditingTourIdx!==null?'Edit tour':'Add tour or activity';
+  if(window.iatEditingTourIdx!==null){
+    var t=window.iatState.tours[idx];
+    iatSet('f-tour-name',t.name);iatSet('f-tour-location',t.location);iatSet('f-tour-operator',t.operator);
+    iatSet('f-tour-date',t.date);iatSet('f-tour-tz',t.tz);iatSet('f-tour-start',t.start);iatSet('f-tour-end',t.end);
+    iatSet('f-tour-party',t.party);iatSet('f-tour-ref',t.ref);
+  }else{
+    ['f-tour-name','f-tour-location','f-tour-operator','f-tour-date','f-tour-tz','f-tour-start','f-tour-end','f-tour-ref'].forEach(function(id){iatSet(id,'');});
+    iatSet('f-tour-party','1');
+  }
+  document.getElementById('iat-tour-form').hidden=false;
 }
-function closeAddTourModal(){document.getElementById("add-tour-modal").style.display="none";}
+function iatCloseTourForm(){document.getElementById('iat-tour-form').hidden=true;window.iatEditingTourIdx=null;}
+function iatEditTour(idx){iatOpenTourForm(idx);}
 
-async function saveTour(){
-  var operator=document.getElementById("tour-operator").value.trim();
-  var tourName=document.getElementById("tour-name").value.trim();
-  if(!operator||!tourName){toast("Operator and Tour Name are required","error");return;}
-  var btn=document.getElementById("tour-save-btn");btn.textContent="Saving...";btn.disabled=true;
-  var payload={
-    operator:operator,
-    tour_name:tourName,
-    tour_date:document.getElementById("tour-date").value||null,
-    duration:document.getElementById("tour-duration").value.trim(),
-    reference:document.getElementById("tour-reference").value.trim(),
-    meeting_point:document.getElementById("tour-meeting-point").value.trim()
+async function iatSaveTour(){
+  var tour={
+    name:iatGet('f-tour-name'),location:iatGet('f-tour-location'),operator:iatGet('f-tour-operator'),
+    date:iatGet('f-tour-date'),tz:iatGet('f-tour-tz'),start:iatGet('f-tour-start'),end:iatGet('f-tour-end'),
+    party:parseInt(iatGet('f-tour-party'),10)||1,ref:iatGet('f-tour-ref'),
+    visibleTo:iatGetCheckedFamily('iat-tour-family-list')
   };
-  try{
-    var res=await api("POST","/api/v1/tours/"+uuid,payload);
-    payload.id=res.id||("tour-"+Date.now());
-  }catch(e){payload.id="tour-"+Date.now();}
-  myTours.unshift(payload);
-  renderMyTours();
-  closeAddTourModal();
-  toast("Tour saved","success");
-  btn.textContent="Save Tour";btn.disabled=false;
+  if(!tour.name){toast('Add at least a tour name','error');return;}
+  if(window.iatEditingTourIdx!==null){window.iatState.tours[window.iatEditingTourIdx]=tour;}
+  else{window.iatState.tours.push(tour);}
+  await iatPersist();
+  iatCloseTourForm();iatRenderTours();
 }
 
-async function deleteTour(id){
-  if(!confirm("Delete this tour?"))return;
-  try{await api("DELETE","/api/v1/tours/"+uuid+"/"+id);}catch(e){}
-  myTours=myTours.filter(function(x){return x.id!==id;});
-  renderMyTours();
-  toast("Tour removed","success");
+async function iatDeleteTour(idx){
+  if(!confirm('Delete this tour?'))return;
+  window.iatState.tours.splice(idx,1);
+  await iatPersist();
+  iatRenderTours();
 }
+
+async function iatPersist(){
+  if(!uuid)return;
+  try{
+    var result=await api('PUT','/api/v1/profile/'+uuid,{module:'insurance_and_tours',data:iatBuildPayload()});
+    toast(result&&result.success?'Saved':'Saved locally','success');
+  }catch(e){toast('Saved locally','success');}
+}
+
+function iatBuildPayload(){return{policies:window.iatState.policies,tours:window.iatState.tours};}
+
+function iatLoadFamilyCheckboxes(containerId,selectedIds){
+  var container=document.getElementById(containerId);if(!container)return;
+  selectedIds=selectedIds||[];
+  var family=window.up_familyMembers||(familyState&&familyState.linked?familyState.linked.map(function(m){return{id:m.id,name:(m.identity&&m.identity.legal_first?m.identity.legal_first+' '+(m.identity.legal_last||''):m.email||'Family member').trim()};}):[]);
+  if(!family.length){container.innerHTML='<p class="iat-empty-list-msg">Add family members in Family Profiles to share with them.</p>';return;}
+  container.innerHTML=family.map(function(m){
+    var checked=selectedIds.indexOf(m.id)!==-1?'checked':'';
+    return'<label><input type="checkbox" data-family-id="'+iatEsc(m.id)+'" '+checked+'/> '+iatEsc(m.name)+'</label>';
+  }).join('');
+}
+
+function iatGetCheckedFamily(containerId){
+  var container=document.getElementById(containerId);if(!container)return[];
+  var ids=[];
+  container.querySelectorAll('input[type="checkbox"]:checked').forEach(function(cb){ids.push(cb.getAttribute('data-family-id'));});
+  return ids;
+}
+
+function iatFamilyNames(ids){
+  var family=window.up_familyMembers||(familyState&&familyState.linked?familyState.linked.map(function(m){return{id:m.id,name:(m.identity&&m.identity.legal_first?m.identity.legal_first:'Member').trim()};}):[]);
+  return ids.map(function(id){var m=family.find(function(x){return x.id===id;});return m?m.name:null;}).filter(Boolean);
+}
+
+function iatGet(id){var el=document.getElementById(id);return el?(el.value||''):'';}
+function iatSet(id,val){var el=document.getElementById(id);if(el)el.value=val||'';}
+function iatEsc(s){if(s===null||s===undefined)return'';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function iatRegionLabel(code){return{WORLDWIDE:'Worldwide',WORLDWIDE_EX_USA:'Worldwide ex. USA',EUROPE:'Europe',DOMESTIC:'Domestic',OTHER:'Other'}[code]||code||'—';}
+function iatHumanDate(iso){if(!iso)return'';try{var d=new Date(iso+'T00:00:00');return d.toLocaleDateString(undefined,{day:'numeric',month:'short',year:'numeric'});}catch(e){return iso;}}
+function iatShortDateRange(start,end){
+  if(!start)return'';if(!end||start===end)return iatHumanDate(start);
+  try{
+    var s=new Date(start+'T00:00:00'),e=new Date(end+'T00:00:00');
+    if(s.getFullYear()===e.getFullYear()&&s.getMonth()===e.getMonth())return s.getDate()+'-'+e.getDate()+' '+e.toLocaleString(undefined,{month:'short'});
+    return iatHumanDate(start)+' – '+iatHumanDate(end);
+  }catch(err){return start+' – '+end;}
+}
+function iatCoverageWindow(p){
+  if(!p.start&&!p.end)return'No dates set';
+  if(!p.start)return'until '+iatHumanDate(p.end);
+  if(!p.end)return'from '+iatHumanDate(p.start);
+  return'until '+iatHumanDate(p.end);
+}
+setInterval(function(){if(window.iatState&&window.iatState.tours.length)iatRenderTours();},60000);
 
 // ── Cruise Profile ────────────────────────────────────────────────────────
 let cruiseState={bookings:[],preferences:null,excursions:[]};
@@ -6338,7 +6607,7 @@ async function exportMyData(){
       identity:me.identity||null,documents:me.documents||[],seat_preferences:me.seat_preferences||null,
       meal_preferences:me.meal_preferences||null,loyalty_programs:me.loyalty_programs||[],
       payment:me.payment||null,trips:me.trips||[],family_links:family||null,
-      insurance:myInsurance||[],tours:myTours||[],cruise:cruise||null,consent:me.consent||null
+      insurance_and_tours:window.iatState||{policies:[],tours:[]},cruise:cruise||null,consent:me.consent||null
     };
     const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
     const a=document.createElement("a");
