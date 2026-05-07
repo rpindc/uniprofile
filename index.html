@@ -1137,6 +1137,18 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .iat-checkbox-list input[type="checkbox"]{width:15px;height:15px;}
 .iat-modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
 .iat-empty-list-msg{font-size:12px;color:var(--textHint);font-style:italic;}
+.iat-attach-row{display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap;}
+.iat-attach-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border:1.5px dashed var(--border);border-radius:var(--radius-sm);background:transparent;color:var(--textDim);font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.15s;}
+.iat-attach-btn:hover{border-color:var(--gold);color:var(--gold);}
+.iat-pending-attachments{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.iat-attach-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 8px 4px 10px;background:var(--surface);border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--text);max-width:200px;}
+.iat-attach-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.iat-attach-chip button{background:none;border:none;color:var(--textHint);cursor:pointer;font-size:12px;padding:0;line-height:1;flex-shrink:0;}
+.iat-attach-chip button:hover{color:var(--red);}
+.iat-attachments-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.iat-file-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:var(--surface);border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--text);text-decoration:none;transition:border-color 0.15s;max-width:180px;}
+.iat-file-chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.iat-file-chip:hover{border-color:var(--gold);color:var(--gold);}
 @media(max-width:600px){.iat-form-grid,.iat-policy-grid{grid-template-columns:1fr;}}
 /* ── Plans ──────────────────────────────────────────────── */
 .plan-tiers{display:flex;gap:10px;margin-bottom:6px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
@@ -2693,6 +2705,15 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
                 <small class="iat-hint">Linked family members you select see this policy. You can change this any time.</small>
                 <div class="iat-checkbox-list" id="iat-policy-family-list"></div>
               </label>
+              <label class="iat-field iat-field-full">
+                <span>Attachments</span>
+                <small class="iat-hint">Policy document, schedule of benefits, emergency card — PDF only, max 5 MB each.</small>
+                <div class="iat-attach-row">
+                  <button type="button" class="iat-attach-btn" onclick="document.getElementById('iat-policy-file-input').click()">📎 Attach PDF</button>
+                  <input type="file" id="iat-policy-file-input" accept=".pdf,application/pdf" multiple style="display:none" onchange="iatAttachFile('policy',this)">
+                </div>
+                <div class="iat-pending-attachments" id="iat-policy-pending-attachments"></div>
+              </label>
             </div>
             <div class="iat-modal-footer">
               <button class="btn" type="button" onclick="iatClosePolicyForm()">Cancel</button>
@@ -2728,6 +2749,15 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
                 <span>Visible to family members</span>
                 <small class="iat-hint">Linked family members you select see this tour live during the activity.</small>
                 <div class="iat-checkbox-list" id="iat-tour-family-list"></div>
+              </label>
+              <label class="iat-field iat-field-full">
+                <span>Attachments</span>
+                <small class="iat-hint">Booking confirmation, voucher, meeting instructions — PDF only, max 5 MB each.</small>
+                <div class="iat-attach-row">
+                  <button type="button" class="iat-attach-btn" onclick="document.getElementById('iat-tour-file-input').click()">📎 Attach PDF</button>
+                  <input type="file" id="iat-tour-file-input" accept=".pdf,application/pdf" multiple style="display:none" onchange="iatAttachFile('tour',this)">
+                </div>
+                <div class="iat-pending-attachments" id="iat-tour-pending-attachments"></div>
               </label>
             </div>
             <div class="iat-modal-footer">
@@ -6087,6 +6117,7 @@ function iatPolicyCardHtml(p,idx){
     +'<div><p class="iat-policy-grid-label">Visible to family</p><p class="iat-policy-grid-value">'+(visibleNames.length?iatEsc(visibleNames.join(', ')):'—')+'</p></div>'
     +'</div>'
     +(coveredTrips.length?'<div class="iat-trips-row">'+coveredTrips.map(function(t){return'<span class="iat-trip-tag">'+iatEsc(t)+'</span>';}).join('')+'</div>':'')
+    +(p.attachments&&p.attachments.length?'<div class="iat-attachments-row">'+p.attachments.map(function(a){return'<a class="iat-file-chip" href="'+a.dataUrl+'" download="'+iatEsc(a.name)+'" target="_blank"><span>📄 '+iatEsc(a.name)+'</span></a>';}).join('')+'</div>':'')
     +'<div class="iat-policy-actions">'
     +'<button type="button" onclick="iatEditPolicy('+idx+')">Edit</button>'
     +'<button type="button" onclick="iatDeletePolicy('+idx+')">Delete</button>'
@@ -6107,6 +6138,7 @@ function iatTourCardHtml(t,idx){
     +'</div>'
     +'<p class="iat-tour-name">'+iatEsc(t.name||'Tour')+'</p>'
     +'<p class="iat-tour-detail">'+iatEsc(detail)+'</p>'
+    +(t.attachments&&t.attachments.length?'<div class="iat-attachments-row">'+t.attachments.map(function(a){return'<a class="iat-file-chip" href="'+a.dataUrl+'" download="'+iatEsc(a.name)+'" target="_blank"><span>📄 '+iatEsc(a.name)+'</span></a>';}).join('')+'</div>':'')
     +'<div class="iat-policy-actions">'
     +'<button type="button" onclick="iatEditTour('+idx+')">Edit</button>'
     +'<button type="button" onclick="iatDeleteTour('+idx+')">Delete</button>'
@@ -6169,9 +6201,12 @@ function iatOpenPolicyForm(idx){
     iatSet('f-policy-insurer',p.insurer);iatSet('f-policy-name',p.name);iatSet('f-policy-number',p.number);
     iatSet('f-policy-region',p.region);iatSet('f-policy-start',p.start);iatSet('f-policy-end',p.end);
     iatSet('f-policy-hotline',p.hotline);iatSet('f-policy-medical',p.medical);
+    window.iatPendingAttachments.policy=(p.attachments||[]).slice();
   }else{
     ['f-policy-insurer','f-policy-name','f-policy-number','f-policy-region','f-policy-start','f-policy-end','f-policy-hotline','f-policy-medical'].forEach(function(id){iatSet(id,'');});
+    window.iatPendingAttachments.policy=[];
   }
+  iatRenderPendingAttachments('policy');
   document.getElementById('iat-policy-form').hidden=false;
 }
 function iatClosePolicyForm(){document.getElementById('iat-policy-form').hidden=true;window.iatEditingPolicyIdx=null;}
@@ -6182,7 +6217,8 @@ async function iatSavePolicy(){
     insurer:iatGet('f-policy-insurer'),name:iatGet('f-policy-name'),number:iatGet('f-policy-number'),
     region:iatGet('f-policy-region'),start:iatGet('f-policy-start'),end:iatGet('f-policy-end'),
     hotline:iatGet('f-policy-hotline'),medical:iatGet('f-policy-medical'),
-    visibleTo:iatGetCheckedFamily('iat-policy-family-list')
+    visibleTo:iatGetCheckedFamily('iat-policy-family-list'),
+    attachments:window.iatPendingAttachments.policy.slice()
   };
   if(!policy.name&&!policy.insurer){toast('Add at least an insurer or policy name','error');return;}
   if(window.iatEditingPolicyIdx!==null){window.iatState.policies[window.iatEditingPolicyIdx]=policy;}
@@ -6207,10 +6243,13 @@ function iatOpenTourForm(idx){
     iatSet('f-tour-name',t.name);iatSet('f-tour-location',t.location);iatSet('f-tour-operator',t.operator);
     iatSet('f-tour-date',t.date);iatSet('f-tour-tz',t.tz);iatSet('f-tour-start',t.start);iatSet('f-tour-end',t.end);
     iatSet('f-tour-party',t.party);iatSet('f-tour-ref',t.ref);
+    window.iatPendingAttachments.tour=(t.attachments||[]).slice();
   }else{
     ['f-tour-name','f-tour-location','f-tour-operator','f-tour-date','f-tour-tz','f-tour-start','f-tour-end','f-tour-ref'].forEach(function(id){iatSet(id,'');});
     iatSet('f-tour-party','1');
+    window.iatPendingAttachments.tour=[];
   }
+  iatRenderPendingAttachments('tour');
   document.getElementById('iat-tour-form').hidden=false;
 }
 function iatCloseTourForm(){document.getElementById('iat-tour-form').hidden=true;window.iatEditingTourIdx=null;}
@@ -6221,7 +6260,8 @@ async function iatSaveTour(){
     name:iatGet('f-tour-name'),location:iatGet('f-tour-location'),operator:iatGet('f-tour-operator'),
     date:iatGet('f-tour-date'),tz:iatGet('f-tour-tz'),start:iatGet('f-tour-start'),end:iatGet('f-tour-end'),
     party:parseInt(iatGet('f-tour-party'),10)||1,ref:iatGet('f-tour-ref'),
-    visibleTo:iatGetCheckedFamily('iat-tour-family-list')
+    visibleTo:iatGetCheckedFamily('iat-tour-family-list'),
+    attachments:window.iatPendingAttachments.tour.slice()
   };
   if(!tour.name){toast('Add at least a tour name','error');return;}
   if(window.iatEditingTourIdx!==null){window.iatState.tours[window.iatEditingTourIdx]=tour;}
@@ -6235,6 +6275,43 @@ async function iatDeleteTour(idx){
   window.iatState.tours.splice(idx,1);
   await iatPersist();
   iatRenderTours();
+}
+
+// Attachment helpers
+window.iatPendingAttachments={policy:[],tour:[]};
+
+function iatAttachFile(type,input){
+  var files=Array.from(input.files);
+  var pending=window.iatPendingAttachments[type];
+  var MAX_BYTES=5*1024*1024;
+  files.forEach(function(file){
+    if(file.size>MAX_BYTES){toast(file.name+' is too large (max 5 MB)','error');return;}
+    var reader=new FileReader();
+    reader.onload=function(e){
+      pending.push({name:file.name,type:file.type||'application/pdf',dataUrl:e.target.result});
+      iatRenderPendingAttachments(type);
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value='';
+}
+
+function iatRemoveAttachment(type,idx){
+  window.iatPendingAttachments[type].splice(idx,1);
+  iatRenderPendingAttachments(type);
+}
+
+function iatRenderPendingAttachments(type){
+  var wrap=document.getElementById('iat-'+type+'-pending-attachments');
+  if(!wrap)return;
+  var pending=window.iatPendingAttachments[type];
+  if(!pending.length){wrap.innerHTML='';return;}
+  wrap.innerHTML=pending.map(function(a,i){
+    return'<span class="iat-attach-chip">'
+      +'<span>📄 '+iatEsc(a.name)+'</span>'
+      +'<button type="button" onclick="iatRemoveAttachment(\''+type+'\','+i+')">✕</button>'
+      +'</span>';
+  }).join('');
 }
 
 async function iatPersist(){
