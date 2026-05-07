@@ -5828,7 +5828,6 @@ async function loadFamilyData(){
     }
   }catch(e){/* API not live — using mock state */}
   renderFamily();updateFamilyNavBadge();
-  renderMyInsurance();renderMyTours();
 }
 function updateFamilyNavBadge(){var b=document.getElementById("fam-nav-badge");var n=familyState.received.length;if(b){b.textContent=n;b.style.display=n?"inline":"none";}}
 
