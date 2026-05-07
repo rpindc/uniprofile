@@ -3811,7 +3811,7 @@ function pcInitStates(p){
 }
 
 function calcCompleteness(p){var checks=[{label:"Identity",weight:25,section:"identity",done:!!(p.identity&&p.identity.legal_first&&p.identity.legal_last&&p.identity.dob&&p.identity.nationality)},{label:"Passport",weight:20,section:"identity",done:!!(p.documents&&p.documents.some(function(d){return d.doc_type==="PASSPORT";}))},{label:"Seat preferences",weight:15,section:"preferences",done:!!(p.seat_preferences&&p.seat_preferences.cabin_domestic)},{label:"Meal preference",weight:10,section:"meals",done:!!(p.meal_preferences&&p.meal_preferences.primary_meal_code)},{label:"Loyalty program",weight:15,section:"loyalty",done:!!(p.loyalty_programs&&p.loyalty_programs.length)},{label:"Payment profile",weight:10,section:"payment",done:!!(p.payment_profiles&&p.payment_profiles.length)},{label:"First trip",weight:5,section:"trips",done:!!(p.trips&&p.trips.length)},];var pct=checks.reduce(function(s,c){return s+(c.done?c.weight:0);},0);var missing=checks.filter(function(c){return !c.done;});return{pct:pct,done:checks.length-missing.length,total:checks.length,missing:missing};}
-function navToSection(s){showSection(s,document.querySelector('.nav-btn[onclick*="\'"+s+"\'"]'));}
+function navToSection(s){showSection(s,document.querySelector('.nav-btn[onclick*="\''+s+'\'"]'));}
 
 /* ── Plan FAQ accordion ──────────────────────────────────── */
 function togglePlanFaq(btn){
