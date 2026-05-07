@@ -473,11 +473,11 @@
   </section>
 
   <section class="cta">
-    <a href="https://uniprofile.net/signup" class="btn-primary">
+    <a id="btn-signup" href="#" class="btn-primary">
       Continue to signup
       <span class="arrow">→</span>
     </a>
-    <a href="https://uniprofile.net/privacy" class="btn-link">How privacy works</a>
+    <a id="btn-privacy" href="#" class="btn-link">How privacy works</a>
   </section>
 
 </main>
@@ -488,6 +488,18 @@
     <div>By invitation only</div>
   </div>
 </footer>
+
+<script>
+(function(){
+  var COGNITO = "https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
+  var CLIENT_ID = "2heljmdli4f9cv2i4m0i020mfc";
+  var redirect = encodeURIComponent(window.location.origin + "/");
+  document.getElementById("btn-signup").href =
+    COGNITO + "/signup?client_id=" + CLIENT_ID +
+    "&response_type=token&scope=email+openid+profile&redirect_uri=" + redirect;
+  document.getElementById("btn-privacy").href = window.location.origin + "/";
+})();
+</script>
 
 </body>
 </html>
