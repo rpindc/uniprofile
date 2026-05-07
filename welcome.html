@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Welcome — UniProfile</title>
+<meta name="description" content="A quieter place for your travel. Here's what works today and what's still on the way." />
+<meta name="robots" content="noindex,nofollow" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --ink-soft: #4a4a48;
+    --ink-mute: #8a8a86;
+    --ink-faint: #b8b8b3;
+    --paper: #faf8f4;
+    --paper-warm: #f3efe7;
+    --rule: rgba(26, 26, 26, 0.08);
+    --rule-strong: rgba(26, 26, 26, 0.18);
+    --green: #2d6a4f;
+    --green-soft: #e8efe9;
+    --amber: #8a5a1c;
+    --amber-soft: #f3ead8;
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'Inter Tight', -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.55;
+    font-size: 16px;
+    overflow-x: hidden;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* Top bar */
+  .topbar {
+    padding: 32px 0 24px;
+    border-bottom: 0.5px solid var(--rule);
+  }
+
+  .topbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .wordmark {
+    font-family: var(--serif);
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  .wordmark em {
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .badge {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    font-weight: 500;
+  }
+
+  /* Hero */
+  .hero {
+    padding: 88px 0 64px;
+    max-width: 720px;
+  }
+
+  .eyebrow {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    font-weight: 500;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .eyebrow::before {
+    content: "";
+    display: block;
+    width: 32px;
+    height: 0.5px;
+    background: var(--ink-mute);
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: clamp(40px, 6vw, 64px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 32px;
+  }
+
+  h1 em {
+    font-style: italic;
+    font-weight: 300;
+  }
+
+  .lede {
+    font-family: var(--serif);
+    font-size: clamp(18px, 2vw, 21px);
+    font-weight: 300;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    max-width: 620px;
+    letter-spacing: -0.005em;
+  }
+
+  /* Columns */
+  .columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    padding: 48px 0 64px;
+    border-top: 0.5px solid var(--rule);
+  }
+
+  .column-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 0.5px solid var(--rule);
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot.green { background: var(--green); }
+  .dot.amber { background: var(--amber); }
+
+  .column-label {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  .feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .feature {
+    position: relative;
+  }
+
+  .feature-name {
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 6px;
+    letter-spacing: -0.005em;
+  }
+
+  .feature-desc {
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    font-weight: 400;
+  }
+
+  /* Footnote block */
+  .footnote {
+    background: var(--paper-warm);
+    border-radius: 4px;
+    padding: 32px 36px;
+    margin-bottom: 56px;
+  }
+
+  .footnote-label {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 16px;
+    color: var(--ink);
+    margin-bottom: 16px;
+  }
+
+  .footnote-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .footnote-list li {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .footnote-list li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--ink-faint);
+  }
+
+  /* CTA */
+  .cta {
+    padding: 16px 0 88px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    font-family: var(--sans);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--paper);
+    background: var(--ink);
+    border: none;
+    padding: 16px 28px;
+    border-radius: 2px;
+    cursor: pointer;
+    letter-spacing: -0.005em;
+    transition: background 160ms ease, transform 160ms ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn-primary:hover {
+    background: #2a2a2a;
+    transform: translateY(-1px);
+  }
+
+  .btn-primary .arrow {
+    transition: transform 160ms ease;
+  }
+
+  .btn-primary:hover .arrow {
+    transform: translateX(3px);
+  }
+
+  .btn-link {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-bottom: 0.5px solid var(--rule-strong);
+    padding-bottom: 2px;
+    transition: color 160ms ease, border-color 160ms ease;
+  }
+
+  .btn-link:hover {
+    color: var(--ink);
+    border-color: var(--ink);
+  }
+
+  /* Footer */
+  footer {
+    border-top: 0.5px solid var(--rule);
+    padding: 32px 0 48px;
+  }
+
+  .footer-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--ink-mute);
+    letter-spacing: 0.02em;
+  }
+
+  /* Responsive */
+  @media (max-width: 720px) {
+    .container { padding: 0 24px; }
+    .hero { padding: 64px 0 48px; }
+    .columns {
+      grid-template-columns: 1fr;
+      gap: 56px;
+      padding: 40px 0 48px;
+    }
+    .footnote { padding: 28px; }
+    .cta { padding-bottom: 64px; }
+    .footer-inner { flex-direction: column; gap: 12px; align-items: flex-start; }
+  }
+
+  /* Subtle reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: reveal 700ms cubic-bezier(0.2, 0.6, 0.2, 1) forwards;
+  }
+
+  .reveal-1 { animation-delay: 80ms; }
+  .reveal-2 { animation-delay: 180ms; }
+  .reveal-3 { animation-delay: 280ms; }
+  .reveal-4 { animation-delay: 380ms; }
+
+  @keyframes reveal {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .reveal-1, .reveal-2, .reveal-3, .reveal-4 {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="container topbar-inner">
+    <div class="wordmark">Uni<em>Profile</em></div>
+    <div class="badge">Early access</div>
+  </div>
+</div>
+
+<main class="container">
+
+  <section class="hero">
+    <div class="eyebrow reveal reveal-1">You're invited</div>
+    <h1 class="reveal reveal-2">One home for<br /><em>everything</em> you travel with.</h1>
+    <p class="lede reveal reveal-3">
+      UniProfile gives travelers a single private place for their documents,
+      trips, insurance, preferences, and family — and is being built to
+      eventually replace the dozens of forms you fill out at every booking.
+      A lot of that works today. Here's the honest split before you sign up.
+    </p>
+  </section>
+
+  <section class="columns reveal reveal-4">
+
+    <div class="column">
+      <div class="column-header">
+        <span class="dot green"></span>
+        <span class="column-label">Working today</span>
+      </div>
+
+      <div class="feature-list">
+        <div class="feature">
+          <div class="feature-name">Document vault &amp; expiry alerts</div>
+          <div class="feature-desc">Passport, visa, KTN, Global Entry, ESTA, vaccination records — encrypted in one place. We watch expiry dates against your trips and warn you before it's a problem.</div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-name">Trip vault by email</div>
+          <div class="feature-desc">Forward any booking confirmation — flights, hotels, trains, cruises — and it's parsed and saved in one place, searchable by destination and date.</div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-name">Family &amp; companion profiles</div>
+          <div class="feature-desc">Track your parents', kids', and partner's documents alongside yours. Expiry alerts cover the whole household, not just you.</div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-name">Preferences, saved once</div>
+          <div class="feature-desc">Seat, meal, room type, bed firmness, loyalty numbers — written down once in your profile instead of re-entered at every site.</div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-name">Insurance &amp; tours</div>
+          <div class="feature-desc">Store travel insurance policies and booked tours or activities alongside your trips. Attach PDFs, track coverage dates, and see what's live versus upcoming.</div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-name">Group bookings</div>
+          <div class="feature-desc">Manage group travel in one place — shared manifests, per-member document status, and group notes, all without a spreadsheet.</div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-name">Cruise profile</div>
+          <div class="feature-desc">Cabin preferences, dining seatings, onboard packages, and shore excursion notes — a dedicated section for cruisers.</div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-name">Consent ledger &amp; data rights</div>
+          <div class="feature-desc">Every data-sharing event is logged with who saw what and when. Revoke any operator's access instantly. Full GDPR export on demand.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="column">
+      <div class="column-header">
+        <span class="dot amber"></span>
+        <span class="column-label">Coming soon</span>
+      </div>
+
+      <div class="feature-list">
+        <div class="feature">
+          <div class="feature-name">Autofill at airline.com</div>
+          <div class="feature-desc">The 25 to 40 fields you type at every checkout — name, passport, KTN, frequent flyer — will pull from your profile in one click. Browser extension coming.</div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-name">Push notifications</div>
+          <div class="feature-desc">Right now, alerts come by email. Mobile apps with push, biometric unlock, and offline document access are next.</div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-name">Apple &amp; Google Wallet</div>
+          <div class="feature-desc">Boarding passes and verified travel credentials in your phone wallet, signed by UniProfile.</div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-name">Airlines that recognize you</div>
+          <div class="feature-desc">Direct integrations so your KTN, status, and preferences arrive at the airline before you do — no operator-side data loss.</div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-name">Visa &amp; entry-rule checks</div>
+          <div class="feature-desc">Real-time monitoring of visa validity, ETA expirations, and destination-rule changes against your itinerary.</div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-name">Bleisure separation</div>
+          <div class="feature-desc">When a work trip extends into a personal weekend, the policy, payment, and loyalty contexts switch automatically.</div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <section class="footnote">
+    <div class="footnote-label">A few things worth knowing</div>
+    <ul class="footnote-list">
+      <li>We don't sell your data. Not to advertisers, not to anyone.</li>
+      <li>You can export everything and delete your account at any time. No lock-in, no dark patterns.</li>
+      <li>Every operator that touches your data is listed in your consent ledger. You can revoke access to any of them instantly.</li>
+      <li>This is early. You'll see rough edges. Tell us about them — that's the trade we're asking for.</li>
+    </ul>
+  </section>
+
+  <section class="cta">
+    <a href="https://uniprofile.net/signup" class="btn-primary">
+      Continue to signup
+      <span class="arrow">→</span>
+    </a>
+    <a href="https://uniprofile.net/privacy" class="btn-link">How privacy works</a>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container footer-inner">
+    <div>UniProfile</div>
+    <div>By invitation only</div>
+  </div>
+</footer>
+
+</body>
+</html>
