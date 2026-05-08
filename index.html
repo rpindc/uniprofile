@@ -195,7 +195,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .progress-sublabel{font-size:10px;color:var(--textDim);margin-top:2px;}
 .nav{flex:1;padding:16px 10px;overflow-y:auto;}
 .nav-group{margin-bottom:4px;}
-.nav-group-label{font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:var(--textHint);padding:10px 14px 6px;font-weight:600;}
+.nav-group-label{font-size:9px;letter-spacing:1.8px;text-transform:uppercase;color:var(--textHint);padding:8px 14px 4px;font-weight:600;}
 .nav-btn{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--radius-sm);border:none;background:transparent;color:var(--textDim);cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;font-weight:400;width:100%;text-align:left;transition:all 0.12s;position:relative;}
 .nav-btn:hover:not(.active){background:#F0EFEC;color:var(--text);}
 .nav-btn.active{background:var(--goldGlow);color:var(--goldLt);}
@@ -1737,20 +1737,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
       <div class="brand-tagline">Traveler Identity Platform</div>
     </div>
     <div class="uuid-card"><div class="uuid-eyebrow">UniProfile Number</div><div class="uuid-val" id="sid-uuid">—</div></div>
-    <div class="progress-card">
-      <div class="progress-ring-wrap">
-        <svg class="progress-ring" viewBox="0 0 44 44">
-          <circle class="ring-track" cx="22" cy="22" r="18"/>
-          <circle class="ring-fill" id="ring-fill" cx="22" cy="22" r="18"/>
-        </svg>
-        <div class="progress-pct" id="sid-pct">—</div>
-      </div>
-      <div class="progress-info">
-        <div class="progress-label">Profile completeness</div>
-        <div class="progress-sublabel" id="sid-modules">Loading...</div>
-      </div>
-    </div>
-    <nav class="nav">
+    <nav class="nav" style="padding-top:8px">
       <div class="nav-group">
         <div class="nav-group-label">Overview</div>
         <button class="nav-btn active" onclick="showSection('overview',this)"><span class="nav-icon">◈</span>Dashboard</button>
