@@ -47,8 +47,20 @@ async function verifyToken(event){
   try{return await verifier.verify(auth.slice(7));}catch(e){throw {status:401,message:"Invalid or expired token"};}
 }
 async function getOrCreateTraveler(sub,email){
-  let rows=await sql("SELECT uuid FROM travelers WHERE cognito_sub=:sub",[strParam("sub",sub)]);
-  if(rows.length)return rows[0].uuid;
+  let rows=await sql("SELECT uuid,uniprofile_number FROM travelers WHERE cognito_sub=:sub",[strParam("sub",sub)]);
+  if(rows.length){
+    const existing=rows[0];
+    if(!validateUpId(existing.uniprofile_number)){
+      let newId=generateUpId();
+      for(let retry=0;retry<5;retry++){
+        const clash=await sql("SELECT 1 FROM travelers WHERE uniprofile_number=:id",[strParam("id",newId)]);
+        if(!clash.length)break;
+        newId=generateUpId();
+      }
+      await sql("UPDATE travelers SET uniprofile_number=:id WHERE uuid=:u",[strParam("id",newId),strParam("u",existing.uuid)]);
+    }
+    return existing.uuid;
+  }
   let upId=generateUpId();
   for(let retry=0;retry<5;retry++){
     const clash=await sql("SELECT 1 FROM travelers WHERE uniprofile_number=:id",[strParam("id",upId)]);
