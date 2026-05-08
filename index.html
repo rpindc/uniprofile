@@ -201,6 +201,14 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 .nav-btn.active{background:var(--goldGlow);color:var(--goldLt);}
 .nav-btn.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:2.5px;height:60%;background:var(--gold);border-radius:0 2px 2px 0;}
 .nav-icon{font-size:15px;flex-shrink:0;opacity:0.7;}
+.nav-icon.svg-icon{width:15px;height:15px;}
+.up-icon{width:1em;height:1em;flex-shrink:0;display:inline-block;vertical-align:middle;}
+.up-icon-status-ready{color:#2d6a4f;}
+.up-icon-status-attention{color:#ba7517;}
+.up-icon-status-critical{color:#c44d4d;}
+.up-icon-status-verified{color:#2d6a4f;}
+.up-icon-status-pending{color:#8a8a86;}
+.up-icon-status-standby{color:#b8b8b3;}
 .nav-btn.active .nav-icon{opacity:1;}
 .nav-badge{margin-left:auto;font-size:9px;background:var(--red);color:white;padding:1px 6px;border-radius:10px;font-weight:600;}
 .nav-tag{margin-left:auto;font-size:9px;background:var(--amberGlow);color:var(--amber);padding:1px 7px;border-radius:10px;border:1px solid rgba(212,150,58,0.2);}
@@ -1635,6 +1643,32 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 </style>
 </head>
 <body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="icon-ready" viewBox="0 0 24 24" fill="none"><title>Ready</title><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.25"/><path d="M8 12.5L11 15.5L16 9.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="icon-attention" viewBox="0 0 24 24" fill="none"><title>Attention</title><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.25"/><path d="M12 8V13" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><circle cx="12" cy="16" r="0.6" fill="currentColor"/></symbol>
+  <symbol id="icon-critical" viewBox="0 0 24 24" fill="none"><title>Critical</title><path d="M12 3L21 19H3L12 3Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M12 10V14" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><circle cx="12" cy="17" r="0.6" fill="currentColor"/></symbol>
+  <symbol id="icon-verified" viewBox="0 0 24 24" fill="none"><title>Verified</title><path d="M12 3L19 6V12C19 16 16 19.5 12 21C8 19.5 5 16 5 12V6L12 3Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="icon-pending" viewBox="0 0 24 24" fill="none"><title>Pending</title><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.25"/><path d="M12 7V12L15 14" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="icon-standby" viewBox="0 0 24 24" fill="none"><title>Standby</title><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.25"/><circle cx="8" cy="12" r="0.6" fill="currentColor"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/><circle cx="16" cy="12" r="0.6" fill="currentColor"/></symbol>
+  <symbol id="icon-add" viewBox="0 0 24 24" fill="none"><title>Add</title><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.25"/><path d="M12 8V16M8 12H16" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="icon-share" viewBox="0 0 24 24" fill="none"><title>Share</title><circle cx="6" cy="12" r="2.5" stroke="currentColor" stroke-width="1.25"/><circle cx="18" cy="6" r="2.5" stroke="currentColor" stroke-width="1.25"/><circle cx="18" cy="18" r="2.5" stroke="currentColor" stroke-width="1.25"/><path d="M8 11L16 7M8 13L16 17" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="icon-download" viewBox="0 0 24 24" fill="none"><title>Download</title><path d="M12 4V15M12 15L7.5 10.5M12 15L16.5 10.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 19H19" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="icon-edit" viewBox="0 0 24 24" fill="none"><title>Edit</title><path d="M4 20H8L19 9L15 5L4 16V20Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M13 7L17 11" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="icon-approve" viewBox="0 0 24 24" fill="none"><title>Approve</title><path d="M5 12.5L10 17.5L19 7.5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="icon-decline" viewBox="0 0 24 24" fill="none"><title>Decline</title><path d="M7 7L17 17M17 7L7 17" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="icon-send" viewBox="0 0 24 24" fill="none"><title>Send</title><path d="M4 12L20 4L16 20L12 13L4 12Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></symbol>
+  <symbol id="icon-snooze" viewBox="0 0 24 24" fill="none"><title>Snooze</title><path d="M19 12C19 16 16 19 12 19C8 19 5 16 5 12C5 8 8 5 12 5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M14 5H19V10" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="icon-passport" viewBox="0 0 24 24" fill="none"><title>Passport</title><rect x="5" y="3" width="14" height="18" rx="1" stroke="currentColor" stroke-width="1.25"/><circle cx="12" cy="11" r="2.5" stroke="currentColor" stroke-width="1.25"/><path d="M9 17H15" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="icon-visa" viewBox="0 0 24 24" fill="none"><title>Visa</title><rect x="3" y="6" width="18" height="13" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M3 10H21" stroke="currentColor" stroke-width="1.25"/><path d="M7 14H10M7 16H13" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="icon-ktn" viewBox="0 0 24 24" fill="none"><title>KTN / Trusted Traveler</title><path d="M12 3L19 6V12C19 16 16 19.5 12 21C8 19.5 5 16 5 12V6L12 3Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M10 12H14M12 10V14" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="icon-document" viewBox="0 0 24 24" fill="none"><title>Document</title><path d="M6 3H14L18 7V20C18 20.5523 17.5523 21 17 21H7C6.44772 21 6 20.5523 6 20V3Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M14 3V7H18" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M9 12H15M9 15H13" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="icon-trip" viewBox="0 0 24 24" fill="none"><title>Trip</title><path d="M3 17L9 11L13 15L21 7" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="11" r="1.2" fill="currentColor"/><circle cx="13" cy="15" r="1.2" fill="currentColor"/><circle cx="21" cy="7" r="1.2" fill="currentColor"/><circle cx="3" cy="17" r="1.2" fill="currentColor"/></symbol>
+  <symbol id="icon-household" viewBox="0 0 24 24" fill="none"><title>Household</title><path d="M4 11L12 4L20 11V19C20 19.5523 19.5523 20 19 20H5C4.44772 20 4 19.5523 4 19V11Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M10 20V14H14V20" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></symbol>
+  <symbol id="icon-group" viewBox="0 0 24 24" fill="none"><title>Group</title><circle cx="9" cy="9" r="3" stroke="currentColor" stroke-width="1.25"/><circle cx="17" cy="10" r="2.2" stroke="currentColor" stroke-width="1.25"/><path d="M3 19C3 16 5.7 14 9 14C12.3 14 15 16 15 19" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M15 18C15 15.5 16.5 14 17 14C19 14 21 15.5 21 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="icon-identity" viewBox="0 0 24 24" fill="none"><title>Identity</title><circle cx="12" cy="9" r="3.5" stroke="currentColor" stroke-width="1.25"/><path d="M5 20C5 16 8 14 12 14C16 14 19 16 19 20" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="icon-consent" viewBox="0 0 24 24" fill="none"><title>Consent</title><rect x="5" y="11" width="14" height="9" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M8 11V8C8 5.79 9.79 4 12 4C14.21 4 16 5.79 16 8V11" stroke="currentColor" stroke-width="1.25"/><circle cx="12" cy="15.5" r="1" fill="currentColor"/></symbol>
+  <symbol id="icon-parcel" viewBox="0 0 24 24" fill="none"><title>Trip Parcel</title><path d="M4 8L12 4L20 8V16L12 20L4 16V8Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M4 8L12 12L20 8" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M12 12V20" stroke="currentColor" stroke-width="1.25"/></symbol>
+</svg>
 <div id="screen-landing">
 <div class="land-wrap">
 <nav class="land-nav">
@@ -1744,20 +1778,20 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
       </div>
       <div class="nav-group">
         <div class="nav-group-label">Identity Modules</div>
-        <button class="nav-btn" id="nav-identity" onclick="showSection('identity',this)"><span class="nav-icon"></span>Identity &amp; Documents<span class="nav-badge" id="badge-identity" style="display:none">!</span></button>
+        <button class="nav-btn" id="nav-identity" onclick="showSection('identity',this)"><svg class="up-icon nav-icon svg-icon" aria-hidden="true"><use href="#icon-identity"/></svg>Identity &amp; Documents<span class="nav-badge" id="badge-identity" style="display:none">!</span></button>
         <button class="nav-btn" id="nav-preferences" onclick="showSection('preferences',this)"><span class="nav-icon">✈</span>How I travel</button>
         <button class="nav-btn" onclick="showSection('payment',this)"><span class="nav-icon">💳</span><span>Payment &amp; Policy</span><span class="nav-tag" id="badge-payment" style="display:none">corp</span></button>
-        <button class="nav-btn" onclick="showSection('trips',this)"><span class="nav-icon">📋</span>TripVault</button>
-        <button class="nav-btn" onclick="showSection('family',this)"><span class="nav-icon">👥</span>Family Profiles<span class="nav-badge" id="fam-nav-badge" style="display:none">0</span></button>
-        <button class="nav-btn" onclick="showSection('groups',this)"><span class="nav-icon">⬡</span>Groups</button>
+        <button class="nav-btn" onclick="showSection('trips',this)"><svg class="up-icon nav-icon svg-icon" aria-hidden="true"><use href="#icon-trip"/></svg>TripVault</button>
+        <button class="nav-btn" onclick="showSection('family',this)"><svg class="up-icon nav-icon svg-icon" aria-hidden="true"><use href="#icon-household"/></svg>Family Profiles<span class="nav-badge" id="fam-nav-badge" style="display:none">0</span></button>
+        <button class="nav-btn" onclick="showSection('groups',this)"><svg class="up-icon nav-icon svg-icon" aria-hidden="true"><use href="#icon-group"/></svg>Groups</button>
         <button class="nav-btn" onclick="showSection('insurance',this)"><span class="nav-icon">🛡</span>Insurance &amp; Tours</button>
         <button class="nav-btn" onclick="showSection('cruise',this)"><span class="nav-icon">🚢</span>Cruise Profile</button>
         <button class="nav-btn" id="nav-docalert" onclick="showSection('docalert',this)"><span class="nav-icon">🔔</span>DocAlert<span class="nav-badge" id="badge-docalert" style="display:none">0</span></button>
       </div>
       <div class="nav-group">
         <div class="nav-group-label">Platform</div>
-        <button class="nav-btn" onclick="showSection('consent',this)"><span class="nav-icon">🔒</span>Consent &amp; Access</button>
-        <button class="nav-btn" onclick="showSection('security',this)"><span class="nav-icon">🛡</span>Security<span class="nav-badge" id="badge-security" style="display:none">!</span></button>
+        <button class="nav-btn" onclick="showSection('consent',this)"><svg class="up-icon nav-icon svg-icon" aria-hidden="true"><use href="#icon-consent"/></svg>Consent &amp; Access</button>
+        <button class="nav-btn" onclick="showSection('security',this)"><svg class="up-icon nav-icon svg-icon" aria-hidden="true"><use href="#icon-verified"/></svg>Security<span class="nav-badge" id="badge-security" style="display:none">!</span></button>
         <button class="nav-btn" onclick="showSection('api',this)" style="opacity:0.38;pointer-events:none;cursor:default" title="Coming soon"><span class="nav-icon">⚡</span>API &amp; Webhooks</button>
       </div>
     </nav>
@@ -7831,13 +7865,14 @@ function gcRenderPreflightChecks(checks,dest,dep,ret,travelerCount){
 }
 function gcCheckCard(c){
   const cls=c.status==='pass'?'pass':c.status==='critical'?'critical':c.status==='blocker'?'blocker':c.status==='tradeoff'?'tradeoff':c.status==='resolved'?'resolved':'unknown';
-  const icon={pass:'✓',critical:'!',blocker:'⚠',tradeoff:'◈',resolved:'✓',unknown:'?'}[cls]||'?';
+  const iconId={pass:'icon-ready',critical:'icon-critical',blocker:'icon-attention',tradeoff:'icon-attention',resolved:'icon-ready',unknown:'icon-standby'}[cls]||'icon-standby';
+  const icon=`<svg class="up-icon" aria-hidden="true" style="width:16px;height:16px"><use href="#${iconId}"/></svg>`;
   const iconBg={pass:'var(--green)',critical:'var(--red)',blocker:'var(--amber)',tradeoff:'var(--textDim)',resolved:'var(--green)',unknown:'var(--textHint)'}[cls];
   const resolveBtn=(c.status==='blocker'||c.status==='tradeoff'||c.status==='critical')
     ?`<button class="gc-check-resolve-btn" onclick="gcResolveCheck('${c.id||''}','${esc(c.check_type)}')">Mark as handled</button>`:'';
   return`<div class="gc-check-card ${cls}" data-check-id="${c.id||''}">
     <div style="display:flex;align-items:flex-start;gap:12px">
-      <div style="width:32px;height:32px;border-radius:50%;background:${iconBg};color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0">${icon}</div>
+      <div style="width:32px;height:32px;border-radius:50%;background:${iconBg};color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0">${icon}</div>
       <div style="flex:1">
         <div class="gc-check-headline">${esc(c.headline||c.check_type)}</div>
         <div class="gc-check-detail">${esc(c.detail||'')}</div>
@@ -10452,7 +10487,7 @@ function secRenderFactors(factors,rcRemaining){
   if(!factors.length){
     list.innerHTML='<div style="color:var(--textDim);font-size:13px;padding:12px 0">No authentication factors enrolled. Add an authenticator app to protect your account.</div>';
   }else{
-    list.innerHTML=factors.map(f=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:12px"><span style="font-size:20px">${f.factor_type==='totp'?'🔐':f.factor_type==='sms'?'📱':'🔑'}</span><div><div style="font-size:13px;font-weight:600;color:var(--text)">${f.label||f.factor_type.toUpperCase()}</div><div style="font-size:11px;color:var(--textDim)">${f.factor_type==='totp'?'Authenticator app (TOTP)':f.factor_type==='sms'?'SMS OTP':'Passkey'} · Added ${new Date(f.created_at).toLocaleDateString()}</div></div></div><div style="display:flex;align-items:center;gap:8px">${f.is_active?'<span style="font-size:11px;padding:3px 8px;border-radius:20px;background:var(--greenGlow);color:var(--green);font-weight:600">Active</span>':'<span style="font-size:11px;padding:3px 8px;border-radius:20px;background:var(--surface);color:var(--textDim);border:1px solid var(--border)">Pending</span>'}<button onclick="secRemoveFactor('${f.id}','${f.label||f.factor_type}')" style="padding:4px 10px;background:transparent;border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--textDim);cursor:pointer">Remove</button></div></div>`).join('');
+    list.innerHTML=factors.map(f=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:12px"><span style="font-size:20px">${f.factor_type==='totp'?'<svg class=\"up-icon\" aria-hidden=\"true\" style=\"width:20px;height:20px\"><use href=\"#icon-consent\"/></svg>':f.factor_type==='sms'?'<svg class=\"up-icon\" aria-hidden=\"true\" style=\"width:20px;height:20px\"><use href=\"#icon-send\"/></svg>':'<svg class=\"up-icon\" aria-hidden=\"true\" style=\"width:20px;height:20px\"><use href=\"#icon-verified\"/></svg>'}</span><div><div style="font-size:13px;font-weight:600;color:var(--text)">${f.label||f.factor_type.toUpperCase()}</div><div style="font-size:11px;color:var(--textDim)">${f.factor_type==='totp'?'Authenticator app (TOTP)':f.factor_type==='sms'?'SMS OTP':'Passkey'} · Added ${new Date(f.created_at).toLocaleDateString()}</div></div></div><div style="display:flex;align-items:center;gap:8px">${f.is_active?'<span style="font-size:11px;padding:3px 8px;border-radius:20px;background:var(--greenGlow);color:var(--green);font-weight:600">Active</span>':'<span style="font-size:11px;padding:3px 8px;border-radius:20px;background:var(--surface);color:var(--textDim);border:1px solid var(--border)">Pending</span>'}<button onclick="secRemoveFactor('${f.id}','${f.label||f.factor_type}')" style="padding:4px 10px;background:transparent;border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--textDim);cursor:pointer">Remove</button></div></div>`).join('');
   }
   if(rcSection){
     rcSection.style.display=active.length?'block':'none';
