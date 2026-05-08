@@ -531,6 +531,37 @@ exports.handler=async function(event){
   try{
     if(method==="OPTIONS")return{statusCode:200,headers:cors(go(event)),body:""};
     if(method==="GET"&&path==="/health")return ok({status:"ok",stage:process.env.STAGE,ts:new Date().toISOString()},event);
+    if(method==="POST"&&path==="/api/v1/feedback"){
+      const {name,email,message,_gotcha}=body;
+      if(_gotcha)return ok({success:true},event); // honeypot
+      if(!message||message.trim().length<3)return err("Message is required",event,400);
+      const fromName=(name||"Anonymous").slice(0,100);
+      const fromEmail=(email||"no-reply@uniprofile.net").slice(0,200);
+      const bodyHtml=[
+        '<div style="font-family:sans-serif;max-width:560px;margin:0 auto;padding:28px 20px;background:#F7F6F3">',
+        '<div style="background:#fff;border:1px solid #E5E4E0;border-radius:10px;padding:28px">',
+        '<div style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#111;margin-bottom:4px">UniProfile Feedback</div>',
+        '<div style="font-size:11px;color:#9CA3AF;letter-spacing:2px;text-transform:uppercase;margin-bottom:24px">Early access</div>',
+        '<p style="font-size:13px;color:#6B7280;margin:0 0 6px"><strong>From:</strong> '+fromName+' &lt;'+fromEmail+'&gt;</p>',
+        '<div style="background:#F9FAFB;border:1px solid #E5E4E0;border-radius:6px;padding:16px;margin-top:16px;font-size:14px;color:#111827;line-height:1.6;white-space:pre-wrap">'+message.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div>',
+        '</div></div>'
+      ].join('');
+      try{
+        await sesClient.send(new SendEmailCommand({
+          FromEmailAddress:'feedback@uniprofile.net',
+          Destination:{ToAddresses:['rommel@uniworldinc.com']},
+          ReplyToAddresses:email?[email]:[],
+          Content:{Simple:{
+            Subject:{Data:'UniProfile feedback from '+fromName,Charset:'UTF-8'},
+            Body:{Html:{Data:bodyHtml,Charset:'UTF-8'},Text:{Data:'From: '+fromName+' <'+fromEmail+'>\n\n'+message,Charset:'UTF-8'}}
+          }}
+        }));
+      }catch(sesErr){
+        console.error('Feedback SES error:',sesErr.message);
+        return err('Could not send feedback — please try again',event,500);
+      }
+      return ok({success:true},event);
+    }
     if(method==="GET"&&path==="/api/v1/me"){
       const token=await verifyToken(event);
       const travelerUuid=await getOrCreateTraveler(token.sub,token.email);

@@ -388,25 +388,7 @@
 
     <section class="form-wrap reveal reveal-4">
 
-      <!-- 
-        DEPLOYMENT NOTE FOR DEVELOPER:
-        
-        This form posts to Formspree (https://formspree.io). To activate:
-        
-        1. Sign up at formspree.io (free tier supports 50 submissions/month, 
-           which covers Circle 1 and 2 easily).
-        2. Create a new form and copy your form ID (looks like "xyzpqrst").
-        3. Replace YOUR_FORMSPREE_ID below with that ID.
-        4. Set the destination email in your Formspree dashboard.
-        
-        TO MIGRATE TO YOUR OWN BACKEND LATER:
-        Replace the action URL with your own endpoint (e.g., AWS Lambda + 
-        SES, or an API Gateway endpoint). The form posts standard 
-        application/x-www-form-urlencoded data with fields: name, email, 
-        message.
-      -->
-
-      <form id="feedback-form" action="https://formspree.io/f/YOUR_FORMSPREE_ID" method="POST">
+      <form id="feedback-form">
 
         <div class="field">
           <label for="name">Your name</label>
@@ -460,6 +442,8 @@
 
 <script>
   (function() {
+    var API = 'https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod';
+
     document.getElementById('wordmark-link').href = window.location.origin + '/';
 
     var form = document.getElementById('feedback-form');
@@ -470,26 +454,34 @@
     form.addEventListener('submit', function(e) {
       e.preventDefault();
 
+      var gotcha = form.querySelector('[name="_gotcha"]');
+      if (gotcha && gotcha.value) return; // honeypot
+
       submitBtn.disabled = true;
       submitBtn.innerHTML = 'Sending...';
       successMsg.classList.remove('show');
       errorMsg.classList.remove('show');
 
-      var formData = new FormData(form);
-
-      fetch(form.action, {
+      fetch(API + '/api/v1/feedback', {
         method: 'POST',
-        body: formData,
-        headers: { 'Accept': 'application/json' }
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({
+          name: document.getElementById('name').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          message: document.getElementById('message').value.trim(),
+          _gotcha: gotcha ? gotcha.value : ''
+        })
       })
       .then(function(response) {
-        if (response.ok) {
-          form.style.display = 'none';
-          successMsg.classList.add('show');
-          successMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else {
-          throw new Error('Submission failed');
-        }
+        return response.json().then(function(data) {
+          if (response.ok && data.success) {
+            form.style.display = 'none';
+            successMsg.classList.add('show');
+            successMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          } else {
+            throw new Error(data.error || 'Submission failed');
+          }
+        });
       })
       .catch(function() {
         submitBtn.disabled = false;
