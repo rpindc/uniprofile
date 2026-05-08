@@ -1259,6 +1259,141 @@ exports.handler=async function(event){
     }
     // ── End Groups v2 ────────────────────────────────────────────────────────
 
+    // ── Auth Security ─────────────────────────────────────────────────────────
+    // Pure Node.js TOTP (RFC 6238) — no external deps
+    const B32='ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    function b32enc(buf){let b=0,v=0,o='';for(let i=0;i<buf.length;i++){v=(v<<8)|buf[i];b+=8;while(b>=5){o+=B32[(v>>>(b-5))&31];b-=5;}}if(b>0)o+=B32[(v<<(5-b))&31];while(o.length%8)o+='=';return o;}
+    function b32dec(s){s=s.replace(/=+$/,'').toUpperCase();const buf=[];let b=0,v=0;for(let i=0;i<s.length;i++){const idx=B32.indexOf(s[i]);if(idx<0)continue;v=(v<<5)|idx;b+=5;if(b>=8){buf.push((v>>>(b-8))&255);b-=8;}}return Buffer.from(buf);}
+    function totpCode(secret32,t){const{createHmac}=require('crypto');const c=Math.floor((t||Date.now()/1000)/30);const cb=Buffer.alloc(8);let x=c;for(let i=7;i>=0;i--){cb[i]=x&0xff;x=Math.floor(x/256);}const h=createHmac('sha1',b32dec(secret32)).update(cb).digest();const off=h[19]&0xf;const code=((h[off]&0x7f)<<24)|(h[off+1]<<16)|(h[off+2]<<8)|h[off+3];return String(code%1000000).padStart(6,'0');}
+    function totpVerify(secret32,code){const t=Math.floor(Date.now()/1000);for(let d=-1;d<=1;d++){if(totpCode(secret32,t+d*30)===String(code))return true;}return false;}
+    const RC_ABC='23456789abcdefghjkmnpqrstvwxyz';
+    function genRecoveryCode(){const{randomBytes}=require('crypto');const c=[];for(let i=0;i<12;i++)c.push(RC_ABC[randomBytes(1)[0]%RC_ABC.length]);return c.slice(0,4).join('')+'-'+c.slice(4,8).join('')+'-'+c.slice(8,12).join('');}
+    function hashCode(s){const{createHash}=require('crypto');return createHash('sha256').update('up:'+s.replace(/-/g,'').toLowerCase()).digest('hex');}
+    function genStepUpToken(){const{randomBytes}=require('crypto');return randomBytes(32).toString('hex');}
+    async function logSecEvent(uuid,type,meta,event){try{await sql("INSERT INTO auth_security_events (traveler_uuid,event_type,ip_address,user_agent,metadata) VALUES (:u,:t,:ip,:ua,:meta::jsonb)",[uuidParam("u",uuid),strParam("t",type),strParam("ip",(event.headers&&(event.headers['x-forwarded-for']||event.headers['X-Forwarded-For']))||null),strParam("ua",(event.headers&&(event.headers['user-agent']||event.headers['User-Agent']))||null),strParam("meta",JSON.stringify(meta||{}))]);}catch(e){console.error("logSecEvent fail:",e.message);}}
+
+    // GET /api/v1/auth/factors
+    if(method==="GET"&&path==="/api/v1/auth/factors"){
+      const token=await verifyToken(event);
+      const uuid=await getOrCreateTraveler(token.sub,token.email);
+      const factors=await sql("SELECT id,factor_type,is_active,label,totp_pending,phone_e164,created_at,updated_at FROM user_security_factors WHERE traveler_uuid=:u ORDER BY created_at",[uuidParam("u",uuid)]);
+      const rcCount=await sql("SELECT COUNT(*) as cnt FROM user_recovery_codes WHERE traveler_uuid=:u AND used_at IS NULL",[uuidParam("u",uuid)]);
+      return ok({factors,recovery_codes_remaining:parseInt(rcCount[0]&&rcCount[0].cnt)||0},event);
+    }
+
+    // POST /api/v1/auth/totp/enroll — generate pending TOTP secret
+    if(method==="POST"&&path==="/api/v1/auth/totp/enroll"){
+      const token=await verifyToken(event);
+      const uuid=await getOrCreateTraveler(token.sub,token.email);
+      const email=token.email||"user";
+      // Remove any existing pending TOTP
+      await sql("DELETE FROM user_security_factors WHERE traveler_uuid=:u AND factor_type='totp' AND totp_pending=TRUE",[uuidParam("u",uuid)]);
+      const {randomBytes}=require('crypto');
+      const secret=b32enc(randomBytes(20));
+      const label=encodeURIComponent(`UniProfile (${email})`);
+      const issuer=encodeURIComponent("UniProfile");
+      const otpauth=`otpauth://totp/${label}?secret=${secret}&issuer=${issuer}&algorithm=SHA1&digits=6&period=30`;
+      await sql("INSERT INTO user_security_factors (traveler_uuid,factor_type,is_active,label,totp_secret,totp_pending) VALUES (:u,'totp',FALSE,'Authenticator App',:sec,TRUE)",[uuidParam("u",uuid),strParam("sec",secret)]);
+      return ok({secret,otpauth},event);
+    }
+
+    // POST /api/v1/auth/totp/activate — confirm first code, activate factor, return recovery codes
+    if(method==="POST"&&path==="/api/v1/auth/totp/activate"){
+      const token=await verifyToken(event);
+      const uuid=await getOrCreateTraveler(token.sub,token.email);
+      const {code}=body;
+      if(!code)return err("code required",event,400);
+      const pending=await sql("SELECT id,totp_secret FROM user_security_factors WHERE traveler_uuid=:u AND factor_type='totp' AND totp_pending=TRUE",[uuidParam("u",uuid)]);
+      if(!pending.length)return err("No pending TOTP enrollment",event,400);
+      const {id:factorId,totp_secret}=pending[0];
+      if(!totpVerify(totp_secret,String(code).trim()))return err("Invalid code",event,400);
+      await sql("UPDATE user_security_factors SET is_active=TRUE,totp_pending=FALSE,updated_at=NOW() WHERE id=:fid",[uuidParam("fid",factorId)]);
+      // Generate 10 recovery codes (invalidate any previous)
+      await sql("DELETE FROM user_recovery_codes WHERE traveler_uuid=:u",[uuidParam("u",uuid)]);
+      const codes=[];
+      for(let i=0;i<10;i++){const c=genRecoveryCode();codes.push(c);await sql("INSERT INTO user_recovery_codes (traveler_uuid,code_hash) VALUES (:u,:h)",[uuidParam("u",uuid),strParam("h",hashCode(c))]);}
+      await logSecEvent(uuid,"totp_enrolled",{},event);
+      return ok({success:true,recovery_codes:codes},event,201);
+    }
+
+    // POST /api/v1/auth/totp/verify — verify TOTP and issue a step-up token
+    if(method==="POST"&&path==="/api/v1/auth/totp/verify"){
+      const token=await verifyToken(event);
+      const uuid=await getOrCreateTraveler(token.sub,token.email);
+      const {code}=body;
+      if(!code)return err("code required",event,400);
+      const factor=await sql("SELECT totp_secret FROM user_security_factors WHERE traveler_uuid=:u AND factor_type='totp' AND is_active=TRUE",[uuidParam("u",uuid)]);
+      if(!factor.length)return err("No active TOTP factor",event,400);
+      if(!totpVerify(factor[0].totp_secret,String(code).trim()))return err("Invalid code",event,400);
+      // Issue step-up token (5-min TTL); clean old ones first
+      await sql("DELETE FROM user_step_up_tokens WHERE traveler_uuid=:u OR expires_at < NOW()",[uuidParam("u",uuid)]);
+      const rawToken=genStepUpToken();
+      const exp=new Date(Date.now()+5*60*1000);
+      await sql("INSERT INTO user_step_up_tokens (traveler_uuid,token_hash,expires_at) VALUES (:u,:h,:exp)",[uuidParam("u",uuid),strParam("h",hashCode(rawToken)),strParam("exp",exp.toISOString())]);
+      await logSecEvent(uuid,"step_up_granted",{factor:"totp"},event);
+      return ok({step_up_token:rawToken,expires_at:exp.toISOString()},event);
+    }
+
+    // GET /api/v1/auth/step-up/check — verify a step-up token is still valid
+    if(method==="GET"&&path==="/api/v1/auth/step-up/check"){
+      const token=await verifyToken(event);
+      const uuid=await getOrCreateTraveler(token.sub,token.email);
+      const rawToken=(event.headers&&(event.headers['x-step-up-token']||event.headers['X-Step-Up-Token']))||"";
+      if(!rawToken)return ok({valid:false},event);
+      const rows=await sql("SELECT 1 FROM user_step_up_tokens WHERE traveler_uuid=:u AND token_hash=:h AND expires_at>NOW()",[uuidParam("u",uuid),strParam("h",hashCode(rawToken))]);
+      return ok({valid:rows.length>0},event);
+    }
+
+    // POST /api/v1/auth/recovery-codes/regenerate — generate new set (Level 2, invalidates old)
+    if(method==="POST"&&path==="/api/v1/auth/recovery-codes/regenerate"){
+      const token=await verifyToken(event);
+      const uuid=await getOrCreateTraveler(token.sub,token.email);
+      // Must have an active factor
+      const activeFactor=await sql("SELECT 1 FROM user_security_factors WHERE traveler_uuid=:u AND is_active=TRUE",[uuidParam("u",uuid)]);
+      if(!activeFactor.length)return err("No active 2FA factor",event,403);
+      await sql("DELETE FROM user_recovery_codes WHERE traveler_uuid=:u",[uuidParam("u",uuid)]);
+      const codes=[];
+      for(let i=0;i<10;i++){const c=genRecoveryCode();codes.push(c);await sql("INSERT INTO user_recovery_codes (traveler_uuid,code_hash) VALUES (:u,:h)",[uuidParam("u",uuid),strParam("h",hashCode(c))]);}
+      await logSecEvent(uuid,"recovery_codes_regenerated",{},event);
+      return ok({recovery_codes:codes},event,201);
+    }
+
+    // POST /api/v1/auth/recovery-codes/verify — use a recovery code (grants Level 1 equivalent step-up bypass)
+    if(method==="POST"&&path==="/api/v1/auth/recovery-codes/verify"){
+      const token=await verifyToken(event);
+      const uuid=await getOrCreateTraveler(token.sub,token.email);
+      const {code}=body;
+      if(!code)return err("code required",event,400);
+      const h=hashCode(String(code));
+      const row=await sql("SELECT id FROM user_recovery_codes WHERE traveler_uuid=:u AND code_hash=:h AND used_at IS NULL",[uuidParam("u",uuid),strParam("h",h)]);
+      if(!row.length)return err("Invalid or already-used recovery code",event,400);
+      await sql("UPDATE user_recovery_codes SET used_at=NOW() WHERE id=:id",[uuidParam("id",row[0].id)]);
+      const remaining=await sql("SELECT COUNT(*) as cnt FROM user_recovery_codes WHERE traveler_uuid=:u AND used_at IS NULL",[uuidParam("u",uuid)]);
+      await logSecEvent(uuid,"recovery_code_used",{remaining:parseInt(remaining[0]&&remaining[0].cnt)||0},event);
+      return ok({success:true,remaining:parseInt(remaining[0]&&remaining[0].cnt)||0},event);
+    }
+
+    // DELETE /api/v1/auth/factors/{factorId} — remove a security factor
+    if(method==="DELETE"&&path.match(/^\/api\/v1\/auth\/factors\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const uuid=await getOrCreateTraveler(token.sub,token.email);
+      const factorId=path.split("/").pop();
+      const factor=await sql("SELECT factor_type FROM user_security_factors WHERE id=:fid AND traveler_uuid=:u",[uuidParam("fid",factorId),uuidParam("u",uuid)]);
+      if(!factor.length)return err("Factor not found",event,404);
+      await sql("DELETE FROM user_security_factors WHERE id=:fid AND traveler_uuid=:u",[uuidParam("fid",factorId),uuidParam("u",uuid)]);
+      await logSecEvent(uuid,"factor_removed",{factor_type:factor[0].factor_type},event);
+      return ok({success:true},event);
+    }
+
+    // GET /api/v1/auth/events — recent security events (last 50)
+    if(method==="GET"&&path==="/api/v1/auth/events"){
+      const token=await verifyToken(event);
+      const uuid=await getOrCreateTraveler(token.sub,token.email);
+      const events=await sql("SELECT event_type,ip_address,metadata,created_at FROM auth_security_events WHERE traveler_uuid=:u ORDER BY created_at DESC LIMIT 50",[uuidParam("u",uuid)]);
+      return ok({events},event);
+    }
+    // ── End Auth Security ─────────────────────────────────────────────────────
+
     return err("Not found",event,404);
   }catch(e){
     if(e.status)return err(e.message,event,e.status);

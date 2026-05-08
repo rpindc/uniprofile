@@ -1757,6 +1757,7 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
       <div class="nav-group">
         <div class="nav-group-label">Platform</div>
         <button class="nav-btn" onclick="showSection('consent',this)"><span class="nav-icon">🔒</span>Consent &amp; Access</button>
+        <button class="nav-btn" onclick="showSection('security',this)"><span class="nav-icon">🛡</span>Security<span class="nav-badge" id="badge-security" style="display:none">!</span></button>
         <button class="nav-btn" onclick="showSection('api',this)" style="opacity:0.38;pointer-events:none;cursor:default" title="Coming soon"><span class="nav-icon">⚡</span>API &amp; Webhooks</button>
       </div>
     </nav>
@@ -3382,6 +3383,73 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
         </div></div>
       </section>
 
+      <!-- Security Section -->
+      <section class="section" id="section-security">
+        <div class="sec-header">
+          <div class="sec-icon" style="background:rgba(56,99,177,0.12)">🛡</div>
+          <div><div class="sec-title">Security</div><div class="sec-sub">Two-factor authentication, recovery codes, and login history</div></div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title" style="display:flex;align-items:center;justify-content:space-between">Authentication Factors<span id="sec-2fa-status" style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:var(--surface2);color:var(--textDim)">Not enabled</span></div>
+          <div id="sec-factors-list" style="margin-bottom:16px"><div style="color:var(--textDim);font-size:13px;padding:16px 0">Loading…</div></div>
+          <div id="sec-totp-enroll-area" style="display:none">
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-top:8px">
+              <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:8px">Set up Authenticator App</div>
+              <div id="sec-totp-qr-wrap" style="margin-bottom:14px">
+                <div style="font-size:12px;color:var(--textDim);margin-bottom:8px">Scan this code in Google Authenticator, Authy, 1Password, or any TOTP app:</div>
+                <div id="sec-totp-qr" style="margin:12px 0"></div>
+                <div style="font-size:11px;color:var(--textDim);margin-bottom:4px">Or enter the key manually:</div>
+                <div id="sec-totp-secret" style="font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:2px;color:var(--goldLt);background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px 12px;word-break:break-all"></div>
+              </div>
+              <div style="font-size:12px;color:var(--textDim);margin-bottom:8px">Enter the 6-digit code from your app to confirm:</div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <input id="sec-totp-code-input" type="text" inputmode="numeric" maxlength="6" placeholder="000000" style="width:120px;padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);font-size:18px;letter-spacing:4px;text-align:center;font-family:'JetBrains Mono',monospace">
+                <button onclick="secActivateTOTP()" style="padding:8px 18px;background:var(--gold);color:#fff;border:none;border-radius:6px;font-weight:600;font-size:13px;cursor:pointer">Activate</button>
+                <button onclick="secCancelEnroll()" style="padding:8px 14px;background:var(--surface2);color:var(--textDim);border:1px solid var(--border);border-radius:6px;font-size:12px;cursor:pointer">Cancel</button>
+              </div>
+              <div id="sec-totp-error" style="color:#e53935;font-size:12px;margin-top:8px;display:none"></div>
+            </div>
+          </div>
+          <div id="sec-add-factor-btn-area">
+            <button onclick="secEnrollTOTP()" style="margin-top:4px;padding:8px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);cursor:pointer">+ Add authenticator app</button>
+          </div>
+        </div>
+        <div class="form-section" id="sec-recovery-section" style="display:none">
+          <div class="form-section-title" style="display:flex;align-items:center;justify-content:space-between">Recovery Codes<span id="sec-rc-count-pill" style="font-size:11px;padding:3px 10px;border-radius:20px;background:var(--surface2);color:var(--textDim)">—</span></div>
+          <p style="font-size:13px;color:var(--textDim);margin:0 0 12px">Recovery codes let you sign in if you lose your authenticator. Store them somewhere safe — they are shown only once.</p>
+          <div id="sec-recovery-codes-display" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
+            <div style="font-size:11px;color:var(--textDim);margin-bottom:10px;font-weight:600;letter-spacing:0.5px">SAVE THESE CODES NOW — THEY WON'T BE SHOWN AGAIN</div>
+            <div id="sec-rc-list" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text);letter-spacing:1px"></div>
+            <div style="margin-top:12px;display:flex;gap:8px">
+              <button onclick="secCopyRecoveryCodes()" style="padding:6px 14px;background:var(--surface);border:1px solid var(--border);border-radius:6px;font-size:12px;cursor:pointer;color:var(--text)">Copy all</button>
+              <button onclick="secDismissRecoveryCodes()" style="padding:6px 14px;background:var(--gold);color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600">I've saved these</button>
+            </div>
+          </div>
+          <button onclick="secRegenerateRecoveryCodes()" style="padding:8px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:13px;color:var(--text);cursor:pointer">Regenerate recovery codes</button>
+          <div style="font-size:11px;color:var(--textDim);margin-top:6px">Regenerating invalidates all previously-issued codes.</div>
+        </div>
+        <div class="form-section">
+          <div class="form-section-title">Recent Security Events</div>
+          <div id="sec-events-list" style="font-size:13px;color:var(--textDim)">Loading…</div>
+        </div>
+      </section>
+
+      <!-- Step-up modal -->
+      <div id="stepup-modal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.55);align-items:center;justify-content:center">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px;max-width:380px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+          <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:8px">Confirm your identity</div>
+          <div style="font-size:13px;color:var(--textDim);margin-bottom:20px" id="stepup-action-label">This action requires a fresh verification.</div>
+          <div style="font-size:12px;color:var(--textDim);margin-bottom:8px">Enter a 6-digit code from your authenticator app:</div>
+          <input id="stepup-code-input" type="text" inputmode="numeric" maxlength="6" placeholder="000000" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text);font-size:24px;letter-spacing:6px;text-align:center;font-family:'JetBrains Mono',monospace;margin-bottom:8px">
+          <div id="stepup-error" style="color:#e53935;font-size:12px;margin-bottom:12px;display:none"></div>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <button onclick="stepUpConfirm()" style="flex:1;padding:10px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer">Verify</button>
+            <button onclick="stepUpCancel()" style="padding:10px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;color:var(--text)">Cancel</button>
+          </div>
+          <div style="font-size:11px;color:var(--textDim);margin-top:16px;text-align:center">SMS codes are not accepted for this action.</div>
+        </div>
+      </div>
+
       <!-- Account Section -->
       <section class="section" id="section-account">
         <div class="sec-header">
@@ -3852,13 +3920,14 @@ function showSection(id,btn){
   if(btn)btn.classList.add("active");
   section=id;
   if(id==="docalert")loadDocAlerts();
-  const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"How I travel",payment:"Payment & Policy",trips:"TripVault",family:"Family Profiles",groups:"Groups",insurance:"Insurance & Tours",cruise:"Cruise Profile",docalert:"DocAlert",consent:"Consent & Access",api:"API & Webhooks",account:"Account"};
+  const titles={overview:"Dashboard",identity:"Identity & Documents",preferences:"How I travel",payment:"Payment & Policy",trips:"TripVault",family:"Family Profiles",groups:"Groups",insurance:"Insurance & Tours",cruise:"Cruise Profile",docalert:"DocAlert",consent:"Consent & Access",security:"Security",api:"API & Webhooks",account:"Account"};
   document.getElementById("page-title").textContent=titles[id]||"UniProfile";
   document.querySelector(".content").scrollTop=0;
   if(id==="family")loadFamilyData();
   if(id==="insurance"){iatRenderInsurance();iatRenderTours();}
   if(id==="cruise"){loadCruiseData();}
   if(id==="consent"){renderConsentPermissions();loadConnectedPlatforms();}
+  if(id==="security"){secLoadSection();}
 }
 async function switchContext(el){const ctx=el.checked?"CORPORATE":"PERSONAL";const pill=document.getElementById("context-pill"),lp=document.getElementById("lbl-personal"),lb=document.getElementById("lbl-business"),pp=document.getElementById("pay-personal"),pc=document.getElementById("pay-corporate"),nb=document.getElementById("badge-payment");if(el.checked){pill.textContent="Business";pill.className="context-pill corporate";lp.className="bleisure-opt teal";lb.className="bleisure-opt gold on";if(pp)pp.style.display="none";if(pc)pc.style.display="block";if(nb)nb.style.display="inline";renderPolicyCards();}else{pill.textContent="Personal";pill.className="context-pill personal";lp.className="bleisure-opt teal on";lb.className="bleisure-opt gold";if(pp)pp.style.display="block";if(pc)pc.style.display="none";if(nb)nb.style.display="none";}try{await api("POST",`/api/v1/profile/${uuid}/bleisure`,{context:ctx});}catch(e){}}
 const v=id=>document.getElementById(id)?.value?.trim()||"";
@@ -4438,7 +4507,8 @@ async function reissueUpId(){
   }catch(e){toast("Could not reissue ID — try again","error");}
   btn.textContent="Reissue";btn.disabled=false;
 }
-async function requestAccountDeletion(){if(!confirm("This will permanently delete your UniProfile account and all your data. This action cannot be undone.\n\nAre you sure?"))return;if(!confirm("Last confirmation — delete my UniProfile account and all data permanently?"))return;try{await api("DELETE",`/api/v1/profile/${uuid}`);toast("Deletion request submitted. You will receive a confirmation email.","success");}catch(e){toast("Deletion request sent — our team will process it within 30 days (GDPR Art. 17).","success");}setTimeout(()=>logout(),3000);}
+async function requestAccountDeletion(){try{await requireStepUp('Deleting your account requires a fresh verification.');}catch(e){return;}
+if(!confirm("This will permanently delete your UniProfile account and all your data. This action cannot be undone.\n\nAre you sure?"))return;if(!confirm("Last confirmation — delete my UniProfile account and all data permanently?"))return;try{await api("DELETE",`/api/v1/profile/${uuid}`);toast("Deletion request submitted. You will receive a confirmation email.","success");}catch(e){toast("Deletion request sent — our team will process it within 30 days (GDPR Art. 17).","success");}setTimeout(()=>logout(),3000);}
 function updateSidebar(p){st("sid-uuid",p.uniprofile_number||"UP-??????");var comp=calcCompleteness(p);var pct=comp.pct;st("sid-pct",pct+"%");var sublabel=document.getElementById("sid-modules");if(sublabel){if(comp.missing.length){var nx=comp.missing[0];sublabel.innerHTML=comp.done+" of "+comp.total+' — <span style="color:var(--accent);cursor:pointer;text-decoration:underline" onclick="navToSection(this.dataset.s)" data-s="'+nx.section+'">Add '+nx.label+"</span>";}else{sublabel.textContent="Profile complete \u2713";}}
 document.getElementById("sid-name").textContent=p.identity?`${p.identity.legal_first||""} ${p.identity.legal_last||""}`.trim()||p.email:p.email||"Traveler";document.getElementById("sid-initials").textContent=p.identity&&p.identity.legal_first?(p.identity.legal_first[0]+(p.identity.legal_last?p.identity.legal_last[0]:"")).toUpperCase():"?";document.getElementById("sid-tier").textContent="★ "+(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1);var circumference=2*Math.PI*18,offset=circumference-(pct/100)*circumference;var ring=document.getElementById("ring-fill");if(ring){ring.style.strokeDashoffset=offset;ring.className="ring-fill"+(pct>=80?" good":pct<40?" danger":"");}var expiring=(p.documents||[]).filter(function(d){return d.days_remaining!==null&&d.days_remaining<=90;});var badge=document.getElementById("badge-identity");if(badge)badge.style.display=expiring.length?"inline":"none";
 const acctName=p.identity?`${p.identity.legal_first||""} ${p.identity.legal_last||""}`.trim()||p.email:p.email||"Traveler";const acctInitials=p.identity&&p.identity.legal_first?(p.identity.legal_first[0]+(p.identity.legal_last?p.identity.legal_last[0]:"")).toUpperCase():"?";st("acct-name",acctName);st("acct-email",p.email||"—");st("acct-initials",acctInitials);st("acct-upid",p.uniprofile_number||"—");st("acct-uuid",p.uuid||"—");const tierLabel=(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1);st("acct-tier",tierLabel);st("acct-plan",tierLabel);}
@@ -7061,6 +7131,7 @@ async function toggleAccessHistory(platformId){
   }catch(err){panel.innerHTML='<div class="ah-entry" style="color:var(--red)">Could not load access history.</div>';}
 }
 async function exportMyData(){
+  try{await requireStepUp('Exporting your full account data requires a fresh verification.');}catch(e){return;}
   const btn=document.getElementById("export-data-btn");
   btn.disabled=true;btn.textContent="Preparing\u2026";
   try{
@@ -10247,6 +10318,185 @@ async function openVisualPNR(trip) {
       : '';
     dateEl.textContent = retDate ? depDate + ' – ' + retDate : depDate;
   }
+}
+
+/* ── Auth Security ─────────────────────────────────────────── */
+
+// Action-to-level mapping — single source of truth
+const AUTH_LEVELS={
+  view_public:0,submit_feedback:0,
+  view_profile:1,view_trip_vault:1,view_travel_dna:1,edit_profile_basic:1,view_doc_list:1,
+  view_doc_scan:2,view_group_member_data:2,add_group_member:2,remove_group_member:2,
+  update_email:2,update_phone:2,add_remove_factor:2,generate_recovery_codes:2,
+  grant_operator_consent:3,export_account_data:3,delete_account:3,break_glass_medical:3,
+  add_co_parent:3,revoke_co_parent:3
+};
+
+let _stepUpToken=null,_stepUpExpiry=0,_stepUpResolve=null,_stepUpReject=null;
+let _secTotpEnrollSecret=null,_secRecoveryCodes=null;
+
+function stepUpValid(){return _stepUpToken&&Date.now()<_stepUpExpiry;}
+
+function requireStepUp(actionLabel){
+  return new Promise((resolve,reject)=>{
+    if(stepUpValid()){resolve(_stepUpToken);return;}
+    _stepUpResolve=resolve;_stepUpReject=reject;
+    const modal=document.getElementById('stepup-modal');
+    const lbl=document.getElementById('stepup-action-label');
+    if(lbl)lbl.textContent=actionLabel||'This action requires a fresh verification.';
+    const inp=document.getElementById('stepup-code-input');
+    if(inp)inp.value='';
+    const errEl=document.getElementById('stepup-error');
+    if(errEl){errEl.textContent='';errEl.style.display='none';}
+    if(modal)modal.style.display='flex';
+    setTimeout(()=>{document.getElementById('stepup-code-input')?.focus();},100);
+  });
+}
+
+async function stepUpConfirm(){
+  const code=(document.getElementById('stepup-code-input')?.value||'').trim();
+  const errEl=document.getElementById('stepup-error');
+  if(!code||code.length!==6){if(errEl){errEl.textContent='Enter a 6-digit code.';errEl.style.display='block';}return;}
+  try{
+    const res=await api('POST','/api/v1/auth/totp/verify',{code});
+    _stepUpToken=res.step_up_token;_stepUpExpiry=new Date(res.expires_at).getTime();
+    document.getElementById('stepup-modal').style.display='none';
+    if(_stepUpResolve){_stepUpResolve(_stepUpToken);_stepUpResolve=null;}
+  }catch(e){
+    if(errEl){errEl.textContent=e.message||'Invalid code. Try again.';errEl.style.display='block';}
+  }
+}
+
+function stepUpCancel(){
+  document.getElementById('stepup-modal').style.display='none';
+  if(_stepUpReject){_stepUpReject(new Error('Step-up cancelled'));_stepUpReject=null;}
+  _stepUpResolve=null;
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.getElementById('stepup-modal')?.style.display==='flex')stepUpConfirm();
+  if(e.key==='Escape'&&document.getElementById('stepup-modal')?.style.display==='flex')stepUpCancel();
+});
+
+async function secLoadSection(){
+  try{
+    const [fRes,eRes]=await Promise.all([api('GET','/api/v1/auth/factors'),api('GET','/api/v1/auth/events')]);
+    secRenderFactors(fRes.factors||[],fRes.recovery_codes_remaining||0);
+    secRenderEvents(eRes.events||[]);
+  }catch(e){
+    const el=document.getElementById('sec-factors-list');
+    if(el)el.innerHTML='<div style="color:#e53935;font-size:13px">'+e.message+'</div>';
+  }
+}
+
+function secRenderFactors(factors,rcRemaining){
+  const list=document.getElementById('sec-factors-list');
+  const statusPill=document.getElementById('sec-2fa-status');
+  const rcSection=document.getElementById('sec-recovery-section');
+  const addArea=document.getElementById('sec-add-factor-btn-area');
+  const active=factors.filter(f=>f.is_active);
+  if(statusPill){
+    if(active.length){statusPill.textContent='Enabled';statusPill.style.background='var(--greenGlow)';statusPill.style.color='var(--green)';}
+    else{statusPill.textContent='Not enabled';statusPill.style.background='var(--surface2)';statusPill.style.color='var(--textDim)';}
+  }
+  if(!factors.length){
+    list.innerHTML='<div style="color:var(--textDim);font-size:13px;padding:12px 0">No authentication factors enrolled. Add an authenticator app to protect your account.</div>';
+  }else{
+    list.innerHTML=factors.map(f=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-bottom:8px"><div style="display:flex;align-items:center;gap:12px"><span style="font-size:20px">${f.factor_type==='totp'?'🔐':f.factor_type==='sms'?'📱':'🔑'}</span><div><div style="font-size:13px;font-weight:600;color:var(--text)">${f.label||f.factor_type.toUpperCase()}</div><div style="font-size:11px;color:var(--textDim)">${f.factor_type==='totp'?'Authenticator app (TOTP)':f.factor_type==='sms'?'SMS OTP':'Passkey'} · Added ${new Date(f.created_at).toLocaleDateString()}</div></div></div><div style="display:flex;align-items:center;gap:8px">${f.is_active?'<span style="font-size:11px;padding:3px 8px;border-radius:20px;background:var(--greenGlow);color:var(--green);font-weight:600">Active</span>':'<span style="font-size:11px;padding:3px 8px;border-radius:20px;background:var(--surface);color:var(--textDim);border:1px solid var(--border)">Pending</span>'}<button onclick="secRemoveFactor('${f.id}','${f.label||f.factor_type}')" style="padding:4px 10px;background:transparent;border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--textDim);cursor:pointer">Remove</button></div></div>`).join('');
+  }
+  if(rcSection){
+    rcSection.style.display=active.length?'block':'none';
+    const rcPill=document.getElementById('sec-rc-count-pill');
+    if(rcPill){rcPill.textContent=rcRemaining+' remaining';rcPill.style.background=rcRemaining<=2?'rgba(229,57,53,0.12)':'var(--surface2)';rcPill.style.color=rcRemaining<=2?'#e53935':'var(--textDim)';}
+  }
+  if(addArea)addArea.style.display=active.length?'none':'block';
+  const badge=document.getElementById('badge-security');
+  if(badge)badge.style.display=active.length===0?'inline':'none';
+}
+
+function secRenderEvents(events){
+  const el=document.getElementById('sec-events-list');if(!el)return;
+  const labels={totp_enrolled:'Authenticator app enrolled',totp_verified:'TOTP verification',step_up_granted:'Step-up verified',factor_removed:'Factor removed',recovery_codes_regenerated:'Recovery codes regenerated',recovery_code_used:'Recovery code used'};
+  if(!events.length){el.innerHTML='<div style="color:var(--textDim);font-size:13px;padding:8px 0">No security events recorded yet.</div>';return;}
+  el.innerHTML=events.slice(0,15).map(e=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)"><div><div style="font-size:13px;color:var(--text);font-weight:500">${labels[e.event_type]||e.event_type}</div>${e.ip_address?`<div style="font-size:11px;color:var(--textDim)">${e.ip_address}</div>`:''}</div><div style="font-size:11px;color:var(--textDim);text-align:right">${new Date(e.created_at).toLocaleString()}</div></div>`).join('');
+}
+
+async function secEnrollTOTP(){
+  const enrollArea=document.getElementById('sec-totp-enroll-area');
+  const addArea=document.getElementById('sec-add-factor-btn-area');
+  const errEl=document.getElementById('sec-totp-error');
+  if(errEl)errEl.style.display='none';
+  try{
+    const res=await api('POST','/api/v1/auth/totp/enroll');
+    _secTotpEnrollSecret=res.secret;
+    const secretEl=document.getElementById('sec-totp-secret');
+    if(secretEl)secretEl.textContent=res.secret.match(/.{1,4}/g).join(' ');
+    const qrEl=document.getElementById('sec-totp-qr');
+    if(qrEl)qrEl.innerHTML=`<a href="${res.otpauth}" style="font-size:11px;color:var(--tealLt);word-break:break-all">${res.otpauth}</a><div style="font-size:11px;color:var(--textDim);margin-top:6px">Tap on mobile to open your authenticator app, or copy the key above.</div>`;
+    if(enrollArea)enrollArea.style.display='block';
+    if(addArea)addArea.style.display='none';
+    setTimeout(()=>document.getElementById('sec-totp-code-input')?.focus(),100);
+  }catch(e){toast('Failed to start enrollment: '+e.message,'error');}
+}
+
+async function secActivateTOTP(){
+  const code=(document.getElementById('sec-totp-code-input')?.value||'').trim();
+  const errEl=document.getElementById('sec-totp-error');
+  if(!code){if(errEl){errEl.textContent='Enter the 6-digit code.';errEl.style.display='block';}return;}
+  try{
+    const res=await api('POST','/api/v1/auth/totp/activate',{code});
+    document.getElementById('sec-totp-enroll-area').style.display='none';
+    toast('Authenticator app activated!','success');
+    secLoadSection();
+    setTimeout(()=>secShowRecoveryCodes(res.recovery_codes),400);
+  }catch(e){
+    if(errEl){errEl.textContent=e.message||'Invalid code. Try again.';errEl.style.display='block';}
+  }
+}
+
+function secCancelEnroll(){
+  document.getElementById('sec-totp-enroll-area').style.display='none';
+  document.getElementById('sec-add-factor-btn-area').style.display='block';
+}
+
+function secShowRecoveryCodes(codes){
+  const display=document.getElementById('sec-recovery-codes-display');
+  const listEl=document.getElementById('sec-rc-list');
+  const rcSection=document.getElementById('sec-recovery-section');
+  if(!display||!listEl)return;
+  if(rcSection)rcSection.style.display='block';
+  display.style.display='block';
+  listEl.innerHTML=codes.map(c=>`<div style="padding:4px 0;letter-spacing:1px">${c}</div>`).join('');
+  _secRecoveryCodes=codes;
+}
+
+function secCopyRecoveryCodes(){
+  if(!_secRecoveryCodes)return;
+  navigator.clipboard?.writeText(_secRecoveryCodes.join('\n')).then(()=>toast('Codes copied','success')).catch(()=>toast('Copy failed','error'));
+}
+
+function secDismissRecoveryCodes(){
+  document.getElementById('sec-recovery-codes-display').style.display='none';
+  _secRecoveryCodes=null;
+}
+
+async function secRegenerateRecoveryCodes(){
+  if(!confirm('This will invalidate all existing recovery codes. Continue?'))return;
+  try{
+    const res=await api('POST','/api/v1/auth/recovery-codes/regenerate');
+    secShowRecoveryCodes(res.recovery_codes);
+    toast('New recovery codes generated','success');
+    secLoadSection();
+  }catch(e){toast('Failed: '+e.message,'error');}
+}
+
+async function secRemoveFactor(factorId,label){
+  if(!confirm(`Remove factor "${label}"? You may lose access if this is your only factor.`))return;
+  try{
+    await api('DELETE','/api/v1/auth/factors/'+factorId);
+    toast('Factor removed','success');
+    secLoadSection();
+  }catch(e){toast('Failed: '+e.message,'error');}
 }
 </script>
 </body>
