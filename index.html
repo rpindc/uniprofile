@@ -958,6 +958,180 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 }
 .grp-btn-secondary:hover { border-color: var(--border2); color: var(--text); }
 
+/* ── Groups v2: new architecture ───────────────────────── */
+.gc-section-divider { border: none; border-top: 1px solid var(--border); margin: 32px 0 28px; }
+.gc-eyebrow { font-size:9px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--textHint);margin-bottom:8px;font-family:'DM Sans',sans-serif; }
+.gc-h1 { font-family:'Playfair Display',serif;font-weight:400;font-size:clamp(28px,4vw,38px);line-height:1.1;letter-spacing:-0.02em;color:var(--text);margin:0 0 12px; }
+.gc-h1 em { font-style:italic;font-weight:300; }
+.gc-lede { font-family:'Playfair Display',serif;font-size:15px;font-weight:300;line-height:1.55;color:var(--textMid);letter-spacing:-0.005em;margin:0 0 28px; }
+/* Group cards */
+.gc-group-list { display:flex;flex-direction:column;gap:14px;margin-bottom:24px; }
+.gc-group-card { background:var(--surface);border:0.5px solid rgba(26,26,26,0.08);border-radius:12px;padding:20px 22px 16px;cursor:pointer;transition:border-color 0.18s,box-shadow 0.18s; }
+.gc-group-card:hover { box-shadow:0 6px 24px rgba(0,0,0,0.09); }
+.gc-group-card.focus { border:0.5px solid rgba(26,26,26,0.18); }
+.gc-group-card-top { display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px; }
+.gc-group-type-label { font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--textMid);font-weight:500;margin-bottom:4px;font-family:'DM Sans',sans-serif; }
+.gc-group-name { font-family:'Playfair Display',serif;font-size:20px;font-weight:400;color:var(--text);letter-spacing:-0.01em;line-height:1.2; }
+.gc-status-pill { font-size:10px;padding:3px 10px;border-radius:100px;font-weight:500;white-space:nowrap;font-family:'DM Sans',sans-serif; }
+.gc-status-active { background:var(--greenGlow);color:var(--green); }
+.gc-status-planning { background:var(--surface2);color:var(--textMid); }
+.gc-status-standby { background:var(--surface2);color:var(--textMid); }
+/* Avatars */
+.gc-avatars { display:flex;align-items:center;gap:8px;margin:10px 0; }
+.gc-avatar-stack { display:flex; }
+.gc-avatar { width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;font-family:'Playfair Display',serif;font-style:italic;border:2px solid var(--surface);margin-left:-8px;flex-shrink:0; }
+.gc-avatar:first-child { margin-left:0; }
+.gc-avatar-more { background:var(--surface2);color:var(--textMid);font-size:10px;font-style:normal; }
+.gc-avatar-summary { font-size:12px;color:var(--textMid);font-family:'DM Sans',sans-serif; }
+/* Quick stats */
+.gc-stats-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:0;padding:12px 0 0;border-top:0.5px solid var(--border);margin-top:10px; }
+.gc-stat { padding:0 12px;border-right:0.5px solid var(--border);text-align:center; }
+.gc-stat:first-child { padding-left:0;text-align:left; }
+.gc-stat:last-child { border-right:none;text-align:right; }
+.gc-stat-label { font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--textHint);font-weight:500;font-family:'DM Sans',sans-serif;margin-bottom:3px; }
+.gc-stat-val { font-size:13px;font-weight:500;color:var(--text);font-family:'DM Sans',sans-serif; }
+/* Inline alert */
+.gc-inline-alert { background:var(--amberGlow);border:0.5px solid rgba(186,117,23,0.3);border-radius:8px;padding:10px 14px;margin:10px 0;display:flex;justify-content:space-between;align-items:center;gap:12px; }
+.gc-inline-alert-text { font-size:12px;color:var(--text);font-family:'DM Sans',sans-serif;flex:1; }
+.gc-inline-alert-actions { display:flex;gap:8px;flex-shrink:0; }
+.gc-alert-link { font-size:11px;font-weight:500;color:var(--amber);background:none;border:none;cursor:pointer;padding:0;font-family:'DM Sans',sans-serif;text-decoration:underline; }
+/* Card actions */
+.gc-card-actions { display:flex;gap:8px;margin-top:12px; }
+.gc-btn-primary { background:var(--ink);color:#faf8f4;border:none;border-radius:4px;padding:9px 18px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:opacity 0.15s;white-space:nowrap; }
+.gc-btn-primary:hover { opacity:0.85; }
+.gc-btn-secondary { background:none;border:0.5px solid var(--border2);border-radius:4px;padding:9px 14px;font-size:13px;font-weight:500;color:var(--textMid);cursor:pointer;font-family:'DM Sans',sans-serif;transition:border-color 0.15s;white-space:nowrap; }
+.gc-btn-secondary:hover { border-color:var(--text);color:var(--text); }
+.gc-btn-tertiary { background:none;border:0.5px solid var(--border);border-radius:4px;padding:9px 14px;font-size:12px;color:var(--textDim);cursor:pointer;font-family:'DM Sans',sans-serif;transition:color 0.15s;white-space:nowrap; }
+.gc-btn-tertiary:hover { color:var(--textMid); }
+/* Empty state */
+.gc-empty-hero { background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:48px 36px;text-align:center;margin-bottom:16px; }
+.gc-empty-h2 { font-family:'Playfair Display',serif;font-size:26px;font-weight:400;color:var(--text);margin:0 0 12px; }
+.gc-empty-lede { font-family:'Playfair Display',serif;font-size:15px;font-weight:300;color:var(--textMid);margin:0 0 24px;line-height:1.55; }
+.gc-starters { display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px; }
+.gc-starter-card { background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:border-color 0.15s; }
+.gc-starter-card:hover { border-color:var(--goldDim); }
+.gc-starter-title { font-size:13px;font-weight:500;color:var(--text);font-family:'DM Sans',sans-serif;margin-bottom:4px; }
+.gc-starter-sub { font-size:11px;color:var(--textDim);font-family:'DM Sans',sans-serif;line-height:1.5; }
+/* Create button */
+.gc-create-dashed { width:100%;padding:14px;border:0.5px dashed var(--border2);border-radius:10px;background:none;color:var(--textMid);font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;transition:border-color 0.15s,color 0.15s;margin-top:8px; }
+.gc-create-dashed:hover { border-color:var(--gold);color:var(--text); }
+/* Group workspace */
+.gc-workspace { display:none; }
+.gc-workspace.active { display:block; }
+.gc-breadcrumb { font-size:12px;color:var(--gold);background:none;border:none;cursor:pointer;padding:0;margin-bottom:20px;font-family:'DM Sans',sans-serif;font-weight:500; }
+.gc-workspace-header { margin-bottom:24px; }
+.gc-workspace-title { font-family:'Playfair Display',serif;font-size:28px;font-weight:400;color:var(--text);margin:4px 0 8px; }
+.gc-workspace-lede { font-size:13px;color:var(--textDim);font-family:'DM Sans',sans-serif;line-height:1.55; }
+/* Sub-tabs */
+.gc-tabs { display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:24px; }
+.gc-tab { background:none;border:none;border-bottom:2px solid transparent;padding:10px 16px;font-size:13px;font-weight:500;color:var(--textDim);cursor:pointer;font-family:'DM Sans',sans-serif;transition:color 0.15s,border-color 0.15s;margin-bottom:-1px; }
+.gc-tab.active { color:var(--text);border-bottom-color:var(--gold); }
+.gc-tab-content { display:none; }
+.gc-tab-content.active { display:block; }
+/* Member cards */
+.gc-member-list { display:flex;flex-direction:column;gap:10px; }
+.gc-member-card { background:var(--surface);border:0.5px solid rgba(26,26,26,0.08);border-radius:10px;padding:14px 16px;display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;transition:border-color 0.15s; }
+.gc-member-card.needs-attention { border-color:#ba7517; }
+.gc-member-avatar-lg { width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;font-family:'Playfair Display',serif;font-style:italic;flex-shrink:0; }
+.gc-member-name { font-size:14px;font-weight:500;color:var(--text);font-family:'DM Sans',sans-serif; }
+.gc-member-role-badge { display:inline-block;font-size:10px;padding:2px 8px;border-radius:100px;background:var(--surface2);color:var(--textMid);font-family:'DM Sans',sans-serif;font-weight:500;margin-left:6px; }
+.gc-member-sub { font-size:11px;color:var(--textDim);font-family:'JetBrains Mono',monospace;margin-top:2px; }
+.gc-member-status-pill { font-size:10px;padding:3px 9px;border-radius:100px;font-weight:500;font-family:'DM Sans',sans-serif;flex-shrink:0; }
+.gc-member-ready { background:var(--greenGlow);color:var(--green); }
+.gc-member-attention { background:var(--amberGlow);color:var(--amber); }
+/* Doc matrix */
+.gc-matrix-wrap { overflow-x:auto; }
+.gc-matrix { width:100%;border-collapse:collapse;font-size:12px;font-family:'DM Sans',sans-serif; }
+.gc-matrix th { text-align:left;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--textHint);font-weight:600;padding:6px 12px;border-bottom:1px solid var(--border); }
+.gc-matrix td { padding:10px 12px;border-bottom:0.5px solid var(--border);vertical-align:middle; }
+.gc-matrix tr.row-attention { background:rgba(250,248,243,0.6); }
+.gc-doc-dot { display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px; }
+.gc-doc-green { background:var(--green); }
+.gc-doc-amber { background:var(--amber); }
+.gc-doc-red { background:var(--red); }
+/* Permissions */
+.gc-perm-row { display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:0.5px solid var(--border);font-family:'DM Sans',sans-serif; }
+.gc-perm-op-icon { width:32px;height:32px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0; }
+.gc-perm-meta { flex:1;min-width:0; }
+.gc-perm-op-name { font-size:13px;font-weight:500;color:var(--text); }
+.gc-perm-detail { font-size:11px;color:var(--textDim);margin-top:2px; }
+.gc-perm-status { font-size:10px;padding:2px 8px;border-radius:100px;font-weight:500;flex-shrink:0; }
+.gc-perm-granted { background:var(--greenGlow);color:var(--green); }
+.gc-perm-revoked { background:var(--surface2);color:var(--textMid); }
+/* Preferences */
+.gc-pref-item { padding:12px 0;border-bottom:0.5px solid var(--border);font-size:13px;color:var(--text);font-family:'DM Sans',sans-serif;line-height:1.55; }
+.gc-pref-item::before { content:'—  ';color:var(--textDim); }
+.gc-pref-empty { font-family:'Playfair Display',serif;font-size:14px;font-weight:300;color:var(--textMid);font-style:italic;padding:16px 0; }
+/* Plan trip stepper */
+.gc-stepper { display:flex;align-items:center;gap:8px;font-size:12px;color:var(--textDim);font-family:'DM Sans',sans-serif;margin-bottom:28px;flex-wrap:wrap; }
+.gc-stepper-step { font-weight:500; }
+.gc-stepper-step.active { color:var(--text); border-bottom:1px solid var(--text); }
+.gc-stepper-step.done { color:var(--green); }
+.gc-stepper-sep { color:var(--textHint); }
+/* Plan trip parcel card */
+.gc-parcel-card { background:var(--surface2);border:0.5px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:20px; }
+.gc-parcel-eyebrow { font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--textHint);font-weight:600;font-family:'DM Sans',sans-serif;margin-bottom:4px; }
+.gc-parcel-title { font-family:'Playfair Display',serif;font-size:20px;font-weight:400;color:var(--text); }
+.gc-parcel-sub { font-size:12px;color:var(--textDim);font-family:'DM Sans',sans-serif;margin-top:4px; }
+/* Pre-flight check cards */
+.gc-check-list { display:flex;flex-direction:column;gap:12px; }
+.gc-check-card { border-radius:10px;padding:16px 18px;border:0.5px solid var(--border); }
+.gc-check-card.pass { background:var(--greenGlow);border-color:rgba(45,106,79,0.2); }
+.gc-check-card.blocker { background:var(--amberGlow);border-color:rgba(186,117,23,0.4); }
+.gc-check-card.critical { background:var(--redGlow);border-color:rgba(196,77,77,0.4); }
+.gc-check-card.tradeoff { background:var(--surface2);border-color:rgba(26,26,26,0.15); }
+.gc-check-card.unknown { background:var(--surface);border-color:var(--border);opacity:0.75; }
+.gc-check-card.resolved { background:var(--greenGlow);border-color:rgba(45,106,79,0.2);opacity:0.8; }
+.gc-check-headline { font-size:13px;font-weight:500;color:var(--text);font-family:'DM Sans',sans-serif;margin-bottom:4px; }
+.gc-check-detail { font-size:12px;color:var(--textMid);font-family:'DM Sans',sans-serif;line-height:1.5; }
+.gc-check-resolution { font-size:11px;color:var(--green);font-family:'DM Sans',sans-serif;margin-top:6px;font-style:italic; }
+.gc-check-actions { display:flex;gap:8px;margin-top:10px;flex-wrap:wrap; }
+.gc-check-resolve-btn { font-size:11px;padding:5px 12px;border-radius:4px;background:var(--ink);color:#faf8f4;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500; }
+.gc-check-resolve-btn:hover { opacity:0.85; }
+/* Already settled panel */
+.gc-settled-panel { background:rgba(249,247,242,0.8);border-radius:10px;padding:14px 18px;margin-top:16px; }
+.gc-settled-eyebrow { font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--green);font-weight:600;font-family:'DM Sans',sans-serif;margin-bottom:8px; }
+.gc-settled-grid { display:grid;grid-template-columns:1fr 1fr;gap:4px; }
+.gc-settled-item { font-size:12px;color:var(--textMid);font-family:'DM Sans',sans-serif;padding:2px 0; }
+/* Creation flow */
+.gc-create-flow { max-width:560px; }
+.gc-create-step { display:none; }
+.gc-create-step.active { display:block; }
+.gc-step-h2 { font-family:'Playfair Display',serif;font-size:24px;font-weight:400;color:var(--text);margin:0 0 8px; }
+.gc-step-lede { font-size:13px;color:var(--textMid);font-family:'DM Sans',sans-serif;margin:0 0 24px;line-height:1.55; }
+.gc-add-person-row { display:flex;gap:8px;margin-bottom:12px; }
+.gc-add-person-input { flex:1;border:0.5px solid var(--border2);border-radius:4px;padding:10px 14px;font-size:13px;color:var(--text);background:var(--surface);font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.15s; }
+.gc-add-person-input:focus { border-color:var(--gold); }
+.gc-person-card { background:var(--surface);border:0.5px solid var(--border);border-radius:10px;padding:12px 14px;display:grid;grid-template-columns:36px 1fr auto;gap:10px;align-items:start;margin-bottom:8px; }
+.gc-person-av { width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;font-style:italic;font-family:'Playfair Display',serif; }
+.gc-person-name-input { border:0.5px solid var(--border);border-radius:4px;padding:6px 10px;font-size:13px;color:var(--text);background:var(--surface);font-family:'DM Sans',sans-serif;width:100%;margin-bottom:6px;box-sizing:border-box;outline:none; }
+.gc-person-name-input:focus { border-color:var(--gold); }
+.gc-person-rel-select { border:0.5px solid var(--border);border-radius:4px;padding:5px 8px;font-size:12px;color:var(--textMid);background:var(--surface);font-family:'DM Sans',sans-serif;outline:none; }
+.gc-person-remove { background:none;border:none;color:var(--textHint);cursor:pointer;font-size:16px;padding:2px 4px;line-height:1; }
+.gc-person-remove:hover { color:var(--red); }
+.gc-inference-card { background:var(--surface2);border:0.5px solid var(--border);border-radius:10px;padding:16px 18px;margin-bottom:16px; }
+.gc-inference-title { font-family:'Playfair Display',serif;font-size:22px;font-weight:400;color:var(--text);margin:0 0 6px; }
+.gc-inference-desc { font-size:13px;color:var(--textMid);font-family:'DM Sans',sans-serif;line-height:1.55; }
+.gc-step-footer { display:flex;justify-content:space-between;align-items:center;margin-top:24px;padding-top:16px;border-top:0.5px solid var(--border); }
+/* Consent prompt */
+.gc-consent-card { background:var(--surface);border:0.5px solid var(--border);border-radius:12px;padding:20px;margin-bottom:12px; }
+.gc-consent-header { display:flex;align-items:flex-start;gap:12px;margin-bottom:14px; }
+.gc-consent-op-icon { width:40px;height:40px;border-radius:8px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0; }
+.gc-consent-headline { font-size:14px;font-weight:500;color:var(--text);font-family:'DM Sans',sans-serif; }
+.gc-consent-sub { font-size:12px;color:var(--textDim);font-family:'DM Sans',sans-serif;margin-top:2px; }
+.gc-consent-table { width:100%;font-size:12px;font-family:'DM Sans',sans-serif;margin-bottom:12px; }
+.gc-consent-table td { padding:4px 0;color:var(--textMid);vertical-align:top; }
+.gc-consent-table td:first-child { color:var(--text);font-weight:500;width:55%;padding-right:8px; }
+.gc-consent-routing-note { font-size:11px;color:var(--textHint);font-style:italic;margin-top:6px;line-height:1.5; }
+.gc-consent-actions { display:flex;gap:8px;flex-wrap:wrap; }
+@media(max-width:640px){
+  .gc-starters { grid-template-columns:1fr; }
+  .gc-member-card { grid-template-columns:44px 1fr; }
+  .gc-member-status-pill { grid-column:1/-1; }
+  .gc-settled-grid { grid-template-columns:1fr; }
+  .gc-card-actions { flex-wrap:wrap; }
+}
+
 /* ── Consent: permission grid ───────────────────────────── */
 .perm-grid {
   display: grid;
@@ -2310,40 +2484,250 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
 
       <section class="section" id="section-groups">
   <div class="section-inner">
-    <div class="sec-header" style="margin-bottom:32px">
-      <div class="sec-icon" style="background:var(--tealGlow)">⬡</div>
-      <div style="flex:1">
-        <div class="sec-title">Groups</div>
-        <div class="sec-sub">Coordinate travel for families, tours, golf trips, church groups, corporate teams and more — under one shared view.</div>
+
+    <!-- ── Groups v2: GCUUID architecture ─────────────────── -->
+    <div id="gc-view-list">
+      <div class="gc-eyebrow">YOUR GROUPS</div>
+      <div class="gc-h1">The people you travel with.</div>
+      <div class="gc-lede" id="gc-lede-text">Create a group to start coordinating travel with your household, friends, or any crew.</div>
+
+      <!-- List -->
+      <div class="gc-group-list" id="gc-group-list"></div>
+
+      <!-- Empty state (shown when no groups) -->
+      <div id="gc-empty-state" style="display:none">
+        <div class="gc-empty-hero">
+          <div class="gc-empty-h2">Travel rarely happens alone.</div>
+          <div class="gc-empty-lede">Add the people you travel with — your family, your partner, the friends you take trips with — and UniProfile starts handling the coordination quietly in the background.</div>
+          <button class="gc-btn-primary" onclick="gcStartCreate()">Create your first group →</button>
+        </div>
+        <div class="gc-starters">
+          <div class="gc-starter-card" onclick="gcStartCreate('household')">
+            <div class="gc-starter-title">My household</div>
+            <div class="gc-starter-sub">Family, partner, kids — permanent group</div>
+          </div>
+          <div class="gc-starter-card" onclick="gcStartCreate('friends')">
+            <div class="gc-starter-title">A travel group</div>
+            <div class="gc-starter-sub">Friends planning a trip together</div>
+          </div>
+          <div class="gc-starter-card" onclick="gcStartCreate('care')">
+            <div class="gc-starter-title">Caring for a parent</div>
+            <div class="gc-starter-sub">Accessibility companion group</div>
+          </div>
+        </div>
       </div>
-      <button class="grp-create-btn" onclick="openCreateGroupModal()" style="flex-shrink:0;margin-top:4px">+ New Group</button>
+
+      <button class="gc-create-dashed" id="gc-create-btn" onclick="gcStartCreate()" style="display:none">+ Create a new group</button>
     </div>
-    <div id="grp-empty" class="grp-empty" style="display:none">
-      <div class="grp-empty-icon">⬡</div>
-      <div class="grp-empty-title">No groups yet</div>
-      <div class="grp-empty-sub">Create a group to coordinate travel with family, friends, colleagues or any crew.</div>
-      <button class="grp-create-btn" id="grp-empty-cta" onclick="openCreateGroupModal()" style="margin-top:1.5rem">Create your first group</button>
+
+    <!-- ── Group workspace ──────────────────────────────────── -->
+    <div id="gc-view-workspace" style="display:none">
+      <button class="gc-breadcrumb" onclick="gcShowList()">← Back to groups</button>
+      <div class="gc-workspace-header" id="gc-workspace-header"></div>
+      <div class="gc-tabs">
+        <button class="gc-tab active" onclick="gcSwitchTab('members',this)">Members</button>
+        <button class="gc-tab" onclick="gcSwitchTab('trips',this)">Trips</button>
+        <button class="gc-tab" onclick="gcSwitchTab('documents',this)">Documents</button>
+        <button class="gc-tab" onclick="gcSwitchTab('preferences',this)">Preferences</button>
+        <button class="gc-tab" onclick="gcSwitchTab('permissions',this)">Permissions</button>
+      </div>
+      <div class="gc-tab-content active" id="gc-tab-members"></div>
+      <div class="gc-tab-content" id="gc-tab-trips"></div>
+      <div class="gc-tab-content" id="gc-tab-documents"></div>
+      <div class="gc-tab-content" id="gc-tab-preferences"></div>
+      <div class="gc-tab-content" id="gc-tab-permissions"></div>
     </div>
-    <div class="grp-type-pills" id="grp-type-filter">
-      <button class="grp-pill active" onclick="filterGroups('all', this)">All</button>
-      <button class="grp-pill" onclick="filterGroups('family', this)">Family</button>
-      <button class="grp-pill" onclick="filterGroups('golf', this)">Golf</button>
-      <button class="grp-pill" onclick="filterGroups('church', this)">Church / Tour</button>
-      <button class="grp-pill" onclick="filterGroups('corporate', this)">Corporate</button>
-      <button class="grp-pill" onclick="filterGroups('conference', this)">Conference</button>
-      <button class="grp-pill" onclick="filterGroups('school', this)">School</button>
-      <button class="grp-pill" onclick="filterGroups('sports', this)">Sports</button>
-      <button class="grp-pill" onclick="filterGroups('wedding', this)">Wedding</button>
-      <button class="grp-pill" onclick="filterGroups('military', this)">Military</button>
-      <button class="grp-pill" onclick="filterGroups('medical', this)">Medical</button>
-      <button class="grp-pill" onclick="filterGroups('volunteer', this)">Volunteer / NGO</button>
-      <button class="grp-pill" onclick="filterGroups('other', this)">Other</button>
+
+    <!-- ── Plan a trip flow ─────────────────────────────────── -->
+    <div id="gc-view-plan" style="display:none">
+      <button class="gc-breadcrumb" onclick="gcShowWorkspace(gcCurrentGroupId)">← Back to group</button>
+      <div class="gc-stepper" id="gc-plan-stepper">
+        <span class="gc-stepper-step active" id="gc-step-lbl-1">1. Define</span>
+        <span class="gc-stepper-sep">·</span>
+        <span class="gc-stepper-step" id="gc-step-lbl-2">2. Pre-flight check</span>
+        <span class="gc-stepper-sep">·</span>
+        <span class="gc-stepper-step" id="gc-step-lbl-3">3. Resolve</span>
+        <span class="gc-stepper-sep">·</span>
+        <span class="gc-stepper-step" id="gc-step-lbl-4">4. Hand off</span>
+      </div>
+      <!-- Step 1: Define -->
+      <div class="gc-create-step active" id="gc-plan-step-1">
+        <div class="gc-step-h2">Where are you going?</div>
+        <div class="gc-step-lede">Set the destination, dates, and who's joining this trip.</div>
+        <div style="display:flex;flex-direction:column;gap:16px;max-width:480px">
+          <div class="grp-form-row">
+            <label class="grp-label">Destination *</label>
+            <input class="grp-input" id="gc-plan-dest" placeholder="e.g. Bali, Indonesia" />
+          </div>
+          <div class="grp-form-2col">
+            <div class="grp-form-row">
+              <label class="grp-label">Departure *</label>
+              <input class="grp-input" id="gc-plan-dep" type="date" />
+            </div>
+            <div class="grp-form-row">
+              <label class="grp-label">Return</label>
+              <input class="grp-input" id="gc-plan-ret" type="date" />
+            </div>
+          </div>
+          <div>
+            <label class="grp-label" style="margin-bottom:8px;display:block">Who's coming?</label>
+            <div id="gc-plan-members-list" style="display:flex;flex-direction:column;gap:6px"></div>
+          </div>
+        </div>
+        <div class="gc-step-footer">
+          <button class="gc-btn-tertiary" onclick="gcShowWorkspace(gcCurrentGroupId)">Cancel</button>
+          <button class="gc-btn-primary" onclick="gcPlanStep2()">Continue to pre-flight check →</button>
+        </div>
+      </div>
+      <!-- Step 2: Pre-flight check -->
+      <div class="gc-create-step" id="gc-plan-step-2">
+        <div id="gc-preflight-header"></div>
+        <div class="gc-parcel-card" id="gc-parcel-summary-card"></div>
+        <div id="gc-check-list" class="gc-check-list"></div>
+        <div class="gc-settled-panel" id="gc-settled-panel" style="display:none">
+          <div class="gc-settled-eyebrow">Already settled</div>
+          <div class="gc-settled-grid" id="gc-settled-grid"></div>
+        </div>
+        <div class="gc-step-footer">
+          <button class="gc-btn-tertiary" onclick="gcPlanGoStep(1)">← Back</button>
+          <div style="font-size:12px;color:var(--textDim);flex:1;padding:0 12px">Once all issues are settled, we'll prepare a clean parcel for booking.</div>
+          <button class="gc-btn-primary" id="gc-plan-continue-btn" onclick="gcPlanStep3()">Continue to resolve →</button>
+        </div>
+      </div>
+      <!-- Step 3: Resolve -->
+      <div class="gc-create-step" id="gc-plan-step-3">
+        <div class="gc-step-h2">Resolve & track</div>
+        <div class="gc-step-lede">Track resolution of each item before locking the parcel.</div>
+        <div class="gc-parcel-card" id="gc-resolve-parcel-card"></div>
+        <div id="gc-resolve-log" class="gc-check-list"></div>
+        <div class="gc-step-footer">
+          <button class="gc-btn-tertiary" onclick="gcPlanGoStep(2)">← Back</button>
+          <button class="gc-btn-primary" onclick="gcPlanStep4()">Continue to hand off →</button>
+        </div>
+      </div>
+      <!-- Step 4: Hand off -->
+      <div class="gc-create-step" id="gc-plan-step-4">
+        <div class="gc-eyebrow" id="gc-handoff-eyebrow">PARCEL READY</div>
+        <div class="gc-step-h2">The parcel is ready to book.</div>
+        <div class="gc-step-lede">Identity, documents, preferences, and consents are pre-staged. Choose where you'd like to book.</div>
+        <div style="display:flex;flex-direction:column;gap:10px;max-width:520px">
+          <div class="gc-inference-card" style="cursor:default">
+            <div class="gc-inference-title" style="font-size:16px">Hand to a travel agent / TMC</div>
+            <div class="gc-inference-desc">Generate a parcel summary your agent can use at booking time — documents, preferences, and consents pre-staged.</div>
+            <button class="gc-btn-primary" style="margin-top:12px" onclick="gcExportParcel()">Generate parcel summary →</button>
+          </div>
+          <div class="gc-inference-card" style="cursor:default;opacity:0.6">
+            <div class="gc-inference-title" style="font-size:16px">Book directly with airline <span style="font-size:10px;font-family:'DM Sans';background:var(--surface2);padding:2px 7px;border-radius:100px;font-weight:500;color:var(--textMid);vertical-align:middle">coming soon</span></div>
+            <div class="gc-inference-desc">Generates a verifiable credential you present at airline.com. Phase 2.</div>
+          </div>
+          <div class="gc-inference-card" style="cursor:default;opacity:0.6">
+            <div class="gc-inference-title" style="font-size:16px">Browser autofill <span style="font-size:10px;font-family:'DM Sans';background:var(--surface2);padding:2px 7px;border-radius:100px;font-weight:500;color:var(--textMid);vertical-align:middle">coming soon</span></div>
+            <div class="gc-inference-desc">Populates OTA checkout via extension. Phase 2.</div>
+          </div>
+        </div>
+        <div class="gc-step-footer">
+          <button class="gc-btn-tertiary" onclick="gcPlanGoStep(3)">← Back</button>
+          <button class="gc-btn-primary" onclick="gcShowWorkspace(gcCurrentGroupId)">Done — back to group</button>
+        </div>
+      </div>
     </div>
-    <div id="grp-grid" class="grp-grid"></div>
-    <div id="grp-detail" class="grp-detail" style="display:none">
-      <button class="grp-back-btn" onclick="closeGroupDetail()">← Back to groups</button>
-      <div id="grp-detail-inner"></div>
+
+    <!-- ── Group creation flow ──────────────────────────────── -->
+    <div id="gc-view-create" style="display:none">
+      <button class="gc-breadcrumb" onclick="gcShowList()">← Back to groups</button>
+      <div class="gc-create-flow">
+        <!-- Step 1: People -->
+        <div class="gc-create-step active" id="gc-create-step-1">
+          <div class="gc-eyebrow">NEW GROUP</div>
+          <div class="gc-step-h2">Who travels with you?</div>
+          <div class="gc-step-lede">Add a few people. We'll figure out the rest.</div>
+          <div class="gc-add-person-row">
+            <input class="gc-add-person-input" id="gc-add-person-input" placeholder="Name, email, or UP-XXXX-XXXX" onkeydown="if(event.key==='Enter')gcAddPerson()" />
+            <button class="gc-btn-secondary" onclick="gcAddPerson()">Add</button>
+          </div>
+          <div id="gc-person-cards"></div>
+          <div class="gc-step-footer">
+            <button class="gc-btn-tertiary" onclick="gcShowList()">Cancel</button>
+            <button class="gc-btn-primary" onclick="gcCreateStep2()" id="gc-create-next-1">Continue →</button>
+          </div>
+        </div>
+        <!-- Step 2: Type inference -->
+        <div class="gc-create-step" id="gc-create-step-2">
+          <div class="gc-eyebrow">BASED ON WHO YOU ADDED</div>
+          <div id="gc-inferred-header"></div>
+          <div class="gc-inference-card" id="gc-inference-card"></div>
+          <div style="margin-top:10px">
+            <button class="gc-alert-link" style="font-size:12px;color:var(--textDim)" onclick="gcToggleTypeOverride()">Change group type</button>
+            <div id="gc-type-override" style="display:none;margin-top:10px">
+              <select class="grp-input" id="gc-type-select" style="max-width:320px">
+                <option value="household_nuclear">Household — nuclear</option>
+                <option value="household_couple">Household — couple</option>
+                <option value="household_multigenerational">Household — multi-generational</option>
+                <option value="care_group">Care group — accessibility companion</option>
+                <option value="travel_friends">Travel group — friends</option>
+                <option value="travel_large">Travel group — large</option>
+                <option value="travel_group">Travel group — general</option>
+              </select>
+            </div>
+          </div>
+          <div class="gc-step-footer">
+            <button class="gc-btn-tertiary" onclick="gcCreateGoStep(1)">← Back</button>
+            <button class="gc-btn-primary" onclick="gcCreateStep3()">Continue →</button>
+          </div>
+        </div>
+        <!-- Step 3: Name -->
+        <div class="gc-create-step" id="gc-create-step-3">
+          <div class="gc-eyebrow">ALMOST DONE</div>
+          <div class="gc-step-h2" id="gc-name-step-h2">What do you call your group?</div>
+          <div class="gc-step-lede">This is just for you — only members of this group will see the name.</div>
+          <input class="gc-add-person-input" id="gc-group-name-input" placeholder="e.g. Patel household" style="margin-bottom:12px" onkeydown="if(event.key==='Enter')gcCreateGroup()" />
+          <div class="gc-step-footer">
+            <button class="gc-btn-tertiary" onclick="gcCreateGoStep(2)">← Back</button>
+            <button class="gc-btn-primary" id="gc-create-final-btn" onclick="gcCreateGroup()">Create group →</button>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <hr class="gc-section-divider" style="margin-top:40px">
+
+    <!-- ── Legacy groups (existing coordinator) ─────────────── -->
+    <div id="gc-legacy-section">
+      <div class="sec-header" style="margin-bottom:24px">
+        <div style="flex:1">
+          <div class="sec-title" style="font-size:16px">Group coordinator</div>
+          <div class="sec-sub" style="font-size:12px">Flight PNRs, hotel, notes and member manifests for ad-hoc trips.</div>
+        </div>
+        <button class="grp-create-btn" onclick="openCreateGroupModal()" style="flex-shrink:0">+ New Group</button>
+      </div>
+      <div id="grp-empty" class="grp-empty" style="display:none">
+        <div class="grp-empty-icon">⬡</div>
+        <div class="grp-empty-title">No trip groups yet</div>
+        <div class="grp-empty-sub">Create a group to coordinate flights, hotels, and manifests for your crew.</div>
+        <button class="grp-create-btn" id="grp-empty-cta" onclick="openCreateGroupModal()" style="margin-top:1.5rem">Create your first group</button>
+      </div>
+      <div class="grp-type-pills" id="grp-type-filter">
+        <button class="grp-pill active" onclick="filterGroups('all', this)">All</button>
+        <button class="grp-pill" onclick="filterGroups('family', this)">Family</button>
+        <button class="grp-pill" onclick="filterGroups('golf', this)">Golf</button>
+        <button class="grp-pill" onclick="filterGroups('church', this)">Church / Tour</button>
+        <button class="grp-pill" onclick="filterGroups('corporate', this)">Corporate</button>
+        <button class="grp-pill" onclick="filterGroups('conference', this)">Conference</button>
+        <button class="grp-pill" onclick="filterGroups('school', this)">School</button>
+        <button class="grp-pill" onclick="filterGroups('sports', this)">Sports</button>
+        <button class="grp-pill" onclick="filterGroups('wedding', this)">Wedding</button>
+        <button class="grp-pill" onclick="filterGroups('military', this)">Military</button>
+        <button class="grp-pill" onclick="filterGroups('medical', this)">Medical</button>
+        <button class="grp-pill" onclick="filterGroups('volunteer', this)">Volunteer / NGO</button>
+        <button class="grp-pill" onclick="filterGroups('other', this)">Other</button>
+      </div>
+      <div id="grp-grid" class="grp-grid"></div>
+      <div id="grp-detail" class="grp-detail" style="display:none">
+        <button class="grp-back-btn" onclick="closeGroupDetail()">← Back to groups</button>
+        <div id="grp-detail-inner"></div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -6862,6 +7246,668 @@ async function toggleConsentSubPerm(moduleKey, subKey, value) {
 
 const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 let grpData = [];
+/* ══════════════════════════════════════════════════════════
+   GROUPS v2 — GCUUID architecture
+   ══════════════════════════════════════════════════════════ */
+let gcGroups=[];
+let gcCurrentGroupId=null;
+let gcCurrentParcelId=null;
+let gcCurrentChecks=[];
+let gcCreatePersons=[];
+let gcCreateStarterType=null;
+
+/* ── Avatar color palette (deterministic per name) ─────── */
+const GC_AV_PALETTE=[
+  {bg:'#e8f4f0',color:'#2d6a4f'},{bg:'#fef3e8',color:'#b45309'},{bg:'#e8eef8',color:'#3b5ba9'},
+  {bg:'#f3e8f8',color:'#7b2d8b'},{bg:'#fde8e8',color:'#b91c1c'},{bg:'#e8faf0',color:'#166534'},
+  {bg:'#fff8e8',color:'#92400e'},{bg:'#e8f8fc',color:'#0e7490'},
+];
+function gcAvatarColors(name){
+  let h=0;for(let i=0;i<(name||'').length;i++)h=(h*31+name.charCodeAt(i))&0xffff;
+  return GC_AV_PALETTE[h%GC_AV_PALETTE.length];
+}
+function gcInitials(name){
+  if(!name)return'?';
+  const p=name.trim().split(/\s+/);
+  return p.length>=2?(p[0][0]+p[p.length-1][0]).toUpperCase():name.slice(0,2).toUpperCase();
+}
+function gcRenderAvatar(name,size){
+  const av=gcAvatarColors(name);const sz=size||30;
+  return`<div class="gc-avatar" style="width:${sz}px;height:${sz}px;font-size:${Math.round(sz*0.38)}px;background:${av.bg};color:${av.color}">${gcInitials(name)}</div>`;
+}
+
+/* ── Type inference ────────────────────────────────────── */
+function gcInferType(persons){
+  const rels=persons.map(p=>p.rel);
+  const hasPartner=rels.some(r=>r==='partner');
+  const hasChild=rels.some(r=>r==='child');
+  const hasParent=rels.some(r=>r==='parent');
+  const allFriends=rels.every(r=>r==='friend');
+  const isAccessibility=rels.some(r=>r==='parent')&&persons.some(p=>p.rel==='parent'&&p.accessibility);
+  if(hasPartner&&hasChild&&hasParent)return{type:'household_multigenerational',label:'Household',sub:'Multi-generational'};
+  if(hasPartner&&hasChild)return{type:'household_nuclear',label:'Household',sub:'Nuclear'};
+  if(hasPartner&&!hasChild)return{type:'household_couple',label:'Household',sub:'Couple'};
+  if(isAccessibility)return{type:'care_group',label:'Care group',sub:'Accessibility companion'};
+  if(hasParent&&!hasPartner)return{type:'care_group',label:'Care group',sub:'Accessibility companion'};
+  if(allFriends&&persons.length>=2)return{type:'travel_friends',label:'Travel group',sub:'Friends'};
+  if(persons.length>=5)return{type:'travel_large',label:'Travel group',sub:'Large'};
+  return{type:'travel_group',label:'Travel group',sub:'General'};
+}
+function gcTypeDescription(type){
+  const map={
+    household_multigenerational:'A multi-generational household. Members manage their own data. You\'ll see a unified view of trips, documents, and preferences across the household.',
+    household_nuclear:'A household — you, your partner, and your kids. Each adult is self-managing; children are managed by you until 16.',
+    household_couple:'A household — you and your partner. Both adults manage their own data.',
+    care_group:'A care group — an accessibility companion arrangement. The care receiver\'s data is managed per their consent, with medical alerts pre-configured.',
+    travel_friends:'A travel group for friends. Everyone is self-managing. Great for trip planning and document coordination.',
+    travel_large:'A larger travel group. Ideal for tours, retreats, or events with 5+ travelers.',
+    travel_group:'A general travel group. Flexible structure for any mix of travelers.',
+  };
+  return map[type]||'A group of travelers who share trip coordination through UniProfile.';
+}
+
+/* ── View navigation ───────────────────────────────────── */
+function gcShowList(){
+  document.getElementById('gc-view-list').style.display='';
+  document.getElementById('gc-view-workspace').style.display='none';
+  document.getElementById('gc-view-plan').style.display='none';
+  document.getElementById('gc-view-create').style.display='none';
+  gcCurrentGroupId=null;
+}
+function gcShowWorkspace(groupId){
+  document.getElementById('gc-view-list').style.display='none';
+  document.getElementById('gc-view-workspace').style.display='';
+  document.getElementById('gc-view-plan').style.display='none';
+  document.getElementById('gc-view-create').style.display='none';
+  gcCurrentGroupId=groupId;
+  gcRenderWorkspace(groupId);
+  gcSwitchTab('members',document.querySelector('.gc-tab'));
+}
+function gcShowCreateView(){
+  document.getElementById('gc-view-list').style.display='none';
+  document.getElementById('gc-view-workspace').style.display='none';
+  document.getElementById('gc-view-plan').style.display='none';
+  document.getElementById('gc-view-create').style.display='';
+}
+function gcShowPlanView(groupId){
+  document.getElementById('gc-view-list').style.display='none';
+  document.getElementById('gc-view-workspace').style.display='none';
+  document.getElementById('gc-view-plan').style.display='';
+  document.getElementById('gc-view-create').style.display='none';
+  gcCurrentGroupId=groupId;
+  gcPlanGoStep(1);
+  gcRenderPlanMemberList();
+}
+
+/* ── Load & render groups list ─────────────────────────── */
+async function gcLoadGroups(){
+  if(!uuid)return;
+  try{
+    const res=await api('GET','/api/v1/gcgroups/'+uuid);
+    gcGroups=res.groups||[];
+    gcRenderGroupList();
+  }catch(e){
+    console.warn('[GCGroups] load failed:',e.message);
+    gcGroups=[];
+    gcRenderGroupList();
+  }
+}
+function gcRenderGroupList(){
+  const list=document.getElementById('gc-group-list');
+  const empty=document.getElementById('gc-empty-state');
+  const createBtn=document.getElementById('gc-create-btn');
+  const lede=document.getElementById('gc-lede-text');
+  if(!list)return;
+  if(!gcGroups.length){
+    list.innerHTML='';
+    if(empty)empty.style.display='';
+    if(createBtn)createBtn.style.display='none';
+    if(lede)lede.textContent='Create a group to start coordinating travel with your household, friends, or any crew.';
+    return;
+  }
+  if(empty)empty.style.display='none';
+  if(createBtn)createBtn.style.display='';
+  if(lede)lede.textContent=gcGroups.length+' group'+(gcGroups.length>1?'s':'')+'. Each with their own context, documents, and quiet permissions.';
+  list.innerHTML=gcGroups.map(g=>{
+    const members=g.members||[];
+    const typeLabel=gcTypeLabel(g.inferred_type);
+    const statusCls=g.status==='active'?'gc-status-active':g.status==='planning'?'gc-status-planning':'gc-status-standby';
+    const statusTxt=g.status==='active'?'Active':g.status==='planning'?'Planning':'Standby';
+    // avatar stack
+    const show=members.slice(0,5);
+    const extra=members.length-5;
+    const avStack=`<div class="gc-avatar-stack">${show.map((m,i)=>
+      `<div class="gc-avatar" style="z-index:${10-i};background:${gcAvatarColors(m.invited_name).bg};color:${gcAvatarColors(m.invited_name).color};font-size:10px">${gcInitials(m.invited_name)}</div>`
+    ).join('')}${extra>0?`<div class="gc-avatar gc-avatar-more">+${extra}</div>`:''}</div>`;
+    const memberSummary=gcMemberSummary(members);
+    // quick stats
+    const nextTrip=g.latest_parcel?gcFmtDate(g.latest_parcel.dep_date)+' · '+(g.latest_parcel.destination||'—'):'—';
+    // doc readiness — surface amber if any member attention (simplified)
+    const docStatus='—';
+    // focus border if has latest_parcel
+    const focusCls=g.latest_parcel?'focus':'';
+    return`<div class="gc-group-card ${focusCls}">
+      <div class="gc-group-card-top">
+        <div>
+          <div class="gc-group-type-label">${esc(typeLabel)}</div>
+          <div class="gc-group-name">${esc(g.name)}</div>
+        </div>
+        <span class="gc-status-pill ${statusCls}">${statusTxt}</span>
+      </div>
+      <div class="gc-avatars">${avStack}<span class="gc-avatar-summary">${esc(memberSummary)}</span></div>
+      <div class="gc-stats-grid">
+        <div class="gc-stat"><div class="gc-stat-label">Next trip</div><div class="gc-stat-val">${esc(nextTrip)}</div></div>
+        <div class="gc-stat" style="text-align:center"><div class="gc-stat-label">Members</div><div class="gc-stat-val">${members.length}</div></div>
+        <div class="gc-stat"><div class="gc-stat-label">GCUUID</div><div class="gc-stat-val" style="font-family:'JetBrains Mono',monospace;font-size:10px">${esc(g.gcuuid)}</div></div>
+      </div>
+      <div class="gc-card-actions" style="margin-top:14px">
+        <button class="gc-btn-primary" onclick="gcShowWorkspace('${esc(g.id)}')">Open ${g.inferred_type&&g.inferred_type.startsWith('household')?'household':'group'}</button>
+        <button class="gc-btn-secondary" onclick="gcShowPlanView('${esc(g.id)}')">Plan a trip</button>
+        <button class="gc-btn-tertiary" onclick="gcShowWorkspace('${esc(g.id)}');setTimeout(()=>gcSwitchTab('documents',document.querySelectorAll('.gc-tab')[2]),100)">Document matrix</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function gcTypeLabel(type){
+  const m={
+    household_multigenerational:'Household · Multi-generational',household_nuclear:'Household · Nuclear',
+    household_couple:'Household · Couple',care_group:'Care group · Accessibility companion',
+    travel_friends:'Travel group · Friends',travel_large:'Travel group · Large',travel_group:'Travel group',
+  };
+  return m[type]||type||'Group';
+}
+function gcMemberSummary(members){
+  if(!members.length)return'No members yet';
+  const you=members.find(m=>m.relationship==='self');
+  const partner=members.find(m=>m.relationship==='partner');
+  const kids=members.filter(m=>m.relationship==='child');
+  const parents=members.filter(m=>m.relationship==='parent');
+  const parts=[];
+  if(you)parts.push('you');
+  if(partner)parts.push('partner');
+  if(kids.length===1)parts.push('1 child');else if(kids.length>1)parts.push(kids.length+' kids');
+  if(parents.length===1)parts.push('parent');else if(parents.length>1)parts.push(parents.length+' parents');
+  const others=members.length-(you?1:0)-(partner?1:0)-kids.length-parents.length;
+  if(others>0)parts.push(others+' other'+(others>1?'s':''));
+  return members.length+' members'+(parts.length?' · '+parts.join(', '):'');
+}
+function gcFmtDate(iso){
+  if(!iso)return'—';
+  const d=new Date(iso);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+function gcFmtDateLong(iso){
+  if(!iso)return'—';
+  const d=new Date(iso);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+
+/* ── Group workspace ───────────────────────────────────── */
+async function gcRenderWorkspace(groupId){
+  // Re-fetch group detail
+  let groupDetail=null;
+  try{
+    const res=await api('GET','/api/v1/gcgroups/'+uuid+'/'+groupId);
+    groupDetail=res;
+  }catch(e){
+    console.warn('[GCGroups] workspace load failed:',e.message);
+    return;
+  }
+  const g=groupDetail.group;
+  const members=groupDetail.members||[];
+  const parcels=groupDetail.parcels||[];
+  const consents=groupDetail.consents||[];
+  const docMatrix=groupDetail.doc_matrix||[];
+  // Store on window for tab renders
+  window._gcWorkspace={g,members,parcels,consents,docMatrix};
+  // Header
+  const typeLabel=gcTypeLabel(g.inferred_type);
+  const membersCount=members.length;
+  document.getElementById('gc-workspace-header').innerHTML=`
+    <div class="gc-eyebrow">${esc(typeLabel)} · ${membersCount} member${membersCount!==1?'s':''}</div>
+    <div class="gc-workspace-title">${esc(g.name)}.</div>
+    <div class="gc-workspace-lede">You created this group. Every adult member controls their own data.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+      <button class="gc-btn-primary" onclick="gcOpenAddMember()">+ Add member</button>
+      <button class="gc-btn-secondary" onclick="gcShowPlanView('${esc(g.id)}')">Plan a trip</button>
+      <button class="gc-btn-tertiary" style="color:var(--red);border-color:rgba(196,77,77,0.3)" onclick="gcDeleteGroup('${esc(g.id)}')">Delete group</button>
+    </div>
+  `;
+  gcRenderTabContent('members',members,parcels,consents,docMatrix,g);
+}
+function gcSwitchTab(tab,btn){
+  document.querySelectorAll('.gc-tab').forEach(t=>t.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  document.querySelectorAll('.gc-tab-content').forEach(t=>t.classList.remove('active'));
+  const tabEl=document.getElementById('gc-tab-'+tab);
+  if(tabEl)tabEl.classList.add('active');
+  const ws=window._gcWorkspace;
+  if(!ws)return;
+  gcRenderTabContent(tab,ws.members,ws.parcels,ws.consents,ws.docMatrix,ws.g);
+}
+function gcRenderTabContent(tab,members,parcels,consents,docMatrix,g){
+  if(tab==='members'){
+    document.getElementById('gc-tab-members').innerHTML=gcRenderMembersTab(members,g);
+  } else if(tab==='trips'){
+    document.getElementById('gc-tab-trips').innerHTML=gcRenderTripsTab(parcels,g);
+  } else if(tab==='documents'){
+    document.getElementById('gc-tab-documents').innerHTML=gcRenderDocumentsTab(docMatrix,parcels);
+  } else if(tab==='preferences'){
+    document.getElementById('gc-tab-preferences').innerHTML=gcRenderPreferencesTab(members);
+  } else if(tab==='permissions'){
+    document.getElementById('gc-tab-permissions').innerHTML=gcRenderPermissionsTab(consents);
+  }
+}
+function gcRenderMembersTab(members,g){
+  if(!members.length)return`<div style="color:var(--textDim);font-size:13px;padding:16px 0">No members yet. <button class="gc-btn-secondary" style="padding:6px 12px;font-size:12px" onclick="gcOpenAddMember()">Add first member</button></div>`;
+  return`<div class="gc-member-list">`+members.map(m=>{
+    const av=gcAvatarColors(m.invited_name);
+    const isSelf=m.relationship==='self';
+    const roleLabel=isSelf?'You · primary':m.relationship==='partner'?'Partner':m.relationship==='child'?'Child'+(m.age?' · age '+m.age:''):m.relationship==='parent'?'Parent':m.relationship||'Member';
+    const mgmtLabel=m.management==='self'?'self-managed':'managed';
+    const upid=m.uniprofile_number||'—';
+    const hasAttention=!m.traveler_uuid&&!isSelf;
+    return`<div class="gc-member-card${hasAttention?' needs-attention':''}">
+      <div class="gc-member-avatar-lg" style="background:${av.bg};color:${av.color}">${gcInitials(m.invited_name)}</div>
+      <div>
+        <div class="gc-member-name">${esc(m.invited_name)}<span class="gc-member-role-badge">${esc(roleLabel)}</span></div>
+        <div class="gc-member-sub">${esc(upid)} · ${mgmtLabel}${m.invited_email?' · invite sent':''}${!m.traveler_uuid&&!isSelf?' · pending':''}
+        </div>
+      </div>
+      <div>
+        <span class="gc-member-status-pill ${m.traveler_uuid||isSelf?'gc-member-ready':'gc-member-attention'}">${m.traveler_uuid||isSelf?'Ready':'Invite sent'}</span>
+        ${!isSelf?`<br><button class="gc-btn-tertiary" style="font-size:11px;padding:4px 8px;margin-top:6px;color:var(--red);border-color:rgba(196,77,77,0.25)" onclick="gcRemoveMember('${esc(g.id)}','${m.id}')">Remove</button>`:''}
+      </div>
+    </div>`;
+  }).join('')+`</div>`;
+}
+function gcRenderTripsTab(parcels,g){
+  if(!parcels.length)return`<div style="padding:24px 0;text-align:center"><div style="font-family:'Playfair Display',serif;font-size:18px;font-weight:300;color:var(--textMid);margin-bottom:16px">No group trips yet.</div><button class="gc-btn-primary" onclick="gcShowPlanView('${esc(g.id)}')">Plan a trip →</button></div>`;
+  return parcels.map(p=>{
+    const statusCls=p.status==='committed'?'grp-alert-ok':p.status==='draft'?'grp-alert-info':'grp-alert-warn';
+    return`<div class="gc-group-card" style="margin-bottom:10px;cursor:default">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div class="gc-parcel-eyebrow">${esc(p.parcel_number||'PARCEL')}</div>
+          <div class="gc-group-name" style="font-size:18px">${esc(p.destination||'—')}</div>
+          <div style="font-size:12px;color:var(--textDim);font-family:'DM Sans',sans-serif;margin-top:4px">${gcFmtDateLong(p.dep_date)} – ${gcFmtDateLong(p.ret_date)}</div>
+        </div>
+        <span class="grp-alert-chip ${statusCls}" style="text-transform:capitalize">${p.status||'draft'}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+function gcRenderDocumentsTab(docMatrix,parcels){
+  const ctx=parcels.length?parcels[0].destination:'all upcoming trips';
+  if(!docMatrix.length)return`<div style="color:var(--textDim);font-size:13px;padding:16px 0">No member documents on file. Members need to add their passport details to appear here.</div>`;
+  const docTypes=[...new Set(docMatrix.flatMap(m=>m.docs.map(d=>d.doc_type)))];
+  const today=new Date();
+  const sixMoOut=new Date();sixMoOut.setMonth(sixMoOut.getMonth()+6);
+  function docStatus(d){
+    if(!d)return null;
+    const exp=new Date(d.expiry_date);
+    if(exp<today)return'red';
+    if(exp<sixMoOut)return'amber';
+    return'green';
+  }
+  function docCell(d){
+    if(!d)return`<td style="color:var(--textHint)">—</td>`;
+    const st=docStatus(d);
+    const exp=d.expiry_date?new Date(d.expiry_date).getFullYear():'';
+    const dot=`<span class="gc-doc-dot gc-doc-${st}"></span>`;
+    return`<td>${dot}${exp}</td>`;
+  }
+  const hasAmber=m=>m.docs.some(d=>['red','amber'].includes(docStatus(d)));
+  return`<div style="font-size:11px;color:var(--textDim);margin-bottom:12px;font-family:'DM Sans',sans-serif">Across ${esc(ctx)}</div>
+  <div class="gc-matrix-wrap"><table class="gc-matrix">
+    <thead><tr><th>Member</th>${docTypes.map(t=>`<th>${esc(t.toUpperCase())}</th>`).join('')}</tr></thead>
+    <tbody>${docMatrix.map(m=>{
+      const rowCls=hasAmber(m)?'row-attention':'';
+      return`<tr class="${rowCls}"><td style="font-weight:500">${esc(m.member_name)}</td>${docTypes.map(t=>{
+        const d=m.docs.find(dd=>dd.doc_type===t);
+        return docCell(d);
+      }).join('')}</tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+function gcRenderPreferencesTab(members){
+  const onPlatform=members.filter(m=>m.traveler_uuid);
+  if(onPlatform.length<2)return`<div class="gc-pref-empty">Patterns will appear as your group takes trips together and more members join the platform.</div>`;
+  return`<div style="font-family:'Playfair Display',serif;font-size:15px;font-style:italic;color:var(--textMid);margin-bottom:16px">A few things we noticed about this group</div>
+  <div class="gc-pref-item">All ${onPlatform.length} connected members have their travel identity on file — ready for booking.</div>
+  <div class="gc-pref-item">Per-member dietary and seat preferences are captured and can be included in any trip parcel.</div>
+  <div class="gc-pref-item">Each adult member controls their own data and consents independently.</div>
+  <div class="gc-pref-empty" style="margin-top:16px">Richer travel DNA patterns will appear after your first group trip.</div>`;
+}
+function gcRenderPermissionsTab(consents){
+  if(!consents.length)return`<div style="color:var(--textDim);font-size:13px;padding:16px 0">No consent records yet. Consents will appear here when members approve operator data requests.</div>`;
+  return consents.map(c=>{
+    const ts=c.granted_at?new Date(c.granted_at).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+    const isRevoked=c.revoked_at;
+    return`<div class="gc-perm-row">
+      <div class="gc-perm-op-icon">✈</div>
+      <div class="gc-perm-meta">
+        <div class="gc-perm-op-name">${esc(c.operator)}</div>
+        <div class="gc-perm-detail">${esc(c.purpose||'Data share')} · ${ts}${isRevoked?' · revoked':''}</div>
+      </div>
+      <span class="gc-perm-status ${isRevoked?'gc-perm-revoked':'gc-perm-granted'}">${isRevoked?'Revoked':'Active'}</span>
+    </div>`;
+  }).join('');
+}
+
+/* ── Add member modal ──────────────────────────────────── */
+function gcOpenAddMember(){
+  const html=`<div id="gc-add-modal" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1200;display:flex;align-items:center;justify-content:center;padding:1rem">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:460px;padding:24px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <span style="font-size:17px;font-weight:600;color:var(--text);font-family:'Playfair Display',serif">Add member</span>
+        <button style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--textDim)" onclick="document.getElementById('gc-add-modal').remove()">✕</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="grp-form-row"><label class="grp-label">Name *</label><input class="grp-input" id="gcm-name" placeholder="Jane Doe"/></div>
+        <div class="grp-form-row"><label class="grp-label">Email or UP-XXXX-XXXX</label><input class="grp-input" id="gcm-email" placeholder="jane@example.com or UP-XXXX-XXXX"/></div>
+        <div class="grp-form-2col">
+          <div class="grp-form-row"><label class="grp-label">Relationship</label>
+            <select class="grp-input" id="gcm-rel">
+              <option value="partner">Partner / Spouse</option><option value="child">Child</option>
+              <option value="parent">Parent</option><option value="sibling">Sibling</option>
+              <option value="friend">Friend</option><option value="companion">Travel companion</option>
+            </select>
+          </div>
+          <div class="grp-form-row"><label class="grp-label">Age (if child)</label><input class="grp-input" id="gcm-age" type="number" min="0" max="25" placeholder="e.g. 12"/></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px">
+        <button class="grp-btn-secondary" onclick="document.getElementById('gc-add-modal').remove()">Cancel</button>
+        <button class="gc-btn-primary" onclick="gcSaveAddMember()">Add member</button>
+      </div>
+    </div>
+  </div>`;
+  document.body.insertAdjacentHTML('beforeend',html);
+}
+async function gcSaveAddMember(){
+  if(!gcCurrentGroupId)return;
+  const name=document.getElementById('gcm-name').value.trim();
+  const email=document.getElementById('gcm-email').value.trim();
+  const rel=document.getElementById('gcm-rel').value;
+  const age=parseInt(document.getElementById('gcm-age').value)||null;
+  if(!name){toast('Name is required','error');return;}
+  const payload={name,relationship:rel};
+  if(email)payload.email=email;
+  if(age)payload.age=age;
+  if(email&&email.startsWith('UP-'))payload.up_id=email;
+  try{
+    await api('POST','/api/v1/gcgroups/'+uuid+'/'+gcCurrentGroupId+'/members',payload);
+    document.getElementById('gc-add-modal').remove();
+    toast('Member added','success');
+    gcShowWorkspace(gcCurrentGroupId);
+  }catch(e){toast('Could not add member — '+e.message,'error');}
+}
+async function gcRemoveMember(groupId,memberId){
+  if(!confirm('Remove this member from the group?'))return;
+  try{
+    await api('DELETE','/api/v1/gcgroups/'+uuid+'/'+groupId+'/members/'+memberId);
+    toast('Member removed','success');
+    gcShowWorkspace(groupId);
+  }catch(e){toast('Could not remove member','error');}
+}
+async function gcDeleteGroup(groupId){
+  if(!confirm('Delete this group? This cannot be undone.'))return;
+  try{
+    await api('DELETE','/api/v1/gcgroups/'+uuid+'/'+groupId);
+    toast('Group deleted','success');
+    await gcLoadGroups();
+    gcShowList();
+  }catch(e){toast('Could not delete group','error');}
+}
+
+/* ── Plan a trip ─────────────────────────────────────────── */
+function gcRenderPlanMemberList(){
+  const ws=window._gcWorkspace;
+  const el=document.getElementById('gc-plan-members-list');
+  if(!el)return;
+  if(!ws){el.innerHTML='<div style="color:var(--textDim);font-size:12px">Load the group first.</div>';return;}
+  const members=ws.members||[];
+  el.innerHTML=members.map(m=>`
+    <label style="display:flex;align-items:center;gap:10px;font-size:13px;font-family:'DM Sans',sans-serif;padding:6px 0;cursor:pointer">
+      <input type="checkbox" data-member-id="${esc(m.id)}" checked style="width:14px;height:14px">
+      ${gcRenderAvatar(m.invited_name,24)} ${esc(m.invited_name)}
+    </label>`).join('');
+}
+async function gcPlanStep2(){
+  const dest=document.getElementById('gc-plan-dest').value.trim();
+  const dep=document.getElementById('gc-plan-dep').value;
+  if(!dest||!dep){toast('Destination and departure date are required','error');return;}
+  const ret=document.getElementById('gc-plan-ret').value;
+  const checkedIds=[...document.querySelectorAll('#gc-plan-members-list input[type=checkbox]:checked')].map(i=>i.dataset.memberId);
+  // Create parcel + run checks
+  gcPlanGoStep(2);
+  document.getElementById('gc-preflight-header').innerHTML=`<div style="font-size:13px;color:var(--textMid);font-family:'DM Sans',sans-serif;padding:16px 0">Running pre-flight checks…</div>`;
+  document.getElementById('gc-check-list').innerHTML='';
+  document.getElementById('gc-parcel-summary-card').innerHTML=`<div class="gc-parcel-eyebrow">TRIP PARCEL · DRAFT</div><div class="gc-parcel-title">${esc(dest)}</div><div class="gc-parcel-sub">${gcFmtDateLong(dep)}${ret?' – '+gcFmtDateLong(ret):''} · ${checkedIds.length} traveler${checkedIds.length!==1?'s':''}</div>`;
+  try{
+    const res=await api('POST','/api/v1/gcgroups/'+uuid+'/'+gcCurrentGroupId+'/parcels',{destination:dest,dep_date:dep,ret_date:ret||dep,member_ids:checkedIds});
+    gcCurrentParcelId=res.parcel_id;
+    gcCurrentChecks=res.checks||[];
+    gcRenderPreflightChecks(res.checks,dest,dep,ret,checkedIds.length);
+    document.getElementById('gc-handoff-eyebrow').textContent='PARCEL READY · '+(res.parcel_number||'');
+    document.getElementById('gc-resolve-parcel-card').innerHTML=`<div class="gc-parcel-eyebrow">TRIP PARCEL · ${esc(res.parcel_number||'DRAFT')}</div><div class="gc-parcel-title">${esc(dest)}</div><div class="gc-parcel-sub">${gcFmtDateLong(dep)}${ret?' – '+gcFmtDateLong(ret):''}</div>`;
+  }catch(e){
+    document.getElementById('gc-preflight-header').innerHTML=`<div style="color:var(--red);font-size:13px;font-family:'DM Sans',sans-serif">Could not run checks: ${esc(e.message)}</div>`;
+  }
+}
+function gcRenderPreflightChecks(checks,dest,dep,ret,travelerCount){
+  const issues=checks.filter(c=>['blocker','critical','tradeoff'].includes(c.status));
+  const passed=checks.filter(c=>c.status==='pass');
+  const unknown=checks.filter(c=>c.status==='unknown');
+  // Header copy
+  let hHead,hLede;
+  if(!issues.length&&passed.length){hHead='Everything looks ready.';hLede='All '+passed.length+' checks passed. You can proceed to hand off.';}
+  else if(issues.length===1){hHead='One thing to settle before booking.';hLede='Fixable. Here\'s what we found.';}
+  else if(issues.length<=3){hHead=issues.length+' things to settle before booking.';hLede='Both are fixable. Here\'s what we found.';}
+  else{hHead='Several things to settle before booking.';hLede='Work through each item below, then continue to resolve.';}
+  document.getElementById('gc-preflight-header').innerHTML=`
+    <div class="gc-eyebrow">Pre-flight check · ${passed.length+issues.length} of ${checks.length} checked</div>
+    <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:400;color:var(--text);margin:4px 0 8px">${hHead}</div>
+    <div style="font-size:13px;color:var(--textMid);font-family:'DM Sans',sans-serif;margin-bottom:16px">${hLede}</div>`;
+  // Issue cards
+  const issueHTML=issues.map(c=>gcCheckCard(c)).join('');
+  // Unknown cards
+  const unknownHTML=unknown.map(c=>gcCheckCard(c)).join('');
+  document.getElementById('gc-check-list').innerHTML=issueHTML+unknownHTML;
+  // Settled panel
+  if(passed.length){
+    document.getElementById('gc-settled-panel').style.display='';
+    document.getElementById('gc-settled-grid').innerHTML=passed.map(c=>`<div class="gc-settled-item">✓ ${esc(c.headline||c.check_type)}</div>`).join('');
+  }
+}
+function gcCheckCard(c){
+  const cls=c.status==='pass'?'pass':c.status==='critical'?'critical':c.status==='blocker'?'blocker':c.status==='tradeoff'?'tradeoff':c.status==='resolved'?'resolved':'unknown';
+  const icon={pass:'✓',critical:'!',blocker:'⚠',tradeoff:'◈',resolved:'✓',unknown:'?'}[cls]||'?';
+  const iconBg={pass:'var(--green)',critical:'var(--red)',blocker:'var(--amber)',tradeoff:'var(--textDim)',resolved:'var(--green)',unknown:'var(--textHint)'}[cls];
+  const resolveBtn=(c.status==='blocker'||c.status==='tradeoff'||c.status==='critical')
+    ?`<button class="gc-check-resolve-btn" onclick="gcResolveCheck('${c.id||''}','${esc(c.check_type)}')">Mark as handled</button>`:'';
+  return`<div class="gc-check-card ${cls}" data-check-id="${c.id||''}">
+    <div style="display:flex;align-items:flex-start;gap:12px">
+      <div style="width:32px;height:32px;border-radius:50%;background:${iconBg};color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0">${icon}</div>
+      <div style="flex:1">
+        <div class="gc-check-headline">${esc(c.headline||c.check_type)}</div>
+        <div class="gc-check-detail">${esc(c.detail||'')}</div>
+        ${c.resolution?`<div class="gc-check-resolution">✓ ${esc(c.resolution)}</div>`:''}
+        ${resolveBtn?`<div class="gc-check-actions">${resolveBtn}</div>`:''}
+      </div>
+    </div>
+  </div>`;
+}
+async function gcResolveCheck(checkId,checkType){
+  const resolution=prompt('How did you handle this? (optional note)','Acknowledged — handled');
+  if(resolution===null)return;
+  if(checkId&&gcCurrentGroupId&&gcCurrentParcelId){
+    try{
+      await api('PUT','/api/v1/gcgroups/'+uuid+'/'+gcCurrentGroupId+'/parcels/'+gcCurrentParcelId+'/resolve',{check_id:checkId,resolution:resolution||'Acknowledged'});
+    }catch(e){console.warn('resolve failed:',e.message);}
+  }
+  // Update UI locally
+  const card=document.querySelector(`[data-check-id="${checkId}"]`);
+  if(card){
+    card.className='gc-check-card resolved';
+    const resDiv=card.querySelector('.gc-check-resolution');
+    if(resDiv)resDiv.textContent='✓ '+(resolution||'Acknowledged');
+    else card.querySelector('.gc-check-detail').insertAdjacentHTML('afterend',`<div class="gc-check-resolution">✓ ${esc(resolution||'Acknowledged')}</div>`);
+    const actDiv=card.querySelector('.gc-check-actions');
+    if(actDiv)actDiv.remove();
+  }
+  // Also update gcCurrentChecks for resolve log
+  const chk=gcCurrentChecks.find(c=>c.id===checkId||c.check_type===checkType);
+  if(chk){chk.status='resolved';chk.resolution=resolution||'Acknowledged';}
+  toast('Issue marked as handled','success');
+}
+function gcPlanGoStep(n){
+  [1,2,3,4].forEach(i=>{
+    const el=document.getElementById('gc-plan-step-'+i);
+    if(el)el.className='gc-create-step'+(i===n?' active':'');
+    const lbl=document.getElementById('gc-step-lbl-'+i);
+    if(lbl)lbl.className='gc-stepper-step'+(i<n?' done':i===n?' active':'');
+  });
+}
+function gcPlanStep3(){
+  gcPlanGoStep(3);
+  const checks=gcCurrentChecks||[];
+  document.getElementById('gc-resolve-log').innerHTML=checks.map(c=>gcCheckCard(c)).join('');
+}
+function gcPlanStep4(){gcPlanGoStep(4);}
+function gcExportParcel(){
+  const ws=window._gcWorkspace;
+  const checks=gcCurrentChecks||[];
+  const dest=document.getElementById('gc-plan-dest')?.value||'';
+  const dep=document.getElementById('gc-plan-dep')?.value||'';
+  const lines=['UniProfile Trip Parcel','='.repeat(40),''];
+  if(ws){
+    lines.push('Group: '+ws.g.name);
+    lines.push('GCUUID: '+ws.g.gcuuid);
+    lines.push('');
+    lines.push('Destination: '+dest);
+    lines.push('Departure: '+gcFmtDateLong(dep));
+    lines.push('');
+    lines.push('Members:');
+    (ws.members||[]).forEach(m=>lines.push('  · '+m.invited_name+(m.uniprofile_number?' ('+m.uniprofile_number+')':'')));
+    lines.push('');
+    lines.push('Pre-flight check results:');
+    checks.forEach(c=>lines.push('  ['+c.status.toUpperCase()+'] '+c.headline));
+  }
+  const blob=new Blob([lines.join('\n')],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='uniprofile-parcel.txt';a.click();
+  toast('Parcel summary downloaded','success');
+}
+
+/* ── Group creation flow ─────────────────────────────────── */
+function gcStartCreate(starterType){
+  gcCreatePersons=[];
+  gcCreateStarterType=starterType||null;
+  gcCreateGoStep(1);
+  gcShowCreateView();
+  gcRenderPersonCards();
+  document.getElementById('gc-add-person-input').value='';
+  // Pre-seed for starter types
+  if(starterType==='household'){
+    gcCreatePersons.push({name:'',rel:'partner',tmpId:'tmp-'+Date.now()});
+    gcCreatePersons.push({name:'',rel:'child',age:10,tmpId:'tmp-'+(Date.now()+1)});
+    gcRenderPersonCards();
+  } else if(starterType==='friends'){
+    gcCreatePersons.push({name:'',rel:'friend',tmpId:'tmp-'+Date.now()});
+    gcRenderPersonCards();
+  } else if(starterType==='care'){
+    gcCreatePersons.push({name:'',rel:'parent',accessibility:true,tmpId:'tmp-'+Date.now()});
+    gcRenderPersonCards();
+  }
+}
+function gcAddPerson(){
+  const inp=document.getElementById('gc-add-person-input');
+  const val=(inp.value||'').trim();
+  if(!val){toast('Enter a name, email, or UP-XXXX-XXXX','error');return;}
+  const p={name:val,rel:'companion',tmpId:'tmp-'+Date.now()};
+  if(val.startsWith('UP-')&&val.length===12)p.up_id=val;
+  else if(val.includes('@'))p.email=val;
+  gcCreatePersons.push(p);
+  inp.value='';
+  gcRenderPersonCards();
+}
+function gcRenderPersonCards(){
+  const el=document.getElementById('gc-person-cards');
+  if(!el)return;
+  el.innerHTML=gcCreatePersons.map((p,i)=>{
+    const av=gcAvatarColors(p.name||'?');
+    return`<div class="gc-person-card">
+      <div class="gc-person-av" style="background:${av.bg};color:${av.color}">${gcInitials(p.name||'?')}</div>
+      <div>
+        <input class="gc-person-name-input" value="${esc(p.name)}" placeholder="Full name" oninput="gcCreatePersons[${i}].name=this.value;gcUpdatePersonAv(${i})"/>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <select class="gc-person-rel-select" onchange="gcCreatePersons[${i}].rel=this.value">
+            <option value="partner"${p.rel==='partner'?' selected':''}>Partner / Spouse</option>
+            <option value="child"${p.rel==='child'?' selected':''}>Child</option>
+            <option value="parent"${p.rel==='parent'?' selected':''}>Parent</option>
+            <option value="sibling"${p.rel==='sibling'?' selected':''}>Sibling</option>
+            <option value="friend"${p.rel==='friend'?' selected':''}>Friend</option>
+            <option value="companion"${p.rel==='companion'?' selected':''}>Travel companion</option>
+          </select>
+          ${p.rel==='child'?`<input type="number" class="gc-person-rel-select" placeholder="Age" value="${p.age||''}" style="width:60px" oninput="gcCreatePersons[${i}].age=parseInt(this.value)||null"/>`:''}
+        </div>
+        ${p.email?`<div style="font-size:11px;color:var(--textDim);margin-top:4px;font-family:'DM Sans',sans-serif">${esc(p.email)}</div>`:''}
+        ${p.up_id?`<div style="font-size:11px;color:var(--teal);margin-top:4px;font-family:'JetBrains Mono',monospace">${esc(p.up_id)}</div>`:''}
+      </div>
+      <button class="gc-person-remove" onclick="gcCreatePersons.splice(${i},1);gcRenderPersonCards()">✕</button>
+    </div>`;
+  }).join('');
+}
+function gcUpdatePersonAv(i){
+  // Minimal re-render of avatar initial only
+  const cards=document.querySelectorAll('.gc-person-card');
+  if(cards[i]){const av=cards[i].querySelector('.gc-person-av');if(av)av.textContent=gcInitials(gcCreatePersons[i].name||'?');}
+}
+function gcCreateGoStep(n){
+  [1,2,3].forEach(i=>{
+    const el=document.getElementById('gc-create-step-'+i);
+    if(el)el.className='gc-create-step'+(i===n?' active':'');
+  });
+}
+function gcCreateStep2(){
+  if(!gcCreatePersons.length){toast('Add at least one person first','error');return;}
+  const inferred=gcInferType(gcCreatePersons);
+  const typeMap={household_multigenerational:'This looks like your household.',household_nuclear:'This looks like your household.',household_couple:'This looks like your household.',care_group:'This looks like a care group.',travel_friends:'This looks like a travel group.',travel_large:'This looks like a larger travel group.',travel_group:'This looks like a travel group.'};
+  document.getElementById('gc-inferred-header').innerHTML=`<div class="gc-step-h2" style="font-size:22px">${typeMap[inferred.type]||'Here\'s what we inferred.'}</div><div class="gc-step-lede">${esc(inferred.label)} — ${esc(inferred.sub.toLowerCase())}.</div>`;
+  document.getElementById('gc-inference-card').innerHTML=`<div class="gc-inference-title">${esc(inferred.label)} <span style="font-size:13px;color:var(--textDim);font-weight:400">· ${esc(inferred.sub)}</span></div><div class="gc-inference-desc">${gcTypeDescription(inferred.type)}</div>`;
+  // Set select default
+  const sel=document.getElementById('gc-type-select');if(sel)sel.value=inferred.type;
+  gcCreateGoStep(2);
+  // Set default name
+  const isHousehold=inferred.type.startsWith('household');
+  const pName=profile&&profile.identity?((profile.identity.legal_last||'').trim()||''):'';
+  document.getElementById('gc-group-name-input').value=isHousehold&&pName?pName+' household':'';
+  document.getElementById('gc-name-step-h2').textContent=isHousehold?'What do you call your household?':'What do you call your group?';
+}
+function gcToggleTypeOverride(){
+  const el=document.getElementById('gc-type-override');
+  if(el)el.style.display=el.style.display==='none'?'':'none';
+}
+function gcCreateStep3(){gcCreateGoStep(3);}
+async function gcCreateGroup(){
+  const name=document.getElementById('gc-group-name-input').value.trim();
+  if(!name){toast('Give your group a name','error');return;}
+  const overrideSel=document.getElementById('gc-type-select');
+  const inferred=gcInferType(gcCreatePersons);
+  const type=overrideSel&&document.getElementById('gc-type-override').style.display!=='none'?overrideSel.value:inferred.type;
+  const btn=document.getElementById('gc-create-final-btn');
+  btn.textContent='Creating…';btn.disabled=true;
+  try{
+    const initialMembers=gcCreatePersons.map(p=>({name:p.name||p.email||'Member',email:p.email,relationship:p.rel,age:p.age,up_id:p.up_id}));
+    const res=await api('POST','/api/v1/gcgroups/'+uuid,{name,inferred_type:type,initial_members:initialMembers});
+    await gcLoadGroups();
+    toast('Group created. Invites sent to '+gcCreatePersons.filter(p=>p.email).length+' members.','success');
+    gcShowWorkspace(res.group_id);
+  }catch(e){toast('Could not create group — '+e.message,'error');}
+  btn.textContent='Create group →';btn.disabled=false;
+}
+
 let grpCurrentFilter = 'all';
 let grpSelectedId = null;
 
@@ -7825,7 +8871,7 @@ function exportGroupManifest(id) {
   if (typeof orig === 'function') {
     window.showSection = function(id, btn) {
       orig(id, btn);
-      if (id === 'groups') grpRenderGrid(grpCurrentFilter);
+      if (id === 'groups') { grpRenderGrid(grpCurrentFilter); gcLoadGroups(); }
     };
   }
 })();

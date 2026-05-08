@@ -57,7 +57,7 @@ async function getOrCreateTraveler(sub,email){
         if(!clash.length)break;
         newId=generateUpId();
       }
-      await sql("UPDATE travelers SET uniprofile_number=:id WHERE uuid=:u",[strParam("id",newId),strParam("u",existing.uuid)]);
+      await sql("UPDATE travelers SET uniprofile_number=:id WHERE uuid=:u",[strParam("id",newId),uuidParam("u",existing.uuid)]);
     }
     return existing.uuid;
   }
@@ -548,7 +548,7 @@ exports.handler=async function(event){
       ].join('');
       try{
         await sesClient.send(new SendEmailCommand({
-          FromEmailAddress:'feedback@uniprofile.net',
+          FromEmailAddress:'invites@uniprofile.net',
           Destination:{ToAddresses:['rommel@uniworldinc.com']},
           ReplyToAddresses:email?[email]:[],
           Content:{Simple:{
@@ -984,6 +984,281 @@ exports.handler=async function(event){
       await sql("UPDATE travelers SET uniprofile_number=:id WHERE uuid=:u",[strParam("id",newId),uuidParam("u",uuid)]);
       return ok({success:true,uniprofile_number:newId},event);
     }
+    // ── Groups v2 (GCUUID architecture) ──────────────────────────────────────
+    // Generate a GCUUID
+    function generateGcuuid(){
+      const {randomBytes}=require('crypto');
+      const chars='23456789ABCDEFGHJKMNPQRSTVWXYZ';
+      let s='GC-';
+      for(let i=0;i<4;i++)s+=chars[randomBytes(1)[0]%chars.length];
+      s+='-';
+      for(let i=0;i<4;i++)s+=chars[randomBytes(1)[0]%chars.length];
+      return s;
+    }
+    function generateGroupId(){
+      const {randomBytes}=require('crypto');
+      const chars='ABCDEFGHJKMNPQRSTVWXYZ23456789';
+      let s='GRP-';
+      for(let i=0;i<8;i++)s+=chars[randomBytes(1)[0]%chars.length];
+      return s;
+    }
+    function generateParcelNumber(){
+      const {randomBytes}=require('crypto');
+      const chars='23456789ABCDEFGHJKMNPQRSTVWXYZ';
+      let s='UP-PARCEL-';
+      for(let i=0;i<4;i++)s+=chars[randomBytes(1)[0]%chars.length];
+      s+='-';
+      for(let i=0;i<4;i++)s+=chars[randomBytes(1)[0]%chars.length];
+      return s;
+    }
+
+    // GET /api/v1/gcgroups/{uuid} — list groups for traveler
+    if(method==="GET"&&path.match(/\/api\/v1\/gcgroups\/[^/]+$/)&&!path.includes("/members")&&!path.includes("/parcels")){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      if(myUuid!==uuid)return err("Access denied",event,403);
+      // Groups where user is owner or active member
+      const groups=await sql(`SELECT DISTINCT g.id,g.gcuuid,g.name,g.inferred_type,g.status,g.created_at,
+        (SELECT COUNT(*) FROM gc_group_members gm2 WHERE gm2.group_id=g.id AND gm2.status='active') as member_count
+        FROM gc_groups g
+        LEFT JOIN gc_group_members gm ON gm.group_id=g.id AND gm.traveler_uuid=:u AND gm.status='active'
+        WHERE g.owner_uuid=:u OR gm.traveler_uuid=:u
+        ORDER BY g.created_at DESC`,[uuidParam("u",myUuid)]);
+      // For each group, get members
+      const result=[];
+      for(const g of groups){
+        const members=await sql(`SELECT gm.id,gm.invited_name,gm.relationship,gm.role,gm.management,gm.status,gm.age,gm.traveler_uuid,gm.invited_email,
+          t.uniprofile_number FROM gc_group_members gm LEFT JOIN travelers t ON t.uuid=gm.traveler_uuid
+          WHERE gm.group_id=:gid AND gm.status='active' ORDER BY gm.created_at ASC`,[strParam("gid",g.id)]);
+        // latest parcel
+        const parcels=await sql(`SELECT id,destination,dep_date,ret_date,status,parcel_number FROM gc_trip_parcels WHERE group_id=:gid ORDER BY created_at DESC LIMIT 1`,[strParam("gid",g.id)]);
+        result.push({...g,members,latest_parcel:parcels[0]||null});
+      }
+      return ok({groups:result},event);
+    }
+
+    // POST /api/v1/gcgroups/{uuid} — create group
+    if(method==="POST"&&path.match(/\/api\/v1\/gcgroups\/[^/]+$/)&&!path.includes("/members")&&!path.includes("/parcels")){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      if(myUuid!==uuid)return err("Access denied",event,403);
+      const {name,inferred_type,initial_members}=body;
+      if(!name||!name.trim())return err("name required",event,400);
+      const gid=generateGroupId();
+      const gcuuid=generateGcuuid();
+      await sql(`INSERT INTO gc_groups (id,gcuuid,owner_uuid,name,inferred_type) VALUES (:id,:gcuuid,:u,:name,:type)`,
+        [strParam("id",gid),strParam("gcuuid",gcuuid),uuidParam("u",myUuid),strParam("name",name.trim()),strParam("type",inferred_type||"travel_group")]);
+      // Add creator as first member
+      const creatorInfo=await sql("SELECT legal_first,legal_last FROM traveler_identity WHERE traveler_uuid=:u",[uuidParam("u",myUuid)]);
+      const creatorName=creatorInfo[0]?(creatorInfo[0].legal_first||"")+" "+(creatorInfo[0].legal_last||""):"You";
+      await sql(`INSERT INTO gc_group_members (group_id,traveler_uuid,invited_name,relationship,role,management,status,joined_at) VALUES (:gid,:u,:name,'self','primary','self','active',NOW())`,
+        [strParam("gid",gid),uuidParam("u",myUuid),strParam("name",creatorName.trim()||"You")]);
+      // Add initial members
+      for(const m of (initial_members||[])){
+        await sql(`INSERT INTO gc_group_members (group_id,traveler_uuid,invited_email,invited_name,relationship,role,management,age,status) VALUES (:gid,:tuuid,:email,:name,:rel,'member',:mgmt,:age,'active')`,
+          [strParam("gid",gid),m.traveler_uuid?{name:"tuuid",value:{stringValue:m.traveler_uuid},typeHint:"UUID"}:{name:"tuuid",value:{isNull:true}},
+           strParam("email",m.email),strParam("name",m.name||"Member"),strParam("rel",m.relationship||"companion"),
+           strParam("mgmt",(m.age&&m.age<16)?"managed":"self"),numParam("age",m.age||null)]);
+      }
+      return ok({success:true,group_id:gid,gcuuid},event,201);
+    }
+
+    // GET /api/v1/gcgroups/{uuid}/{groupId} — get group detail
+    if(method==="GET"&&path.match(/\/api\/v1\/gcgroups\/[^/]+\/GRP-[^/]+$/)&&!path.includes("/members/")&&!path.includes("/parcels")){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split("/");const groupId=parts[parts.length-1];
+      // verify access
+      const access=await sql(`SELECT 1 FROM gc_groups g LEFT JOIN gc_group_members gm ON gm.group_id=g.id AND gm.traveler_uuid=:u AND gm.status='active'
+        WHERE g.id=:gid AND (g.owner_uuid=:u OR gm.traveler_uuid=:u)`,[uuidParam("u",myUuid),strParam("gid",groupId)]);
+      if(!access.length)return err("Not found or access denied",event,404);
+      const g=(await sql("SELECT * FROM gc_groups WHERE id=:gid",[strParam("gid",groupId)]))[0];
+      const members=await sql(`SELECT gm.*,t.uniprofile_number FROM gc_group_members gm LEFT JOIN travelers t ON t.uuid=gm.traveler_uuid WHERE gm.group_id=:gid AND gm.status='active' ORDER BY gm.created_at ASC`,[strParam("gid",groupId)]);
+      const parcels=await sql("SELECT * FROM gc_trip_parcels WHERE group_id=:gid ORDER BY created_at DESC",[strParam("gid",groupId)]);
+      const consents=await sql("SELECT * FROM gc_consent_grants WHERE group_id=:gid ORDER BY granted_at DESC LIMIT 20",[strParam("gid",groupId)]);
+      // doc matrix: for each member who has a traveler_uuid, get their docs
+      const docMatrix=[];
+      for(const m of members){
+        if(!m.traveler_uuid)continue;
+        const docs=await sql(`SELECT doc_type,expiry_date,days_remaining FROM travel_documents WHERE traveler_uuid=:u ORDER BY is_primary DESC`,[uuidParam("u",m.traveler_uuid)]);
+        docMatrix.push({member_id:m.id,member_name:m.invited_name,docs});
+      }
+      return ok({group:g,members,parcels,consents,doc_matrix:docMatrix},event);
+    }
+
+    // POST /api/v1/gcgroups/{uuid}/{groupId}/members — add member
+    if(method==="POST"&&path.match(/\/api\/v1\/gcgroups\/[^/]+\/GRP-[^/]+\/members$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split("/");const groupId=parts[parts.indexOf("members")-1];
+      const own=await sql("SELECT 1 FROM gc_groups WHERE id=:gid AND owner_uuid=:u",[strParam("gid",groupId),uuidParam("u",myUuid)]);
+      if(!own.length)return err("Only group owner can add members",event,403);
+      const {name,email,relationship,age,up_id}=body;
+      if(!name||!name.trim())return err("name required",event,400);
+      // Try to resolve traveler_uuid from UP id or email
+      let targetUuid=null;
+      if(up_id&&validateUpId(up_id)){
+        const found=await sql("SELECT uuid FROM travelers WHERE uniprofile_number=:id",[strParam("id",up_id)]);
+        if(found.length)targetUuid=found[0].uuid;
+      }
+      if(!targetUuid&&email){
+        const found=await sql("SELECT uuid FROM travelers WHERE LOWER(email)=LOWER(:e)",[strParam("e",email)]);
+        if(found.length)targetUuid=found[0].uuid;
+      }
+      const management=(age&&age<16)?"managed":"self";
+      const rows=await sql(`INSERT INTO gc_group_members (group_id,traveler_uuid,invited_email,invited_name,relationship,role,management,age,status,joined_at)
+        VALUES (:gid,:tuuid,:email,:name,:rel,'member',:mgmt,:age,'active',CASE WHEN :tuuid IS NOT NULL THEN NOW() ELSE NULL END) RETURNING id`,
+        [strParam("gid",groupId),targetUuid?uuidParam("tuuid",targetUuid):{name:"tuuid",value:{isNull:true}},
+         strParam("email",email),strParam("name",name.trim()),strParam("rel",relationship||"companion"),strParam("mgmt",management),numParam("age",age||null)]);
+      return ok({success:true,member_id:rows[0].id},event,201);
+    }
+
+    // DELETE /api/v1/gcgroups/{uuid}/{groupId}/members/{memberId} — remove member
+    if(method==="DELETE"&&path.match(/\/api\/v1\/gcgroups\/[^/]+\/GRP-[^/]+\/members\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split("/");const memberId=parts[parts.length-1];const groupId=parts[parts.indexOf("members")-1];
+      const own=await sql("SELECT 1 FROM gc_groups WHERE id=:gid AND owner_uuid=:u",[strParam("gid",groupId),uuidParam("u",myUuid)]);
+      if(!own.length)return err("Only group owner can remove members",event,403);
+      await sql("UPDATE gc_group_members SET status='removed' WHERE id=:mid AND group_id=:gid",[uuidParam("mid",memberId),strParam("gid",groupId)]);
+      return ok({success:true},event);
+    }
+
+    // POST /api/v1/gcgroups/{uuid}/{groupId}/parcels — create parcel + run pre-flight checks
+    if(method==="POST"&&path.match(/\/api\/v1\/gcgroups\/[^/]+\/GRP-[^/]+\/parcels$/)&&!path.includes("/parcels/")){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split("/");const groupId=parts[parts.indexOf("parcels")-1];
+      const access=await sql(`SELECT 1 FROM gc_groups g LEFT JOIN gc_group_members gm ON gm.group_id=g.id AND gm.traveler_uuid=:u AND gm.status='active'
+        WHERE g.id=:gid AND (g.owner_uuid=:u OR gm.traveler_uuid=:u)`,[uuidParam("u",myUuid),strParam("gid",groupId)]);
+      if(!access.length)return err("Access denied",event,403);
+      const {destination,dep_date,ret_date,member_ids}=body;
+      if(!destination||!dep_date)return err("destination and dep_date required",event,400);
+      const parcelNum=generateParcelNumber();
+      const rows=await sql(`INSERT INTO gc_trip_parcels (group_id,creator_uuid,destination,dep_date,ret_date,member_ids,parcel_number) VALUES (:gid,:u,:dest,:dep,:ret,:mids::jsonb,:pnum) RETURNING id`,
+        [strParam("gid",groupId),uuidParam("u",myUuid),strParam("dest",destination),
+         dateParam("dep",dep_date),dateParam("ret",ret_date||dep_date),
+         strParam("mids",JSON.stringify(member_ids||[])),strParam("pnum",parcelNum)]);
+      const parcelId=rows[0].id;
+      // Run 8 pre-flight checks
+      const selectedMemberIds=member_ids||[];
+      const members=selectedMemberIds.length>0
+        ? await sql(`SELECT gm.id,gm.invited_name,gm.traveler_uuid,gm.age FROM gc_group_members gm WHERE gm.group_id=:gid AND gm.status='active' AND gm.id::text=ANY(:mids::text[])`,
+            [strParam("gid",groupId),strParam("mids","{"+selectedMemberIds.join(",")+"}")])
+        : await sql(`SELECT gm.id,gm.invited_name,gm.traveler_uuid,gm.age FROM gc_group_members gm WHERE gm.group_id=:gid AND gm.status='active'`,[strParam("gid",groupId)]);
+      const retDateObj=ret_date?new Date(ret_date):new Date(dep_date);
+      const depDateObj=new Date(dep_date);
+      const today=new Date();
+      const daysUntilDep=Math.ceil((depDateObj-today)/(1000*60*60*24));
+      const sixMonthsFromRet=new Date(retDateObj);sixMonthsFromRet.setMonth(sixMonthsFromRet.getMonth()+6);
+      const checks=[];
+      for(const m of members){
+        if(!m.traveler_uuid)continue;
+        // Check 1: Passport validity
+        const docs=await sql(`SELECT doc_type,expiry_date,doc_number FROM travel_documents WHERE traveler_uuid=:u AND doc_type IN ('passport','PASSPORT') ORDER BY is_primary DESC LIMIT 1`,[uuidParam("u",m.traveler_uuid)]);
+        if(docs.length){
+          const exp=new Date(docs[0].expiry_date);
+          let status='pass',headline='',detail='';
+          if(exp<today){status=daysUntilDep<=14?'critical':'blocker';headline=m.invited_name+"'s passport is expired";detail="Expired "+exp.toLocaleDateString();}
+          else if(exp<sixMonthsFromRet){status=daysUntilDep<=14?'critical':'blocker';headline=m.invited_name+"'s passport expires before the 6-month threshold";detail="Expires "+exp.toLocaleDateString()+". Most destinations require 6 months validity beyond return date.";}
+          else{headline=m.invited_name+"'s passport is valid";detail="Expires "+exp.toLocaleDateString()+"."}
+          checks.push({parcel_id:parcelId,check_type:'passport_validity',member_id:m.traveler_uuid,member_name:m.invited_name,status,headline,detail});
+        } else {
+          checks.push({parcel_id:parcelId,check_type:'passport_validity',member_id:m.traveler_uuid,member_name:m.invited_name,status:'unknown',headline:m.invited_name+"'s passport — not on file",detail:"Add passport details to run this check."});
+        }
+        // Check 4: KTN/Global Entry
+        const ktn=await sql("SELECT ktn FROM traveler_identity WHERE traveler_uuid=:u",[uuidParam("u",m.traveler_uuid)]);
+        const hasKtn=ktn.length&&ktn[0].ktn;
+        checks.push({parcel_id:parcelId,check_type:'ktn_global_entry',member_id:m.traveler_uuid,member_name:m.invited_name,
+          status:hasKtn?'pass':'tradeoff',headline:hasKtn?m.invited_name+" has KTN / Global Entry":m.invited_name+" — no KTN or Global Entry on file",
+          detail:hasKtn?"Pre-check enrolled.":"Consider enrolling before travel to save time at security."});
+        // Check 7: Meal/dietary
+        const meal=await sql("SELECT meal_code FROM meal_preferences WHERE traveler_uuid=:u LIMIT 1",[uuidParam("u",m.traveler_uuid)]);
+        checks.push({parcel_id:parcelId,check_type:'meal_dietary',member_id:m.traveler_uuid,member_name:m.invited_name,
+          status:'pass',headline:meal.length?m.invited_name+"'s meal preference: "+(meal[0].meal_code||"standard"):m.invited_name+" — no meal preference set",
+          detail:meal.length?"Captured and ready for booking SSR.":"No dietary restriction recorded — standard meal assumed."});
+        // Check 8: Travel name match (doc name vs identity)
+        const identity=await sql("SELECT legal_first,legal_last FROM traveler_identity WHERE traveler_uuid=:u",[uuidParam("u",m.traveler_uuid)]);
+        const passDoc=await sql("SELECT given_names,surname FROM travel_documents WHERE traveler_uuid=:u AND doc_type IN ('passport','PASSPORT') ORDER BY is_primary DESC LIMIT 1",[uuidParam("u",m.traveler_uuid)]);
+        if(identity.length&&passDoc.length){
+          const iFirst=(identity[0].legal_first||"").toLowerCase().trim();
+          const iLast=(identity[0].legal_last||"").toLowerCase().trim();
+          const dFirst=(passDoc[0].given_names||"").toLowerCase().trim();
+          const dLast=(passDoc[0].surname||"").toLowerCase().trim();
+          const match=iFirst&&iLast&&dFirst&&dLast&&(iLast===dLast||dLast.includes(iLast)||iLast.includes(dLast));
+          checks.push({parcel_id:parcelId,check_type:'travel_name_match',member_id:m.traveler_uuid,member_name:m.invited_name,
+            status:match?'pass':'tradeoff',headline:match?m.invited_name+"'s name matches passport":m.invited_name+" — name mismatch, verify before booking",
+            detail:match?"Identity and passport names are consistent.":"Check that the booking name exactly matches the passport."});
+        }
+      }
+      // Checks 2,3,5,6 — Visa, Vaccinations, Accessibility, Insurance: stub as 'unknown' (Timatic/live API — Phase 2)
+      const stubChecks=[
+        {type:'visa_eligibility',headline:'Visa eligibility — not yet verified',detail:'Real-time visa check (Timatic) is Phase 2. Verify manually before booking.'},
+        {type:'vaccinations',headline:'Vaccination requirements — not yet verified',detail:'Check destination health authority for current requirements.'},
+        {type:'accessibility_match',headline:'Accessibility alignment — not yet verified',detail:'Carrier accessibility ratings coming in Phase 2.'},
+        {type:'insurance_coverage',headline:'Insurance coverage — not yet verified',detail:'Add insurance policies in the Insurance & Tours module to enable this check.'},
+      ];
+      for(const sc of stubChecks){
+        checks.push({parcel_id:parcelId,check_type:sc.type,member_id:null,member_name:null,status:'unknown',headline:sc.headline,detail:sc.detail});
+      }
+      // Insert all checks
+      for(const c of checks){
+        await sql(`INSERT INTO gc_parcel_checks (parcel_id,check_type,member_id,member_name,status,headline,detail) VALUES (:pid,:ct,:mid,:mn,:st,:hl,:dt)`,
+          [uuidParam("pid",c.parcel_id),strParam("ct",c.check_type),
+           c.member_id?uuidParam("mid",c.member_id):{name:"mid",value:{isNull:true}},
+           strParam("mn",c.member_name),strParam("st",c.status),strParam("hl",c.headline),strParam("dt",c.detail)]);
+      }
+      return ok({success:true,parcel_id:parcelId,parcel_number:parcelNum,checks},event,201);
+    }
+
+    // GET /api/v1/gcgroups/{uuid}/{groupId}/parcels/{parcelId} — get parcel with checks
+    if(method==="GET"&&path.match(/\/api\/v1\/gcgroups\/[^/]+\/GRP-[^/]+\/parcels\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split("/");const parcelId=parts[parts.length-1];
+      const parcel=(await sql("SELECT * FROM gc_trip_parcels WHERE id=:pid",[uuidParam("pid",parcelId)]))[0];
+      if(!parcel)return err("Parcel not found",event,404);
+      const checks=await sql("SELECT * FROM gc_parcel_checks WHERE parcel_id=:pid ORDER BY check_type,member_name",[uuidParam("pid",parcelId)]);
+      return ok({parcel,checks},event);
+    }
+
+    // PUT /api/v1/gcgroups/{uuid}/{groupId}/parcels/{parcelId}/resolve — mark a check resolved
+    if(method==="PUT"&&path.match(/\/api\/v1\/gcgroups\/[^/]+\/GRP-[^/]+\/parcels\/[^/]+\/resolve$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const {check_id,resolution}=body;
+      if(!check_id)return err("check_id required",event,400);
+      await sql("UPDATE gc_parcel_checks SET status='resolved',resolution=:res,resolved_at=NOW() WHERE id=:cid",[strParam("res",resolution||"acknowledged"),uuidParam("cid",check_id)]);
+      return ok({success:true},event);
+    }
+
+    // POST /api/v1/gcgroups/{uuid}/{groupId}/consent — log consent grant
+    if(method==="POST"&&path.match(/\/api\/v1\/gcgroups\/[^/]+\/GRP-[^/]+\/consent$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split("/");const groupId=parts[parts.indexOf("consent")-1];
+      const {operator,scope_tokens,purpose,parcel_id}=body;
+      if(!operator)return err("operator required",event,400);
+      const expires=new Date();expires.setHours(expires.getHours()+24);
+      await sql(`INSERT INTO gc_consent_grants (group_id,member_uuid,operator,scope_tokens,purpose,granted_by,expires_at,parcel_id) VALUES (:gid,:u,:op,:sc::jsonb,:pur,:gb,:exp,:pid)`,
+        [strParam("gid",parts[parts.indexOf("consent")-1]),uuidParam("u",myUuid),strParam("op",operator),
+         strParam("sc",JSON.stringify(scope_tokens||[])),strParam("pur",purpose),uuidParam("gb",myUuid),
+         strParam("exp",expires.toISOString()),parcel_id?uuidParam("pid",parcel_id):{name:"pid",value:{isNull:true}}]);
+      return ok({success:true},event);
+    }
+
+    // DELETE /api/v1/gcgroups/{uuid}/{groupId} — delete group
+    if(method==="DELETE"&&path.match(/\/api\/v1\/gcgroups\/[^/]+\/GRP-[^/]+$/)&&!path.includes("/members")&&!path.includes("/parcels")){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split("/");const groupId=parts[parts.length-1];
+      const own=await sql("SELECT 1 FROM gc_groups WHERE id=:gid AND owner_uuid=:u",[strParam("gid",groupId),uuidParam("u",myUuid)]);
+      if(!own.length)return err("Only group owner can delete",event,403);
+      await sql("DELETE FROM gc_groups WHERE id=:gid",[strParam("gid",groupId)]);
+      return ok({success:true},event);
+    }
+    // ── End Groups v2 ────────────────────────────────────────────────────────
+
     return err("Not found",event,404);
   }catch(e){
     if(e.status)return err(e.message,event,e.status);
