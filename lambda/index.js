@@ -79,7 +79,7 @@ async function buildProfile(uuid){
     sql("SELECT primary_meal_code,beverage_pref,allergies,avoid_items,dietary_notes FROM meal_preferences WHERE traveler_uuid=:u",p),
     sql("SELECT id,program_type,provider_name,program_name,member_number,tier_status,tier_expires,auto_apply,linked_card_type,linked_card_last4,points_balance,notes FROM loyalty_memberships WHERE traveler_uuid=:u AND is_active=TRUE ORDER BY program_type,provider_name",p),
     sql("SELECT active_context,last_switched_at FROM bleisure_context WHERE traveler_uuid=:u",p),
-    sql("SELECT profile_complete,tier,email,uniprofile_number FROM travelers WHERE uuid=:u",p),
+    sql("SELECT profile_complete,tier,email,uniprofile_number,display_name FROM travelers WHERE uuid=:u",p),
     sql("SELECT context,preferred_card,company_name,cost_center,policy_description,expense_platform,corporate_card FROM payment_profiles WHERE traveler_uuid=:u ORDER BY context",p),
     sql("SELECT id,trip_name,trip_locator,departure_date,return_date,origin_iata,destination_iata,trip_context,status,total_fare,currency,source_platform,notes FROM trips WHERE traveler_uuid=:u ORDER BY departure_date DESC LIMIT 50",p),
     sql("SELECT s.trip_id,s.id,s.segment_type,s.segment_order,s.carrier,s.flight_number,s.origin_iata,s.destination_iata,s.departure_datetime,s.arrival_datetime,s.cabin_class,s.seat_number,s.booking_ref,s.duration_minutes,s.aircraft_type FROM trip_segments s INNER JOIN trips t ON t.id=s.trip_id WHERE t.traveler_uuid=:u ORDER BY s.trip_id,s.segment_order",p),
@@ -117,7 +117,7 @@ async function buildProfile(uuid){
   const groups=groupRows.map(g=>({id:g.id,name:g.name,type:g.type,destination:g.destination,dep:g.dep,ret:g.ret,members:typeof g.members==="string"?JSON.parse(g.members):(g.members||[]),flights:typeof g.flights==="string"?JSON.parse(g.flights):(g.flights||[]),hotel:g.hotel?(typeof g.hotel==="string"?JSON.parse(g.hotel):g.hotel):null,notes:typeof g.notes==="string"?JSON.parse(g.notes):(g.notes||[])}));
   const profileModules={};
   moduleRows.forEach(r=>{try{profileModules[r.module_name]=typeof r.data==="string"?JSON.parse(r.data):r.data;}catch(e){profileModules[r.module_name]={};} });
-  return {uuid,uniprofile_number:meta[0]&&meta[0].uniprofile_number||null,email:meta[0]&&meta[0].email,tier:meta[0]&&meta[0].tier||"free",profile_completeness:meta[0]&&meta[0].profile_complete||0,active_context:bleisure[0]&&bleisure[0].active_context||"PERSONAL",identity:identity[0]||null,documents:docsWithExpiry,document_types:docTypesGrouped,seat_preferences:seat[0]||null,meal_preferences:mealData,...profileModules,loyalty_programs:loyalty,payment_profiles:payment,trips,trips_count:trips.length,groups,generated_at:new Date().toISOString()};
+  return {uuid,uniprofile_number:meta[0]&&meta[0].uniprofile_number||null,email:meta[0]&&meta[0].email,tier:meta[0]&&meta[0].tier||"free",profile_completeness:meta[0]&&meta[0].profile_complete||0,display_name:meta[0]&&meta[0].display_name||null,active_context:bleisure[0]&&bleisure[0].active_context||"PERSONAL",identity:identity[0]||null,documents:docsWithExpiry,document_types:docTypesGrouped,seat_preferences:seat[0]||null,meal_preferences:mealData,...profileModules,loyalty_programs:loyalty,payment_profiles:payment,trips,trips_count:trips.length,groups,generated_at:new Date().toISOString()};
 }
 async function updateModule(uuid,module,data){
   switch(module){
@@ -1028,7 +1028,9 @@ exports.handler=async function(event){
       const result=[];
       for(const g of groups){
         const members=await sql(`SELECT gm.id,gm.invited_name,gm.relationship,gm.role,gm.management,gm.status,gm.age,gm.traveler_uuid,gm.invited_email,
-          t.uniprofile_number FROM gc_group_members gm LEFT JOIN travelers t ON t.uuid=gm.traveler_uuid
+          t.uniprofile_number,t.display_name,ti.legal_first FROM gc_group_members gm
+          LEFT JOIN travelers t ON t.uuid=gm.traveler_uuid
+          LEFT JOIN traveler_identity ti ON ti.traveler_uuid=gm.traveler_uuid
           WHERE gm.group_id=:gid AND gm.status='active' ORDER BY gm.created_at ASC`,[strParam("gid",g.id)]);
         // latest parcel
         const parcels=await sql(`SELECT id,destination,dep_date,ret_date,status,parcel_number FROM gc_trip_parcels WHERE group_id=:gid ORDER BY created_at DESC LIMIT 1`,[strParam("gid",g.id)]);
@@ -1073,7 +1075,7 @@ exports.handler=async function(event){
         WHERE g.id=:gid AND (g.owner_uuid=:u OR gm.traveler_uuid=:u)`,[uuidParam("u",myUuid),strParam("gid",groupId)]);
       if(!access.length)return err("Not found or access denied",event,404);
       const g=(await sql("SELECT * FROM gc_groups WHERE id=:gid",[strParam("gid",groupId)]))[0];
-      const members=await sql(`SELECT gm.*,t.uniprofile_number FROM gc_group_members gm LEFT JOIN travelers t ON t.uuid=gm.traveler_uuid WHERE gm.group_id=:gid AND gm.status='active' ORDER BY gm.created_at ASC`,[strParam("gid",groupId)]);
+      const members=await sql(`SELECT gm.*,t.uniprofile_number,t.display_name,ti.legal_first FROM gc_group_members gm LEFT JOIN travelers t ON t.uuid=gm.traveler_uuid LEFT JOIN traveler_identity ti ON ti.traveler_uuid=gm.traveler_uuid WHERE gm.group_id=:gid AND gm.status='active' ORDER BY gm.created_at ASC`,[strParam("gid",groupId)]);
       const parcels=await sql("SELECT * FROM gc_trip_parcels WHERE group_id=:gid ORDER BY created_at DESC",[strParam("gid",groupId)]);
       const consents=await sql("SELECT * FROM gc_consent_grants WHERE group_id=:gid ORDER BY granted_at DESC LIMIT 20",[strParam("gid",groupId)]);
       // doc matrix: for each member who has a traveler_uuid, get their docs
@@ -1081,7 +1083,7 @@ exports.handler=async function(event){
       for(const m of members){
         if(!m.traveler_uuid)continue;
         const docs=await sql(`SELECT doc_type,expiry_date,days_remaining FROM travel_documents WHERE traveler_uuid=:u ORDER BY is_primary DESC`,[uuidParam("u",m.traveler_uuid)]);
-        docMatrix.push({member_id:m.id,member_name:m.invited_name,docs});
+        docMatrix.push({member_id:m.id,member_name:m._displayName,docs});
       }
       return ok({group:g,members,parcels,consents,doc_matrix:docMatrix},event);
     }
@@ -1143,9 +1145,11 @@ exports.handler=async function(event){
       // Run 8 pre-flight checks
       const selectedMemberIds=member_ids||[];
       const members=selectedMemberIds.length>0
-        ? await sql(`SELECT gm.id,gm.invited_name,gm.traveler_uuid,gm.age FROM gc_group_members gm WHERE gm.group_id=:gid AND gm.status='active' AND gm.id::text=ANY(:mids::text[])`,
+        ? await sql(`SELECT gm.id,gm.invited_name,gm.traveler_uuid,gm.age,t.display_name,ti.legal_first FROM gc_group_members gm LEFT JOIN travelers t ON t.uuid=gm.traveler_uuid LEFT JOIN traveler_identity ti ON ti.traveler_uuid=gm.traveler_uuid WHERE gm.group_id=:gid AND gm.status='active' AND gm.id::text=ANY(:mids::text[])`,
             [strParam("gid",groupId),strParam("mids","{"+selectedMemberIds.join(",")+"}")])
-        : await sql(`SELECT gm.id,gm.invited_name,gm.traveler_uuid,gm.age FROM gc_group_members gm WHERE gm.group_id=:gid AND gm.status='active'`,[strParam("gid",groupId)]);
+        : await sql(`SELECT gm.id,gm.invited_name,gm.traveler_uuid,gm.age,t.display_name,ti.legal_first FROM gc_group_members gm LEFT JOIN travelers t ON t.uuid=gm.traveler_uuid LEFT JOIN traveler_identity ti ON ti.traveler_uuid=gm.traveler_uuid WHERE gm.group_id=:gid AND gm.status='active'`,[strParam("gid",groupId)]);
+      // Use display_name > legal_first > invited_name for human-facing check copy
+      members.forEach(m=>{m._displayName=(m.display_name&&m.display_name.trim())||(m.legal_first&&m.legal_first.trim())||m.invited_name||'Member';});
       const retDateObj=ret_date?new Date(ret_date):new Date(dep_date);
       const depDateObj=new Date(dep_date);
       const today=new Date();
@@ -1159,23 +1163,23 @@ exports.handler=async function(event){
         if(docs.length){
           const exp=new Date(docs[0].expiry_date);
           let status='pass',headline='',detail='';
-          if(exp<today){status=daysUntilDep<=14?'critical':'blocker';headline=m.invited_name+"'s passport is expired";detail="Expired "+exp.toLocaleDateString();}
-          else if(exp<sixMonthsFromRet){status=daysUntilDep<=14?'critical':'blocker';headline=m.invited_name+"'s passport expires before the 6-month threshold";detail="Expires "+exp.toLocaleDateString()+". Most destinations require 6 months validity beyond return date.";}
-          else{headline=m.invited_name+"'s passport is valid";detail="Expires "+exp.toLocaleDateString()+"."}
-          checks.push({parcel_id:parcelId,check_type:'passport_validity',member_id:m.traveler_uuid,member_name:m.invited_name,status,headline,detail});
+          if(exp<today){status=daysUntilDep<=14?'critical':'blocker';headline=m._displayName+"'s passport is expired";detail="Expired "+exp.toLocaleDateString();}
+          else if(exp<sixMonthsFromRet){status=daysUntilDep<=14?'critical':'blocker';headline=m._displayName+"'s passport expires before the 6-month threshold";detail="Expires "+exp.toLocaleDateString()+". Most destinations require 6 months validity beyond return date.";}
+          else{headline=m._displayName+"'s passport is valid";detail="Expires "+exp.toLocaleDateString()+"."}
+          checks.push({parcel_id:parcelId,check_type:'passport_validity',member_id:m.traveler_uuid,member_name:m._displayName,status,headline,detail});
         } else {
-          checks.push({parcel_id:parcelId,check_type:'passport_validity',member_id:m.traveler_uuid,member_name:m.invited_name,status:'unknown',headline:m.invited_name+"'s passport — not on file",detail:"Add passport details to run this check."});
+          checks.push({parcel_id:parcelId,check_type:'passport_validity',member_id:m.traveler_uuid,member_name:m._displayName,status:'unknown',headline:m._displayName+"'s passport — not on file",detail:"Add passport details to run this check."});
         }
         // Check 4: KTN/Global Entry
         const ktn=await sql("SELECT ktn FROM traveler_identity WHERE traveler_uuid=:u",[uuidParam("u",m.traveler_uuid)]);
         const hasKtn=ktn.length&&ktn[0].ktn;
-        checks.push({parcel_id:parcelId,check_type:'ktn_global_entry',member_id:m.traveler_uuid,member_name:m.invited_name,
-          status:hasKtn?'pass':'tradeoff',headline:hasKtn?m.invited_name+" has KTN / Global Entry":m.invited_name+" — no KTN or Global Entry on file",
+        checks.push({parcel_id:parcelId,check_type:'ktn_global_entry',member_id:m.traveler_uuid,member_name:m._displayName,
+          status:hasKtn?'pass':'tradeoff',headline:hasKtn?m._displayName+" has KTN / Global Entry":m._displayName+" — no KTN or Global Entry on file",
           detail:hasKtn?"Pre-check enrolled.":"Consider enrolling before travel to save time at security."});
         // Check 7: Meal/dietary
         const meal=await sql("SELECT meal_code FROM meal_preferences WHERE traveler_uuid=:u LIMIT 1",[uuidParam("u",m.traveler_uuid)]);
-        checks.push({parcel_id:parcelId,check_type:'meal_dietary',member_id:m.traveler_uuid,member_name:m.invited_name,
-          status:'pass',headline:meal.length?m.invited_name+"'s meal preference: "+(meal[0].meal_code||"standard"):m.invited_name+" — no meal preference set",
+        checks.push({parcel_id:parcelId,check_type:'meal_dietary',member_id:m.traveler_uuid,member_name:m._displayName,
+          status:'pass',headline:meal.length?m._displayName+"'s meal preference: "+(meal[0].meal_code||"standard"):m._displayName+" — no meal preference set",
           detail:meal.length?"Captured and ready for booking SSR.":"No dietary restriction recorded — standard meal assumed."});
         // Check 8: Travel name match (doc name vs identity)
         const identity=await sql("SELECT legal_first,legal_last FROM traveler_identity WHERE traveler_uuid=:u",[uuidParam("u",m.traveler_uuid)]);
@@ -1186,8 +1190,8 @@ exports.handler=async function(event){
           const dFirst=(passDoc[0].given_names||"").toLowerCase().trim();
           const dLast=(passDoc[0].surname||"").toLowerCase().trim();
           const match=iFirst&&iLast&&dFirst&&dLast&&(iLast===dLast||dLast.includes(iLast)||iLast.includes(dLast));
-          checks.push({parcel_id:parcelId,check_type:'travel_name_match',member_id:m.traveler_uuid,member_name:m.invited_name,
-            status:match?'pass':'tradeoff',headline:match?m.invited_name+"'s name matches passport":m.invited_name+" — name mismatch, verify before booking",
+          checks.push({parcel_id:parcelId,check_type:'travel_name_match',member_id:m.traveler_uuid,member_name:m._displayName,
+            status:match?'pass':'tradeoff',headline:match?m._displayName+"'s name matches passport":m._displayName+" — name mismatch, verify before booking",
             detail:match?"Identity and passport names are consistent.":"Check that the booking name exactly matches the passport."});
         }
       }
@@ -1258,6 +1262,22 @@ exports.handler=async function(event){
       return ok({success:true},event);
     }
     // ── End Groups v2 ────────────────────────────────────────────────────────
+
+    // PUT /api/v1/profile/{uuid}/display-name — save display name
+    if(method==="PUT"&&path.match(/^\/api\/v1\/profile\/[^/]+\/display-name$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      let {display_name}=body;
+      if(display_name!==null&&display_name!==undefined){
+        display_name=String(display_name).trim().replace(/[ -​-‏﻿]/g,"");
+        if(display_name.length===0)display_name=null;
+        else if(display_name.length>40)return err("Display name must be 40 characters or fewer",event,400);
+        else if(/^UP-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(display_name))return err("Display name cannot match a UniProfile ID format",event,400);
+      }
+      await sql("UPDATE travelers SET display_name=:dn WHERE uuid=:u",[strParam("dn",display_name),uuidParam("u",myUuid)]);
+      const prof=await buildProfile(myUuid);
+      return ok({success:true,profile:prof},event);
+    }
 
     // ── Auth Security ─────────────────────────────────────────────────────────
     // Pure Node.js TOTP (RFC 6238) — no external deps

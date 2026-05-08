@@ -3467,8 +3467,36 @@ body{background:var(--ink);color:var(--text);font-family:'DM Sans',sans-serif;fo
           <div class="acct-tier-badge" id="acct-tier">Free</div>
         </div>
 
+        <!-- Display name + Legal name -->
+        <div class="form-section" style="margin-bottom:0;padding-bottom:0">
+          <div class="form-section-title">Your Name</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+            <div>
+              <label class="field-label" style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                Display name
+                <span style="font-size:10px;color:var(--textDim);font-weight:400">· shown in groups &amp; household</span>
+              </label>
+              <div style="position:relative">
+                <input id="f-display-name" type="text" maxlength="40" placeholder="" class="field-input" style="padding-right:60px"
+                  oninput="dnValidate()" onkeydown="if(event.key==='Enter')dnSave()" onblur="dnSave()">
+                <span id="dn-save-state" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--textDim);pointer-events:none"></span>
+              </div>
+              <div id="dn-error" style="color:#e53935;font-size:11px;margin-top:4px;display:none"></div>
+              <button onclick="dnReset()" style="margin-top:6px;background:none;border:none;font-size:11px;color:var(--textDim);cursor:pointer;padding:0;text-decoration:underline">Use my legal first name</button>
+            </div>
+            <div>
+              <label class="field-label" style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                Legal name
+                <span title="Legal name is used for bookings. To change it, update your identity record." style="font-size:12px;cursor:help">🔒</span>
+                <span style="font-size:10px;color:var(--textDim);font-weight:400">· used for bookings &amp; documents</span>
+              </label>
+              <div class="field-input" id="acct-legal-name" style="background:var(--surface2);color:var(--textDim);cursor:default">—</div>
+            </div>
+          </div>
+        </div>
+
         <!-- Details grid -->
-        <div class="acct-grid">
+        <div class="acct-grid" style="margin-top:16px">
           <div class="acct-row">
             <span class="acct-label">UniProfile ID</span>
             <span style="display:flex;align-items:center;gap:10px">
@@ -3900,6 +3928,27 @@ const COGNITO_DOMAIN="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 const CLIENT_ID="2heljmdli4f9cv2i4m0i020mfc";
 const REDIRECT_URI=window.location.origin+"/";
 let token=null,uuid=null,profile=null,section="overview",saving=false,toastTimer;
+
+// ── Display name helpers (single source of truth per spec §5.2) ──
+function getDisplayName(p){
+  if(p&&p.display_name&&p.display_name.trim())return p.display_name.trim();
+  if(p&&p.identity&&p.identity.legal_first)return p.identity.legal_first;
+  if(p&&p.uniprofile_number)return p.uniprofile_number.replace('UP-','');
+  return p&&p.email||'Traveler';
+}
+function getLegalName(p){
+  if(p&&p.identity){return((p.identity.legal_first||'')+' '+(p.identity.legal_last||'')).trim()||p.email||'—';}
+  return p&&p.email||'—';
+}
+// For group members: display_name > legal_first > invited_name > '(pending member)'
+function getMemberDisplayName(m){
+  if(!m)return '(pending member)';
+  if(m.display_name&&m.display_name.trim())return m.display_name.trim();
+  if(m.legal_first&&m.legal_first.trim())return m.legal_first.trim();
+  if(m.invited_name&&m.invited_name.trim())return m.invited_name.trim();
+  if(m.invited_email)return m.invited_email;
+  return '(pending member)';
+}
 function loginUrl(){return `${COGNITO_DOMAIN}/login?client_id=${CLIENT_ID}&response_type=token&scope=email+openid+profile&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;}
 function logout(){localStorage.clear();window.location.href=window.location.origin+'/'}
 function parseHash(){return new URLSearchParams(window.location.hash.slice(1)).get("access_token");}
@@ -4510,9 +4559,9 @@ async function reissueUpId(){
 async function requestAccountDeletion(){try{await requireStepUp('Deleting your account requires a fresh verification.');}catch(e){return;}
 if(!confirm("This will permanently delete your UniProfile account and all your data. This action cannot be undone.\n\nAre you sure?"))return;if(!confirm("Last confirmation — delete my UniProfile account and all data permanently?"))return;try{await api("DELETE",`/api/v1/profile/${uuid}`);toast("Deletion request submitted. You will receive a confirmation email.","success");}catch(e){toast("Deletion request sent — our team will process it within 30 days (GDPR Art. 17).","success");}setTimeout(()=>logout(),3000);}
 function updateSidebar(p){st("sid-uuid",p.uniprofile_number||"UP-??????");var comp=calcCompleteness(p);var pct=comp.pct;st("sid-pct",pct+"%");var sublabel=document.getElementById("sid-modules");if(sublabel){if(comp.missing.length){var nx=comp.missing[0];sublabel.innerHTML=comp.done+" of "+comp.total+' — <span style="color:var(--accent);cursor:pointer;text-decoration:underline" onclick="navToSection(this.dataset.s)" data-s="'+nx.section+'">Add '+nx.label+"</span>";}else{sublabel.textContent="Profile complete \u2713";}}
-document.getElementById("sid-name").textContent=p.identity?`${p.identity.legal_first||""} ${p.identity.legal_last||""}`.trim()||p.email:p.email||"Traveler";document.getElementById("sid-initials").textContent=p.identity&&p.identity.legal_first?(p.identity.legal_first[0]+(p.identity.legal_last?p.identity.legal_last[0]:"")).toUpperCase():"?";document.getElementById("sid-tier").textContent="★ "+(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1);var circumference=2*Math.PI*18,offset=circumference-(pct/100)*circumference;var ring=document.getElementById("ring-fill");if(ring){ring.style.strokeDashoffset=offset;ring.className="ring-fill"+(pct>=80?" good":pct<40?" danger":"");}var expiring=(p.documents||[]).filter(function(d){return d.days_remaining!==null&&d.days_remaining<=90;});var badge=document.getElementById("badge-identity");if(badge)badge.style.display=expiring.length?"inline":"none";
-const acctName=p.identity?`${p.identity.legal_first||""} ${p.identity.legal_last||""}`.trim()||p.email:p.email||"Traveler";const acctInitials=p.identity&&p.identity.legal_first?(p.identity.legal_first[0]+(p.identity.legal_last?p.identity.legal_last[0]:"")).toUpperCase():"?";st("acct-name",acctName);st("acct-email",p.email||"—");st("acct-initials",acctInitials);st("acct-upid",p.uniprofile_number||"—");st("acct-uuid",p.uuid||"—");const tierLabel=(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1);st("acct-tier",tierLabel);st("acct-plan",tierLabel);}
-function renderProfile(p){profile=p;updateSidebar(p);var comp=calcCompleteness(p);var pct=comp.pct;st("ov-completeness",pct+"%");var trips=p.trips_count||0,loyal=(p.loyalty_programs||[]).length,docs=(p.documents||[]).length;st("ov-trips",trips);st("ov-loyalty",loyal);st("ov-docs",docs);var tn=document.getElementById("ov-trips-note"),th=document.getElementById("ov-trips-hint");if(tn)tn.style.display=trips?"":"none";if(th)th.style.display=trips?"none":"";var ln=document.getElementById("ov-loyalty-note"),lh=document.getElementById("ov-loyalty-hint");if(ln)ln.style.display=loyal?"":"none";if(lh)lh.style.display=loyal?"none":"";var dn=document.getElementById("ov-docs-note"),dh=document.getElementById("ov-docs-hint");if(dn)dn.style.display=docs?"":"none";if(dh)dh.style.display=docs?"none":"";
+document.getElementById("sid-name").textContent=getDisplayName(p);document.getElementById("sid-initials").textContent=p.identity&&p.identity.legal_first?(p.identity.legal_first[0]+(p.identity.legal_last?p.identity.legal_last[0]:"")).toUpperCase():"?";document.getElementById("sid-tier").textContent="★ "+(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1);var circumference=2*Math.PI*18,offset=circumference-(pct/100)*circumference;var ring=document.getElementById("ring-fill");if(ring){ring.style.strokeDashoffset=offset;ring.className="ring-fill"+(pct>=80?" good":pct<40?" danger":"");}var expiring=(p.documents||[]).filter(function(d){return d.days_remaining!==null&&d.days_remaining<=90;});var badge=document.getElementById("badge-identity");if(badge)badge.style.display=expiring.length?"inline":"none";
+const acctName=getDisplayName(p);const legalNameFull=getLegalName(p);const acctInitials=p.identity&&p.identity.legal_first?(p.identity.legal_first[0]+(p.identity.legal_last?p.identity.legal_last[0]:"")).toUpperCase():"?";st("acct-name",acctName);st("acct-legal-name",legalNameFull||"—");st("acct-email",p.email||"—");st("acct-initials",acctInitials);st("acct-upid",p.uniprofile_number||"—");st("acct-uuid",p.uuid||"—");const tierLabel=(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1);st("acct-tier",tierLabel);st("acct-plan",tierLabel);const dnInput=document.getElementById("f-display-name");if(dnInput)dnInput.value=p.display_name||"";const dnPlaceholder=document.getElementById("dn-placeholder");if(dnPlaceholder)dnPlaceholder.textContent=p.identity&&p.identity.legal_first?p.identity.legal_first:"Enter a display name";}
+function renderProfile(p){profile=p;updateSidebar(p);setTimeout(()=>dnMaybeShowPrompt(p),1500);var comp=calcCompleteness(p);var pct=comp.pct;st("ov-completeness",pct+"%");var trips=p.trips_count||0,loyal=(p.loyalty_programs||[]).length,docs=(p.documents||[]).length;st("ov-trips",trips);st("ov-loyalty",loyal);st("ov-docs",docs);var tn=document.getElementById("ov-trips-note"),th=document.getElementById("ov-trips-hint");if(tn)tn.style.display=trips?"":"none";if(th)th.style.display=trips?"none":"";var ln=document.getElementById("ov-loyalty-note"),lh=document.getElementById("ov-loyalty-hint");if(ln)ln.style.display=loyal?"":"none";if(lh)lh.style.display=loyal?"none":"";var dn=document.getElementById("ov-docs-note"),dh=document.getElementById("ov-docs-hint");if(dn)dn.style.display=docs?"":"none";if(dh)dh.style.display=docs?"none":"";
 var compNote=document.getElementById("ov-comp-note");if(compNote){var nx=comp.missing[0];compNote.textContent=pct>=100?"All modules complete":pct>=70?"Almost there — add "+(nx?nx.label:""):pct>=40?"Add "+(nx?nx.label+" (+"+nx.weight+"%)":""):"Start with "+(nx?nx.label:"identity");compNote.className="stat-note "+(pct>=80?"teal":pct>=50?"":"warn");}
 const expiring=(p.documents||[]).filter(d=>d.days_remaining!==null&&d.days_remaining<=180);const ac=document.getElementById("alert-container");if(ac&&expiring.length){ac.innerHTML=expiring.map(d=>`<div class="alert-banner ${d.days_remaining<0?"danger":"warn"}"><span class="alert-icon">${d.days_remaining<0?"⛔":"⚠"}</span><span class="alert-text">Your <strong>${d.doc_type}</strong> ${d.days_remaining<0?"has expired":`expires in ${d.days_remaining} days`}.</span><span class="alert-link" onclick="showSection('identity',document.querySelectorAll('.nav-btn')[1])">Update →</span></div>`).join("");}
 const _expDocs=(p.documents||[]).filter(d=>d.days_remaining!==null&&d.days_remaining<=90);const _iatPolicies=(window.iatState&&window.iatState.policies)||[];const _iatTours=(window.iatState&&window.iatState.tours)||[];const modules=[{id:"identity",icon:"",iconBg:"var(--goldGlow)",name:"Identity & Documents",desc:"Passport, KTN, TSA PreCheck, visas and government IDs",status:p.identity?"complete":"empty",tags:(p.documents||[]).map(d=>({label:d.doc_type.replace(/_/g," "),filled:true}))},{id:"preferences",icon:"✈",iconBg:"var(--tealGlow)",name:"Preferences",desc:"Cabin, seat, meal, hotel &amp; loyalty — pre-filled at checkout",status:(p.seat_preferences||p.meal_preferences)?"complete":"empty",tags:[...(p.seat_preferences?[{label:p.seat_preferences.seat_position,filled:true},{label:p.seat_preferences.cabin_international,filled:true}]:[]),...(p.meal_preferences&&p.meal_preferences.primary_meal_code?[{label:p.meal_preferences.primary_meal_code,filled:true}]:[])].slice(0,4)},{id:"payment",icon:"💳",iconBg:"rgba(56,99,177,0.1)",name:"Payment & Policy",desc:"Personal and corporate payment profiles with context-aware switching",status:(p.payment_profiles||[]).length>0?"partial":"empty",tags:(p.payment_profiles||[]).map(pp=>({label:pp.context,filled:true}))},{id:"trips",icon:"📋",iconBg:"var(--surface2)",name:"TripVault",desc:"All bookings and PNRs — populated via webhook",status:(p.trips||[]).length>0?"complete":"empty",tags:[{label:(p.trips_count||0)+" trips",filled:(p.trips_count||0)>0}]},{id:"family",icon:"👥",iconBg:"rgba(139,90,179,0.12)",name:"Family & Companions",desc:"Linked family members and companion travel profiles",status:(p.family_links||[]).length>0?"complete":"empty",tags:(p.family_links||[]).slice(0,4).map(f=>({label:f.legal_first||f.relationship||"Member",filled:true}))},{id:"groups",icon:"⬡",iconBg:"rgba(30,136,229,0.1)",name:"Groups",desc:"Group bookings, shared manifests and document collections",status:(p.groups||[]).length>0?"complete":"empty",tags:(p.groups||[]).slice(0,4).map(g=>({label:g.name||"Group",filled:true}))},{id:"insurance",icon:"🛡",iconBg:"var(--greenGlow)",name:"Insurance & Tours",desc:"Travel insurance policies and booked tours or activities",status:(_iatPolicies.length||_iatTours.length)?"complete":"empty",tags:[...(_iatPolicies.slice(0,2).map(pol=>({label:pol.policy_number||pol.insurer||"Policy",filled:true}))),...(_iatTours.slice(0,2).map(t=>({label:t.tour_name||"Tour",filled:true})))]},{id:"cruise",icon:"🚢",iconBg:"var(--tealGlow)",name:"Cruise",desc:"Cruise booking details, cabin preferences and onboard options",status:(p.cruise||p.cruise_bookings)?"complete":"empty",tags:[]},{id:"docalert",icon:"⚠",iconBg:_expDocs.length?"rgba(229,115,0,0.12)":"var(--surface2)",name:"Doc Alerts",desc:"Expiring document reminders and renewal tracking",status:_expDocs.length?"partial":"empty",tags:_expDocs.slice(0,4).map(d=>({label:d.doc_type.replace(/_/g," ")+" "+d.days_remaining+"d",filled:true}))},];
@@ -7559,16 +7608,17 @@ function gcRenderTabContent(tab,members,parcels,consents,docMatrix,g){
 function gcRenderMembersTab(members,g){
   if(!members.length)return`<div style="color:var(--textDim);font-size:13px;padding:16px 0">No members yet. <button class="gc-btn-secondary" style="padding:6px 12px;font-size:12px" onclick="gcOpenAddMember()">Add first member</button></div>`;
   return`<div class="gc-member-list">`+members.map(m=>{
-    const av=gcAvatarColors(m.invited_name);
+    const displayName=getMemberDisplayName(m);
+    const av=gcAvatarColors(displayName);
     const isSelf=m.relationship==='self';
     const roleLabel=isSelf?'You · primary':m.relationship==='partner'?'Partner':m.relationship==='child'?'Child'+(m.age?' · age '+m.age:''):m.relationship==='parent'?'Parent':m.relationship||'Member';
     const mgmtLabel=m.management==='self'?'self-managed':'managed';
     const upid=m.uniprofile_number||'—';
     const hasAttention=!m.traveler_uuid&&!isSelf;
     return`<div class="gc-member-card${hasAttention?' needs-attention':''}">
-      <div class="gc-member-avatar-lg" style="background:${av.bg};color:${av.color}">${gcInitials(m.invited_name)}</div>
+      <div class="gc-member-avatar-lg" style="background:${av.bg};color:${av.color}">${gcInitials(displayName)}</div>
       <div>
-        <div class="gc-member-name">${esc(m.invited_name)}<span class="gc-member-role-badge">${esc(roleLabel)}</span></div>
+        <div class="gc-member-name">${esc(displayName)}<span class="gc-member-role-badge">${esc(roleLabel)}</span></div>
         <div class="gc-member-sub">${esc(upid)} · ${mgmtLabel}${m.invited_email?' · invite sent':''}${!m.traveler_uuid&&!isSelf?' · pending':''}
         </div>
       </div>
@@ -10498,6 +10548,89 @@ async function secRemoveFactor(factorId,label){
     secLoadSection();
   }catch(e){toast('Failed: '+e.message,'error');}
 }
+
+/* ── Display name edit (Account section) ───────────────────── */
+let _dnSaveTimer=null;
+const UP_ID_RE=/^UP-[A-Z0-9]{4}-[A-Z0-9]{4}$/i;
+
+function dnValidate(){
+  const inp=document.getElementById('f-display-name');
+  const errEl=document.getElementById('dn-error');
+  if(!inp||!errEl)return true;
+  const val=inp.value.trim();
+  if(val.length>40){errEl.textContent='Maximum 40 characters.';errEl.style.display='block';return false;}
+  if(val&&UP_ID_RE.test(val)){errEl.textContent='Cannot use a UniProfile ID format as display name.';errEl.style.display='block';return false;}
+  errEl.style.display='none';return true;
+}
+
+function dnSave(){
+  if(!dnValidate())return;
+  const inp=document.getElementById('f-display-name');
+  if(!inp)return;
+  const val=inp.value.trim()||null;
+  // Debounce — don't hammer the API on every keystroke
+  if(_dnSaveTimer)clearTimeout(_dnSaveTimer);
+  _dnSaveTimer=setTimeout(async()=>{
+    const stateEl=document.getElementById('dn-save-state');
+    try{
+      const res=await api('PUT',`/api/v1/profile/${uuid}/display-name`,{display_name:val});
+      profile=res.profile;
+      document.getElementById('sid-name').textContent=getDisplayName(profile);
+      if(stateEl){stateEl.textContent='Saved';setTimeout(()=>{if(stateEl)stateEl.textContent='';},2000);}
+    }catch(e){
+      const errEl=document.getElementById('dn-error');
+      if(errEl){errEl.textContent=e.message;errEl.style.display='block';}
+    }
+  },800);
+}
+
+function dnReset(){
+  const inp=document.getElementById('f-display-name');
+  if(!inp)return;
+  inp.value='';
+  dnSave();
+}
+
+/* ── One-time "how should we call you?" soft prompt ────────── */
+function dnMaybeShowPrompt(p){
+  if(!p||!uuid)return;
+  const key='up_dn_prompted_'+uuid;
+  if(localStorage.getItem(key))return;
+  if(p.display_name)return; // already set
+  const legalFirst=p.identity&&p.identity.legal_first?p.identity.legal_first:'';
+  if(!legalFirst)return; // no identity yet — show later
+  // Mark as shown so we never show again
+  localStorage.setItem(key,'1');
+  const modal=document.createElement('div');
+  modal.id='dn-prompt-modal';
+  modal.style.cssText='position:fixed;inset:0;z-index:9100;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center';
+  modal.innerHTML=`
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--textDim);margin-bottom:8px">A SMALL ADDITION</div>
+      <div style="font-size:22px;font-weight:700;color:var(--text);margin-bottom:8px">How should we call you?</div>
+      <p style="font-size:13px;color:var(--textDim);margin:0 0 20px;line-height:1.6">We've been using your legal name everywhere — but you might prefer something friendlier in your household and groups. You can change this any time.</p>
+      <input id="dn-prompt-input" type="text" maxlength="40" value="${legalFirst}" class="field-input" style="margin-bottom:16px;font-size:15px">
+      <div style="display:flex;gap:10px">
+        <button onclick="dnPromptSave()" style="flex:1;padding:10px;background:var(--gold);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer">Set this name</button>
+        <button onclick="dnPromptDismiss()" style="padding:10px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;color:var(--text)">Use my legal name</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  setTimeout(()=>document.getElementById('dn-prompt-input')?.focus(),100);
+}
+
+async function dnPromptSave(){
+  const inp=document.getElementById('dn-prompt-input');
+  const val=(inp?.value||'').trim();
+  try{
+    const res=await api('PUT',`/api/v1/profile/${uuid}/display-name`,{display_name:val||null});
+    profile=res.profile;
+    document.getElementById('sid-name').textContent=getDisplayName(profile);
+  }catch(e){}
+  document.getElementById('dn-prompt-modal')?.remove();
+}
+
+function dnPromptDismiss(){document.getElementById('dn-prompt-modal')?.remove();}
 </script>
 </body>
 </html>
