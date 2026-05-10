@@ -171,12 +171,15 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     </div>
 
     <div class="tabs">
-      <a href="#identity" class="tab active">Identity &amp; documents</a>
-      <a href="#preferences" class="tab">Preferences</a>
-      <a href="#dna" class="tab">Travel DNA</a>
-      <a href="#payment" class="tab">Payment</a>
-      <a href="#policy" class="tab">Policy</a>
+      <a href="#" class="tab active" onclick="switchTab(event,'identity')">Identity &amp; documents</a>
+      <a href="#" class="tab" onclick="switchTab(event,'preferences')">Preferences</a>
+      <a href="#" class="tab" onclick="switchTab(event,'dna')">Travel DNA</a>
+      <a href="#" class="tab" onclick="switchTab(event,'payment')">Payment</a>
+      <a href="#" class="tab" onclick="switchTab(event,'policy')">Policy</a>
     </div>
+
+    <!-- Tab panels -->
+    <div id="tab-identity">
 
     <!-- Documents -->
     <section class="section">
@@ -275,6 +278,36 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       <p id="me-note" style="font-family:var(--serif);font-size:16px;font-weight:300;line-height:1.55;color:var(--ink-soft);"></p>
     </section>
 
+    </div><!-- /tab-identity -->
+
+    <div id="tab-preferences" style="display:none;">
+      <div style="padding:48px 0;text-align:center;color:var(--ink-mute);">
+        <div style="font-family:var(--serif);font-size:20px;font-weight:300;margin-bottom:8px;">Preferences</div>
+        <div style="font-size:13px;">Seat preferences, meal choices, and loyalty programs — coming soon.</div>
+      </div>
+    </div>
+
+    <div id="tab-dna" style="display:none;">
+      <div style="padding:48px 0;text-align:center;color:var(--ink-mute);">
+        <div style="font-family:var(--serif);font-size:20px;font-weight:300;margin-bottom:8px;">Travel DNA</div>
+        <div style="font-size:13px;">Your travel style, patterns, and history — coming soon.</div>
+      </div>
+    </div>
+
+    <div id="tab-payment" style="display:none;">
+      <div style="padding:48px 0;text-align:center;color:var(--ink-mute);">
+        <div style="font-family:var(--serif);font-size:20px;font-weight:300;margin-bottom:8px;">Payment</div>
+        <div style="font-size:13px;">Saved cards and billing details — coming soon.</div>
+      </div>
+    </div>
+
+    <div id="tab-policy" style="display:none;">
+      <div style="padding:48px 0;text-align:center;color:var(--ink-mute);">
+        <div style="font-family:var(--serif);font-size:20px;font-weight:300;margin-bottom:8px;">Policy</div>
+        <div style="font-size:13px;">Travel policy rules and approvals — coming soon.</div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -327,6 +360,15 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 <div class="toast" id="toast"></div>
 
 <script>
+function switchTab(e,name){
+  e.preventDefault();
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active");});
+  e.currentTarget.classList.add("active");
+  ["identity","preferences","dna","payment","policy"].forEach(function(id){
+    var el=document.getElementById("tab-"+id);
+    if(el)el.style.display=id===name?"":"none";
+  });
+}
 var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
