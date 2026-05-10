@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Me — UniProfile</title>
+<meta name="robots" content="noindex,nofollow" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,300;9..144,0,400;9..144,1,300;9..144,1,400&family=Inter+Tight:wght@400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+
+<style>
+:root{--ink:#1a1a1a;--ink-soft:#4a4a48;--ink-mute:#8a8a86;--ink-faint:#b8b8b3;--paper:#faf8f4;--paper-warm:#f3efe7;--paper-cream:#f9f7f2;--rule:rgba(26,26,26,0.08);--rule-strong:rgba(26,26,26,0.18);--field-bg:#fff;--green:#2d6a4f;--green-soft:#e8efe9;--amber:#ba7517;--amber-soft:#f9f1e3;--red:#c44d4d;--red-soft:#f4e8e8;--serif:'Fraunces',Georgia,serif;--sans:'Inter Tight',-apple-system,sans-serif;--mono:'JetBrains Mono','SF Mono',Menlo,monospace}
+*{box-sizing:border-box;margin:0;padding:0}html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;font-size:14px;font-weight:400}
+.h1{font-family:var(--serif);font-weight:300;font-size:clamp(36px,5vw,52px);line-height:1.1;letter-spacing:-0.02em;color:var(--ink)}
+.h1 em{font-style:italic;font-weight:300}
+.h2{font-family:var(--serif);font-weight:400;font-size:24px;line-height:1.2;letter-spacing:-0.01em;color:var(--ink)}
+.h2 em{font-style:italic;font-weight:300}
+.h3{font-family:var(--serif);font-weight:400;font-size:18px;line-height:1.25;letter-spacing:-0.005em;color:var(--ink)}
+.lede{font-family:var(--serif);font-weight:300;font-size:17px;line-height:1.5;letter-spacing:-0.005em;color:var(--ink-soft)}
+.eyebrow{font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-mute)}
+.section-label{font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink)}
+.micro-label{font-family:var(--sans);font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute)}
+.body{font-size:14px;line-height:1.55;color:var(--ink-soft)}
+.caption{font-size:12px;line-height:1.5;color:var(--ink-mute)}
+.editorial{font-family:var(--serif);font-style:italic;font-weight:400;font-size:16px;color:var(--ink)}
+.id{font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:0.04em;color:var(--ink)}
+.shell{display:flex;min-height:100vh}
+.sidebar{width:240px;background:#fff;border-right:0.5px solid var(--rule);padding:28px 0;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.sidebar-wordmark-block{padding:0 24px 24px;border-bottom:0.5px solid rgba(26,26,26,0.06)}
+.wordmark{font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-0.01em;line-height:1;color:var(--ink);text-decoration:none;display:block}
+.wordmark em{font-style:italic;font-weight:300}
+.wordmark-tag{font-family:var(--sans);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;margin-top:6px}
+.sidebar-id-block{padding:18px 24px;border-bottom:0.5px solid rgba(26,26,26,0.06)}
+.sidebar-id-label{font-family:var(--sans);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;margin-bottom:6px}
+.sidebar-nav{padding:20px 12px;flex:1}
+.sidebar-nav-label{font-family:var(--sans);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-faint);font-weight:500;padding:0 12px 12px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:6px;text-decoration:none;color:var(--ink-soft);font-size:14px;font-weight:400;margin-bottom:2px;transition:background 120ms ease}
+.nav-item:hover{background:rgba(26,26,26,0.03)}
+.nav-item.active{background:rgba(26,26,26,0.05);color:var(--ink);font-weight:500}
+.nav-item svg{flex-shrink:0}
+.sidebar-user-card{padding:12px;border-top:0.5px solid rgba(26,26,26,0.06)}
+.user-card-inner{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;cursor:pointer;transition:background 120ms ease}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-weight:300;color:var(--ink-soft);flex-shrink:0;border:2px solid #fff}
+.avatar-sm{width:30px;height:30px;font-size:12px}
+.avatar-md{width:36px;height:36px;font-size:13px}
+.avatar-lg{width:64px;height:64px;font-size:22px}
+.avatar-1{background:linear-gradient(135deg,#d8d3c8,#c4bfb3)}
+.main{flex:1;padding:36px 48px;min-width:0;max-width:880px}
+.page-header{margin-bottom:32px}
+.page-header .eyebrow{margin-bottom:12px}
+.page-header .h1{margin-bottom:8px}
+.tabs{display:flex;gap:28px;padding-bottom:14px;border-bottom:0.5px solid var(--rule);margin-bottom:32px;overflow-x:auto}
+.tab{font-family:var(--sans);font-size:13px;color:var(--ink-mute);text-decoration:none;padding-bottom:14px;margin-bottom:-14.5px;white-space:nowrap;transition:color 120ms ease}
+.tab:hover{color:var(--ink-soft)}
+.tab.active{color:var(--ink);font-weight:500;border-bottom:1.5px solid var(--ink)}
+.section{margin-bottom:36px}
+.section-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+.card{background:#fff;border:0.5px solid var(--rule);border-radius:12px;padding:22px 24px}
+.card-soft{background:var(--paper-cream);border-radius:12px;padding:22px 24px}
+.card-warm{background:var(--paper-warm);border-radius:12px;padding:22px 26px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:100px;font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.02em}
+.pill-ready{background:var(--green-soft);color:var(--green)}
+.pill-amber{background:var(--amber-soft);color:var(--amber)}
+.pill-neutral{background:var(--paper-warm);color:var(--ink-soft)}
+.pill-dot{width:6px;height:6px;border-radius:50%}
+.dot-green{background:var(--green)}
+.dot-amber{background:var(--amber)}
+.btn{font-family:var(--sans);font-size:13px;font-weight:500;padding:10px 18px;border-radius:4px;cursor:pointer;letter-spacing:-0.005em;transition:background 160ms ease,border-color 160ms ease;display:inline-flex;align-items:center;gap:8px;text-decoration:none;border:0.5px solid transparent}
+.btn-primary{color:#fff;background:var(--ink);border-color:var(--ink)}
+.btn-secondary{color:var(--ink);background:transparent;border-color:var(--rule-strong)}
+.btn-sm{font-size:12px;padding:8px 14px}
+.link{color:var(--ink);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:0.5px;font-size:12px}
+.link-mute{color:var(--ink-mute)}
+.icon{width:16px;height:16px;flex-shrink:0;display:inline-block;vertical-align:middle}
+@media(max-width:900px){.shell{flex-direction:column}.sidebar{width:100%;height:auto;position:relative;padding:16px 0}.sidebar-wordmark-block,.sidebar-id-block{padding:12px 24px}.sidebar-nav{padding:12px;display:flex;gap:4px;flex-wrap:wrap}.sidebar-nav-label{display:none}.nav-item{padding:8px 12px}.sidebar-user-card{display:none}.main{padding:24px;max-width:none}}
+
+/* Page-specific: document/preference rows */
+.list-row{display:flex;align-items:center;gap:16px;padding:18px 20px;background:#fff;border:0.5px solid var(--rule);border-radius:10px;margin-bottom:8px}
+.list-row-icon{width:36px;height:36px;border-radius:8px;background:var(--paper-warm);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--ink-soft)}
+.list-row-main{flex:1;min-width:0}
+.list-row-title{font-size:14px;font-weight:500;color:var(--ink);margin-bottom:2px}
+.list-row-meta{font-size:12px;color:var(--ink-mute)}
+.kv-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:0.5px solid var(--rule)}
+.kv-row:last-child{border-bottom:none}
+.kv-key{font-size:13px;color:var(--ink-mute)}
+.kv-value{font-size:13px;color:var(--ink);font-weight:500}
+</style>
+</head>
+<body>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none"><path d="M4 11L12 4L20 11V19C20 19.55 19.55 20 19 20H5C4.45 20 4 19.55 4 19V11Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M10 20V14H14V20" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></symbol>
+  <symbol id="i-me" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="3.5" stroke="currentColor" stroke-width="1.25"/><path d="M5 20C5 16 8 14 12 14C16 14 19 16 19 20" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="9" r="3" stroke="currentColor" stroke-width="1.25"/><circle cx="17" cy="10" r="2.2" stroke="currentColor" stroke-width="1.25"/><path d="M3 19C3 16 5.7 14 9 14C12.3 14 15 16 15 19" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M15 18C15 15.5 16.5 14 17 14C19 14 21 15.5 21 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-trips" viewBox="0 0 24 24" fill="none"><path d="M3 17L9 11L13 15L21 7" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="11" r="1.2" fill="currentColor"/><circle cx="13" cy="15" r="1.2" fill="currentColor"/><circle cx="21" cy="7" r="1.2" fill="currentColor"/><circle cx="3" cy="17" r="1.2" fill="currentColor"/></symbol>
+  <symbol id="i-privacy" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M8 11V8C8 5.79 9.79 4 12 4C14.21 4 16 5.79 16 8V11" stroke="currentColor" stroke-width="1.25"/><circle cx="12" cy="15.5" r="1" fill="currentColor"/></symbol>
+  <symbol id="i-passport" viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="1" stroke="currentColor" stroke-width="1.25"/><circle cx="12" cy="11" r="2.5" stroke="currentColor" stroke-width="1.25"/><path d="M9 17H15" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-visa" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="13" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M3 10H21" stroke="currentColor" stroke-width="1.25"/><path d="M7 14H10M7 16H13" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-ktn" viewBox="0 0 24 24" fill="none"><path d="M12 3L19 6V12C19 16 16 19.5 12 21C8 19.5 5 16 5 12V6L12 3Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M10 12H14M12 10V14" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24" fill="none"><path d="M6 3H14L18 7V20C18 20.55 17.55 21 17 21H7C6.45 21 6 20.55 6 20V3Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M14 3V7H18" stroke="currentColor" stroke-width="1.25"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-add" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.25"/><path d="M12 8V16M8 12H16" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+</svg>
+
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="sidebar-wordmark-block">
+      <a href="home.html" class="wordmark">Uni<em>Profile</em></a>
+      <div class="wordmark-tag">Travel identity</div>
+    </div>
+    <div class="sidebar-id-block">
+      <div class="sidebar-id-label">Your number</div>
+      <div class="id">UP-HRM4-GBEH</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav-label">Navigate</div>
+      <a href="home.html" class="nav-item"><svg class="icon"><use href="#i-home"/></svg>Home</a>
+      <a href="me.html" class="nav-item active"><svg class="icon"><use href="#i-me"/></svg>Me</a>
+      <a href="people.html" class="nav-item"><svg class="icon"><use href="#i-people"/></svg>People</a>
+      <a href="trips.html" class="nav-item"><svg class="icon"><use href="#i-trips"/></svg>Trips</a>
+      <a href="privacy.html" class="nav-item"><svg class="icon"><use href="#i-privacy"/></svg>Privacy</a>
+    </nav>
+    <div class="sidebar-user-card">
+      <div class="user-card-inner">
+        <div class="avatar avatar-sm avatar-1">RP</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:500;line-height:1.2;">Rommel</div>
+          <div class="caption">Premium</div>
+        </div>
+        <svg class="icon" style="width:14px;height:14px;color:var(--ink-mute);"><use href="#i-chevron"/></svg>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- Page header -->
+    <div class="page-header" style="display:flex;gap:24px;align-items:flex-start;">
+      <div class="avatar avatar-lg avatar-1" style="border:none;flex-shrink:0;">RP</div>
+      <div style="flex:1;">
+        <div class="eyebrow" style="margin-bottom:12px;">Your profile</div>
+        <h1 class="h1" style="margin-bottom:8px;">Rommel <em>Patel</em></h1>
+        <p class="lede">Everything UniProfile knows about you as a traveler — what airlines see, what's saved for autofill, and what we've quietly noticed.</p>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <a href="#identity" class="tab active">Identity &amp; documents</a>
+      <a href="#preferences" class="tab">Preferences</a>
+      <a href="#dna" class="tab">Travel DNA</a>
+      <a href="#payment" class="tab">Payment</a>
+      <a href="#policy" class="tab">Policy</a>
+    </div>
+
+    <!-- IDENTITY & DOCUMENTS section -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-label">Government &amp; travel documents</h2>
+        <span class="caption">4 on file</span>
+      </div>
+
+      <div class="list-row">
+        <div class="list-row-icon"><svg class="icon"><use href="#i-passport"/></svg></div>
+        <div class="list-row-main">
+          <div class="list-row-title">Indian passport</div>
+          <div class="list-row-meta">P · ··· 4471 · expires Sept 2031</div>
+        </div>
+        <span class="pill pill-ready"><span class="pill-dot dot-green"></span>Valid</span>
+        <a href="#" class="link link-mute">View</a>
+      </div>
+
+      <div class="list-row">
+        <div class="list-row-icon"><svg class="icon"><use href="#i-visa"/></svg></div>
+        <div class="list-row-main">
+          <div class="list-row-title">U.S. Permanent Resident Card</div>
+          <div class="list-row-meta">··· 8221 · expires Mar 2029</div>
+        </div>
+        <span class="pill pill-ready"><span class="pill-dot dot-green"></span>Valid</span>
+        <a href="#" class="link link-mute">View</a>
+      </div>
+
+      <div class="list-row">
+        <div class="list-row-icon"><svg class="icon"><use href="#i-ktn"/></svg></div>
+        <div class="list-row-main">
+          <div class="list-row-title">Known Traveler Number</div>
+          <div class="list-row-meta">··· 4471 · TSA PreCheck · auto-applied</div>
+        </div>
+        <span class="pill pill-ready"><span class="pill-dot dot-green"></span>Active</span>
+        <a href="#" class="link link-mute">View</a>
+      </div>
+
+      <div class="list-row">
+        <div class="list-row-icon"><svg class="icon"><use href="#i-ktn"/></svg></div>
+        <div class="list-row-main">
+          <div class="list-row-title">Global Entry</div>
+          <div class="list-row-meta">··· 9826 · expires June 2028</div>
+        </div>
+        <span class="pill pill-ready"><span class="pill-dot dot-green"></span>Active</span>
+        <a href="#" class="link link-mute">View</a>
+      </div>
+
+      <button class="btn btn-secondary btn-sm" style="margin-top:14px;">
+        <svg class="icon" style="width:14px;height:14px;"><use href="#i-add"/></svg>
+        Add a document
+      </button>
+    </section>
+
+    <!-- LEGAL IDENTITY -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-label">Legal identity</h2>
+        <span class="caption">Used for bookings</span>
+      </div>
+
+      <div class="card">
+        <div class="kv-row">
+          <span class="kv-key">Legal name</span>
+          <span class="kv-value">Rommel Anil Patel</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-key">Display name</span>
+          <span class="kv-value">Romi</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-key">Date of birth</span>
+          <span class="kv-value">14 March 1981</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-key">Nationality</span>
+          <span class="kv-value">Indian</span>
+        </div>
+        <div class="kv-row">
+          <span class="kv-key">Gender (passport)</span>
+          <span class="kv-value">M</span>
+        </div>
+      </div>
+      <p class="caption" style="margin-top:12px;">Legal name is used for tickets, bookings, and credentials. To change it, complete identity re-verification.</p>
+    </section>
+
+    <!-- We noticed -->
+    <section class="card-warm">
+      <div class="editorial" style="margin-bottom:12px;">A small note</div>
+      <p style="font-family:var(--serif);font-size:16px;font-weight:300;line-height:1.55;color:var(--ink-soft);">Your KTN appears on every U.S.-touching booking automatically. You haven't had to type it in fourteen months.</p>
+    </section>
+
+  </main>
+</div>
+
+</body>
+</html>
