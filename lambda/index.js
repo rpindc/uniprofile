@@ -2,7 +2,7 @@ const { RDSDataClient, ExecuteStatementCommand } = require("@aws-sdk/client-rds-
 const { CognitoJwtVerifier } = require("aws-jwt-verify");
 const rds = new RDSDataClient({ region: process.env.AWS_REGION || "us-east-1" });
 const DB = { resourceArn: process.env.AURORA_CLUSTER_ARN, secretArn: process.env.AURORA_SECRET_ARN, database: process.env.DB_NAME || "uniprofile" };
-const verifier = CognitoJwtVerifier.create({ userPoolId: process.env.COGNITO_USER_POOL_ID, tokenUse: "access", clientId: process.env.COGNITO_CLIENT_ID });
+const verifier = CognitoJwtVerifier.create({ userPoolId: process.env.COGNITO_USER_POOL_ID, tokenUse: "id", clientId: process.env.COGNITO_CLIENT_ID });
 async function sql(query, params = []) {
   try { const res = await rds.send(new ExecuteStatementCommand({ ...DB, sql: query, parameters: params, formatRecordsAs: "JSON" })); return res.formattedRecords ? JSON.parse(res.formattedRecords) : []; }
   catch (e) { console.error("SQL Error:", e.message, "Q:", query.slice(0,100)); throw e; }
