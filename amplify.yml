@@ -12,6 +12,12 @@ frontend:
       - index.html
       - welcome.html
       - feedback.html
+      - home.html
+      - me.html
+      - people.html
+      - trips.html
+      - privacy.html
+      - icons.html
       - data/**/*
   cache:
     paths: []
