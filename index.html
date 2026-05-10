@@ -5993,9 +5993,9 @@ function _renderDocAlerts(alerts,allDocs){
   var el=document.getElementById("docalert-content");if(!el)return;
   var html="";
   /* hero */
-  if(!alerts.length){
+  if(!alerts.length&&allDocs.length){
     html+='<div class="docalert-hero ok"><div class="docalert-icon-circle" style="background:rgba(16,185,129,0.15);color:var(--green)">✓</div><div><div style="font-size:14px;font-weight:600;color:var(--green)">All documents in good standing</div><div style="font-size:12px;color:var(--textMid);margin-top:2px">We\'re watching your documents and upcoming trips. You\'re all clear.</div></div></div>';
-  }else{
+  }else if(alerts.length){
     var urg=alerts.filter(function(a){return a.alert_level==="EXPIRED"||a.days_remaining<=30;}).length;
     var hc=urg?"urgent":"warn",hcolor=urg?"var(--red)":"var(--amber)";
     html+='<div class="docalert-hero '+hc+'"><div class="docalert-icon-circle" style="background:'+(urg?"var(--redGlow)":"var(--amberGlow)")+';color:'+hcolor+'">!</div><div><div style="font-size:14px;font-weight:600;color:'+hcolor+'">'+alerts.length+' document'+(alerts.length===1?"":"s")+' need'+(alerts.length===1?"s":"")+" attention</div><div style='font-size:12px;color:var(--textMid);margin-top:2px'>Review the alerts below and take action where needed.</div></div></div>";
