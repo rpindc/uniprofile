@@ -101,7 +101,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     </div>
     <div class="sidebar-id-block">
       <div class="sidebar-id-label">Your number</div>
-      <div class="id">UP-HRM4-GBEH</div>
+      <div class="id" id="sidebar-number">—</div>
     </div>
     <nav class="sidebar-nav">
       <div class="sidebar-nav-label">Navigate</div>
@@ -115,8 +115,8 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       <div class="user-card-inner">
         <div class="avatar avatar-sm avatar-1">RP</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:500;line-height:1.2;">Rommel</div>
-          <div class="caption">Premium</div>
+          <div style="font-size:13px;font-weight:500;line-height:1.2;" id="sidebar-name">—</div>
+          <div class="caption" id="sidebar-tier"></div>
         </div>
         <svg class="icon" style="width:14px;height:14px;color:var(--ink-mute);"><use href="#i-chevron"/></svg>
       </div>
@@ -128,91 +128,99 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     <div class="page-header">
       <div class="eyebrow">Your groups</div>
       <h1 class="h1">The people you <em>travel with</em>.</h1>
-      <p class="lede">Three groups. Each with their own context, documents, and quiet permissions to make travel together less painful.</p>
+      <p class="lede" id="people-lede">Loading…</p>
     </div>
 
-    <!-- Active group: Patel household -->
-    <div class="card card-strong" style="margin-bottom:14px;">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;">
-        <div>
-          <div class="micro-label" style="margin-bottom:6px;">Household · Multi-generational</div>
-          <h2 class="h2">Patel <em>household</em></h2>
-        </div>
-        <span class="pill pill-ready"><span class="pill-dot dot-green"></span>Active</span>
-      </div>
-
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
-        <div class="avatar-stack">
-          <div class="avatar avatar-md avatar-1">RP</div>
-          <div class="avatar avatar-md avatar-2">AP</div>
-          <div class="avatar avatar-md avatar-3 avatar-ring-amber">VP</div>
-          <div class="avatar avatar-md avatar-4">SP</div>
-          <div class="avatar avatar-md avatar-5">RV</div>
-        </div>
-        <div class="body" style="flex:1;">5 members · you, partner, 2 kids, mother</div>
-      </div>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:14px 0;border-top:0.5px solid var(--rule);border-bottom:0.5px solid var(--rule);margin-bottom:16px;">
-        <div style="border-right:0.5px solid var(--rule);padding-right:16px;">
-          <div class="micro-label" style="margin-bottom:4px;">Next trip</div>
-          <div style="font-size:13px;font-weight:500;color:var(--ink);">Bali · Aug 12</div>
-        </div>
-        <div style="border-right:0.5px solid var(--rule);padding:0 16px;">
-          <div class="micro-label" style="margin-bottom:4px;">Documents</div>
-          <div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--ink);"><span class="pill-dot dot-amber"></span>1 attention</div>
-        </div>
-        <div style="padding-left:16px;">
-          <div class="micro-label" style="margin-bottom:4px;">Trips/year</div>
-          <div style="font-size:13px;font-weight:500;color:var(--ink);">~6 together</div>
-        </div>
-      </div>
-
-      <div style="background:var(--amber-soft);border-radius:8px;padding:12px 14px;display:flex;gap:10px;margin-bottom:16px;">
-        <span class="pill-dot dot-amber" style="margin-top:7px;flex-shrink:0;"></span>
-        <div style="flex:1;">
-          <div style="font-size:13px;color:var(--ink);line-height:1.5;"><span style="font-weight:500;">Veer's passport</span> expires Sept 8 — one month after the Bali return. Indonesia requires 6 months validity.</div>
-          <div style="display:flex;gap:14px;margin-top:8px;">
-            <a href="#" class="link">See renewal options</a>
-            <a href="#" class="link" style="color:var(--ink-mute);">Snooze</a>
-          </div>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="btn btn-primary btn-sm">Open household</button>
-        <button class="btn btn-secondary btn-sm">Plan a trip</button>
-        <button class="btn btn-secondary btn-sm">Document matrix</button>
-      </div>
-    </div>
-
-    <!-- Travel group: Tokyo crew -->
-    <div class="card" style="margin-bottom:14px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div style="flex:1;">
-          <div class="micro-label" style="margin-bottom:4px;">Travel group · Friends</div>
-          <h3 class="h3">Tokyo crew</h3>
-          <div class="caption" style="margin-top:4px;">8 members · planning Mar 2027</div>
-        </div>
-        <span class="pill pill-neutral">Planning</span>
-      </div>
-    </div>
-
-    <!-- Care group: Mom's travel -->
-    <div class="card" style="margin-bottom:24px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div style="flex:1;">
-          <div class="micro-label" style="margin-bottom:4px;">Care group · Accessibility companion</div>
-          <h3 class="h3">Mom's travel</h3>
-          <div class="caption" style="margin-top:4px;">3 members · you + 2 siblings</div>
-        </div>
-        <span class="pill pill-neutral">Standby</span>
-      </div>
-    </div>
-
-    <button class="create-button">+ Create a new group</button>
+    <div id="people-content"></div>
 
   </main>
 </div>
 
+<script>var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
+var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
+var _CID="2heljmdli4f9cv2i4m0i020mfc";
+var _tok=null,_prof=null,_uid=null;
+function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent(window.location.origin+window.location.pathname);}
+function _ph(){var p=new URLSearchParams(window.location.hash.slice(1));return p.get("id_token")||p.get("access_token");}
+async function _req(method,ep,body){
+  var o={method:method,headers:{Authorization:"Bearer "+_tok}};
+  if(body){o.headers["Content-Type"]="application/json";o.body=JSON.stringify(body);}
+  var r=await fetch(_API+ep,o);
+  if(r.status===401){localStorage.removeItem("up_token");location.href=_loginUrl();throw new Error("unauth");}
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  return r.json();
+}
+function _dn(p){if(!p)return"Traveler";if(p.display_name&&p.display_name.trim())return p.display_name.trim();if(p.identity&&p.identity.legal_first)return p.identity.legal_first;return p.uniprofile_number||p.email||"Traveler";}
+function _ini(p){var s=_dn(p).trim();return s.length>=2?s.slice(0,2).toUpperCase():s.toUpperCase();}
+function _st(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+function _ht(id,v){var e=document.getElementById(id);if(e)e.innerHTML=v;}
+function _docLabel(t){var m={PASSPORT:"Passport",US_GREEN_CARD:"Permanent Resident Card",KTN:"Known Traveler No.",GLOBAL_ENTRY:"Global Entry",ESTA:"ESTA",VISA:"Visa",NEXUS:"NEXUS",SENTRI:"SENTRI",NATIONAL_ID:"National ID",DRIVERS_LICENSE:"Driver's License",BIRTH_CERTIFICATE:"Birth Certificate"};return m[t]||(t||"Document").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();});}
+function _daysLabel(d){if(d===null||d===undefined)return"No expiry";if(d<0)return"Expired";if(d===0)return"Expires today";if(d<=30)return"Expires in "+d+" days";return"Expires "+new Date(Date.now()+d*86400000).toLocaleDateString("en-US",{month:"short",year:"numeric"});}
+function _fmt(s){if(!s)return"\u2014";return new Date(s).toLocaleDateString("en-US",{day:"numeric",month:"long",year:"numeric"});}
+function _tripName(t){return t.trip_name||t.destination_iata||"Trip";}
+function _sidebarUpdate(p){
+  _st("sidebar-number",p.uniprofile_number||"\u2014");
+  _st("sidebar-name",_dn(p));
+  _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
+}
+function _today(){return new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});}
+function _greet(){var h=new Date().getHours();return h<12?"Good morning":h<17?"Good afternoon":"Good evening";}
+async function _auth(){
+  var h=_ph();
+  if(h){_tok=h;localStorage.setItem("up_token",_tok);history.replaceState(null,"",window.location.pathname);}
+  else _tok=localStorage.getItem("up_token");
+  if(!_tok){location.href=_loginUrl();return false;}
+  return true;
+}
+var _AV=["avatar-1","avatar-2","avatar-3","avatar-4","avatar-5"];
+function _avCol(i){return _AV[i%_AV.length];}
+function _famCard(m,i){
+  var name=[m.member_first,m.member_last].filter(Boolean).join(" ")||m.member_email||"Member";
+  var ini=name.slice(0,2).toUpperCase();
+  return '<div class="card" style="margin-bottom:10px;display:flex;align-items:center;gap:14px;padding:16px 20px;">'
+    +'<div class="avatar avatar-md '+_avCol(i)+'" style="flex-shrink:0;">'+ini+'</div>'
+    +'<div style="flex:1;min-width:0;"><div style="font-size:14px;font-weight:500;color:var(--ink);">'+name+'</div><div class="caption">Family link</div></div>'
+    +'<span class="pill pill-ready"><span class="pill-dot dot-green"></span>Linked</span>'
+    +'</div>';
+}
+function _grpCard(g,i){
+  var members=[];
+  try{members=typeof g.members==="string"?JSON.parse(g.members):(g.members||[]);}catch(e){}
+  var dep=g.dep?new Date(g.dep).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
+  var ret=g.ret?new Date(g.ret).toLocaleDateString("en-US",{month:"short",day:"numeric"}):"";
+  return '<div class="card '+( i===0?"card-strong":"")+'" style="margin-bottom:10px;">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">'
+    +'<div><div class="micro-label" style="margin-bottom:4px;">'+( g.type||"Group")+'</div>'
+    +'<h3 class="'+( i===0?"h2":"h3")+'">'+( g.name||g.destination||"Trip group")+'</h3>'
+    +(dep?'<div class="caption" style="margin-top:4px;">'+dep+(ret?" \u2013 "+ret:"")+'</div>':"")+"</div>"
+    +'<span class="pill pill-neutral">Saved</span></div>'
+    +(members.length?'<div class="body">'+members.length+" traveler"+(members.length===1?"":"s")+'</div>':"")+"</div>";
+}
+async function peopleInit(){
+  if(!await _auth())return;
+  try{
+    var p=await _req("GET","/api/v1/me");
+    _prof=p;_uid=p.uuid;
+    _sidebarUpdate(p);
+    var groups=p.groups||[];
+    var fam=[];
+    try{var fr=await _req("GET","/api/v1/family/"+p.uuid);fam=fr.links||fr.family||[];}catch(e){}
+    var count=groups.length+fam.length;
+    _st("people-lede",count?count+" group"+(count===1?"":"s and linked travelers")+" on file.":"No groups yet.");
+    var html="";
+    if(groups.length){
+      html+='<div class="section-header" style="margin-bottom:14px;"><h2 class="section-label">Trip groups</h2><span class="caption">'+groups.length+'</span></div>';
+      groups.forEach(function(g,i){html+=_grpCard(g,i);});
+    }
+    if(fam.length){
+      html+='<div class="section-header" style="margin:24px 0 14px;"><h2 class="section-label">Family links</h2><span class="caption">'+fam.length+" linked</span></div>";
+      fam.forEach(function(m,i){html+=_famCard(m,i);});
+    }
+    if(!html){html='<div style="padding:40px;text-align:center;color:var(--ink-mute);font-size:13px;border:0.5px dashed var(--rule-strong);border-radius:12px;">No groups or family links yet.<br><span style="color:var(--ink-faint);font-size:12px;margin-top:4px;display:block;">Create groups and invite family from the main app.</span></div>';}
+    html+='<button class="create-button" style="margin-top:16px;" onclick="location.href=\'/\'">+ Manage in main app</button>';
+    _ht("people-content",html);
+  }catch(e){console.error(e);}
+}
+peopleInit();</script>
 </body>
 </html>

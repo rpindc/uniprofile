@@ -113,7 +113,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     </div>
     <div class="sidebar-id-block">
       <div class="sidebar-id-label">Your number</div>
-      <div class="id">UP-HRM4-GBEH</div>
+      <div class="id" id="sidebar-number">—</div>
     </div>
     <nav class="sidebar-nav">
       <div class="sidebar-nav-label">Navigate</div>
@@ -127,8 +127,8 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       <div class="user-card-inner">
         <div class="avatar avatar-sm avatar-1">RP</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:500;line-height:1.2;">Rommel</div>
-          <div class="caption">Premium</div>
+          <div style="font-size:13px;font-weight:500;line-height:1.2;" id="sidebar-name">—</div>
+          <div class="caption" id="sidebar-tier"></div>
         </div>
         <svg class="icon" style="width:14px;height:14px;color:var(--ink-mute);"><use href="#i-chevron"/></svg>
       </div>
@@ -139,13 +139,13 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 
     <div class="page-header">
       <div class="eyebrow">Your travel</div>
-      <h1 class="h1">Trips, in <em>order</em>.</h1>
-      <p class="lede">Eight trips in your vault — three coming up, five behind you. Forwarded confirmations land here automatically.</p>
+      <h1 class="h1" id="trips-heading">Trips, in <em>order</em>.</h1>
+      <p class="lede" id="trips-lede">Loading…</p>
     </div>
 
     <div class="tabs">
-      <a href="#upcoming" class="tab active">Upcoming · 3</a>
-      <a href="#past" class="tab">Past · 5</a>
+      <a href="#" class="tab active" onclick="tripsTab('upcoming',this);return false;" id="tab-upcoming">Upcoming · 0</a>
+      <a href="#" class="tab" onclick="tripsTab('past',this);return false;" id="tab-past">Past · 0</a>
       <a href="#all-bookings" class="tab">All bookings</a>
       <a href="#insurance" class="tab">Insurance</a>
     </div>
@@ -156,54 +156,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
         <h2 class="section-label">Upcoming</h2>
       </div>
 
-      <div class="trip-card">
-        <div class="trip-date">
-          <div class="trip-date-month">Aug</div>
-          <div class="trip-date-day">12</div>
-        </div>
-        <div class="trip-main">
-          <div class="trip-title">Bali, <em>Indonesia</em></div>
-          <div class="trip-meta">10 days · Patel household · 5 travelers</div>
-        </div>
-        <div class="trip-status">
-          <div class="avatar-stack">
-            <div class="avatar avatar-sm avatar-1" style="border-color:#fff;">RP</div>
-            <div class="avatar avatar-sm avatar-2" style="border-color:#fff;">AP</div>
-            <div class="avatar avatar-sm avatar-3" style="border-color:#fff;">VP</div>
-            <div class="avatar avatar-sm avatar-4" style="border-color:#fff;">SP</div>
-            <div class="avatar avatar-sm avatar-5" style="border-color:#fff;">RV</div>
-          </div>
-          <span class="pill pill-amber"><span class="pill-dot dot-amber"></span>Action needed</span>
-        </div>
-      </div>
-
-      <div class="trip-card">
-        <div class="trip-date">
-          <div class="trip-date-month">Oct</div>
-          <div class="trip-date-day">04</div>
-        </div>
-        <div class="trip-main">
-          <div class="trip-title">London &amp; <em>Edinburgh</em></div>
-          <div class="trip-meta">7 days · solo · business + leisure</div>
-        </div>
-        <div class="trip-status">
-          <span class="pill pill-ready"><span class="pill-dot dot-green"></span>Ready</span>
-        </div>
-      </div>
-
-      <div class="trip-card">
-        <div class="trip-date">
-          <div class="trip-date-month">Dec</div>
-          <div class="trip-date-day">22</div>
-        </div>
-        <div class="trip-main">
-          <div class="trip-title">Mumbai, <em>India</em></div>
-          <div class="trip-meta">14 days · Patel household · annual visit</div>
-        </div>
-        <div class="trip-status">
-          <span class="pill pill-neutral">Planning</span>
-        </div>
-      </div>
+      <div id="trips-upcoming-list"></div>
     </section>
 
     <!-- Past -->
@@ -213,60 +166,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
         <span class="caption">5 trips · last 18 months</span>
       </div>
 
-      <div class="trip-card past">
-        <div class="trip-date">
-          <div class="trip-date-month">Apr</div>
-          <div class="trip-date-day">14</div>
-        </div>
-        <div class="trip-main">
-          <div class="trip-title">Lisbon, Portugal</div>
-          <div class="trip-meta">5 days · solo · 2026</div>
-        </div>
-      </div>
-
-      <div class="trip-card past">
-        <div class="trip-date">
-          <div class="trip-date-month">Mar</div>
-          <div class="trip-date-day">02</div>
-        </div>
-        <div class="trip-main">
-          <div class="trip-title">Tokyo, Japan</div>
-          <div class="trip-meta">9 days · with partner · 2026</div>
-        </div>
-      </div>
-
-      <div class="trip-card past">
-        <div class="trip-date">
-          <div class="trip-date-month">Dec</div>
-          <div class="trip-date-day">23</div>
-        </div>
-        <div class="trip-main">
-          <div class="trip-title">Mumbai, India</div>
-          <div class="trip-meta">12 days · Patel household · 2025</div>
-        </div>
-      </div>
-
-      <div class="trip-card past">
-        <div class="trip-date">
-          <div class="trip-date-month">Sep</div>
-          <div class="trip-date-day">06</div>
-        </div>
-        <div class="trip-main">
-          <div class="trip-title">Reykjavík, Iceland</div>
-          <div class="trip-meta">6 days · solo · 2025</div>
-        </div>
-      </div>
-
-      <div class="trip-card past">
-        <div class="trip-date">
-          <div class="trip-date-month">Jun</div>
-          <div class="trip-date-day">17</div>
-        </div>
-        <div class="trip-main">
-          <div class="trip-title">Athens &amp; islands</div>
-          <div class="trip-meta">10 days · Patel household · 2025</div>
-        </div>
-      </div>
+      <div id="trips-past-list"></div>
     </section>
 
     <section class="card-warm">
@@ -277,5 +177,83 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   </main>
 </div>
 
+<script>var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
+var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
+var _CID="2heljmdli4f9cv2i4m0i020mfc";
+var _tok=null,_prof=null,_uid=null;
+function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent(window.location.origin+window.location.pathname);}
+function _ph(){var p=new URLSearchParams(window.location.hash.slice(1));return p.get("id_token")||p.get("access_token");}
+async function _req(method,ep,body){
+  var o={method:method,headers:{Authorization:"Bearer "+_tok}};
+  if(body){o.headers["Content-Type"]="application/json";o.body=JSON.stringify(body);}
+  var r=await fetch(_API+ep,o);
+  if(r.status===401){localStorage.removeItem("up_token");location.href=_loginUrl();throw new Error("unauth");}
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  return r.json();
+}
+function _dn(p){if(!p)return"Traveler";if(p.display_name&&p.display_name.trim())return p.display_name.trim();if(p.identity&&p.identity.legal_first)return p.identity.legal_first;return p.uniprofile_number||p.email||"Traveler";}
+function _ini(p){var s=_dn(p).trim();return s.length>=2?s.slice(0,2).toUpperCase():s.toUpperCase();}
+function _st(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+function _ht(id,v){var e=document.getElementById(id);if(e)e.innerHTML=v;}
+function _docLabel(t){var m={PASSPORT:"Passport",US_GREEN_CARD:"Permanent Resident Card",KTN:"Known Traveler No.",GLOBAL_ENTRY:"Global Entry",ESTA:"ESTA",VISA:"Visa",NEXUS:"NEXUS",SENTRI:"SENTRI",NATIONAL_ID:"National ID",DRIVERS_LICENSE:"Driver's License",BIRTH_CERTIFICATE:"Birth Certificate"};return m[t]||(t||"Document").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();});}
+function _daysLabel(d){if(d===null||d===undefined)return"No expiry";if(d<0)return"Expired";if(d===0)return"Expires today";if(d<=30)return"Expires in "+d+" days";return"Expires "+new Date(Date.now()+d*86400000).toLocaleDateString("en-US",{month:"short",year:"numeric"});}
+function _fmt(s){if(!s)return"\u2014";return new Date(s).toLocaleDateString("en-US",{day:"numeric",month:"long",year:"numeric"});}
+function _tripName(t){return t.trip_name||t.destination_iata||"Trip";}
+function _sidebarUpdate(p){
+  _st("sidebar-number",p.uniprofile_number||"\u2014");
+  _st("sidebar-name",_dn(p));
+  _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
+}
+function _today(){return new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});}
+function _greet(){var h=new Date().getHours();return h<12?"Good morning":h<17?"Good afternoon":"Good evening";}
+async function _auth(){
+  var h=_ph();
+  if(h){_tok=h;localStorage.setItem("up_token",_tok);history.replaceState(null,"",window.location.pathname);}
+  else _tok=localStorage.getItem("up_token");
+  if(!_tok){location.href=_loginUrl();return false;}
+  return true;
+}
+var _allTrips=[];
+function _tripCard(t,past){
+  var dep=t.departure_date?new Date(t.departure_date):null;
+  var month=dep?dep.toLocaleDateString("en-US",{month:"short"}):"";
+  var day=dep?dep.getDate():"?";
+  var name=_tripName(t);
+  var meta=[t.trip_context,t.status].filter(Boolean).join(" \u00b7 ");
+  var pill=!past?'<div class="trip-status"><span class="pill pill-neutral">'+( t.status||"Saved")+'</span></div>':"";
+  return '<div class="trip-card'+( past?" past":"")+'">'
+    +'<div class="trip-date"><div class="trip-date-month">'+month+'</div><div class="trip-date-day">'+day+'</div></div>'
+    +'<div class="trip-main"><div class="trip-title">'+name+'</div>'+( meta?'<div class="trip-meta">'+meta+'</div>':"")+"</div>"
+    +pill+'</div>';
+}
+function tripsTab(tab,el){
+  _curTab=tab;
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active");});
+  if(el)el.classList.add("active");
+  var up=document.getElementById("trips-upcoming-list");
+  var pa=document.getElementById("trips-past-list");
+  if(tab==="upcoming"){if(up)up.style.display="";if(pa)pa.style.display="none";}
+  else{if(up)up.style.display="none";if(pa)pa.style.display="";}
+}
+var _curTab="upcoming";
+async function tripsInit(){
+  if(!await _auth())return;
+  try{
+    var p=await _req("GET","/api/v1/me");
+    _prof=p;_uid=p.uuid;
+    _sidebarUpdate(p);
+    _allTrips=p.trips||[];
+    var today=new Date();today.setHours(0,0,0,0);
+    var up=_allTrips.filter(function(t){return t.departure_date&&new Date(t.departure_date)>=today;}).sort(function(a,b){return new Date(a.departure_date)-new Date(b.departure_date);});
+    var past=_allTrips.filter(function(t){return !t.departure_date||new Date(t.departure_date)<today;}).sort(function(a,b){return new Date(b.departure_date)-new Date(a.departure_date);});
+    _st("tab-upcoming","Upcoming \u00b7 "+up.length);
+    _st("tab-past","Past \u00b7 "+past.length);
+    _st("trips-lede",_allTrips.length+" trip"+(_allTrips.length===1?"":"s")+" in your vault"+(up.length?" \u2014 "+up.length+" coming up":"")+".");
+    _ht("trips-upcoming-list",up.length?up.map(function(t){return _tripCard(t,false);}).join(""):"<div style='padding:24px 0;color:var(--ink-mute);font-size:13px;'>No upcoming trips.</div>");
+    _ht("trips-past-list",past.length?past.map(function(t){return _tripCard(t,true);}).join(""):"<div style='padding:24px 0;color:var(--ink-mute);font-size:13px;'>No past trips recorded.</div>");
+    var pl=document.getElementById("trips-past-list");if(pl)pl.style.display="none";
+  }catch(e){console.error(e);}
+}
+tripsInit();</script>
 </body>
 </html>

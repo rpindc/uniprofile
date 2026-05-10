@@ -461,7 +461,7 @@ body {
 
     <div class="sidebar-id-block">
       <div class="sidebar-id-label">Your number</div>
-      <div class="id">UP-HRM4-GBEH</div>
+      <div class="id" id="sidebar-number">—</div>
     </div>
 
     <nav class="sidebar-nav">
@@ -477,8 +477,8 @@ body {
       <div class="user-card-inner">
         <div class="avatar avatar-sm avatar-1">RP</div>
         <div style="flex: 1; min-width: 0;">
-          <div style="font-size: 13px; font-weight: 500; line-height: 1.2;">Rommel</div>
-          <div class="caption">Premium</div>
+          <div style="font-size: 13px; font-weight: 500; line-height: 1.2;" id="sidebar-name">—</div>
+          <div class="caption" id="sidebar-tier"></div>
         </div>
         <svg class="icon" style="width: 14px; height: 14px; color: var(--ink-mute);"><use href="#i-chevron"/></svg>
       </div>
@@ -490,9 +490,9 @@ body {
 
     <!-- Greeting -->
     <div class="page-header">
-      <div class="eyebrow">Sunday · May 10</div>
-      <h1 class="h1">Good morning, <em>Romi</em>.</h1>
-      <p class="lede">Two things to look at today, and a trip in 94 days.</p>
+      <div class="eyebrow" id="home-date"></div>
+      <h1 class="h1" id="home-greeting"></h1>
+      <p class="lede" id="home-lede"></p>
     </div>
 
     <!-- ZONE 1: Needs attention -->
@@ -502,10 +502,10 @@ body {
           <span class="pill-dot dot-amber"></span>
           <h2 class="section-label">Needs your attention</h2>
         </div>
-        <span class="caption">2 items</span>
+        <span class="caption" id="home-attn-count"></span>
       </div>
 
-      <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div id="home-attn" style="display: flex; flex-direction: column; gap: 10px;">
 
         <div class="card card-amber" style="display: flex; gap: 14px; align-items: flex-start; padding: 18px 20px;">
           <div class="icon-bg icon-bg-amber" style="width: 32px; height: 32px;">
@@ -545,7 +545,7 @@ body {
         <a href="trips.html" class="caption" style="text-decoration: none;">All trips →</a>
       </div>
 
-      <div class="card" style="padding: 24px 26px;">
+      <div class="card" id="home-next-trip" style="padding: 24px 26px;">
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px;">
           <div>
             <div class="micro-label" style="margin-bottom: 8px;">Patel household · 5 travelers</div>
@@ -597,5 +597,88 @@ body {
   </main>
 </div>
 
+<script>var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
+var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
+var _CID="2heljmdli4f9cv2i4m0i020mfc";
+var _tok=null,_prof=null,_uid=null;
+function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent(window.location.origin+window.location.pathname);}
+function _ph(){var p=new URLSearchParams(window.location.hash.slice(1));return p.get("id_token")||p.get("access_token");}
+async function _req(method,ep,body){
+  var o={method:method,headers:{Authorization:"Bearer "+_tok}};
+  if(body){o.headers["Content-Type"]="application/json";o.body=JSON.stringify(body);}
+  var r=await fetch(_API+ep,o);
+  if(r.status===401){localStorage.removeItem("up_token");location.href=_loginUrl();throw new Error("unauth");}
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  return r.json();
+}
+function _dn(p){if(!p)return"Traveler";if(p.display_name&&p.display_name.trim())return p.display_name.trim();if(p.identity&&p.identity.legal_first)return p.identity.legal_first;return p.uniprofile_number||p.email||"Traveler";}
+function _ini(p){var s=_dn(p).trim();return s.length>=2?s.slice(0,2).toUpperCase():s.toUpperCase();}
+function _st(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+function _ht(id,v){var e=document.getElementById(id);if(e)e.innerHTML=v;}
+function _docLabel(t){var m={PASSPORT:"Passport",US_GREEN_CARD:"Permanent Resident Card",KTN:"Known Traveler No.",GLOBAL_ENTRY:"Global Entry",ESTA:"ESTA",VISA:"Visa",NEXUS:"NEXUS",SENTRI:"SENTRI",NATIONAL_ID:"National ID",DRIVERS_LICENSE:"Driver's License",BIRTH_CERTIFICATE:"Birth Certificate"};return m[t]||(t||"Document").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();});}
+function _daysLabel(d){if(d===null||d===undefined)return"No expiry";if(d<0)return"Expired";if(d===0)return"Expires today";if(d<=30)return"Expires in "+d+" days";return"Expires "+new Date(Date.now()+d*86400000).toLocaleDateString("en-US",{month:"short",year:"numeric"});}
+function _fmt(s){if(!s)return"\u2014";return new Date(s).toLocaleDateString("en-US",{day:"numeric",month:"long",year:"numeric"});}
+function _tripName(t){return t.trip_name||t.destination_iata||"Trip";}
+function _sidebarUpdate(p){
+  _st("sidebar-number",p.uniprofile_number||"\u2014");
+  _st("sidebar-name",_dn(p));
+  _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
+}
+function _today(){return new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});}
+function _greet(){var h=new Date().getHours();return h<12?"Good morning":h<17?"Good afternoon":"Good evening";}
+async function _auth(){
+  var h=_ph();
+  if(h){_tok=h;localStorage.setItem("up_token",_tok);history.replaceState(null,"",window.location.pathname);}
+  else _tok=localStorage.getItem("up_token");
+  if(!_tok){location.href=_loginUrl();return false;}
+  return true;
+}
+async function homeInit(){
+  if(!await _auth())return;
+  try{
+    var prof=await _req("GET","/api/v1/me");
+    _prof=prof;_uid=prof.uuid;
+    _sidebarUpdate(prof);
+    _st("home-date",_today());
+    _st("home-greeting",_greet()+", "+_dn(prof)+".");
+    var alertsRes={alerts:[]};
+    try{alertsRes=await _req("GET","/api/v1/profile/"+prof.uuid+"/alerts");}catch(e){}
+    var alerts=alertsRes.alerts||[];
+    var html="";
+    alerts.forEach(function(a){
+      html+='<div class="card card-amber" style="display:flex;gap:14px;align-items:flex-start;padding:18px 20px;">'
+          +'<div class="icon-bg icon-bg-amber" style="width:32px;height:32px;"><svg class="icon" style="width:14px;height:14px;"><use href="#i-attention"/></svg></div>'
+          +'<div style="flex:1;min-width:0;">'
+          +'<div style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:4px;">'+_docLabel(a.doc_type)+" \u2014 "+(a.alert_level==="EXPIRED"?"expired":_daysLabel(a.days_remaining))+'</div>'
+          +'<div class="body">'+( a.alert_level==="EXPIRED"?"This document has expired and needs attention.":"Renew before your next trip to avoid check-in issues.")+'</div>'
+          +'</div></div>';
+    });
+    if(!html)html='<div class="card" style="padding:18px 20px;color:var(--ink-mute);font-size:13px;">No document alerts right now.</div>';
+    _ht("home-attn",html);
+    _st("home-attn-count",alerts.length+" item"+(alerts.length===1?"":"s"));
+    var today=new Date();today.setHours(0,0,0,0);
+    var upcoming=(prof.trips||[]).filter(function(t){return t.departure_date&&new Date(t.departure_date)>=today;}).sort(function(a,b){return new Date(a.departure_date)-new Date(b.departure_date);});
+    var lede="";
+    if(upcoming.length){
+      var next=upcoming[0];
+      var days=Math.round((new Date(next.departure_date)-today)/86400000);
+      lede=(alerts.length?alerts.length+" alert"+(alerts.length===1?"":"s")+" need attention":"Everything looks good")+" \u00b7 "+_tripName(next)+" in "+days+" day"+(days===1?"":"s")+".";
+      var dep=new Date(next.departure_date);
+      var tripHtml='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;">'
+        +'<div><div class="micro-label" style="margin-bottom:8px;">'+( next.trip_context||"Trip")+'</div>'
+        +'<h3 class="h2" style="font-size:28px;margin-bottom:4px;">'+_tripName(next)+'</h3>'
+        +'<div class="body">'+dep.toLocaleDateString("en-US",{month:"short",day:"numeric"})+(next.return_date?" \u2013 "+new Date(next.return_date).toLocaleDateString("en-US",{month:"short",day:"numeric"}):"")+(next.status?" \u00b7 "+next.status:"")+'</div></div>'
+        +'<div style="text-align:right;"><div style="font-family:var(--serif);font-size:32px;font-weight:300;line-height:1;color:var(--ink);">'+days+'</div><div class="micro-label" style="margin-top:4px;">Days away</div></div>'
+        +'</div>'
+        +'<div style="padding:14px 0;border-top:0.5px solid var(--rule);"><a href="trips.html" class="link">View all trips \u2192</a></div>';
+      _ht("home-next-trip",tripHtml);
+    } else {
+      lede="No upcoming trips planned.";
+      _ht("home-next-trip","<div style='padding:8px 0;color:var(--ink-mute);font-size:13px;'>No upcoming trips. <a href='trips.html' class='link'>Go to Trips \u2192</a></div>");
+    }
+    _st("home-lede",lede);
+  }catch(e){console.error(e);}
+}
+homeInit();</script>
 </body>
 </html>

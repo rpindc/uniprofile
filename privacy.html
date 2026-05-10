@@ -105,7 +105,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     </div>
     <div class="sidebar-id-block">
       <div class="sidebar-id-label">Your number</div>
-      <div class="id">UP-HRM4-GBEH</div>
+      <div class="id" id="sidebar-number">—</div>
     </div>
     <nav class="sidebar-nav">
       <div class="sidebar-nav-label">Navigate</div>
@@ -119,8 +119,8 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       <div class="user-card-inner">
         <div class="avatar avatar-sm avatar-1">RP</div>
         <div style="flex:1;min-width:0;">
-          <div style="font-size:13px;font-weight:500;line-height:1.2;">Rommel</div>
-          <div class="caption">Premium</div>
+          <div style="font-size:13px;font-weight:500;line-height:1.2;" id="sidebar-name">—</div>
+          <div class="caption" id="sidebar-tier"></div>
         </div>
         <svg class="icon" style="width:14px;height:14px;color:var(--ink-mute);"><use href="#i-chevron"/></svg>
       </div>
@@ -136,7 +136,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     </div>
 
     <div class="tabs">
-      <a href="#consents" class="tab active">Active consents · 4</a>
+      <a href="#" class="tab active">Active consents</a>
       <a href="#activity" class="tab">Recent activity</a>
       <a href="#security" class="tab">Security</a>
     </div>
@@ -148,49 +148,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
         <span class="caption">4 operators have access</span>
       </div>
 
-      <div class="grant-row">
-        <div class="grant-icon">G</div>
-        <div class="grant-main">
-          <div class="grant-title">Garuda Indonesia</div>
-          <div class="grant-meta">Passport details · meal preferences · 5 travelers · Bali Aug 12</div>
-        </div>
-        <span class="pill pill-ready"><span class="pill-dot dot-green"></span>Active</span>
-        <a href="#" class="link">Revoke</a>
-      </div>
-
-      <div class="grant-row">
-        <div class="grant-icon">U</div>
-        <div class="grant-main">
-          <div class="grant-title">United Airlines</div>
-          <div class="grant-meta">KTN · seat preferences · solo · permanent until revoked</div>
-        </div>
-        <span class="pill pill-ready"><span class="pill-dot dot-green"></span>Active</span>
-        <a href="#" class="link">Revoke</a>
-      </div>
-
-      <div class="grant-row">
-        <div class="grant-icon">A</div>
-        <div class="grant-main">
-          <div class="grant-title">Allianz Travel Insurance</div>
-          <div class="grant-meta">Identity · trip details · 5 travelers · Bali Aug 12</div>
-        </div>
-        <span class="pill pill-ready"><span class="pill-dot dot-green"></span>Active</span>
-        <a href="#" class="link">Revoke</a>
-      </div>
-
-      <div class="grant-row">
-        <div class="grant-icon">H</div>
-        <div class="grant-main">
-          <div class="grant-title">Hyatt</div>
-          <div class="grant-meta">Loyalty number · room preferences · permanent until revoked</div>
-        </div>
-        <span class="pill pill-ready"><span class="pill-dot dot-green"></span>Active</span>
-        <a href="#" class="link">Revoke</a>
-      </div>
-
-      <div style="margin-top:14px;">
-        <a href="#" class="link" style="color:var(--ink-mute);">See revoked grants (12) →</a>
-      </div>
+      <div id="privacy-grants"></div>
     </section>
 
     <!-- Recent activity -->
@@ -201,31 +159,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       </div>
 
       <div class="card" style="padding:8px 24px;">
-        <div class="activity-row">
-          <div class="activity-time">May 8 · 09:14</div>
-          <div class="activity-text">Approved Garuda's request to share passport details for the Patel household</div>
-          <div class="activity-meta">Step-up auth</div>
-        </div>
-        <div class="activity-row">
-          <div class="activity-time">May 7 · 18:32</div>
-          <div class="activity-text">Login from MacBook Air · San Francisco, CA</div>
-          <div class="activity-meta">Passkey</div>
-        </div>
-        <div class="activity-row">
-          <div class="activity-time">May 5 · 22:11</div>
-          <div class="activity-text">Forwarded a booking confirmation to TripVault · Mumbai Dec 22</div>
-          <div class="activity-meta">Email parser</div>
-        </div>
-        <div class="activity-row">
-          <div class="activity-time">May 3 · 14:08</div>
-          <div class="activity-text">Login from iPhone 15 · San Francisco, CA</div>
-          <div class="activity-meta">Passkey</div>
-        </div>
-        <div class="activity-row">
-          <div class="activity-time">Apr 29 · 11:42</div>
-          <div class="activity-text">Updated display name from "Rommel" to "Romi"</div>
-          <div class="activity-meta">Settings</div>
-        </div>
+        <div id="privacy-activity-rows"></div>
       </div>
     </section>
 
@@ -237,5 +171,81 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   </main>
 </div>
 
+<script>var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
+var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
+var _CID="2heljmdli4f9cv2i4m0i020mfc";
+var _tok=null,_prof=null,_uid=null;
+function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent(window.location.origin+window.location.pathname);}
+function _ph(){var p=new URLSearchParams(window.location.hash.slice(1));return p.get("id_token")||p.get("access_token");}
+async function _req(method,ep,body){
+  var o={method:method,headers:{Authorization:"Bearer "+_tok}};
+  if(body){o.headers["Content-Type"]="application/json";o.body=JSON.stringify(body);}
+  var r=await fetch(_API+ep,o);
+  if(r.status===401){localStorage.removeItem("up_token");location.href=_loginUrl();throw new Error("unauth");}
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  return r.json();
+}
+function _dn(p){if(!p)return"Traveler";if(p.display_name&&p.display_name.trim())return p.display_name.trim();if(p.identity&&p.identity.legal_first)return p.identity.legal_first;return p.uniprofile_number||p.email||"Traveler";}
+function _ini(p){var s=_dn(p).trim();return s.length>=2?s.slice(0,2).toUpperCase():s.toUpperCase();}
+function _st(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+function _ht(id,v){var e=document.getElementById(id);if(e)e.innerHTML=v;}
+function _docLabel(t){var m={PASSPORT:"Passport",US_GREEN_CARD:"Permanent Resident Card",KTN:"Known Traveler No.",GLOBAL_ENTRY:"Global Entry",ESTA:"ESTA",VISA:"Visa",NEXUS:"NEXUS",SENTRI:"SENTRI",NATIONAL_ID:"National ID",DRIVERS_LICENSE:"Driver's License",BIRTH_CERTIFICATE:"Birth Certificate"};return m[t]||(t||"Document").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();});}
+function _daysLabel(d){if(d===null||d===undefined)return"No expiry";if(d<0)return"Expired";if(d===0)return"Expires today";if(d<=30)return"Expires in "+d+" days";return"Expires "+new Date(Date.now()+d*86400000).toLocaleDateString("en-US",{month:"short",year:"numeric"});}
+function _fmt(s){if(!s)return"\u2014";return new Date(s).toLocaleDateString("en-US",{day:"numeric",month:"long",year:"numeric"});}
+function _tripName(t){return t.trip_name||t.destination_iata||"Trip";}
+function _sidebarUpdate(p){
+  _st("sidebar-number",p.uniprofile_number||"\u2014");
+  _st("sidebar-name",_dn(p));
+  _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
+}
+function _today(){return new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});}
+function _greet(){var h=new Date().getHours();return h<12?"Good morning":h<17?"Good afternoon":"Good evening";}
+async function _auth(){
+  var h=_ph();
+  if(h){_tok=h;localStorage.setItem("up_token",_tok);history.replaceState(null,"",window.location.pathname);}
+  else _tok=localStorage.getItem("up_token");
+  if(!_tok){location.href=_loginUrl();return false;}
+  return true;
+}
+function _evtLabel(type){
+  var m={totp_enrolled:"Authenticator app enrolled",totp_verified:"Step-up verified",recovery_code_used:"Recovery code used",factor_removed:"Security factor removed",display_name_changed:"Display name updated",login:"Sign in",logout:"Sign out"};
+  return m[type]||(type||"Event").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();});
+}
+function _evtTime(ts){if(!ts)return"";var d=new Date(ts);return d.toLocaleDateString("en-US",{month:"short",day:"numeric"})+" \u00b7 "+d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"});}
+async function privacyInit(){
+  if(!await _auth())return;
+  try{
+    var p=await _req("GET","/api/v1/me");
+    _prof=p;_uid=p.uuid;
+    _sidebarUpdate(p);
+    var eventsRes={events:[]},factorsRes={factors:[]};
+    try{eventsRes=await _req("GET","/api/v1/auth/events");}catch(e){}
+    try{factorsRes=await _req("GET","/api/v1/auth/factors");}catch(e){}
+    _ht("privacy-grants","<div style='padding:20px 0;color:var(--ink-mute);font-size:13px;'>Consent grants are managed in the main app under Consent &amp; Access. <a href='/' class='link'>Go there \u2192</a></div>");
+    var factors=factorsRes.factors||[];
+    var events=eventsRes.events||[];
+    var rows="";
+    factors.forEach(function(f){
+      rows+='<div class="activity-row">'
+        +'<div class="activity-time">'+_evtTime(f.created_at)+'</div>'
+        +'<div class="activity-text">'+( f.factor_type==="totp"?"Authenticator app":"Security factor")+" added"+(f.label?" \u00b7 "+f.label:"")+'</div>'
+        +'<div class="activity-meta">'+( f.is_active?"Active":"Pending")+'</div></div>';
+    });
+    events.slice(0,10).forEach(function(e){
+      var meta=e.meta&&e.meta.label?e.meta.label:e.event_type||"";
+      rows+='<div class="activity-row">'
+        +'<div class="activity-time">'+_evtTime(e.created_at||e.event_at)+'</div>'
+        +'<div class="activity-text">'+_evtLabel(e.event_type)+'</div>'
+        +'<div class="activity-meta">'+meta+'</div></div>';
+    });
+    if(!rows)rows='<div class="activity-row"><div class="activity-time">\u2014</div><div class="activity-text">No recent activity recorded.</div><div class="activity-meta"></div></div>';
+    _ht("privacy-activity-rows",rows);
+    if(!factors.length){
+      var t=document.querySelector('.tab[href="#security"]');
+      if(t)t.textContent="Security \u00b7 No 2FA";
+    }
+  }catch(e){console.error(e);}
+}
+privacyInit();</script>
 </body>
 </html>
