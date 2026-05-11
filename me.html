@@ -605,8 +605,8 @@ function openAddDoc(){
 function openEditDocById(id){
   var d=_docsMap[id];if(!d)return;
   _editingDocId=id;
-  _st("doc-modal-title","Edit document");
-  _st("doc-submit-btn","Save changes");
+  document.getElementById("doc-modal-title").textContent="Edit document";
+  document.getElementById("doc-submit-btn").textContent="Save changes";
   _setval("doc-type",d.doc_type);
   _setval("doc-number",d.doc_number);
   _setval("doc-expiry",d.expiry_date?d.expiry_date.slice(0,10):"");
@@ -622,13 +622,12 @@ async function submitDoc(){
   btn.disabled=true;btn.textContent="Saving…";
   _showErr("doc-modal-error","");
   try{
-    var body={module:"document",doc_type:type};
-    if(num)body.doc_number=num;
-    if(expiry)body.expiry_date=expiry;
-    if(country)body.issuing_country=country;
-    body.action=_editingDocId?"edit":"add";
-    if(_editingDocId)body.doc_id=_editingDocId;
-    await _req("PUT","/api/v1/profile/"+_uid,body);
+    var data={doc_type:type};
+    if(num)data.doc_number=num;
+    if(expiry)data.expiry_date=expiry;
+    if(country)data.issuing_country=country;
+    if(_editingDocId)data.doc_id=_editingDocId;
+    await _req("PUT","/api/v1/profile/"+_uid,{module:_editingDocId?"document_update":"document_add",data:data});
     closeDocModal();
     showToast(_editingDocId?"Document updated.":"Document added.");
     await meRefresh();
@@ -640,7 +639,7 @@ async function submitDoc(){
 async function deleteDoc(docId){
   if(!confirm("Remove this document?"))return;
   try{
-    await _req("PUT","/api/v1/profile/"+_uid,{module:"document",action:"delete",doc_id:docId});
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"document_delete",data:{doc_id:docId}});
     showToast("Document removed.");await meRefresh();
   }catch(e){showToast("Error: "+(e.message||"Failed."));}
 }
@@ -666,15 +665,13 @@ async function saveIdentity(){
   btn.disabled=true;btn.textContent="Saving…";
   _showErr("identity-edit-error","");
   try{
-    var body={module:"identity"};
+    var data={};
     var first=_val("edit-first").trim(),mid=_val("edit-middle").trim(),last=_val("edit-last").trim();
     var dob=_val("edit-dob"),nat=_val("edit-nationality").trim().toUpperCase(),gen=_val("edit-gender");
     var hap=_val("edit-home-airport").trim().toUpperCase();
-    if(first)body.legal_first=first;if(mid)body.legal_middle=mid;if(last)body.legal_last=last;
-    if(dob)body.dob=dob;if(nat)body.nationality=nat;if(gen)body.gender_code=gen;if(hap)body.home_airport=hap;
-    await _req("PUT","/api/v1/profile/"+_uid,body);
-    var dn=_val("edit-display-name").trim();
-    if(dn)await _req("PUT","/api/v1/profile/"+_uid+"/display-name",{display_name:dn});
+    if(first)data.legal_first=first;if(mid)data.legal_middle=mid;if(last)data.legal_last=last;
+    if(dob)data.dob=dob;if(nat)data.nationality=nat;if(gen)data.gender_code=gen;if(hap)data.home_airport=hap;
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"identity",data:data});
     showToast("Identity saved.");cancelIdentityEdit();await meRefresh();
   }catch(e){
     _showErr("identity-edit-error","Save failed: "+(e.message||"Please try again."));
@@ -704,20 +701,24 @@ async function savePreferences(){
     document.querySelectorAll(".allergy-cb:checked").forEach(function(cb){allg.push(cb.value);});
     await _req("PUT","/api/v1/profile/"+_uid,{
       module:"seat_preferences",
-      cabin_domestic:_val("pref-cabin-dom")||null,cabin_international:_val("pref-cabin-intl")||null,
-      seat_position:_val("pref-seat-pos")||null,row_preference:_val("pref-row")||null,
-      avoid_last_row:document.getElementById("pref-avoid-last-row").checked,
-      avoid_middle_seats:document.getElementById("pref-avoid-middle").checked,
-      wheelchair_needed:document.getElementById("pref-wheelchair").checked,
-      hotel_room_type:_val("pref-hotel-room")||null,hotel_floor_pref:_val("pref-hotel-floor")||null,
-      car_type_pref:_val("pref-car")||null
+      data:{
+        cabin_domestic:_val("pref-cabin-dom")||null,cabin_international:_val("pref-cabin-intl")||null,
+        seat_position:_val("pref-seat-pos")||null,row_preference:_val("pref-row")||null,
+        avoid_last_row:document.getElementById("pref-avoid-last-row").checked,
+        avoid_middle_seats:document.getElementById("pref-avoid-middle").checked,
+        wheelchair_needed:document.getElementById("pref-wheelchair").checked,
+        hotel_room_type:_val("pref-hotel-room")||null,hotel_floor_pref:_val("pref-hotel-floor")||null,
+        car_type_pref:_val("pref-car")||null
+      }
     });
     await _req("PUT","/api/v1/profile/"+_uid,{
       module:"meal_preferences",
-      primary_meal_code:_val("pref-meal-code")||null,
-      beverage_pref:_val("pref-bev")||null,
-      allergies:allg,
-      dietary_notes:_val("pref-diet-notes")||null
+      data:{
+        primary_meal_code:_val("pref-meal-code")||null,
+        beverage_pref:_val("pref-bev")||null,
+        allergies:allg,
+        dietary_notes:_val("pref-diet-notes")||null
+      }
     });
     _showOk("pref-saved-msg");showToast("Preferences saved.");
     await meRefresh();
@@ -786,16 +787,15 @@ async function submitLoyalty(){
   _showErr("loyalty-modal-error","");
   try{
     var pts=_val("loy-points");
-    var body={
-      module:_editingLoyaltyId?"loyalty_update":"loyalty_add",
+    var data={
       program_type:_val("loy-type"),provider_name:provider,
       program_name:_val("loy-program").trim()||provider,
       member_number:num,tier_status:_val("loy-tier")||null,
       points_balance:pts?parseInt(pts,10):null,
       auto_apply:document.getElementById("loy-auto-apply").checked
     };
-    if(_editingLoyaltyId)body.loyalty_id=_editingLoyaltyId;
-    await _req("PUT","/api/v1/profile/"+_uid,body);
+    if(_editingLoyaltyId)data.loyalty_id=_editingLoyaltyId;
+    await _req("PUT","/api/v1/profile/"+_uid,{module:_editingLoyaltyId?"loyalty_update":"loyalty_add",data:data});
     closeLoyaltyModal();showToast(_editingLoyaltyId?"Program updated.":"Program added.");
     await meRefresh();
   }catch(e){
@@ -806,7 +806,7 @@ async function submitLoyalty(){
 async function deleteLoyalty(id){
   if(!confirm("Remove this loyalty program?"))return;
   try{
-    await _req("PUT","/api/v1/profile/"+_uid,{module:"loyalty_delete",loyalty_id:id});
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"loyalty_delete",data:{loyalty_id:id}});
     showToast("Program removed.");await meRefresh();
   }catch(e){showToast("Error: "+(e.message||"Failed."));}
 }
@@ -828,7 +828,7 @@ async function savePaymentPersonal(){
   btn.disabled=true;btn.textContent="Saving…";
   _showErr("pay-personal-error","");
   try{
-    await _req("PUT","/api/v1/profile/"+_uid,{module:"payment_personal",preferred_card:_val("pay-personal-card").trim()||null});
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"payment_personal",data:{preferred_card:_val("pay-personal-card").trim()||null}});
     _showOk("pay-personal-ok");showToast("Personal payment saved.");await meRefresh();
   }catch(e){_showErr("pay-personal-error","Save failed: "+(e.message||"Try again."));}
   btn.disabled=false;btn.textContent="Save";
@@ -840,10 +840,12 @@ async function savePaymentCorporate(){
   try{
     await _req("PUT","/api/v1/profile/"+_uid,{
       module:"payment_corporate",
-      company_name:_val("pay-corp-company").trim()||null,
-      cost_center:_val("pay-corp-cc").trim()||null,
-      corporate_card:_val("pay-corp-card").trim()||null,
-      expense_platform:_val("pay-corp-platform")||null
+      data:{
+        company_name:_val("pay-corp-company").trim()||null,
+        cost_center:_val("pay-corp-cc").trim()||null,
+        corporate_card:_val("pay-corp-card").trim()||null,
+        expense_platform:_val("pay-corp-platform")||null
+      }
     });
     _showOk("pay-corp-ok");showToast("Corporate payment saved.");await meRefresh();
   }catch(e){_showErr("pay-corp-error","Save failed: "+(e.message||"Try again."));}
@@ -864,7 +866,7 @@ async function savePolicySettings(){
   try{
     await _req("PUT","/api/v1/profile/"+_uid,{
       module:"payment_corporate",
-      policy_description:_val("policy-desc").trim()||null
+      data:{policy_description:_val("policy-desc").trim()||null}
     });
     _showOk("policy-ok");showToast("Policy saved.");await meRefresh();
   }catch(e){_showErr("policy-error","Save failed: "+(e.message||"Try again."));}
@@ -895,7 +897,8 @@ async function meRefresh(){
     if(docs.length){
       var dhtml="";
       docs.forEach(function(d){
-        _docsMap[d.doc_id]=d;
+        var did=d.id||d.doc_id;
+        _docsMap[did]=d;
         dhtml+='<div class="list-row">'
           +'<div class="list-row-icon"><svg class="icon"><use href="'+_docIcon(d.doc_type)+'"/></svg></div>'
           +'<div class="list-row-main">'
@@ -904,8 +907,8 @@ async function meRefresh(){
           +'</div>'
           +_docPill(d)
           +'<div class="list-row-actions">'
-          +'<button class="btn btn-secondary btn-sm" onclick="openEditDocById(\''+d.doc_id+'\')">Edit</button>'
-          +'<button class="btn btn-danger btn-sm" onclick="deleteDoc(\''+d.doc_id+'\')">Delete</button>'
+          +'<button class="btn btn-secondary btn-sm" onclick="openEditDocById(\''+did+'\')">Edit</button>'
+          +'<button class="btn btn-danger btn-sm" onclick="deleteDoc(\''+did+'\')">Delete</button>'
           +'</div></div>';
       });
       _ht("me-doc-list",dhtml);

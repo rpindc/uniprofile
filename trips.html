@@ -16,7 +16,6 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .h1{font-family:var(--serif);font-weight:300;font-size:clamp(36px,5vw,52px);line-height:1.1;letter-spacing:-0.02em;color:var(--ink)}
 .h1 em{font-style:italic;font-weight:300}
 .h2{font-family:var(--serif);font-weight:400;font-size:24px;line-height:1.2;letter-spacing:-0.01em;color:var(--ink)}
-.h2 em{font-style:italic;font-weight:300}
 .h3{font-family:var(--serif);font-weight:400;font-size:18px;line-height:1.25;letter-spacing:-0.005em;color:var(--ink)}
 .lede{font-family:var(--serif);font-weight:300;font-size:17px;line-height:1.5;letter-spacing:-0.005em;color:var(--ink-soft)}
 .eyebrow{font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-mute)}
@@ -45,20 +44,10 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-weight:300;color:var(--ink-soft);flex-shrink:0;border:2px solid #fff}
 .avatar-sm{width:30px;height:30px;font-size:12px}
 .avatar-1{background:linear-gradient(135deg,#d8d3c8,#c4bfb3)}
-.avatar-2{background:linear-gradient(135deg,#e0d5c8,#cfc2b0)}
-.avatar-3{background:linear-gradient(135deg,#d4ccd8,#c0b6c8)}
-.avatar-4{background:linear-gradient(135deg,#d8d3d8,#c4bfc4)}
-.avatar-5{background:linear-gradient(135deg,#cdc8d8,#b8b2c8)}
-.avatar-stack{display:flex;align-items:center}
-.avatar-stack .avatar:not(:first-child){margin-left:-6px}
 .main{flex:1;padding:36px 48px;min-width:0;max-width:880px}
-.page-header{margin-bottom:32px}
-.page-header .eyebrow{margin-bottom:12px}
-.page-header .h1{margin-bottom:8px}
-.tabs{display:flex;gap:28px;padding-bottom:14px;border-bottom:0.5px solid var(--rule);margin-bottom:32px;overflow-x:auto}
-.tab{font-family:var(--sans);font-size:13px;color:var(--ink-mute);text-decoration:none;padding-bottom:14px;margin-bottom:-14.5px;white-space:nowrap;transition:color 120ms ease}
-.tab:hover{color:var(--ink-soft)}
-.tab.active{color:var(--ink);font-weight:500;border-bottom:1.5px solid var(--ink)}
+.page-header{margin-bottom:32px;display:flex;align-items:flex-start;justify-content:space-between;gap:24px}
+.page-header-text .eyebrow{margin-bottom:12px}
+.page-header-text .h1{margin-bottom:8px}
 .section{margin-bottom:36px}
 .section-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
 .card{background:#fff;border:0.5px solid var(--rule);border-radius:12px;padding:22px 24px}
@@ -70,27 +59,61 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .pill-dot{width:6px;height:6px;border-radius:50%}
 .dot-green{background:var(--green)}
 .dot-amber{background:var(--amber)}
-.btn{font-family:var(--sans);font-size:13px;font-weight:500;padding:10px 18px;border-radius:4px;cursor:pointer;letter-spacing:-0.005em;transition:background 160ms ease,border-color 160ms ease;display:inline-flex;align-items:center;gap:8px;text-decoration:none;border:0.5px solid transparent}
+.btn{font-family:var(--sans);font-size:13px;font-weight:500;padding:10px 18px;border-radius:4px;cursor:pointer;letter-spacing:-0.005em;transition:background 160ms ease,border-color 160ms ease;display:inline-flex;align-items:center;gap:8px;text-decoration:none;border:0.5px solid transparent;background:none}
 .btn-primary{color:#fff;background:var(--ink);border-color:var(--ink)}
+.btn-primary:hover{opacity:0.88}
+.btn-primary:disabled{opacity:0.45;cursor:default}
 .btn-secondary{color:var(--ink);background:transparent;border-color:var(--rule-strong)}
-.btn-sm{font-size:12px;padding:8px 14px}
+.btn-secondary:hover{background:rgba(26,26,26,0.03)}
+.btn-danger{color:var(--red);background:transparent;border-color:rgba(196,77,77,0.28)}
+.btn-danger:hover{background:var(--red-soft)}
+.btn-sm{font-size:12px;padding:6px 12px}
 .icon{width:16px;height:16px;flex-shrink:0;display:inline-block;vertical-align:middle}
-@media(max-width:900px){.shell{flex-direction:column}.sidebar{width:100%;height:auto;position:relative;padding:16px 0}.sidebar-wordmark-block,.sidebar-id-block{padding:12px 24px}.sidebar-nav{padding:12px;display:flex;gap:4px;flex-wrap:wrap}.sidebar-nav-label{display:none}.nav-item{padding:8px 12px}.sidebar-user-card{display:none}.main{padding:24px;max-width:none}}
-
-/* Trip card specifics */
-.trip-card{background:#fff;border:0.5px solid var(--rule);border-radius:12px;padding:20px 24px;margin-bottom:10px;display:flex;gap:20px;align-items:center;cursor:pointer;transition:border-color 120ms ease}
+/* Forms */
+.form-field{margin-bottom:12px}
+.form-label{font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:5px;display:block}
+.form-input{width:100%;padding:8px 11px;border:0.5px solid var(--rule-strong);border-radius:6px;font-family:var(--sans);font-size:13px;color:var(--ink);background:#fff;outline:none;transition:border-color 120ms ease;-webkit-appearance:none}
+.form-input:focus{border-color:var(--ink)}
+.form-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9L12 15L18 9' stroke='%238a8a86' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;cursor:pointer}
+.form-textarea{resize:vertical;min-height:60px}
+.form-row{display:flex;gap:10px}
+.form-row .form-field{flex:1}
+.form-actions{display:flex;gap:8px;align-items:center;margin-top:18px}
+.form-error{color:var(--red);font-size:12px;margin-top:6px;display:none}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(26,26,26,0.32);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:opacity 160ms ease;padding:20px}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:#fff;border-radius:16px;padding:26px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 48px rgba(26,26,26,0.14)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-close{width:28px;height:28px;border-radius:50%;border:none;background:var(--paper-warm);cursor:pointer;color:var(--ink-mute);font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center}
+/* Toast */
+.toast{position:fixed;bottom:26px;right:26px;background:var(--ink);color:#fff;padding:10px 17px;border-radius:8px;font-size:13px;z-index:2000;opacity:0;transform:translateY(6px);transition:opacity 200ms ease,transform 200ms ease;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+/* Filter bar */
+.filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px;align-items:center}
+.filter-btn{font-family:var(--sans);font-size:12px;font-weight:500;padding:6px 14px;border-radius:100px;cursor:pointer;border:0.5px solid var(--rule-strong);background:transparent;color:var(--ink-soft);transition:all 120ms ease;white-space:nowrap}
+.filter-btn:hover{color:var(--ink);border-color:var(--rule-strong)}
+.filter-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.filter-export{margin-left:auto;font-family:var(--sans);font-size:12px;font-weight:500;padding:6px 14px;border-radius:100px;cursor:pointer;border:0.5px solid var(--rule-strong);background:transparent;color:var(--ink-soft);transition:all 120ms ease;white-space:nowrap}
+.filter-export:hover{color:var(--ink)}
+/* Trip card */
+.trip-card{background:#fff;border:0.5px solid var(--rule);border-radius:12px;padding:18px 20px;margin-bottom:10px;transition:border-color 120ms ease}
 .trip-card:hover{border-color:var(--rule-strong)}
-.trip-date{flex-shrink:0;text-align:center;width:64px;padding:6px 0;border-radius:8px;background:var(--paper-cream);}
-.trip-date-month{font-family:var(--sans);font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;}
-.trip-date-day{font-family:var(--serif);font-size:24px;font-weight:300;color:var(--ink);line-height:1.1;}
+.trip-card-top{display:flex;gap:18px;align-items:center}
+.trip-date{flex-shrink:0;text-align:center;width:56px;padding:6px 0;border-radius:8px;background:var(--paper-cream)}
+.trip-date-month{font-family:var(--sans);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.trip-date-day{font-family:var(--serif);font-size:22px;font-weight:300;color:var(--ink);line-height:1.1}
 .trip-main{flex:1;min-width:0}
-.trip-title{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--ink);letter-spacing:-0.005em;margin-bottom:4px}
+.trip-title{font-family:var(--serif);font-size:19px;font-weight:400;color:var(--ink);letter-spacing:-0.005em;margin-bottom:3px}
 .trip-title em{font-style:italic;font-weight:300}
+.trip-route{font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-bottom:3px}
 .trip-meta{font-size:12px;color:var(--ink-mute)}
-.trip-status{flex-shrink:0;display:flex;align-items:center;gap:14px}
+.trip-actions{flex-shrink:0;display:flex;align-items:center;gap:8px}
+.trip-ctx-select{font-family:var(--sans);font-size:12px;padding:5px 26px 5px 10px;border-radius:6px;border:0.5px solid var(--rule-strong);background:#fff;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9L12 15L18 9' stroke='%238a8a86' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;color:var(--ink-soft);cursor:pointer;outline:none;-webkit-appearance:none}
 .past .trip-date{background:transparent;border:0.5px solid var(--rule)}
 .past .trip-date-day{color:var(--ink-mute)}
 .past .trip-title{color:var(--ink-soft)}
+@media(max-width:900px){.shell{flex-direction:column}.sidebar{width:100%;height:auto;position:relative;padding:16px 0}.sidebar-wordmark-block,.sidebar-id-block{padding:12px 24px}.sidebar-nav{padding:12px;display:flex;gap:4px;flex-wrap:wrap}.sidebar-nav-label{display:none}.nav-item{padding:8px 12px}.sidebar-user-card{display:none}.main{padding:24px;max-width:none}.page-header{flex-direction:column;gap:16px}.trip-actions{flex-direction:column;align-items:flex-start;gap:6px}}
 </style>
 </head>
 <body>
@@ -101,6 +124,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   <symbol id="i-people" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="9" r="3" stroke="currentColor" stroke-width="1.25"/><circle cx="17" cy="10" r="2.2" stroke="currentColor" stroke-width="1.25"/><path d="M3 19C3 16 5.7 14 9 14C12.3 14 15 16 15 19" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M15 18C15 15.5 16.5 14 17 14C19 14 21 15.5 21 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
   <symbol id="i-trips" viewBox="0 0 24 24" fill="none"><path d="M3 17L9 11L13 15L21 7" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="11" r="1.2" fill="currentColor"/><circle cx="13" cy="15" r="1.2" fill="currentColor"/><circle cx="21" cy="7" r="1.2" fill="currentColor"/><circle cx="3" cy="17" r="1.2" fill="currentColor"/></symbol>
   <symbol id="i-privacy" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M8 11V8C8 5.79 9.79 4 12 4C14.21 4 16 5.79 16 8V11" stroke="currentColor" stroke-width="1.25"/><circle cx="12" cy="15.5" r="1" fill="currentColor"/></symbol>
+  <symbol id="i-add" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.25"/><path d="M12 8V16M8 12H16" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
 </svg>
 
@@ -125,7 +149,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     </nav>
     <div class="sidebar-user-card">
       <div class="user-card-inner">
-        <div class="avatar avatar-sm avatar-1">RP</div>
+        <div class="avatar avatar-sm avatar-1" id="sidebar-avatar">—</div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:500;line-height:1.2;" id="sidebar-name">—</div>
           <div class="caption" id="sidebar-tier"></div>
@@ -138,49 +162,100 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   <main class="main">
 
     <div class="page-header">
-      <div class="eyebrow">Your travel</div>
-      <h1 class="h1" id="trips-heading">Trips, in <em>order</em>.</h1>
-      <p class="lede" id="trips-lede">Loading…</p>
+      <div class="page-header-text">
+        <div class="eyebrow">Your travel</div>
+        <h1 class="h1">Trips, in <em>order</em>.</h1>
+        <p class="lede" id="trips-lede">Loading…</p>
+      </div>
+      <button class="btn btn-primary" style="flex-shrink:0;margin-top:8px" onclick="openAddTrip()">
+        <svg class="icon" style="width:14px;height:14px"><use href="#i-add"/></svg>
+        Add trip
+      </button>
     </div>
 
-    <div class="tabs">
-      <a href="#" class="tab active" onclick="tripsTab('upcoming',this);return false;" id="tab-upcoming">Upcoming · 0</a>
-      <a href="#" class="tab" onclick="tripsTab('past',this);return false;" id="tab-past">Past · 0</a>
-      <a href="#all-bookings" class="tab">All bookings</a>
-      <a href="#insurance" class="tab">Insurance</a>
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <button class="filter-btn active" id="filter-all" onclick="applyFilter('all',this)">All</button>
+      <button class="filter-btn" id="filter-upcoming" onclick="applyFilter('upcoming',this)">Upcoming</button>
+      <button class="filter-btn" id="filter-past" onclick="applyFilter('past',this)">Past</button>
+      <button class="filter-btn" id="filter-PERSONAL" onclick="applyFilter('PERSONAL',this)">Personal</button>
+      <button class="filter-btn" id="filter-CORPORATE" onclick="applyFilter('CORPORATE',this)">Business</button>
+      <button class="filter-btn" id="filter-BLEISURE" onclick="applyFilter('BLEISURE',this)">Bleisure</button>
+      <button class="filter-export" onclick="exportCsv()">⬇ Export CSV</button>
     </div>
 
-    <!-- Upcoming -->
-    <section class="section">
-      <div class="section-header">
-        <h2 class="section-label">Upcoming</h2>
-      </div>
-
-      <div id="trips-upcoming-list"></div>
-    </section>
-
-    <!-- Past -->
-    <section class="section">
-      <div class="section-header">
-        <h2 class="section-label">Past</h2>
-        <span class="caption">5 trips · last 18 months</span>
-      </div>
-
-      <div id="trips-past-list"></div>
-    </section>
-
-    <section class="card-warm">
-      <div class="editorial" style="margin-bottom:12px;">A pattern</div>
-      <p style="font-family:var(--serif);font-size:16px;font-weight:300;line-height:1.55;color:var(--ink-soft);">Your trips cluster around school holidays and one solo escape per quarter. June and September are your favorite solo months. The pattern's been consistent for two years.</p>
-    </section>
+    <div id="trips-list"></div>
 
   </main>
 </div>
 
-<script>var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
+<!-- ── Add / Edit Trip Modal ─── -->
+<div class="modal-overlay" id="trip-modal" onclick="if(event.target===this)closeTripModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="h3" id="trip-modal-title">Add a trip</h2>
+      <button class="modal-close" onclick="closeTripModal()">&#x2715;</button>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Trip name</label>
+      <input class="form-input" id="t-name" placeholder="e.g. London for Expo 2026"/>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="form-label">Origin (IATA)</label>
+        <input class="form-input" id="t-orig" placeholder="SFO" maxlength="3" style="text-transform:uppercase"/>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Destination (IATA)</label>
+        <input class="form-input" id="t-dest" placeholder="LHR" maxlength="3" style="text-transform:uppercase"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="form-label">Departure date</label>
+        <input class="form-input" type="date" id="t-dep"/>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Return date</label>
+        <input class="form-input" type="date" id="t-ret"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-field">
+        <label class="form-label">Context</label>
+        <select class="form-input form-select" id="t-ctx">
+          <option value="PERSONAL">Personal</option>
+          <option value="CORPORATE">Business</option>
+          <option value="BLEISURE">Bleisure</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">PNR / locator</label>
+        <input class="form-input" id="t-pnr" placeholder="e.g. ABC123" style="text-transform:uppercase"/>
+      </div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Notes</label>
+      <textarea class="form-input form-textarea" id="t-notes" placeholder="Any notes about this trip…"></textarea>
+    </div>
+    <div id="trip-modal-error" class="form-error"></div>
+    <div class="form-actions">
+      <button class="btn btn-primary btn-sm" id="trip-submit-btn" onclick="submitTrip()">Add trip</button>
+      <button class="btn btn-secondary btn-sm" onclick="closeTripModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
-var _tok=null,_prof=null,_uid=null;
+var _tok=null,_uid=null;
+var _allTrips=[];
+var _curFilter="all";
+
 function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent(window.location.origin+window.location.pathname);}
 function _ph(){var p=new URLSearchParams(window.location.hash.slice(1));return p.get("id_token")||p.get("access_token");}
 async function _req(method,ep,body){
@@ -195,17 +270,16 @@ function _dn(p){if(!p)return"Traveler";if(p.display_name&&p.display_name.trim())
 function _ini(p){var s=_dn(p).trim();return s.length>=2?s.slice(0,2).toUpperCase():s.toUpperCase();}
 function _st(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
 function _ht(id,v){var e=document.getElementById(id);if(e)e.innerHTML=v;}
-function _docLabel(t){var m={PASSPORT:"Passport",US_GREEN_CARD:"Permanent Resident Card",KTN:"Known Traveler No.",GLOBAL_ENTRY:"Global Entry",ESTA:"ESTA",VISA:"Visa",NEXUS:"NEXUS",SENTRI:"SENTRI",NATIONAL_ID:"National ID",DRIVERS_LICENSE:"Driver's License",BIRTH_CERTIFICATE:"Birth Certificate"};return m[t]||(t||"Document").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();});}
-function _daysLabel(d){if(d===null||d===undefined)return"No expiry";if(d<0)return"Expired";if(d===0)return"Expires today";if(d<=30)return"Expires in "+d+" days";return"Expires "+new Date(Date.now()+d*86400000).toLocaleDateString("en-US",{month:"short",year:"numeric"});}
-function _fmt(s){if(!s)return"\u2014";return new Date(s).toLocaleDateString("en-US",{day:"numeric",month:"long",year:"numeric"});}
-function _tripName(t){return t.trip_name||t.destination_iata||"Trip";}
+function _val(id){var e=document.getElementById(id);return e?e.value:"";}
+function _setval(id,v){var e=document.getElementById(id);if(e)e.value=v||"";}
+function _fmt(s){if(!s)return"—";return new Date(s).toLocaleDateString("en-US",{day:"numeric",month:"long",year:"numeric"});}
+function _tripName(t){return t.trip_name||((t.origin_iata||"")+(t.destination_iata?" → "+t.destination_iata:""))||"Trip";}
 function _sidebarUpdate(p){
-  _st("sidebar-number",p.uniprofile_number||"\u2014");
+  _st("sidebar-number",p.uniprofile_number||"—");
   _st("sidebar-name",_dn(p));
+  _st("sidebar-avatar",_ini(p));
   _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
 }
-function _today(){return new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});}
-function _greet(){var h=new Date().getHours();return h<12?"Good morning":h<17?"Good afternoon":"Good evening";}
 async function _auth(){
   var h=_ph();
   if(h){_tok=h;localStorage.setItem("up_token",_tok);history.replaceState(null,"",window.location.pathname);}
@@ -213,47 +287,207 @@ async function _auth(){
   if(!_tok){location.href=_loginUrl();return false;}
   return true;
 }
-var _allTrips=[];
-function _tripCard(t,past){
+function showToast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},3000);}
+function _showErr(id,msg){var e=document.getElementById(id);if(e){e.textContent=msg;e.style.display=msg?"block":"none";}}
+
+/* ── Filtering ── */
+function applyFilter(filter,btn){
+  _curFilter=filter;
+  document.querySelectorAll(".filter-btn").forEach(function(b){b.classList.remove("active");});
+  if(btn)btn.classList.add("active");
+  renderTrips(_allTrips);
+}
+function _filteredTrips(){
+  var today=new Date();today.setHours(0,0,0,0);
+  if(_curFilter==="upcoming") return _allTrips.filter(function(t){return t.departure_date&&new Date(t.departure_date)>=today;});
+  if(_curFilter==="past") return _allTrips.filter(function(t){return !t.departure_date||new Date(t.departure_date)<today;});
+  if(_curFilter==="PERSONAL"||_curFilter==="CORPORATE"||_curFilter==="BLEISURE") return _allTrips.filter(function(t){return t.trip_context===_curFilter;});
+  return _allTrips;
+}
+
+/* ── Trip card render ── */
+function _ctxLabel(c){return c==="CORPORATE"?"Business":c==="BLEISURE"?"Bleisure":"Personal";}
+function _ctxColor(c){return c==="CORPORATE"?"background:#e8efe9;color:#2d6a4f":c==="BLEISURE"?"background:#f9f1e3;color:#ba7517":"background:#e8f0fe;color:#1a56db";}
+function _tripCard(t){
   var dep=t.departure_date?new Date(t.departure_date):null;
+  var today=new Date();today.setHours(0,0,0,0);
+  var past=dep&&dep<today;
   var month=dep?dep.toLocaleDateString("en-US",{month:"short"}):"";
   var day=dep?dep.getDate():"?";
   var name=_tripName(t);
-  var meta=[t.trip_context,t.status].filter(Boolean).join(" \u00b7 ");
-  var pill=!past?'<div class="trip-status"><span class="pill pill-neutral">'+( t.status||"Saved")+'</span></div>':"";
-  return '<div class="trip-card'+( past?" past":"")+'">'
+  var route=t.origin_iata&&t.destination_iata?(t.origin_iata.toUpperCase()+" → "+t.destination_iata.toUpperCase()):"";
+  var ret=t.return_date?(" · returns "+new Date(t.return_date).toLocaleDateString("en-US",{month:"short",day:"numeric"})):"";
+  var ctxColor=_ctxColor(t.trip_context);
+  var pnr=t.trip_locator?('<span class="id" style="font-size:11px;color:var(--ink-mute)">'+t.trip_locator+'</span>'):"";
+  var daysEl="";
+  if(dep){
+    var diff=Math.floor((dep-today)/86400000);
+    if(!past&&diff<=30) daysEl='<span class="pill pill-amber" style="font-size:10px">'+diff+"d away</span>";
+    else if(!past&&diff===0) daysEl='<span class="pill pill-ready" style="font-size:10px">Today</span>';
+  }
+  return '<div class="trip-card'+(past?" past":"")+'" id="tc-'+t.id+'">'
+    +'<div class="trip-card-top">'
     +'<div class="trip-date"><div class="trip-date-month">'+month+'</div><div class="trip-date-day">'+day+'</div></div>'
-    +'<div class="trip-main"><div class="trip-title">'+name+'</div>'+( meta?'<div class="trip-meta">'+meta+'</div>':"")+"</div>"
-    +pill+'</div>';
+    +'<div class="trip-main">'
+    +'<div class="trip-title">'+name+'</div>'
+    +(route?'<div class="trip-route">'+route+ret+'</div>':"")
+    +'<div class="trip-meta" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px">'
+    +'<span style="font-size:11px;padding:2px 8px;border-radius:100px;font-weight:500;'+ctxColor+'">'+_ctxLabel(t.trip_context)+'</span>'
+    +pnr
+    +(t.notes?'<span class="caption">'+t.notes+'</span>':"")
+    +daysEl
+    +'</div>'
+    +'</div>'
+    +'<div class="trip-actions">'
+    +'<select class="trip-ctx-select" onchange="changeContext(\''+t.id+'\',this.value)" title="Trip context">'
+    +'<option value="PERSONAL"'+(t.trip_context==="PERSONAL"?" selected":"")+'>Personal</option>'
+    +'<option value="CORPORATE"'+(t.trip_context==="CORPORATE"?" selected":"")+'>Business</option>'
+    +'<option value="BLEISURE"'+(t.trip_context==="BLEISURE"?" selected":"")+'>Bleisure</option>'
+    +'</select>'
+    +'<button class="btn btn-secondary btn-sm" onclick="openEditTrip(\''+t.id+'\')">Edit</button>'
+    +'<button class="btn btn-danger btn-sm" onclick="deleteTrip(\''+t.id+'\')">Delete</button>'
+    +'</div>'
+    +'</div>'
+    +'</div>';
 }
-function tripsTab(tab,el){
-  _curTab=tab;
-  document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active");});
-  if(el)el.classList.add("active");
-  var up=document.getElementById("trips-upcoming-list");
-  var pa=document.getElementById("trips-past-list");
-  if(tab==="upcoming"){if(up)up.style.display="";if(pa)pa.style.display="none";}
-  else{if(up)up.style.display="none";if(pa)pa.style.display="";}
+function renderTrips(trips){
+  var filtered=_filteredTrips();
+  if(!filtered.length){
+    var msg=_curFilter==="upcoming"?"No upcoming trips."
+      :_curFilter==="past"?"No past trips recorded."
+      :"No trips match this filter.";
+    if(!trips.length) msg="No trips yet. Add your first one.";
+    _ht("trips-list","<div style='padding:32px 0;color:var(--ink-mute);font-size:13px;'>"+msg+"</div>");
+    return;
+  }
+  var today=new Date();today.setHours(0,0,0,0);
+  var sorted=filtered.slice().sort(function(a,b){
+    if(_curFilter==="past") return new Date(b.departure_date)-new Date(a.departure_date);
+    return new Date(a.departure_date)-new Date(b.departure_date);
+  });
+  _ht("trips-list",sorted.map(_tripCard).join(""));
 }
-var _curTab="upcoming";
+
+/* ── Context change ── */
+async function changeContext(tripId,newCtx){
+  try{
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"trip_context",data:{trip_id:tripId,context:newCtx}});
+    var t=_allTrips.find(function(x){return x.id===tripId;});
+    if(t)t.trip_context=newCtx;
+    renderTrips(_allTrips);
+    showToast("Context updated.");
+  }catch(e){showToast("Error updating context.");}
+}
+
+/* ── Delete ── */
+async function deleteTrip(tripId){
+  if(!confirm("Delete this trip from your vault?"))return;
+  try{
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"trip_delete",data:{trip_id:tripId}});
+    _allTrips=_allTrips.filter(function(t){return t.id!==tripId;});
+    renderTrips(_allTrips);
+    updateLede();
+    showToast("Trip deleted.");
+  }catch(e){showToast("Error deleting trip.");}
+}
+
+/* ── Add / Edit modal ── */
+var _editingTripId=null;
+function openAddTrip(){
+  _editingTripId=null;
+  _st("trip-modal-title","Add a trip");
+  _st("trip-submit-btn","Add trip");
+  ["t-name","t-orig","t-dest","t-dep","t-ret","t-pnr","t-notes"].forEach(function(id){_setval(id,"");});
+  _setval("t-ctx","PERSONAL");
+  _showErr("trip-modal-error","");
+  document.getElementById("trip-modal").classList.add("open");
+}
+function openEditTrip(id){
+  var t=_allTrips.find(function(x){return x.id===id;});
+  if(!t)return;
+  _editingTripId=id;
+  _st("trip-modal-title","Edit trip");
+  _st("trip-submit-btn","Save changes");
+  _setval("t-name",t.trip_name);
+  _setval("t-orig",t.origin_iata);
+  _setval("t-dest",t.destination_iata);
+  _setval("t-dep",t.departure_date?t.departure_date.slice(0,10):"");
+  _setval("t-ret",t.return_date?t.return_date.slice(0,10):"");
+  _setval("t-ctx",t.trip_context||"PERSONAL");
+  _setval("t-pnr",t.trip_locator);
+  _setval("t-notes",t.notes);
+  _showErr("trip-modal-error","");
+  document.getElementById("trip-modal").classList.add("open");
+}
+function closeTripModal(){document.getElementById("trip-modal").classList.remove("open");}
+async function submitTrip(){
+  var dest=_val("t-dest").trim().toUpperCase();
+  if(!dest){_showErr("trip-modal-error","Destination IATA code is required.");return;}
+  var btn=document.getElementById("trip-submit-btn");
+  btn.disabled=true;btn.textContent="Saving…";
+  _showErr("trip-modal-error","");
+  try{
+    var data={
+      trip_name:_val("t-name").trim()||null,
+      origin_iata:_val("t-orig").trim().toUpperCase()||null,
+      destination_iata:dest,
+      departure_date:_val("t-dep")||null,
+      return_date:_val("t-ret")||null,
+      trip_context:_val("t-ctx")||"PERSONAL",
+      trip_locator:_val("t-pnr").trim().toUpperCase()||null,
+      notes:_val("t-notes").trim()||null
+    };
+    var module=_editingTripId?"trip_update":"trip_add";
+    if(_editingTripId)data.trip_id=_editingTripId;
+    var result=await _req("PUT","/api/v1/profile/"+_uid,{module:module,data:data});
+    if(result.profile){_allTrips=result.profile.trips||[];}
+    else{var fresh=await _req("GET","/api/v1/me");_allTrips=fresh.trips||[];}
+    renderTrips(_allTrips);
+    updateLede();
+    closeTripModal();
+    showToast(_editingTripId?"Trip updated.":"Trip added.");
+  }catch(e){
+    _showErr("trip-modal-error","Save failed. "+(e.message||"Please try again."));
+    btn.disabled=false;btn.textContent=_editingTripId?"Save changes":"Add trip";
+  }
+}
+
+/* ── Export CSV ── */
+function exportCsv(){
+  var rows=_filteredTrips();
+  if(!rows.length){showToast("No trips to export.");return;}
+  var hdr="Trip Name,Origin,Destination,Departure,Return,Context,PNR,Notes\n";
+  var lines=rows.map(function(t){
+    return [t.trip_name||"",t.origin_iata||"",t.destination_iata||"",t.departure_date||"",t.return_date||"",t.trip_context||"",t.trip_locator||"",t.notes||""].map(function(v){return'"'+(v+"").replace(/"/g,'""')+'"';}).join(",");
+  }).join("\n");
+  var a=document.createElement("a");
+  a.href="data:text/csv;charset=utf-8,"+encodeURIComponent(hdr+lines);
+  a.download="UniProfile-trips.csv";
+  a.click();
+  showToast("Exported "+rows.length+" trips.");
+}
+
+/* ── Lede text ── */
+function updateLede(){
+  var today=new Date();today.setHours(0,0,0,0);
+  var up=_allTrips.filter(function(t){return t.departure_date&&new Date(t.departure_date)>=today;});
+  var total=_allTrips.length;
+  _st("trips-lede",total+" trip"+(total===1?"":"s")+" in your vault"+(up.length?" — "+up.length+" coming up":"")+".");
+}
+
+/* ── Init ── */
 async function tripsInit(){
   if(!await _auth())return;
   try{
     var p=await _req("GET","/api/v1/me");
-    _prof=p;_uid=p.uuid;
+    _uid=p.uuid;
     _sidebarUpdate(p);
     _allTrips=p.trips||[];
-    var today=new Date();today.setHours(0,0,0,0);
-    var up=_allTrips.filter(function(t){return t.departure_date&&new Date(t.departure_date)>=today;}).sort(function(a,b){return new Date(a.departure_date)-new Date(b.departure_date);});
-    var past=_allTrips.filter(function(t){return !t.departure_date||new Date(t.departure_date)<today;}).sort(function(a,b){return new Date(b.departure_date)-new Date(a.departure_date);});
-    _st("tab-upcoming","Upcoming \u00b7 "+up.length);
-    _st("tab-past","Past \u00b7 "+past.length);
-    _st("trips-lede",_allTrips.length+" trip"+(_allTrips.length===1?"":"s")+" in your vault"+(up.length?" \u2014 "+up.length+" coming up":"")+".");
-    _ht("trips-upcoming-list",up.length?up.map(function(t){return _tripCard(t,false);}).join(""):"<div style='padding:24px 0;color:var(--ink-mute);font-size:13px;'>No upcoming trips.</div>");
-    _ht("trips-past-list",past.length?past.map(function(t){return _tripCard(t,true);}).join(""):"<div style='padding:24px 0;color:var(--ink-mute);font-size:13px;'>No past trips recorded.</div>");
-    var pl=document.getElementById("trips-past-list");if(pl)pl.style.display="none";
+    updateLede();
+    renderTrips(_allTrips);
   }catch(e){console.error(e);}
 }
-tripsInit();</script>
+tripsInit();
+</script>
 </body>
 </html>
