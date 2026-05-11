@@ -1616,15 +1616,20 @@ function _policyProse(corp){
   var parts=[];
   var dom=corp.policy_flight_domestic,intl=corp.policy_flight_intl;
   if(dom&&intl&&dom===intl) parts.push((cab[dom]||dom)+" on all flights");
-  else{if(dom)parts.push((cab[dom]||dom)+" domestic");if(intl)parts.push((cab[intl]||intl)+" international");}
+  else{
+    if(dom) parts.push((cab[dom]||dom)+" on domestic");
+    if(intl) parts.push((cab[intl]||intl)+" on international");
+  }
   if(corp.policy_advance_days) parts.push("book "+corp.policy_advance_days+"+ days out");
   var hotelP=[];
-  if(corp.policy_hotel_cap) hotelP.push("$"+corp.policy_hotel_cap+"/night cap");
-  if(corp.policy_hotel_stars) hotelP.push(corp.policy_hotel_stars+"★ max");
-  if(hotelP.length) parts.push("Hotels: "+hotelP.join(", "));
-  if(corp.policy_car_class){var cl={ECONOMY:"Economy",COMPACT:"Compact",MIDSIZE:"Midsize",FULLSIZE:"Full-size"}[corp.policy_car_class];if(cl)parts.push(cl+" car rental max");}
-  if(corp.policy_preapproval_threshold) parts.push("pre-approval above $"+Number(corp.policy_preapproval_threshold).toLocaleString());
-  if(corp.policy_description) parts.push(corp.policy_description);
+  if(corp.policy_hotel_cap) hotelP.push("$"+corp.policy_hotel_cap+" nightly cap");
+  if(corp.policy_hotel_stars) hotelP.push(corp.policy_hotel_stars+"-star max");
+  if(hotelP.length) parts.push("Hotels — "+hotelP.join(", "));
+  if(corp.policy_car_class){
+    var cl={ECONOMY:"Economy",COMPACT:"Compact",MIDSIZE:"Midsize",FULLSIZE:"Full-size"}[corp.policy_car_class];
+    if(cl) parts.push(cl+" car rental max");
+  }
+  if(corp.policy_preapproval_threshold) parts.push("pre-approval above $"+Number(corp.policy_preapproval_threshold).toLocaleString("en-US"));
   return parts.length?parts.join(". ")+".":null;
 }
 function _renderPolicyCard(p){
