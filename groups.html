@@ -298,7 +298,7 @@ var _ng={step:1,members:[],type:null,name:""};
 /* current group workspace state */
 var _curGroup=null,_curSubTab="members";
 /* plan-a-trip state */
-var _parcel={step:1,dest:"",dep:"",ret:"",who:[]};
+var _parcel={step:1,dest:"",dep:"",ret:"",who:[],resolved:{},status:"draft",parcelId:null};
 
 /* ── Auth ── */
 function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent(window.location.origin+window.location.pathname);}
@@ -796,6 +796,32 @@ function renderDocumentsTab(g){
   });
   html+='</tbody></table></div>'
     +'<p style="font-size:12px;color:var(--ink-mute);margin-top:14px;line-height:1.5">Adult members manage their own documents. Data shown only where consent has been granted. Invite pending members to see their full row.</p>';
+  /* Pending consents */
+  var consents=(g.consents||[]).filter(function(c){return c.status!=="revoked";});
+  html+='<div style="margin-top:24px"><div class="eyebrow" style="margin-bottom:12px">Pending consents</div>';
+  if(!consents.length){
+    html+='<p style="font-size:13px;color:var(--ink-mute)">No active operator data requests for this group.</p>';
+  }else{
+    consents.forEach(function(c){
+      var scope=(c.scope||[]).map(function(s){return{passport_details:"Passport details",seat_preferences:"Seat preferences",meal_preferences:"Meal preferences",loyalty_numbers:"Loyalty numbers"}[s]||s;});
+      var coveredList=(c.members_covered||[]).join(", ")||"You";
+      var pendingList=(c.members_pending||[]);
+      html+='<div class="consent-card">'
+        +'<div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px">'
+        +'<div style="width:36px;height:36px;border-radius:8px;background:var(--paper-warm);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">📋</div>'
+        +'<div style="flex:1"><div style="font-weight:500;font-size:14px;margin-bottom:2px">'+_escHtml(c.operator||"Operator")+'</div>'
+        +'<div style="font-size:12px;color:var(--ink-mute)">Parcel <span class="id">'+_escHtml(c.parcel_id||"—")+'</span></div></div>'
+        +'<span class="pill pill-green" style="flex-shrink:0">Granted</span>'
+        +'</div>'
+        +'<table class="consent-what-table"><tbody>'
+        +scope.map(function(s){return'<tr><td>'+_escHtml(s)+'</td><td>'+_escHtml(coveredList)+'</td></tr>';}).join("")
+        +(pendingList.length?'<tr><td colspan="2" style="color:var(--ink-mute);font-style:italic;padding-top:8px">'+_escHtml(pendingList.join(", "))+' will receive their own consent request.</td></tr>':"")
+        +'</tbody></table>'
+        +'<div style="margin-top:10px"><button class="btn btn-sm btn-danger" onclick="revokeConsent(\''+c.id+'\')">Revoke grant</button></div>'
+        +'</div>';
+    });
+  }
+  html+='</div>';
   return html;
 }
 
@@ -827,11 +853,42 @@ function renderPreferencesTab(g){
 
 /* Permissions sub-tab */
 function renderPermissionsTab(g){
-  return '<p class="lede" style="margin-bottom:16px">Consent audit trail for this group.</p>'
-    +'<div style="padding:28px 0;text-align:center;border:0.5px solid var(--rule);border-radius:10px">'
-    +'<p style="font-size:14px;color:var(--ink-mute)">No consent grants or revocations on record yet for this group.</p>'
-    +'<p style="font-size:12px;color:var(--ink-faint);margin-top:6px">Every operator data request will appear here. Each entry is logged per TIS Layer 4.</p>'
+  var consents=g.consents||[];
+  var filterBar='<div style="display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap">'
+    +'<span class="pill pill-neutral" style="cursor:default">All</span>'
+    +'<span class="pill" style="background:none;border:0.5px solid var(--rule);color:var(--ink-mute);cursor:default">Active grants</span>'
+    +'<span class="pill" style="background:none;border:0.5px solid var(--rule);color:var(--ink-mute);cursor:default">Revoked</span>'
     +'</div>';
+  var intro='<p class="lede" style="margin-bottom:16px">Consent audit trail for this group. Every operator data request is logged here per TIS Layer 4.</p>'+filterBar;
+  if(!consents.length){
+    return intro
+      +'<div style="padding:28px 0;text-align:center;border:0.5px solid var(--rule);border-radius:10px">'
+      +'<p style="font-size:14px;color:var(--ink-mute)">No consent grants or revocations on record yet.</p>'
+      +'<p style="font-size:12px;color:var(--ink-faint);margin-top:6px">Lock a trip parcel to generate the first consent grant for this group.</p>'
+      +'</div>';
+  }
+  var sorted=[].concat(consents).sort(function(a,b){return new Date(b.timestamp)-new Date(a.timestamp);});
+  var rows=sorted.map(function(c){
+    var isRevoked=c.status==="revoked";
+    var actionLabel=isRevoked?"Revoked":"Granted";
+    var actionColor=isRevoked?'var(--red)':'var(--green)';
+    var scopeShort=(c.scope||[]).map(function(s){return{passport_details:"Passport",seat_preferences:"Seats",meal_preferences:"Meals",loyalty_numbers:"Loyalty"}[s]||s;}).join(", ");
+    var coveredStr=(c.members_covered||[]).join(", ");
+    var pendingStr=(c.members_pending||[]).join(", ");
+    return '<div class="perm-row">'
+      +'<div class="perm-badge">'+(_escHtml(c.operator||"?")).charAt(0).toUpperCase()+'</div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div style="font-size:13px;font-weight:500;margin-bottom:2px">'+_escHtml(c.operator||"Unknown operator")+'</div>'
+      +'<div style="font-size:12px;color:var(--ink-mute)">'+_escHtml(scopeShort)+' · <span style="color:'+actionColor+'">'+actionLabel+'</span> · '+new Date(c.timestamp).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})+'</div>'
+      +(coveredStr?'<div style="font-size:11px;color:var(--ink-faint);margin-top:2px">Covers: '+_escHtml(coveredStr)+'</div>':"")
+      +(pendingStr?'<div style="font-size:11px;color:var(--ink-faint)">Awaiting: '+_escHtml(pendingStr)+'</div>':"")
+      +(isRevoked&&c.revoked_at?'<div style="font-size:11px;color:var(--red);margin-top:2px">Revoked '+new Date(c.revoked_at).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})+'</div>':"")
+      +'<div style="font-size:11px;color:var(--ink-faint);font-family:var(--mono);margin-top:2px">'+_escHtml(c.parcel_id||"—")+'</div>'
+      +'</div>'
+      +(!isRevoked?'<button class="btn btn-ghost btn-sm" style="color:var(--red);flex-shrink:0" onclick="revokeConsent(\''+c.id+'\')">Revoke</button>':"")
+      +'</div>';
+  }).join("");
+  return intro+'<div>'+rows+'</div>';
 }
 
 /* ── ═══════════════════════════════════════
@@ -900,7 +957,8 @@ function renderPlanStep2(){
     +'<div class="eyebrow" style="margin-bottom:8px">Already settled · '+passed.length+' checks</div>'
     +'<div class="settled-grid">'+settledItems+'</div>'
     +'</div>';
-  var continueDisabled=issues.length>0?"disabled":"";
+  var allResolved=issues.every(function(c){return !!_parcel.resolved[c.key];});
+  var continueDisabled=(issues.length>0&&!allResolved)?"disabled":"";
   var html='<div style="max-width:620px">'
     +stepBar
     +'<div class="eyebrow" style="margin-bottom:6px">Pre-flight check · '+passed.length+' of '+checks.length+' ready</div>'
@@ -913,13 +971,23 @@ function renderPlanStep2(){
     +'<p style="font-size:12px;color:var(--ink-mute);line-height:1.5;max-width:320px">Once all items are settled, we\'ll prepare a clean parcel — passports, preferences, and consents pre-staged for the carrier.</p>'
     +'<div style="display:flex;gap:8px;flex-shrink:0">'
     +'<button class="btn btn-secondary btn-sm" onclick="switchSubTab(\'plan\')">Save draft</button>'
-    +'<button class="btn btn-primary btn-sm" '+continueDisabled+' onclick="renderPlanStep4()">Continue to hand off →</button>'
+    +'<button class="btn btn-primary btn-sm" '+continueDisabled+' onclick="renderPlanStep3()">Continue to resolve →</button>'
     +'</div>'
     +'</div>'
     +'</div>';
   _render('<div class="breadcrumb"><a href="groups.html" onclick="event.preventDefault();renderGroupsList()">Groups</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><a href="#" onclick="event.preventDefault();openGroup(\''+g.id+'\')">'+ _escHtml(g.name)+'</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><span>Plan a trip</span></div>'+html);
 }
 function _checkCard(c){
+  var res=c.key?_parcel.resolved[c.key]:null;
+  if(res){
+    return '<div class="check-card pass" style="opacity:0.72">'
+      +'<div class="check-card-head">'
+      +'<div class="check-icon" style="background:var(--green-soft);color:var(--green)"><svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none"><use href="#i-check"/></svg></div>'
+      +'<div style="flex:1"><div class="check-title" style="color:var(--ink-mute)">'+c.title+'</div>'
+      +'<div style="font-size:12px;color:var(--green);margin-top:3px">'+res.label+'</div></div>'
+      +'</div>'
+      +'</div>';
+  }
   var panelLabel=c.status==="blocker"?"Fastest path":c.status==="critical"?"Action required":"Trade-off";
   return '<div class="check-card '+c.status+'">'
     +'<div class="check-card-head">'
@@ -945,67 +1013,142 @@ function _runPreflightChecks(){
 
   /* 1. Passport validity */
   if(!passport){
-    checks.push({status:"blocker",label:"Passport",icon:"⚠",title:"No passport on file.",body:"Add your passport so we can check it against destination entry requirements.",panel:"Go to Me → Identity → Passport to add your passport.",actions:'<button class="btn btn-secondary btn-sm" onclick="location.href=\'me.html#identity\'">Add passport</button>'});
+    checks.push({status:"blocker",key:"passport",label:"Passport",icon:"⚠",title:"No passport on file.",body:"Add your passport so we can check it against destination entry requirements.",panel:"Go to Me → Identity to add your passport.",actions:'<button class="btn btn-secondary btn-sm" onclick="location.href=\'me.html\'">Add passport</button><button class="btn btn-ghost btn-sm" onclick="resolveIssue(\'passport\',\'handled\',\'Passport — marked as handled\')">Mark as handled</button>'});
   }else{
     var exp=passport.expiry_date?new Date(passport.expiry_date):null;
     var required=depDate?new Date(depDate.getTime()+180*86400000):null;
     if(exp&&required&&exp<required){
-      var status=daysOut&&daysOut<=14?"critical":"blocker";
-      checks.push({status:status,label:"Passport",icon:"⚠",title:"Passport may not meet the 6-month entry rule for this trip.",body:"Many countries require your passport to be valid for 6 months beyond your return date. Yours expires "+_fmt(passport.expiry_date)+".",panel:"Renewal takes 6-10 weeks standard, 2-3 weeks expedited. Apply as soon as possible.",actions:'<button class="btn btn-secondary btn-sm" onclick="">Start renewal</button><button class="btn btn-ghost btn-sm" onclick="">Mark as handled</button>'});
+      var pStatus=daysOut&&daysOut<=14?"critical":"blocker";
+      checks.push({status:pStatus,key:"passport",label:"Passport",icon:"⚠",title:"Passport may not meet the 6-month entry rule for this trip.",body:"Many countries require your passport to be valid for 6 months beyond your return date. Yours expires "+_fmt(passport.expiry_date)+".",panel:"Renewal takes 6-10 weeks standard, 2-3 weeks expedited. Apply as soon as possible.",actions:'<button class="btn btn-secondary btn-sm" onclick="resolveIssue(\'passport\',\'renewal\',\'Passport renewal started\')">Start renewal</button><button class="btn btn-ghost btn-sm" onclick="resolveIssue(\'passport\',\'handled\',\'Passport — marked as handled\')">Mark as handled</button>'});
     }else{
-      checks.push({status:"pass",label:"Passport valid",icon:"✓"});
+      checks.push({status:"pass",key:"passport",label:"Passport valid",icon:"✓"});
     }
   }
 
   /* 2. Visa eligibility */
-  checks.push({status:"unknown",label:"Visa eligibility",icon:"?",title:"Visa requirements could not be verified.",body:"We couldn\'t look up entry requirements for "+_escHtml(_parcel.dest||"this destination")+" automatically. Check visa requirements before booking.",panel:"Verify at the official embassy website or IATA Travel Centre for "+_escHtml(_parcel.dest||"your destination")+".",actions:'<button class="btn btn-ghost btn-sm" onclick="">Mark as handled</button>'});
+  checks.push({status:"unknown",key:"visa",label:"Visa eligibility",icon:"?",title:"Visa requirements could not be verified.",body:"We couldn't look up entry requirements for "+_escHtml(_parcel.dest||"this destination")+" automatically. Verify before booking.",panel:"Check the official embassy website or IATA Travel Centre for "+_escHtml(_parcel.dest||"your destination")+".",actions:'<button class="btn btn-secondary btn-sm" onclick="resolveIssue(\'visa\',\'verified\',\'Visa eligibility — verified manually\')">Mark as verified</button><button class="btn btn-ghost btn-sm" onclick="resolveIssue(\'visa\',\'skipped\',\'Visa — skipped for now\')">Skip for now</button>'});
 
   /* 3. Vaccinations */
-  checks.push({status:"unknown",label:"Vaccinations",icon:"?",title:"Vaccination requirements not verified.",body:"Required and recommended vaccinations vary by destination. We don\'t have your vaccination record on file.",panel:"Check destination health requirements. Yellow fever certificate required for some countries.",actions:'<button class="btn btn-ghost btn-sm" onclick="">Mark as handled</button>'});
+  checks.push({status:"unknown",key:"vaccinations",label:"Vaccinations",icon:"?",title:"Vaccination requirements not verified.",body:"Required and recommended vaccinations vary by destination. We don't have your vaccination record on file.",panel:"Check destination health requirements. Yellow fever certificate is required for some countries.",actions:'<button class="btn btn-secondary btn-sm" onclick="resolveIssue(\'vaccinations\',\'verified\',\'Vaccinations — verified\')">Mark as verified</button><button class="btn btn-ghost btn-sm" onclick="resolveIssue(\'vaccinations\',\'skipped\',\'Vaccinations — skipped\')">Skip for now</button>'});
 
   /* 4. KTN / Global Entry */
   if(!ktn){
-    checks.push({status:"blocker",label:"KTN / Global Entry",icon:"⚠",title:"No Known Traveler Number on file.",body:"Without a KTN, you won\'t receive TSA PreCheck on your boarding pass, adding security screening time.",panel:"Known Traveler Number costs $85 and takes 3-5 days to approve. Global Entry ($100) includes PreCheck.",actions:'<button class="btn btn-secondary btn-sm" onclick="">Learn more</button><button class="btn btn-ghost btn-sm" onclick="">Skip for now</button>'});
+    checks.push({status:"blocker",key:"ktn",label:"KTN / Global Entry",icon:"⚠",title:"No Known Traveler Number on file.",body:"Without a KTN, you won't receive TSA PreCheck on your boarding pass, adding security screening time.",panel:"Known Traveler Number costs $85, takes 3-5 days. Global Entry ($100) includes PreCheck.",actions:'<button class="btn btn-secondary btn-sm" onclick="resolveIssue(\'ktn\',\'applying\',\'KTN — application in progress\')">Mark applying</button><button class="btn btn-ghost btn-sm" onclick="resolveIssue(\'ktn\',\'skipped\',\'KTN — skipped for this trip\')">Skip for now</button>'});
   }else{
-    checks.push({status:"pass",label:"Trusted traveler enrolled",icon:"✓"});
+    checks.push({status:"pass",key:"ktn",label:"Trusted traveler enrolled",icon:"✓"});
   }
 
   /* 5. Accessibility match */
   if(sp.wheelchair_needed){
-    checks.push({status:"blocker",label:"Accessibility",icon:"⚠",title:"Wheelchair or mobility assistance needed.",body:"Accessibility assistance must be requested directly with the carrier. It\'s not automatically included in bookings.",panel:"Contact the carrier before booking to pre-arrange assistance. Allow 48 hours.",actions:'<button class="btn btn-secondary btn-sm" onclick="">Note for booking</button>'});
+    checks.push({status:"blocker",key:"accessibility",label:"Accessibility",icon:"⚠",title:"Wheelchair or mobility assistance needed.",body:"Accessibility assistance must be requested directly with the carrier. It's not automatically included in bookings.",panel:"Contact the carrier before booking to pre-arrange assistance. Allow 48 hours notice.",actions:'<button class="btn btn-secondary btn-sm" onclick="resolveIssue(\'accessibility\',\'handled\',\'Accessibility — carrier notified\')">Mark as handled</button>'});
   }else{
-    checks.push({status:"pass",label:"Accessibility",icon:"✓"});
+    checks.push({status:"pass",key:"accessibility",label:"Accessibility",icon:"✓"});
   }
 
   /* 6. Insurance */
-  checks.push({status:"unknown",label:"Insurance coverage",icon:"?",title:"Travel insurance not verified.",body:"We don\'t have insurance information on file. Verify your policy covers all travelers, the destination, and dates.",panel:"Check your credit card's travel insurance or purchase a policy before departure.",actions:'<button class="btn btn-ghost btn-sm" onclick="">Mark as handled</button>'});
+  checks.push({status:"unknown",key:"insurance",label:"Insurance coverage",icon:"?",title:"Travel insurance not verified.",body:"We don't have insurance information on file. Verify your policy covers all travelers, the destination, and dates.",panel:"Check your credit card's travel insurance or purchase a policy before departure.",actions:'<button class="btn btn-secondary btn-sm" onclick="resolveIssue(\'insurance\',\'verified\',\'Insurance — verified\')">Mark as verified</button><button class="btn btn-ghost btn-sm" onclick="resolveIssue(\'insurance\',\'skipped\',\'Insurance — skipped\')">Skip for now</button>'});
 
   /* 7. Meal / dietary */
   if(!mp.meal_code&&!(mp.allergies||[]).length){
-    checks.push({status:"blocker",label:"Meal preferences",icon:"⚠",title:"No meal preferences captured.",body:"Without meal preferences on file, we can\'t generate SSRs for dietary requirements at booking time.",panel:"Add meal preferences in Me → How you travel → Across all travel.",actions:'<button class="btn btn-secondary btn-sm" onclick="location.href=\'me.html#how-you-travel\'">Add preferences</button><button class="btn btn-ghost btn-sm" onclick="">Skip</button>'});
+    checks.push({status:"blocker",key:"meals",label:"Meal preferences",icon:"⚠",title:"No meal preferences captured.",body:"Without meal preferences on file, we can't generate SSRs for dietary requirements at booking time.",panel:"Add meal preferences in Me → How you travel → Across all travel.",actions:'<button class="btn btn-secondary btn-sm" onclick="location.href=\'me.html\'">Add preferences</button><button class="btn btn-ghost btn-sm" onclick="resolveIssue(\'meals\',\'skipped\',\'Meals — skipped\')">Skip</button>'});
   }else{
-    checks.push({status:"pass",label:"Meal preferences on file",icon:"✓"});
+    checks.push({status:"pass",key:"meals",label:"Meal preferences on file",icon:"✓"});
   }
 
   /* 8. Travel name match */
   if(id.legal_first&&id.legal_last){
-    checks.push({status:"pass",label:"Travel name matches passport",icon:"✓"});
+    checks.push({status:"pass",key:"name",label:"Travel name matches passport",icon:"✓"});
   }else{
-    checks.push({status:"blocker",label:"Travel name",icon:"⚠",title:"Legal name incomplete.",body:"We need your full legal name to verify it matches your passport and generate the correct booking name.",panel:"Add your legal name in Me → Identity.",actions:'<button class="btn btn-secondary btn-sm" onclick="location.href=\'me.html#identity\'">Add name</button>'});
+    checks.push({status:"blocker",key:"name",label:"Travel name",icon:"⚠",title:"Legal name incomplete.",body:"We need your full legal name to verify it matches your passport and generate the correct booking name.",panel:"Add your legal name in Me → Identity.",actions:'<button class="btn btn-secondary btn-sm" onclick="location.href=\'me.html\'">Add name</button><button class="btn btn-ghost btn-sm" onclick="resolveIssue(\'name\',\'handled\',\'Name — marked as handled\')">Mark as handled</button>'});
   }
 
   return checks;
 }
 
+function resolveIssue(key,action,label){
+  _parcel.resolved[key]={action:action,label:label,ts:new Date().toISOString()};
+  renderPlanStep2();
+}
+
+function renderPlanStep3(){
+  var g=_curGroup;
+  var checks=_runPreflightChecks();
+  var issues=checks.filter(function(c){return c.status!=="pass";});
+  var stepBar='<div class="step-bar" style="margin-bottom:24px">'
+    +'<span class="step done">1. Define</span> <span class="sep">·</span>'
+    +' <span class="step done">2. Pre-flight</span> <span class="sep">·</span>'
+    +' <span class="step active">3. Resolve</span> <span class="sep">·</span>'
+    +' <span class="step">4. Hand off</span></div>';
+  var parcelSummary='<div class="parcel-card">'
+    +'<div class="eyebrow">Trip parcel · Draft</div>'
+    +'<div class="parcel-card-title">'+_escHtml(_parcel.dest)+' · '+_fmtShort(_parcel.dep)+(_parcel.ret?" – "+_fmtShort(_parcel.ret):"")+'</div>'
+    +'<div style="font-size:13px;color:var(--ink-soft)">'+_parcel.who.length+' traveler'+(_parcel.who.length===1?"":"s")+'</div></div>';
+  var logHtml='';
+  if(!issues.length){
+    logHtml='<div style="background:var(--green-soft);border:0.5px solid rgba(45,106,79,0.2);border-radius:10px;padding:16px 18px;margin-bottom:16px">'
+      +'<div style="font-size:13px;color:var(--green);font-weight:500">No issues detected. This parcel is clear and ready to hand off.</div></div>';
+  }else{
+    logHtml='<div style="margin-bottom:16px"><div class="eyebrow" style="margin-bottom:12px">Resolution log</div>';
+    issues.forEach(function(c){
+      var res=_parcel.resolved[c.key];
+      var icon=res?'<svg style="width:13px;height:13px;color:var(--green)" viewBox="0 0 24 24" fill="none"><use href="#i-check"/></svg>':'<span style="font-size:13px;color:var(--amber)">⏳</span>';
+      var statusText=res?res.label:'Pending — go back to pre-flight to address this.';
+      var statusColor=res?'var(--green)':'var(--amber)';
+      logHtml+='<div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:0.5px solid var(--rule)">'
+        +'<div style="margin-top:2px;flex-shrink:0">'+icon+'</div>'
+        +'<div><div style="font-size:13px;font-weight:500;margin-bottom:2px">'+c.title+'</div>'
+        +'<div style="font-size:12px;color:'+statusColor+'">'+statusText+'</div></div></div>';
+    });
+    logHtml+='</div>';
+  }
+  var html='<div style="max-width:580px">'
+    +stepBar
+    +'<div class="eyebrow" style="margin-bottom:6px">Resolution tracking</div>'
+    +'<h2 class="h2" style="margin-bottom:8px">'+(!issues.length?"Everything is settled.":"All items resolved — ready to hand off.")+'</h2>'
+    +'<p class="lede" style="margin-bottom:20px">Review the resolution log below, then hand off the parcel to your booking channel.</p>'
+    +parcelSummary+logHtml
+    +'<div style="display:flex;gap:8px;margin-top:8px">'
+    +'<button class="btn btn-primary" onclick="renderPlanStep4()">Continue to hand off →</button>'
+    +'<button class="btn btn-secondary" onclick="renderPlanStep2()">← Back to pre-flight</button>'
+    +'</div></div>';
+  _render('<div class="breadcrumb"><a href="groups.html" onclick="event.preventDefault();renderGroupsList()">Groups</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><a href="#" onclick="event.preventDefault();openGroup(\''+g.id+'\')">'+ _escHtml(g.name)+'</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><span>Resolve</span></div>'+html);
+}
+
 function renderPlanStep4(){
   var g=_curGroup;
-  var parcelId="UP-PARCEL-"+(Date.now()&0xffff).toString(16).toUpperCase()+"-"+(Math.random()*0xffff|0).toString(16).toUpperCase();
-  var html='<div class="breadcrumb"><a href="groups.html" onclick="event.preventDefault();renderGroupsList()">Groups</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><a href="#" onclick="event.preventDefault();openGroup(\''+g.id+'\')">'+ _escHtml(g.name||"Group")+'</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><span>Hand off</span></div>'
+  var parcelId=_parcel.parcelId||("UP-PARCEL-"+(Date.now()&0xffff).toString(16).toUpperCase()+"-"+(Math.random()*0xffff|0).toString(16).toUpperCase());
+  if(!_parcel.parcelId)_parcel.parcelId=parcelId;
+  var locked=_parcel.status==="committed";
+  var crumb='<div class="breadcrumb"><a href="groups.html" onclick="event.preventDefault();renderGroupsList()">Groups</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><a href="#" onclick="event.preventDefault();openGroup(\''+g.id+'\')">'+ _escHtml(g.name||"Group")+'</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><span>Hand off</span></div>';
+  /* Parcel preview */
+  var members=g.members||[];
+  var myPassport=(_prof.documents||[]).find(function(d){return d.doc_type==="PASSPORT";});
+  var previewRows='<tr><td style="padding:8px 0;border-bottom:0.5px solid var(--rule)">'+_escHtml(_dn(_prof))+' <span style="color:var(--ink-mute);font-size:11px">(you)</span></td>'
+    +'<td style="padding:8px 0;border-bottom:0.5px solid var(--rule);color:var(--ink-soft);font-size:12px">'+(myPassport?'···'+(_prof.documents||[]).find(function(d){return d.doc_type==="PASSPORT";}).doc_number.slice(-4)+' · exp '+(new Date(myPassport.expiry_date||"").getFullYear()||"—"):'Not on file')+'</td>'
+    +'<td style="padding:8px 0;border-bottom:0.5px solid var(--rule);color:var(--ink-soft);font-size:12px">Seat, meal, loyalty</td></tr>';
+  members.forEach(function(m){
+    previewRows+='<tr><td style="padding:8px 0;border-bottom:0.5px solid var(--rule)">'+_escHtml(m.name||"?")+' <span style="color:var(--ink-mute);font-size:11px">('+_escHtml(m.relationship)+')</span></td>'
+      +'<td style="padding:8px 0;border-bottom:0.5px solid var(--rule);color:var(--ink-mute);font-style:italic;font-size:12px">self-managed</td>'
+      +'<td style="padding:8px 0;border-bottom:0.5px solid var(--rule);color:var(--ink-mute);font-style:italic;font-size:12px">pending consent</td></tr>';
+  });
+  var preview='<div style="margin-bottom:24px;border:0.5px solid var(--rule);border-radius:10px;padding:16px 18px">'
+    +'<div class="eyebrow" style="margin-bottom:10px">Parcel preview · what will be shared</div>'
+    +'<table style="width:100%;border-collapse:collapse"><thead><tr>'
+    +'<td style="padding:6px 0;border-bottom:0.5px solid var(--rule);font-size:11px;font-weight:500;color:var(--ink-mute);letter-spacing:0.08em;text-transform:uppercase">Member</td>'
+    +'<td style="padding:6px 0;border-bottom:0.5px solid var(--rule);font-size:11px;font-weight:500;color:var(--ink-mute);letter-spacing:0.08em;text-transform:uppercase">Passport</td>'
+    +'<td style="padding:6px 0;border-bottom:0.5px solid var(--rule);font-size:11px;font-weight:500;color:var(--ink-mute);letter-spacing:0.08em;text-transform:uppercase">Preferences</td>'
+    +'</tr></thead><tbody>'+previewRows+'</tbody></table>'
+    +(locked
+      ?'<div style="margin-top:12px;padding:10px 14px;background:var(--green-soft);border-radius:6px;font-size:12px;color:var(--green)"><svg style="width:12px;height:12px;display:inline;vertical-align:middle;margin-right:4px" viewBox="0 0 24 24" fill="none"><use href="#i-check"/></svg>Parcel locked · <span class="id">'+parcelId+'</span> · Consent grants issued. View in Permissions tab.</div>'
+      :'<button class="btn btn-primary" style="margin-top:14px" onclick="lockParcel(\''+parcelId+'\')">Looks correct — lock the parcel →</button>')
+    +'</div>';
+  var html=crumb
     +'<div style="max-width:580px">'
     +'<div class="step-bar" style="margin-bottom:24px"><span class="step done">1. Define</span> <span class="sep">·</span> <span class="step done">2. Pre-flight</span> <span class="sep">·</span> <span class="step done">3. Resolve</span> <span class="sep">·</span> <span class="step active">4. Hand off</span></div>'
-    +'<div class="eyebrow" style="margin-bottom:6px">Parcel ready · <span class="id">'+parcelId+'</span></div>'
-    +'<h2 class="h2" style="margin-bottom:8px">The parcel is ready to book.</h2>'
+    +'<div class="eyebrow" style="margin-bottom:6px">'+(locked?'Parcel locked':'Parcel ready')+' · <span class="id">'+parcelId+'</span></div>'
+    +'<h2 class="h2" style="margin-bottom:8px">'+(locked?'Parcel is locked and ready.':'The parcel is ready to book.')+'</h2>'
     +'<p class="lede" style="margin-bottom:24px">Identity, documents, preferences, and consents are pre-staged. Choose where you\'d like to book.</p>'
+    +preview
     +'<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">'
     +'<div style="background:var(--surface);border:0.5px solid var(--rule);border-radius:10px;padding:18px 20px;display:flex;align-items:flex-start;gap:14px">'
     +'<div style="font-size:22px">✈️</div>'
@@ -1027,10 +1170,37 @@ function renderPlanStep4(){
     +'</div>';
   _render(html);
 }
+async function lockParcel(parcelId){
+  _parcel.status="committed";
+  _parcel.parcelId=parcelId;
+  var grant={
+    id:"cg-"+Date.now().toString(36),
+    parcel_id:parcelId,
+    operator:"TMC (parcel hand-off)",
+    scope:["passport_details","seat_preferences","meal_preferences","loyalty_numbers"],
+    members_covered:[_dn(_prof)],
+    members_pending:(_curGroup.members||[]).filter(function(m){return m.status!=="self";}).map(function(m){return m.name;}),
+    status:"granted",
+    timestamp:new Date().toISOString()
+  };
+  _curGroup.consents=_curGroup.consents||[];
+  _curGroup.consents.push(grant);
+  try{await _saveGroups();}catch(e){}
+  showToast("Parcel locked. Consent grants issued for your data.");
+  renderPlanStep4();
+}
 function copyParcelLink(id){
   var url=window.location.origin+"/parcels/"+id;
   if(navigator.clipboard)navigator.clipboard.writeText(url).then(function(){showToast("Parcel link copied.");});
   else showToast("Parcel ID: "+id);
+}
+function revokeConsent(grantId){
+  var c=(_curGroup.consents||[]).find(function(c){return c.id===grantId;});
+  if(!c)return;
+  c.status="revoked";c.revoked_at=new Date().toISOString();
+  _saveGroups().catch(function(){});
+  showToast("Consent grant revoked.");
+  renderGroupWorkspace();
 }
 
 /* ── ═══════════════════════════════════════
