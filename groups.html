@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Groups — UniProfile</title>
+<meta name="robots" content="noindex,nofollow"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,300;9..144,0,400;9..144,1,300;9..144,1,400&family=Inter+Tight:wght@400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1a1a1a;--ink-soft:#4a4a48;--ink-mute:#8a8a86;--ink-faint:#b8b8b3;
+  --paper:#faf8f4;--paper-warm:#f3efe7;--paper-cream:#f9f7f2;
+  --surface:#ffffff;
+  --rule:rgba(26,26,26,0.08);--rule-strong:rgba(26,26,26,0.18);
+  --green:#2d6a4f;--green-soft:#e8efe9;
+  --amber:#ba7517;--amber-soft:#f9f1e3;
+  --red:#c44d4d;--red-soft:#f4e8e8;
+  --serif:'Fraunces',Georgia,serif;
+  --sans:'Inter Tight',-apple-system,sans-serif;
+  --mono:'JetBrains Mono','SF Mono',Menlo,monospace
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;font-size:14px}
+.h1{font-family:var(--serif);font-weight:300;font-size:clamp(32px,4vw,44px);line-height:1.1;letter-spacing:-0.02em}
+.h1 em{font-style:italic;font-weight:300}
+.h2{font-family:var(--serif);font-weight:400;font-size:28px;line-height:1.15;letter-spacing:-0.01em}
+.h3{font-family:var(--serif);font-weight:400;font-size:22px;line-height:1.2;letter-spacing:-0.01em}
+.lede{font-family:var(--serif);font-weight:300;font-size:16px;line-height:1.6;color:var(--ink-soft)}
+.eyebrow{font-size:11px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-mute);font-family:var(--sans)}
+.caption{font-size:12px;color:var(--ink-mute)}
+.id{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:0.04em}
+
+/* Shell */
+.shell{display:flex;min-height:100vh}
+.sidebar{width:240px;background:var(--surface);border-right:0.5px solid var(--rule);padding:28px 0;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.sidebar-wordmark-block{padding:0 24px 24px;border-bottom:0.5px solid rgba(26,26,26,0.06)}
+.wordmark{font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-0.01em;color:var(--ink);text-decoration:none;display:block}
+.wordmark em{font-style:italic;font-weight:300}
+.wordmark-tag{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;margin-top:6px}
+.sidebar-id-block{padding:18px 24px;border-bottom:0.5px solid rgba(26,26,26,0.06)}
+.sidebar-id-label{font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;margin-bottom:6px}
+.sidebar-nav{padding:20px 12px;flex:1}
+.sidebar-nav-label{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-faint);font-weight:500;padding:0 12px 12px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:6px;text-decoration:none;color:var(--ink-soft);font-size:14px;margin-bottom:2px;transition:background 120ms ease}
+.nav-item:hover{background:rgba(26,26,26,0.03)}
+.nav-item.active{background:rgba(26,26,26,0.05);color:var(--ink);font-weight:500}
+.nav-item svg{flex-shrink:0}
+.sidebar-user-card{padding:12px;border-top:0.5px solid rgba(26,26,26,0.06)}
+.user-card-inner{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px}
+.main{flex:1;padding:36px 48px;min-width:0;max-width:900px}
+
+/* Avatar */
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-weight:300;flex-shrink:0;border:2px solid var(--paper)}
+.avatar-sm{width:30px;height:30px;font-size:12px;color:var(--ink-soft)}
+.avatar-md{width:40px;height:40px;font-size:15px;color:var(--ink-soft)}
+.avatar-lg{width:52px;height:52px;font-size:18px;color:var(--ink-soft)}
+.av1{background:linear-gradient(135deg,#d8d3c8,#c4bfb3)}
+.av2{background:linear-gradient(135deg,#e0d5c8,#cfc2b0)}
+.av3{background:linear-gradient(135deg,#d4ccd8,#c0b6c8)}
+.av4{background:linear-gradient(135deg,#c8d4d8,#b0c2cf)}
+.av5{background:linear-gradient(135deg,#d4d8c8,#c2cfb0)}
+.avatar-stack{display:flex;align-items:center}
+.avatar-stack .avatar{margin-left:-8px}
+.avatar-stack .avatar:first-child{margin-left:0}
+
+/* Pill */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:500;font-family:var(--sans)}
+.pill-green{background:var(--green-soft);color:var(--green)}
+.pill-amber{background:var(--amber-soft);color:var(--amber)}
+.pill-neutral{background:var(--paper-warm);color:var(--ink-soft)}
+.pill-dot{width:5px;height:5px;border-radius:50%}
+
+/* Buttons */
+.btn{font-family:var(--sans);font-size:13px;font-weight:500;padding:9px 16px;border-radius:4px;cursor:pointer;transition:all 140ms ease;display:inline-flex;align-items:center;gap:7px;text-decoration:none;border:0.5px solid transparent;background:none}
+.btn-primary{color:#fff;background:var(--ink);border-color:var(--ink)}
+.btn-primary:hover{opacity:0.88}
+.btn-primary:disabled{opacity:0.38;cursor:default}
+.btn-secondary{color:var(--ink);background:transparent;border-color:var(--rule-strong)}
+.btn-secondary:hover{background:rgba(26,26,26,0.03)}
+.btn-ghost{color:var(--ink-mute);background:transparent;border-color:transparent;font-size:12px;padding:6px 10px}
+.btn-ghost:hover{color:var(--ink)}
+.btn-sm{font-size:12px;padding:6px 12px}
+.btn-danger{color:var(--red);border-color:rgba(196,77,77,0.28)}
+.btn-danger:hover{background:var(--red-soft)}
+.btn-cancel{font-size:12px;color:var(--ink-mute);background:none;border:none;cursor:pointer;font-family:var(--sans);text-decoration:underline;text-decoration-color:transparent;transition:text-decoration-color 120ms}
+.btn-cancel:hover{text-decoration-color:var(--ink-mute)}
+
+/* Forms */
+.form-field{margin-bottom:14px}
+.form-label{font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:5px;display:block}
+.form-input{width:100%;padding:8px 11px;border:0.5px solid var(--rule-strong);border-radius:6px;font-family:var(--sans);font-size:13px;color:var(--ink);background:var(--surface);outline:none;transition:border-color 120ms ease;-webkit-appearance:none}
+.form-input:focus{border-color:var(--ink)}
+.form-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9L12 15L18 9' stroke='%238a8a86' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;cursor:pointer}
+.form-row{display:flex;gap:10px}
+.form-row .form-field{flex:1}
+.form-error{color:var(--red);font-size:12px;margin-top:6px;display:none}
+.form-actions{display:flex;gap:8px;align-items:center;margin-top:20px}
+
+/* Group list card */
+.group-card{background:var(--surface);border:0.5px solid var(--rule);border-radius:12px;padding:22px 24px;margin-bottom:12px;transition:border-color 120ms ease}
+.group-card.focus{border-color:var(--rule-strong)}
+.group-card.blocker{border-color:rgba(186,117,23,0.45)}
+.group-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
+.group-card-title-block{flex:1;min-width:0}
+.group-card-eyebrow{font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:6px}
+.group-card-name{font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-0.01em;line-height:1.2}
+.group-stats{display:grid;grid-template-columns:repeat(3,1fr);border-top:0.5px solid var(--rule);border-bottom:0.5px solid var(--rule);padding:12px 0;margin:14px 0;gap:0}
+.group-stat{padding:0 16px;border-right:0.5px solid var(--rule)}
+.group-stat:first-child{padding-left:0}
+.group-stat:last-child{border-right:none}
+.group-stat-label{font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:4px}
+.group-stat-val{font-size:13px;color:var(--ink-soft)}
+.group-alert{background:var(--amber-soft);border:0.5px solid rgba(186,117,23,0.3);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--amber);display:flex;align-items:center;gap:10px;justify-content:space-between}
+.group-alert-actions{display:flex;gap:8px;flex-shrink:0}
+.group-actions{display:flex;gap:8px;flex-wrap:wrap}
+.member-summary{font-size:12px;color:var(--ink-mute);margin-top:6px}
+
+/* Tabs */
+.tabs{display:flex;gap:24px;padding-bottom:14px;border-bottom:0.5px solid var(--rule);margin-bottom:28px;overflow-x:auto}
+.tab{font-size:13px;font-weight:500;color:var(--ink-mute);padding-bottom:14px;margin-bottom:-14.5px;white-space:nowrap;cursor:pointer;background:none;border:none;font-family:var(--sans);transition:color 120ms ease}
+.tab:hover{color:var(--ink-soft)}
+.tab.active{color:var(--ink);border-bottom:1.5px solid var(--ink)}
+
+/* Group creation stepper */
+.step-bar{display:flex;align-items:center;gap:6px;font-size:13px;margin-bottom:32px;color:var(--ink-faint)}
+.step-bar .step{cursor:default}
+.step-bar .step.done{color:var(--ink-soft)}
+.step-bar .step.active{color:var(--ink);font-weight:500;text-decoration:underline;text-underline-offset:3px}
+.step-bar .sep{color:var(--ink-faint)}
+
+/* Member card (creation + workspace) */
+.member-card{background:var(--surface);border:0.5px solid var(--rule);border-radius:8px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;transition:border-color 120ms ease}
+.member-card.attention{border-color:rgba(186,117,23,0.5)}
+.member-card-body{flex:1;min-width:0}
+.member-name{font-family:var(--serif);font-weight:400;font-size:17px;letter-spacing:-0.005em;margin-bottom:2px}
+.member-meta{font-size:12px;color:var(--ink-mute)}
+
+/* Document matrix */
+.doc-matrix{width:100%;border-collapse:collapse;font-size:12px}
+.doc-matrix th{font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-mute);padding:6px 12px;text-align:left;border-bottom:0.5px solid var(--rule);white-space:nowrap}
+.doc-matrix td{padding:10px 12px;border-bottom:0.5px solid var(--rule);vertical-align:middle}
+.doc-matrix tr:last-child td{border-bottom:none}
+.doc-matrix tr.attention-row{background:var(--paper-cream)}
+.doc-matrix td:first-child{font-family:var(--serif);font-size:14px;font-weight:400}
+.doc-status{display:inline-flex;align-items:center;gap:4px}
+.doc-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.dot-green{background:var(--green)}
+.dot-amber{background:var(--amber)}
+.dot-red{background:var(--red)}
+.dot-mute{background:var(--ink-faint)}
+
+/* Pre-flight check cards */
+.check-card{border-radius:10px;padding:18px 20px;margin-bottom:10px}
+.check-card.pass{background:var(--paper-cream);border:0.5px solid var(--rule)}
+.check-card.blocker{background:var(--amber-soft);border:0.5px solid rgba(186,117,23,0.4)}
+.check-card.critical{background:var(--red-soft);border:0.5px solid rgba(196,77,77,0.4)}
+.check-card.unknown{background:var(--surface);border:0.5px solid var(--rule)}
+.check-card-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.check-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px}
+.check-card.pass .check-icon{background:var(--green-soft);color:var(--green)}
+.check-card.blocker .check-icon{background:rgba(186,117,23,0.15);color:var(--amber)}
+.check-card.critical .check-icon{background:rgba(196,77,77,0.15);color:var(--red)}
+.check-card.unknown .check-icon{background:var(--paper-warm);color:var(--ink-mute)}
+.check-title{font-weight:500;font-size:14px;line-height:1.35;flex:1}
+.check-body{font-size:13px;color:var(--ink-soft);line-height:1.5;margin-bottom:12px}
+.check-panel{background:rgba(26,26,26,0.04);border-radius:6px;padding:10px 12px;font-size:12px;color:var(--ink-soft);margin-bottom:12px}
+.check-panel strong{color:var(--ink);font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;display:block;margin-bottom:4px}
+
+/* Settled panel */
+.settled-panel{background:var(--paper-cream);border:0.5px solid var(--rule);border-radius:10px;padding:18px 20px;margin-top:20px}
+.settled-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.settled-item{font-size:12px;color:var(--ink-soft);display:flex;align-items:center;gap:6px}
+
+/* Empty state */
+.empty-hero{background:var(--surface);border:0.5px solid var(--rule);border-radius:16px;padding:40px;text-align:center;margin-bottom:24px}
+.empty-starters{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.starter-card{background:var(--surface);border:0.5px solid var(--rule);border-radius:10px;padding:18px;cursor:pointer;transition:border-color 120ms ease;text-align:left}
+.starter-card:hover{border-color:var(--rule-strong)}
+.starter-card-icon{font-size:22px;margin-bottom:10px}
+.starter-card-title{font-family:var(--serif);font-weight:400;font-size:15px;margin-bottom:4px}
+.starter-card-desc{font-size:12px;color:var(--ink-mute);line-height:1.45}
+
+/* Create new affordance */
+.create-group-btn{width:100%;padding:16px;border:0.5px dashed var(--rule-strong);border-radius:10px;background:none;color:var(--ink-mute);font-size:13px;font-family:var(--sans);cursor:pointer;text-align:center;transition:all 140ms;margin-bottom:8px}
+.create-group-btn:hover{color:var(--ink);border-color:var(--rule-strong);background:var(--paper-warm)}
+
+/* Consent prompt */
+.consent-card{background:var(--surface);border:0.5px solid var(--rule-strong);border-radius:12px;padding:20px 22px;margin-bottom:12px}
+.consent-what-table{width:100%;font-size:12px;margin:10px 0}
+.consent-what-table td{padding:5px 0;border-bottom:0.5px solid var(--rule)}
+.consent-what-table td:last-child{text-align:right;color:var(--ink-soft)}
+.consent-what-table tr:last-child td{border-bottom:none}
+
+/* Toast */
+.toast{position:fixed;bottom:26px;right:26px;background:var(--ink);color:#fff;padding:10px 17px;border-radius:8px;font-size:13px;z-index:2000;opacity:0;transform:translateY(6px);transition:opacity 200ms ease,transform 200ms ease;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+/* Parcel summary card */
+.parcel-card{background:var(--paper-warm);border-radius:12px;padding:20px 22px;margin-bottom:20px}
+.parcel-card-title{font-family:var(--serif);font-weight:400;font-size:22px;letter-spacing:-0.01em;margin:6px 0 4px}
+
+/* Breadcrumb */
+.breadcrumb{font-size:12px;color:var(--ink-mute);margin-bottom:20px;display:flex;align-items:center;gap:6px}
+.breadcrumb a{color:var(--ink-mute);text-decoration:none}
+.breadcrumb a:hover{color:var(--ink)}
+
+/* Permissions log */
+.perm-row{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:0.5px solid var(--rule)}
+.perm-row:last-child{border-bottom:none}
+.perm-badge{width:32px;height:32px;border-radius:6px;background:var(--paper-warm);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;font-family:var(--serif);color:var(--ink-soft);flex-shrink:0}
+
+/* Responsive */
+@media(max-width:900px){
+  .shell{flex-direction:column}
+  .sidebar{width:100%;height:auto;position:relative;padding:16px 0}
+  .sidebar-nav{display:flex;gap:4px;flex-wrap:wrap;padding:12px}
+  .sidebar-nav-label,.sidebar-user-card{display:none}
+  .sidebar-wordmark-block,.sidebar-id-block{padding:12px 24px}
+  .nav-item{padding:8px 12px}
+  .main{padding:20px;max-width:none}
+  .empty-starters{grid-template-columns:1fr}
+  .group-stats{grid-template-columns:1fr}
+  .group-stat{border-right:none;border-bottom:0.5px solid var(--rule);padding:10px 0}
+  .group-stat:last-child{border-bottom:none}
+  .settled-grid{grid-template-columns:1fr}
+}
+@media(max-width:480px){
+  .sidebar{display:none}
+  .main{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none"><path d="M4 11L12 4L20 11V19C20 19.55 19.55 20 19 20H5C4.45 20 4 19.55 4 19V11Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M10 20V14H14V20" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></symbol>
+  <symbol id="i-me" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="3.5" stroke="currentColor" stroke-width="1.25"/><path d="M5 20C5 16 8 14 12 14C16 14 19 16 19 20" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="9" r="3" stroke="currentColor" stroke-width="1.25"/><circle cx="17" cy="10" r="2.2" stroke="currentColor" stroke-width="1.25"/><path d="M3 19C3 16 5.7 14 9 14C12.3 14 15 16 15 19" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M15 18C15 15.5 16.5 14 17 14C19 14 21 15.5 21 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-trips" viewBox="0 0 24 24" fill="none"><path d="M3 17L9 11L13 15L21 7" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="11" r="1.2" fill="currentColor"/><circle cx="13" cy="15" r="1.2" fill="currentColor"/></symbol>
+  <symbol id="i-groups" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><circle cx="16" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><path d="M2 20C2 17 4.7 15 8 15" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M10 18C10 15.5 12.5 14 16 14C19.5 14 22 15.5 22 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-privacy" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M8 11V8C8 5.79 9.79 4 12 4C14.21 4 16 5.79 16 8V11" stroke="currentColor" stroke-width="1.25"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-add" viewBox="0 0 24 24" fill="none"><path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none"><path d="M5 12L10 17L19 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24" fill="none"><path d="M12 9V13M12 17H12.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" stroke-width="1.25"/></symbol>
+</svg>
+
+<div class="shell">
+
+  <aside class="sidebar">
+    <div class="sidebar-wordmark-block">
+      <a href="home.html" class="wordmark">Uni<em>Profile</em></a>
+      <div class="wordmark-tag">Travel identity</div>
+    </div>
+    <div class="sidebar-id-block">
+      <div class="sidebar-id-label">Your number</div>
+      <div class="id" id="sidebar-number">—</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-nav-label">Navigate</div>
+      <a href="home.html" class="nav-item"><svg class="icon" style="width:16px;height:16px"><use href="#i-home"/></svg>Home</a>
+      <a href="me.html" class="nav-item"><svg class="icon" style="width:16px;height:16px"><use href="#i-me"/></svg>Me</a>
+      <a href="people.html" class="nav-item"><svg class="icon" style="width:16px;height:16px"><use href="#i-people"/></svg>People</a>
+      <a href="groups.html" class="nav-item active"><svg class="icon" style="width:16px;height:16px"><use href="#i-groups"/></svg>Groups</a>
+      <a href="trips.html" class="nav-item"><svg class="icon" style="width:16px;height:16px"><use href="#i-trips"/></svg>Trips</a>
+      <a href="privacy.html" class="nav-item"><svg class="icon" style="width:16px;height:16px"><use href="#i-privacy"/></svg>Privacy</a>
+    </nav>
+    <div class="sidebar-user-card">
+      <div class="user-card-inner">
+        <div class="avatar avatar-sm av1" id="sidebar-avatar">—</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500;line-height:1.2" id="sidebar-name">—</div>
+          <div class="caption" id="sidebar-tier"></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main" id="main-content">
+    <div style="padding:60px 0;text-align:center;color:var(--ink-mute);font-size:14px">Loading…</div>
+  </main>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
+var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
+var _CID="2heljmdli4f9cv2i4m0i020mfc";
+var _tok=null,_uid=null,_prof=null;
+var _allGroups=[];
+/* group creation state */
+var _ng={step:1,members:[],type:null,name:""};
+/* current group workspace state */
+var _curGroup=null,_curSubTab="members";
+/* plan-a-trip state */
+var _parcel={step:1,dest:"",dep:"",ret:"",who:[]};
+
+/* ── Auth ── */
+function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent(window.location.origin+window.location.pathname);}
+function _ph(){var p=new URLSearchParams(window.location.hash.slice(1));return p.get("id_token")||p.get("access_token");}
+async function _req(method,ep,body){
+  var o={method:method,headers:{Authorization:"Bearer "+_tok}};
+  if(body){o.headers["Content-Type"]="application/json";o.body=JSON.stringify(body);}
+  var r=await fetch(_API+ep,o);
+  if(r.status===401){localStorage.removeItem("up_token");location.href=_loginUrl();throw new Error("unauth");}
+  if(!r.ok)throw new Error("HTTP "+r.status);
+  return r.json();
+}
+async function _auth(){
+  var h=_ph();
+  if(h){_tok=h;localStorage.setItem("up_token",_tok);history.replaceState(null,"",window.location.pathname);}
+  else _tok=localStorage.getItem("up_token");
+  if(!_tok){location.href=_loginUrl();return false;}
+  return true;
+}
+
+/* ── Helpers ── */
+function _dn(p){if(!p)return"Traveler";if(p.display_name&&p.display_name.trim())return p.display_name.trim();if(p.identity&&p.identity.legal_first)return p.identity.legal_first;return p.uniprofile_number||"Traveler";}
+function _ini(p){var s=_dn(p);return s.length>=2?s.slice(0,2).toUpperCase():s.toUpperCase();}
+function _st(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+function _ht(id,v){var e=document.getElementById(id);if(e)e.innerHTML=v;}
+function _val(id){var e=document.getElementById(id);return e?e.value:"";}
+function _setval(id,v){var e=document.getElementById(id);if(e)e.value=v||"";}
+function _fmt(s){if(!s)return"—";var d=new Date(s);return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}
+function _fmtShort(s){if(!s)return"—";return new Date(s).toLocaleDateString("en-US",{month:"short",day:"numeric"});}
+function showToast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},3000);}
+function _render(html){document.getElementById("main-content").innerHTML=html;}
+
+/* Avatar deterministic color index (1-5) */
+function _avIdx(name){var h=0;for(var i=0;i<(name||"").length;i++)h=(h*31+name.charCodeAt(i))&0x7fffffff;return(h%5)+1;}
+function _avEl(name,sizeClass){var i=_avIdx(name);var ini=(name||"?").slice(0,2).toUpperCase();return'<div class="avatar '+sizeClass+' av'+i+'" title="'+name+'">'+ini+'</div>';}
+
+/* ── Sidebar ── */
+function _sidebarUpdate(p){
+  _st("sidebar-number",p.uniprofile_number||"—");
+  _st("sidebar-name",_dn(p));
+  _st("sidebar-avatar",_ini(p));
+  _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
+}
+
+/* ── Group type helpers ── */
+var _TYPE_LABELS={
+  household_multigenerational:"Household · Multi-generational",
+  household_nuclear:"Household · Family",
+  household_couple:"Household · Couple",
+  care_accessibility:"Care group · Accessibility companion",
+  travel_friends:"Travel group · Friends",
+  travel_large:"Travel group · Large",
+  other:"Group"
+};
+function _typeLabel(t){return _TYPE_LABELS[t]||"Group";}
+function _openVerb(t){return t&&t.startsWith("household")?"Open household":"Open group";}
+
+function _inferType(members){
+  var hasPartner=members.some(function(m){return m.relationship==="partner"||m.relationship==="spouse";});
+  var hasChild=members.some(function(m){return m.relationship==="child";});
+  var hasParent=members.some(function(m){return m.relationship==="parent";});
+  var friendCount=members.filter(function(m){return m.relationship==="friend";}).length;
+  var total=members.length;
+  if(hasPartner&&hasChild&&hasParent)return"household_multigenerational";
+  if(hasPartner&&hasChild)return"household_nuclear";
+  if(hasPartner&&!hasChild&&!hasParent)return"household_couple";
+  if(hasParent&&!hasPartner)return"care_accessibility";
+  if(friendCount>=1||total>=2)return"travel_friends";
+  return"other";
+}
+function _typeDescription(t){
+  return{
+    household_multigenerational:"A permanent group. Members manage their own data. You'll see a unified view of trips, documents, and preferences across the household.",
+    household_nuclear:"A family household. Each adult member manages their own data and consents.",
+    household_couple:"A couple. Both members manage their own data; trips and preferences are shared context.",
+    care_accessibility:"A care group with accessibility-focused coordination. The primary contact coordinates logistics; each adult manages their own data.",
+    travel_friends:"A travel group. Every member is self-managing. Shared context for planning trips together.",
+    travel_large:"A large travel group. Every adult member is self-managing.",
+    other:"A custom group. Every adult member manages their own data."
+  }[t]||"Members manage their own data.";}
+function _typeGuessLabel(t){
+  return{
+    household_multigenerational:"This looks like your household.",
+    household_nuclear:"This looks like a family.",
+    household_couple:"This looks like you and your partner.",
+    care_accessibility:"This looks like a care group.",
+    travel_friends:"This looks like a travel group.",
+    travel_large:"This looks like a large travel group.",
+    other:"A custom group."
+  }[t]||"A group.";}
+
+/* ── ═══════════════════════════════════════
+   GROUPS LIST VIEW
+═══════════════════════════════════════════ */
+function _groupStatus(g){
+  var today=new Date();today.setHours(0,0,0,0);
+  if(g.dep&&new Date(g.dep)>=today)return"planning";
+  if(g.dep&&new Date(g.dep)<today&&g.ret&&new Date(g.ret)>=today)return"active";
+  return"standby";
+}
+function _statusPill(s){
+  if(s==="active")return'<span class="pill pill-green"><span class="pill-dot dot-green"></span>Active</span>';
+  if(s==="planning")return'<span class="pill pill-neutral">Planning</span>';
+  return'<span class="pill pill-neutral">Standby</span>';
+}
+function _groupCard(g){
+  var members=g.members||[];
+  var status=_groupStatus(g);
+  var hasBlocker=false; /* TODO: compute from member doc status */
+  var avatarStack=members.slice(0,5).map(function(m){return _avEl(m.name||"?","avatar-sm");}).join("");
+  if(members.length>5)avatarStack+='<div class="avatar avatar-sm av1" style="background:var(--paper-warm);color:var(--ink-mute);font-size:10px;font-family:var(--sans)">+'+( members.length-5)+'</div>';
+  var roles=members.slice(0,4).map(function(m){return m.name?(m.name.split(" ")[0]):m.relationship||"member";}).join(", ");
+  if(members.length>4)roles+=" + "+(members.length-4)+" more";
+  var nextTrip=g.destination&&g.dep?(g.destination+" · "+_fmtShort(g.dep)):"—";
+  var borderClass=hasBlocker?"blocker":"";
+  return '<div class="group-card '+borderClass+'" id="gc-'+g.id+'">'
+    +'<div class="group-card-top">'
+    +'<div class="group-card-title-block">'
+    +'<div class="group-card-eyebrow">'+_typeLabel(g.type||"other")+'</div>'
+    +'<div class="group-card-name">'+_escHtml(g.name||g.destination||"Group")+'</div>'
+    +'</div>'
+    +_statusPill(status)
+    +'</div>'
+    +'<div class="avatar-stack" style="margin-bottom:4px">'+avatarStack+'</div>'
+    +'<div class="member-summary">'+members.length+' member'+(members.length===1?'':'s')+(roles?' — '+roles:'')+'</div>'
+    +'<div class="group-stats">'
+    +'<div class="group-stat"><div class="group-stat-label">Next trip</div><div class="group-stat-val">'+nextTrip+'</div></div>'
+    +'<div class="group-stat"><div class="group-stat-label">Documents</div><div class="group-stat-val"><span class="doc-status"><span class="doc-dot dot-green"></span>See inside</span></div></div>'
+    +'<div class="group-stat"><div class="group-stat-label">Members</div><div class="group-stat-val">'+members.length+'</div></div>'
+    +'</div>'
+    +'<div class="group-actions">'
+    +'<button class="btn btn-primary btn-sm" onclick="openGroup(\''+g.id+'\')">'+_openVerb(g.type||"other")+'</button>'
+    +'<button class="btn btn-secondary btn-sm" onclick="openGroup(\''+g.id+'\');switchSubTab(\'plan\')">Plan a trip</button>'
+    +'<button class="btn btn-secondary btn-sm" onclick="openGroup(\''+g.id+'\');switchSubTab(\'documents\')">Document matrix</button>'
+    +'</div>'
+    +'</div>';
+}
+
+function renderGroupsList(){
+  var html='<div class="eyebrow" style="margin-bottom:12px">Your groups</div>';
+  if(!_allGroups.length){
+    html+='<div class="empty-hero">'
+      +'<div class="h2" style="margin-bottom:12px">Travel rarely happens alone.</div>'
+      +'<p class="lede" style="max-width:500px;margin:0 auto 24px">Add the people you travel with — your family, your partner, the friends you take trips with — and UniProfile starts handling the household coordination quietly in the background.</p>'
+      +'<button class="btn btn-primary" onclick="startCreateGroup()"><svg style="width:14px;height:14px" viewBox="0 0 24 24" fill="none"><use href="#i-add"/></svg>Create your first group →</button>'
+      +'</div>'
+      +'<div class="empty-starters">'
+      +'<div class="starter-card" onclick="startCreateGroup(\'household\')">'
+      +'<div class="starter-card-icon">🏠</div>'
+      +'<div class="starter-card-title">My household</div>'
+      +'<div class="starter-card-desc">Family, partner, kids — a permanent group for everyone you live with.</div>'
+      +'</div>'
+      +'<div class="starter-card" onclick="startCreateGroup(\'friends\')">'
+      +'<div class="starter-card-icon">✈️</div>'
+      +'<div class="starter-card-title">A travel group</div>'
+      +'<div class="starter-card-desc">Friends planning a trip together — self-managing, no hierarchy.</div>'
+      +'</div>'
+      +'<div class="starter-card" onclick="startCreateGroup(\'care\')">'
+      +'<div class="starter-card-icon">🤝</div>'
+      +'<div class="starter-card-title">Caring for a parent</div>'
+      +'<div class="starter-card-desc">Accessibility-focused. Coordinate documents and needs quietly.</div>'
+      +'</div>'
+      +'</div>';
+  }else{
+    html+='<h1 class="h1" style="margin-bottom:8px">The people you <em>travel with.</em></h1>'
+      +'<p class="lede" style="margin-bottom:28px">'+_allGroups.length+' group'+(_allGroups.length===1?"":"s")+'. Each with their own context, documents, and quiet permissions to make travel together less painful.</p>';
+    _allGroups.forEach(function(g){html+=_groupCard(g);});
+    html+='<button class="create-group-btn" onclick="startCreateGroup()">+ Create a new group</button>';
+  }
+  _render(html);
+}
+
+function _escHtml(s){return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+/* ── ═══════════════════════════════════════
+   GROUP CREATION FLOW
+═══════════════════════════════════════════ */
+function startCreateGroup(seed){
+  _ng={step:1,members:[],type:null,name:"",seed:seed||null};
+  if(seed==="household"){
+    _ng.members=[{id:_uid2(),name:"",relationship:"partner",age:null,status:"pending"}];
+  }else if(seed==="friends"){
+    _ng.members=[{id:_uid2(),name:"",relationship:"friend",age:null,status:"pending"}];
+  }else if(seed==="care"){
+    _ng.members=[{id:_uid2(),name:"",relationship:"parent",age:null,status:"pending",accessibility:true}];
+  }
+  renderCreateStep1();
+  history.replaceState(null,"",window.location.pathname+"#new");
+}
+function _uid2(){return"m-"+(Math.random()*1e9|0).toString(36)+"-"+(Date.now()&0xffff).toString(36);}
+
+function _stepBar(active){
+  var steps=["Define","Type","Name"];
+  return steps.map(function(s,i){
+    var n=i+1;
+    var cls=n<active?"done":n===active?"active":"";
+    return '<span class="step '+cls+'">'+(n<active?'<svg style="width:11px;height:11px;display:inline;vertical-align:middle;margin-right:3px" viewBox="0 0 24 24" fill="none"><use href="#i-check"/></svg>':n+". ")+s+'</span>';
+  }).join('<span class="sep"> · </span>');
+}
+
+function renderCreateStep1(){
+  var membersHtml=_ng.members.map(function(m,i){return _memberAddCard(m,i);}).join("");
+  var html='<div style="max-width:560px">'
+    +'<div class="step-bar">'+_stepBar(1)+'</div>'
+    +'<div class="eyebrow" style="margin-bottom:12px">New group</div>'
+    +'<h1 class="h1" style="margin-bottom:8px">Who travels with <em>you?</em></h1>'
+    +'<p class="lede" style="margin-bottom:28px">Add a few people. We\'ll figure out the rest.</p>'
+    +'<div id="ng-members">'+membersHtml+'</div>'
+    +'<button class="btn btn-secondary btn-sm" onclick="addBlankMember()" style="margin-bottom:24px"><svg style="width:13px;height:13px" viewBox="0 0 24 24" fill="none"><use href="#i-add"/></svg>Add a person</button>'
+    +'<div id="ng-step1-err" class="form-error"></div>'
+    +'<div class="form-actions">'
+    +'<button class="btn btn-primary" onclick="submitStep1()">Continue →</button>'
+    +'<button class="btn-cancel" onclick="history.back()">Cancel</button>'
+    +'</div>'
+    +'</div>';
+  _render(html);
+}
+function _memberAddCard(m,i){
+  var showAge=m.relationship==="child";
+  return '<div class="member-card" id="mc-'+m.id+'">'
+    +_avEl(m.name||"?","avatar-md")
+    +'<div class="member-card-body">'
+    +'<div class="form-row" style="margin-bottom:6px">'
+    +'<div class="form-field" style="flex:2;margin:0">'
+    +'<input class="form-input" placeholder="Name or email or UP-XXXX-XXXX" value="'+_escHtml(m.name||"")+'" id="ng-name-'+m.id+'" oninput="updateMemberName(\''+m.id+'\',this.value)"/>'
+    +'</div>'
+    +'<div class="form-field" style="flex:1;margin:0">'
+    +'<select class="form-input form-select" id="ng-rel-'+m.id+'" onchange="updateMemberRel(\''+m.id+'\',this.value)">'
+    +'<option value="partner"'+(m.relationship==="partner"?" selected":"")+'>Partner</option>'
+    +'<option value="spouse"'+(m.relationship==="spouse"?" selected":"")+'>Spouse</option>'
+    +'<option value="child"'+(m.relationship==="child"?" selected":"")+'>Child</option>'
+    +'<option value="parent"'+(m.relationship==="parent"?" selected":"")+'>Parent</option>'
+    +'<option value="sibling"'+(m.relationship==="sibling"?" selected":"")+'>Sibling</option>'
+    +'<option value="friend"'+(m.relationship==="friend"?" selected":"")+'>Friend</option>'
+    +'<option value="companion"'+(m.relationship==="companion"?" selected":"")+'>Companion</option>'
+    +'</select>'
+    +'</div>'
+    +(showAge?'<div class="form-field" style="width:70px;flex:none;margin:0"><input class="form-input" type="number" min="0" max="17" placeholder="Age" value="'+(m.age||"")+'" id="ng-age-'+m.id+'" onchange="updateMemberAge(\''+m.id+'\',this.value)"/></div>':"")
+    +'</div>'
+    +'<button class="btn-cancel" style="font-size:11px;padding:0" onclick="removeMember(\''+m.id+'\')">remove</button>'
+    +'</div>'
+    +'</div>';
+}
+function addBlankMember(){
+  _ng.members.push({id:_uid2(),name:"",relationship:"friend",age:null,status:"pending"});
+  var c=document.getElementById("ng-members");
+  if(c)c.innerHTML=_ng.members.map(function(m,i){return _memberAddCard(m,i);}).join("");
+}
+function updateMemberName(id,v){var m=_ng.members.find(function(x){return x.id===id;});if(m){m.name=v;var a=document.getElementById("mc-"+id);if(a){var av=a.querySelector(".avatar");if(av){var i=_avIdx(v||"?");av.className="avatar avatar-md av"+i;av.textContent=(v||"?").slice(0,2).toUpperCase();}}}}
+function updateMemberRel(id,v){
+  var m=_ng.members.find(function(x){return x.id===id;});
+  if(m){m.relationship=v;/* re-render card to show/hide age field */var c=document.getElementById("ng-members");if(c)c.innerHTML=_ng.members.map(function(m,i){return _memberAddCard(m,i);}).join("");}
+}
+function updateMemberAge(id,v){var m=_ng.members.find(function(x){return x.id===id;});if(m)m.age=v?parseInt(v,10):null;}
+function removeMember(id){_ng.members=_ng.members.filter(function(m){return m.id!==id;});var c=document.getElementById("ng-members");if(c)c.innerHTML=_ng.members.map(function(m,i){return _memberAddCard(m,i);}).join("");}
+function submitStep1(){
+  var filled=_ng.members.filter(function(m){return m.name&&m.name.trim();});
+  if(!filled.length){var e=document.getElementById("ng-step1-err");if(e){e.textContent="Add at least one person to continue.";e.style.display="block";}return;}
+  _ng.members=filled;
+  _ng.type=_inferType(_ng.members);
+  _ng.step=2;
+  renderCreateStep2();
+}
+
+function renderCreateStep2(){
+  var inferred=_ng.type;
+  var html='<div style="max-width:560px">'
+    +'<div class="step-bar">'+_stepBar(2)+'</div>'
+    +'<div class="eyebrow" style="margin-bottom:12px">Based on who you added</div>'
+    +'<h1 class="h2" style="margin-bottom:10px">'+_typeGuessLabel(inferred)+'</h1>'
+    +'<p class="lede" style="margin-bottom:24px">'+_typeDescription(inferred)+'</p>'
+    +'<div style="background:var(--paper-warm);border-radius:10px;padding:18px 20px;margin-bottom:6px">'
+    +'<div class="group-card-eyebrow" style="margin-bottom:6px">'+_typeLabel(inferred)+'</div>'
+    +'<div class="avatar-stack" style="margin-bottom:8px">'+_ng.members.map(function(m){return _avEl(m.name,"avatar-sm");}).join("")+'</div>'
+    +'<div class="member-summary">'+_ng.members.map(function(m){return m.name.split(" ")[0]+(m.relationship==="child"&&m.age?" ("+m.age+")":'');}).join(", ")+'</div>'
+    +'</div>'
+    +'<div style="margin-bottom:24px">'
+    +'<details style="font-size:12px;color:var(--ink-mute)">'
+    +'<summary style="cursor:pointer;list-style:none;padding:8px 0">Change group type ▾</summary>'
+    +'<div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px">'
+    +Object.entries(_TYPE_LABELS).map(function(kv){return '<label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="radio" name="ng-type" value="'+kv[0]+'" '+(kv[0]===inferred?"checked":"")+' onchange="_ng.type=this.value"> '+kv[1]+'</label>';}).join("")
+    +'</div></details>'
+    +'</div>'
+    +'<div class="form-actions">'
+    +'<button class="btn btn-primary" onclick="submitStep2()">Continue →</button>'
+    +'<button class="btn btn-secondary" onclick="renderCreateStep1()">Back</button>'
+    +'</div>'
+    +'</div>';
+  _render(html);
+}
+function submitStep2(){
+  var r=document.querySelector("input[name=ng-type]:checked");
+  if(r)_ng.type=r.value;
+  _ng.step=3;
+  renderCreateStep3();
+}
+
+function renderCreateStep3(){
+  var placeholder={
+    household_multigenerational:"Patel household",
+    household_nuclear:"The Smiths",
+    household_couple:"Us",
+    care_accessibility:"Mom's travel circle",
+    travel_friends:"Tokyo crew",
+    travel_large:"Group trip"
+  }[_ng.type]||"Our group";
+  var html='<div style="max-width:560px">'
+    +'<div class="step-bar">'+_stepBar(3)+'</div>'
+    +'<div class="eyebrow" style="margin-bottom:12px">Almost done</div>'
+    +'<h1 class="h2" style="margin-bottom:10px">What do you call this group?</h1>'
+    +'<p class="lede" style="margin-bottom:24px">This is just for you — only members will see the name.</p>'
+    +'<div class="form-field">'
+    +'<input class="form-input" id="ng-name-input" placeholder="'+placeholder+'" value="'+_escHtml(_ng.name)+'" style="font-size:16px;padding:10px 13px" oninput="_ng.name=this.value"/>'
+    +'</div>'
+    +'<div id="ng-step3-err" class="form-error"></div>'
+    +'<div class="form-actions">'
+    +'<button class="btn btn-primary" id="ng-create-btn" onclick="submitCreateGroup()">Create group →</button>'
+    +'<button class="btn btn-secondary" onclick="renderCreateStep2()">Back</button>'
+    +'</div>'
+    +'</div>';
+  _render(html);
+  setTimeout(function(){var el=document.getElementById("ng-name-input");if(el)el.focus();},50);
+}
+async function submitCreateGroup(){
+  var name=_val("ng-name-input").trim();
+  if(!name){var e=document.getElementById("ng-step3-err");if(e){e.textContent="Give the group a name to continue.";e.style.display="block";}return;}
+  _ng.name=name;
+  var btn=document.getElementById("ng-create-btn");if(btn){btn.disabled=true;btn.textContent="Creating…";}
+  try{
+    var newGroup={
+      id:"g-"+(Date.now().toString(36))+"-"+(Math.random()*1e6|0).toString(36),
+      name:_ng.name,
+      type:_ng.type||"other",
+      destination:null,dep:null,ret:null,
+      members:_ng.members.map(function(m){return{name:m.name,relationship:m.relationship,age:m.age||null,status:m.status||"pending"};}),
+      flights:[],hotel:null,notes:[]
+    };
+    _allGroups.push(newGroup);
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"groups",data:{groups:_allGroups}});
+    showToast("Group created. Invites sent to "+_ng.members.length+" member"+(  _ng.members.length===1?"":"s")+".");
+    openGroup(newGroup.id);
+  }catch(e){
+    _allGroups=_allGroups.filter(function(g){return g.id!==_allGroups[_allGroups.length-1].id;});
+    var err=document.getElementById("ng-step3-err");if(err){err.textContent="Could not create group. Please try again.";err.style.display="block";}
+    if(btn){btn.disabled=false;btn.textContent="Create group →";}
+  }
+}
+
+/* ── ═══════════════════════════════════════
+   GROUP WORKSPACE
+═══════════════════════════════════════════ */
+function openGroup(id){
+  _curGroup=_allGroups.find(function(g){return g.id===id;});
+  if(!_curGroup){renderGroupsList();return;}
+  _curSubTab="members";
+  renderGroupWorkspace();
+  history.replaceState(null,"",window.location.pathname+"#group/"+id);
+}
+function switchSubTab(tab){
+  _curSubTab=tab;
+  renderGroupWorkspace();
+}
+function renderGroupWorkspace(){
+  var g=_curGroup;
+  var typeLabel=_typeLabel(g.type||"other");
+  var members=g.members||[];
+  var tabs=["members","trips","documents","preferences","permissions","plan"];
+  var tabLabels={members:"Members",trips:"Trips",documents:"Documents",preferences:"Preferences",permissions:"Permissions",plan:"Plan a trip"};
+  var tabBar=tabs.map(function(t){return'<button class="tab'+(t===_curSubTab?" active":"")+'" onclick="switchSubTab(\''+t+'\')">'+tabLabels[t]+'</button>';}).join("");
+  var memberCount=members.length+1; /* +1 for the primary user */
+  var html='<div class="breadcrumb"><a href="groups.html" onclick="event.preventDefault();renderGroupsList()">Groups</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><span>'+_escHtml(g.name||"Group")+'</span></div>'
+    +'<div class="eyebrow" style="margin-bottom:8px">'+typeLabel+' · '+memberCount+' members</div>'
+    +'<h1 class="h1" style="margin-bottom:8px">'+_escHtml(g.name||"Group")+'.</h1>'
+    +'<p class="lede" style="margin-bottom:24px">You created this group. You are the primary contact, but every adult member controls their own data.</p>'
+    +'<div class="tabs">'+tabBar+'</div>'
+    +'<div id="subtab-content">';
+  if(_curSubTab==="members")html+=renderMembersTab(g);
+  else if(_curSubTab==="trips")html+=renderTripsTab(g);
+  else if(_curSubTab==="documents")html+=renderDocumentsTab(g);
+  else if(_curSubTab==="preferences")html+=renderPreferencesTab(g);
+  else if(_curSubTab==="permissions")html+=renderPermissionsTab(g);
+  else if(_curSubTab==="plan")html+=renderPlanStep1(g);
+  html+='</div>';
+  _render(html);
+}
+
+/* Members sub-tab */
+function renderMembersTab(g){
+  var members=g.members||[];
+  var html='<div>';
+  /* Primary user first */
+  var youName=_dn(_prof);
+  html+='<div class="member-card">'
+    +_avEl(youName,"avatar-md")
+    +'<div class="member-card-body">'
+    +'<div class="member-name">'+_escHtml(youName)+' <span style="font-size:12px;font-family:var(--sans);font-weight:400;color:var(--ink-mute)">— you · primary</span></div>'
+    +'<div class="member-meta">'+(_prof.uniprofile_number||"—")+" · self-managed"+'</div>'
+    +'</div>'
+    +'<span class="pill pill-green">Ready</span>'
+    +'</div>';
+  /* Other members */
+  members.forEach(function(m){
+    var role=m.relationship+(m.age?" · age "+m.age:"");
+    var managed=m.relationship==="child"&&(!m.age||parseInt(m.age,10)<16)?"Managed by you":"self-managed";
+    var status=m.status==="pending"?"pending":m.uniprofile_id?"active":"pending";
+    var pill=status==="pending"?'<span class="pill pill-neutral">Invite pending</span>':'<span class="pill pill-green">Active</span>';
+    html+='<div class="member-card">'
+      +_avEl(m.name||"?","avatar-md")
+      +'<div class="member-card-body">'
+      +'<div class="member-name">'+_escHtml(m.name||"Unknown")+'</div>'
+      +'<div class="member-meta">'+_escHtml(role)+' · '+managed+(m.uniprofile_id?' · <span class="id">'+m.uniprofile_id+'</span>':'')+'</div>'
+      +'</div>'
+      +pill
+      +'</div>';
+  });
+  html+='<button class="create-group-btn" onclick="addMemberToGroup()" style="margin-top:8px">+ Add a member</button>';
+  html+='</div>';
+  return html;
+}
+
+function addMemberToGroup(){
+  var name=prompt("Member's name, email, or UniProfile ID:");
+  if(!name||!name.trim())return;
+  var rel=prompt("Relationship (partner, child, parent, friend, sibling, companion):")||"friend";
+  var g=_curGroup;
+  g.members=g.members||[];
+  g.members.push({name:name.trim(),relationship:rel.trim().toLowerCase(),age:null,status:"pending"});
+  _saveGroups().then(function(){renderGroupWorkspace();showToast("Member added. Invite sent if email provided.");});
+}
+async function _saveGroups(){
+  await _req("PUT","/api/v1/profile/"+_uid,{module:"groups",data:{groups:_allGroups}});
+}
+
+/* Trips sub-tab */
+function renderTripsTab(g){
+  var allTrips=_prof.trips||[];
+  var dest=(g.destination||"").toUpperCase();
+  var groupTrips=allTrips.filter(function(t){
+    if(dest&&t.destination_iata&&t.destination_iata.toUpperCase()===dest)return true;
+    if(g.dep&&t.departure_date===g.dep)return true;
+    return false;
+  });
+  if(!groupTrips.length){
+    return '<div style="padding:32px 0;text-align:center">'
+      +'<p class="lede" style="margin-bottom:20px">No trips recorded for this group yet.</p>'
+      +'<button class="btn btn-primary" onclick="switchSubTab(\'plan\')">Plan a trip →</button>'
+      +'</div>';
+  }
+  var html='<div>';
+  groupTrips.forEach(function(t){
+    var dep=t.departure_date?new Date(t.departure_date):null;
+    var month=dep?dep.toLocaleDateString("en-US",{month:"short"}):"—";
+    var day=dep?dep.getDate():"?";
+    html+='<div style="background:var(--surface);border:0.5px solid var(--rule);border-radius:10px;padding:16px 18px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start">'
+      +'<div style="width:52px;text-align:center;padding:6px 0;border-radius:7px;background:var(--paper-cream);flex-shrink:0"><div style="font-size:9px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-mute)">'+month+'</div><div style="font-family:var(--serif);font-size:22px;font-weight:300;line-height:1.1">'+day+'</div></div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div style="font-family:var(--serif);font-size:18px;font-weight:400;margin-bottom:3px">'+_escHtml(t.trip_name||t.destination_iata||"Trip")+'</div>'
+      +(t.origin_iata&&t.destination_iata?'<div style="font-family:var(--mono);font-size:11px;color:var(--ink-soft)">'+t.origin_iata+' → '+t.destination_iata+'</div>':"")
+      +'</div>'
+      +'</div>';
+  });
+  html+='</div>';
+  return html;
+}
+
+/* Documents sub-tab */
+function renderDocumentsTab(g){
+  var members=g.members||[];
+  var myDocs=_prof.documents||[];
+  var myPassport=myDocs.find(function(d){return d.doc_type==="PASSPORT";});
+  var myKTN=myDocs.find(function(d){return d.doc_type==="KTN"||d.doc_type==="GLOBAL_ENTRY";});
+  var myVisa=myDocs.find(function(d){return d.doc_type==="VISA"||d.doc_type==="ESTA";});
+  function _expStatus(doc){
+    if(!doc)return'<span class="doc-status">—</span>';
+    if(!doc.expiry_date)return'<span class="doc-status"><span class="doc-dot dot-green"></span>On file</span>';
+    var days=Math.floor((new Date(doc.expiry_date)-new Date())/86400000);
+    if(days<0)return'<span class="doc-status"><span class="doc-dot dot-red"></span>Expired</span>';
+    if(days<90)return'<span class="doc-status"><span class="doc-dot dot-amber"></span>'+new Date(doc.expiry_date).getFullYear()+'</span>';
+    return'<span class="doc-status"><span class="doc-dot dot-green"></span>'+new Date(doc.expiry_date).getFullYear()+'</span>';
+  }
+  var html='<p style="font-size:12px;color:var(--ink-mute);margin-bottom:14px">Across all upcoming trips · <a href="#" onclick="event.preventDefault()" style="color:var(--ink-mute)">change context</a></p>'
+    +'<div style="overflow-x:auto"><table class="doc-matrix"><thead><tr>'
+    +'<th>Member</th><th>Passport</th><th>Visa / ESTA</th><th>KTN / GE</th></tr></thead><tbody>'
+    +'<tr><td>'+_escHtml(_dn(_prof))+'<span style="font-size:10px;color:var(--ink-mute);display:block">You</span></td>'
+    +'<td>'+_expStatus(myPassport)+'</td>'
+    +'<td>'+_expStatus(myVisa)+'</td>'
+    +'<td>'+(myKTN?'<span class="doc-status"><span class="doc-dot dot-green"></span>···'+( myKTN.doc_number||"").slice(-4)+'</span>':'<span class="doc-status">—</span>')+'</td>'
+    +'</tr>';
+  members.forEach(function(m){
+    html+='<tr><td>'+_escHtml(m.name||"?")+' <span style="font-size:10px;color:var(--ink-mute);display:block">'+_escHtml(m.relationship)+'</span></td>'
+      +'<td><span style="font-size:11px;color:var(--ink-mute);font-style:italic">self-managed</span></td>'
+      +'<td><span style="font-size:11px;color:var(--ink-mute);font-style:italic">—</span></td>'
+      +'<td><span style="font-size:11px;color:var(--ink-mute);font-style:italic">—</span></td>'
+      +'</tr>';
+  });
+  html+='</tbody></table></div>'
+    +'<p style="font-size:12px;color:var(--ink-mute);margin-top:14px;line-height:1.5">Adult members manage their own documents. Data shown only where consent has been granted. Invite pending members to see their full row.</p>';
+  return html;
+}
+
+/* Preferences sub-tab */
+function renderPreferencesTab(g){
+  var members=g.members||[];
+  var sp=_prof.seat_preferences||{};
+  var mp=_prof.meal_preferences||{};
+  var tp=_prof.travel_preferences||{};
+  var insights=[];
+  if(sp.cabin_preference)insights.push("The household flies "+{ECONOMY:"economy",ECONOMY_PLUS:"premium economy",BUSINESS:"business class",FIRST:"first class"}[sp.cabin_preference]+" on domestic routes.");
+  if(sp.seat_preference)insights.push("You prefer the "+sp.seat_preference.toLowerCase()+" seat.");
+  if(mp.meal_code)insights.push("Meal preference on file: "+mp.meal_code+".");
+  if((mp.allergies||[]).length)insights.push("Allergies noted: "+mp.allergies.join(", ")+".");
+  if(members.some(function(m){return m.relationship==="child";}))insights.push("Includes minor children — check document validity 6 months ahead of travel.");
+  if(members.some(function(m){return m.relationship==="parent"||m.accessibility;}))insights.push("One or more members may have accessibility requirements. Confirm at booking.");
+  var html='<p style="font-family:var(--serif);font-style:italic;font-size:17px;color:var(--ink);margin-bottom:18px">A few patterns we noticed about this group</p>';
+  if(!insights.length){
+    html+='<p class="lede">Patterns will appear as your group takes trips together.</p>';
+  }else{
+    html+='<ul style="list-style:none;display:flex;flex-direction:column;gap:12px">';
+    insights.forEach(function(ins){
+      html+='<li style="display:flex;gap:10px;font-size:14px;color:var(--ink-soft);line-height:1.55"><span style="color:var(--ink-mute);flex-shrink:0">—</span>'+ins+'</li>';
+    });
+    html+='</ul>';
+  }
+  return html;
+}
+
+/* Permissions sub-tab */
+function renderPermissionsTab(g){
+  return '<p class="lede" style="margin-bottom:16px">Consent audit trail for this group.</p>'
+    +'<div style="padding:28px 0;text-align:center;border:0.5px solid var(--rule);border-radius:10px">'
+    +'<p style="font-size:14px;color:var(--ink-mute)">No consent grants or revocations on record yet for this group.</p>'
+    +'<p style="font-size:12px;color:var(--ink-faint);margin-top:6px">Every operator data request will appear here. Each entry is logged per TIS Layer 4.</p>'
+    +'</div>';
+}
+
+/* ── ═══════════════════════════════════════
+   PLAN A TRIP — STEPS
+═══════════════════════════════════════════ */
+function renderPlanStep1(g){
+  var members=g.members||[];
+  var youName=_dn(_prof);
+  var whoChecks=[{id:"you",name:youName,checked:true}].concat(members.map(function(m){return{id:m.name,name:m.name,checked:true};}));
+  var html='<div style="max-width:580px">'
+    +'<div class="step-bar" style="margin-bottom:24px">'
+    +'<span class="step active">1. Define</span>'
+    +' <span class="sep">·</span> <span class="step">2. Pre-flight</span>'
+    +' <span class="sep">·</span> <span class="step">3. Resolve</span>'
+    +' <span class="sep">·</span> <span class="step">4. Hand off</span>'
+    +'</div>'
+    +'<div class="form-field">'
+    +'<label class="form-label">Destination</label>'
+    +'<input class="form-input" id="plan-dest" placeholder="City, country, or IATA code" value="'+_escHtml(_parcel.dest)+'"/>'
+    +'</div>'
+    +'<div class="form-row">'
+    +'<div class="form-field"><label class="form-label">Departure</label><input class="form-input" type="date" id="plan-dep" value="'+(_parcel.dep||"")+'"/></div>'
+    +'<div class="form-field"><label class="form-label">Return</label><input class="form-input" type="date" id="plan-ret" value="'+(_parcel.ret||"")+'"/></div>'
+    +'</div>'
+    +'<div class="form-field"><label class="form-label">Who\'s coming</label>'
+    +whoChecks.map(function(w){return'<label style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px"><input type="checkbox" class="plan-who" value="'+_escHtml(w.id)+'" '+(w.checked?"checked":"")+'>'+_escHtml(w.name)+'</label>';}).join("")
+    +'</div>'
+    +'<div id="plan-step1-err" class="form-error"></div>'
+    +'<div class="form-actions">'
+    +'<button class="btn btn-primary" onclick="submitPlanStep1()">Continue to pre-flight check →</button>'
+    +'<button class="btn btn-secondary" onclick="switchSubTab(\'members\')">Cancel</button>'
+    +'</div>'
+    +'</div>';
+  return html;
+}
+function submitPlanStep1(){
+  var dest=_val("plan-dest").trim();
+  var dep=_val("plan-dep");
+  if(!dest||!dep){var e=document.getElementById("plan-step1-err");if(e){e.textContent="Destination and departure date are required.";e.style.display="block";}return;}
+  _parcel.dest=dest;_parcel.dep=dep;_parcel.ret=_val("plan-ret");
+  _parcel.who=Array.from(document.querySelectorAll(".plan-who:checked")).map(function(c){return c.value;});
+  renderPlanStep2();
+}
+
+function renderPlanStep2(){
+  var g=_curGroup;
+  var checks=_runPreflightChecks();
+  var issues=checks.filter(function(c){return c.status!=="pass";});
+  var passed=checks.filter(function(c){return c.status==="pass";});
+  var stepBar='<div class="step-bar" style="margin-bottom:24px">'
+    +'<span class="step done">1. Define</span>'
+    +' <span class="sep">·</span> <span class="step active">2. Pre-flight</span>'
+    +' <span class="sep">·</span> <span class="step">3. Resolve</span>'
+    +' <span class="sep">·</span> <span class="step">4. Hand off</span>'
+    +'</div>';
+  var headline=issues.length===0?"Everything looks ready.":issues.length===1?"One thing to settle before booking.":issues.length<=3?issues.length+" things to settle before booking.":"Several things to settle before booking.";
+  var lede=issues.length===0?"Your group is clear. When you\'re ready, hand off the parcel for booking.":"Both are fixable. Here\'s what we found.";
+  var parcelSummary='<div class="parcel-card">'
+    +'<div class="eyebrow">Trip parcel · Draft</div>'
+    +'<div class="parcel-card-title">'+_escHtml(_parcel.dest)+' · '+_fmtShort(_parcel.dep)+(_parcel.ret?" – "+_fmtShort(_parcel.ret):"")+'</div>'
+    +'<div style="font-size:13px;color:var(--ink-soft)">'+_parcel.who.length+' traveler'+(_parcel.who.length===1?"":"s")+'</div>'
+    +'</div>';
+  var issueCards=issues.map(function(c){return _checkCard(c);}).join("");
+  var settledItems=passed.map(function(c){return'<div class="settled-item"><svg style="width:13px;height:13px;color:var(--green)" viewBox="0 0 24 24" fill="none"><use href="#i-check"/></svg>'+c.label+'</div>';}).join("");
+  var settledPanel='<div class="settled-panel">'
+    +'<div class="eyebrow" style="margin-bottom:8px">Already settled · '+passed.length+' checks</div>'
+    +'<div class="settled-grid">'+settledItems+'</div>'
+    +'</div>';
+  var continueDisabled=issues.length>0?"disabled":"";
+  var html='<div style="max-width:620px">'
+    +stepBar
+    +'<div class="eyebrow" style="margin-bottom:6px">Pre-flight check · '+passed.length+' of '+checks.length+' ready</div>'
+    +'<h2 class="h2" style="margin-bottom:8px">'+headline+'</h2>'
+    +'<p class="lede" style="margin-bottom:20px">'+lede+'</p>'
+    +parcelSummary
+    +(issues.length?issueCards:"")
+    +settledPanel
+    +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-top:24px;padding-top:16px;border-top:0.5px solid var(--rule)">'
+    +'<p style="font-size:12px;color:var(--ink-mute);line-height:1.5;max-width:320px">Once all items are settled, we\'ll prepare a clean parcel — passports, preferences, and consents pre-staged for the carrier.</p>'
+    +'<div style="display:flex;gap:8px;flex-shrink:0">'
+    +'<button class="btn btn-secondary btn-sm" onclick="switchSubTab(\'plan\')">Save draft</button>'
+    +'<button class="btn btn-primary btn-sm" '+continueDisabled+' onclick="renderPlanStep4()">Continue to hand off →</button>'
+    +'</div>'
+    +'</div>'
+    +'</div>';
+  _render('<div class="breadcrumb"><a href="groups.html" onclick="event.preventDefault();renderGroupsList()">Groups</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><a href="#" onclick="event.preventDefault();openGroup(\''+g.id+'\')">'+ _escHtml(g.name)+'</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><span>Plan a trip</span></div>'+html);
+}
+function _checkCard(c){
+  var panelLabel=c.status==="blocker"?"Fastest path":c.status==="critical"?"Action required":"Trade-off";
+  return '<div class="check-card '+c.status+'">'
+    +'<div class="check-card-head">'
+    +'<div class="check-icon">'+c.icon+'</div>'
+    +'<div class="check-title">'+c.title+'</div>'
+    +'</div>'
+    +'<div class="check-body">'+c.body+'</div>'
+    +(c.panel?'<div class="check-panel"><strong>'+panelLabel+'</strong>'+c.panel+'</div>':"")
+    +(c.actions?'<div style="display:flex;gap:8px;flex-wrap:wrap">'+c.actions+'</div>':"")
+    +'</div>';
+}
+function _runPreflightChecks(){
+  var today=new Date();today.setHours(0,0,0,0);
+  var depDate=_parcel.dep?new Date(_parcel.dep):null;
+  var daysOut=depDate?Math.floor((depDate-today)/86400000):null;
+  var docs=_prof.documents||[];
+  var passport=docs.find(function(d){return d.doc_type==="PASSPORT";});
+  var ktn=docs.find(function(d){return d.doc_type==="KTN"||d.doc_type==="GLOBAL_ENTRY";});
+  var sp=_prof.seat_preferences||{};
+  var mp=_prof.meal_preferences||{};
+  var id=_prof.identity||{};
+  var checks=[];
+
+  /* 1. Passport validity */
+  if(!passport){
+    checks.push({status:"blocker",label:"Passport",icon:"⚠",title:"No passport on file.",body:"Add your passport so we can check it against destination entry requirements.",panel:"Go to Me → Identity → Passport to add your passport.",actions:'<button class="btn btn-secondary btn-sm" onclick="location.href=\'me.html#identity\'">Add passport</button>'});
+  }else{
+    var exp=passport.expiry_date?new Date(passport.expiry_date):null;
+    var required=depDate?new Date(depDate.getTime()+180*86400000):null;
+    if(exp&&required&&exp<required){
+      var status=daysOut&&daysOut<=14?"critical":"blocker";
+      checks.push({status:status,label:"Passport",icon:"⚠",title:"Passport may not meet the 6-month entry rule for this trip.",body:"Many countries require your passport to be valid for 6 months beyond your return date. Yours expires "+_fmt(passport.expiry_date)+".",panel:"Renewal takes 6-10 weeks standard, 2-3 weeks expedited. Apply as soon as possible.",actions:'<button class="btn btn-secondary btn-sm" onclick="">Start renewal</button><button class="btn btn-ghost btn-sm" onclick="">Mark as handled</button>'});
+    }else{
+      checks.push({status:"pass",label:"Passport valid",icon:"✓"});
+    }
+  }
+
+  /* 2. Visa eligibility */
+  checks.push({status:"unknown",label:"Visa eligibility",icon:"?",title:"Visa requirements could not be verified.",body:"We couldn\'t look up entry requirements for "+_escHtml(_parcel.dest||"this destination")+" automatically. Check visa requirements before booking.",panel:"Verify at the official embassy website or IATA Travel Centre for "+_escHtml(_parcel.dest||"your destination")+".",actions:'<button class="btn btn-ghost btn-sm" onclick="">Mark as handled</button>'});
+
+  /* 3. Vaccinations */
+  checks.push({status:"unknown",label:"Vaccinations",icon:"?",title:"Vaccination requirements not verified.",body:"Required and recommended vaccinations vary by destination. We don\'t have your vaccination record on file.",panel:"Check destination health requirements. Yellow fever certificate required for some countries.",actions:'<button class="btn btn-ghost btn-sm" onclick="">Mark as handled</button>'});
+
+  /* 4. KTN / Global Entry */
+  if(!ktn){
+    checks.push({status:"blocker",label:"KTN / Global Entry",icon:"⚠",title:"No Known Traveler Number on file.",body:"Without a KTN, you won\'t receive TSA PreCheck on your boarding pass, adding security screening time.",panel:"Known Traveler Number costs $85 and takes 3-5 days to approve. Global Entry ($100) includes PreCheck.",actions:'<button class="btn btn-secondary btn-sm" onclick="">Learn more</button><button class="btn btn-ghost btn-sm" onclick="">Skip for now</button>'});
+  }else{
+    checks.push({status:"pass",label:"Trusted traveler enrolled",icon:"✓"});
+  }
+
+  /* 5. Accessibility match */
+  if(sp.wheelchair_needed){
+    checks.push({status:"blocker",label:"Accessibility",icon:"⚠",title:"Wheelchair or mobility assistance needed.",body:"Accessibility assistance must be requested directly with the carrier. It\'s not automatically included in bookings.",panel:"Contact the carrier before booking to pre-arrange assistance. Allow 48 hours.",actions:'<button class="btn btn-secondary btn-sm" onclick="">Note for booking</button>'});
+  }else{
+    checks.push({status:"pass",label:"Accessibility",icon:"✓"});
+  }
+
+  /* 6. Insurance */
+  checks.push({status:"unknown",label:"Insurance coverage",icon:"?",title:"Travel insurance not verified.",body:"We don\'t have insurance information on file. Verify your policy covers all travelers, the destination, and dates.",panel:"Check your credit card's travel insurance or purchase a policy before departure.",actions:'<button class="btn btn-ghost btn-sm" onclick="">Mark as handled</button>'});
+
+  /* 7. Meal / dietary */
+  if(!mp.meal_code&&!(mp.allergies||[]).length){
+    checks.push({status:"blocker",label:"Meal preferences",icon:"⚠",title:"No meal preferences captured.",body:"Without meal preferences on file, we can\'t generate SSRs for dietary requirements at booking time.",panel:"Add meal preferences in Me → How you travel → Across all travel.",actions:'<button class="btn btn-secondary btn-sm" onclick="location.href=\'me.html#how-you-travel\'">Add preferences</button><button class="btn btn-ghost btn-sm" onclick="">Skip</button>'});
+  }else{
+    checks.push({status:"pass",label:"Meal preferences on file",icon:"✓"});
+  }
+
+  /* 8. Travel name match */
+  if(id.legal_first&&id.legal_last){
+    checks.push({status:"pass",label:"Travel name matches passport",icon:"✓"});
+  }else{
+    checks.push({status:"blocker",label:"Travel name",icon:"⚠",title:"Legal name incomplete.",body:"We need your full legal name to verify it matches your passport and generate the correct booking name.",panel:"Add your legal name in Me → Identity.",actions:'<button class="btn btn-secondary btn-sm" onclick="location.href=\'me.html#identity\'">Add name</button>'});
+  }
+
+  return checks;
+}
+
+function renderPlanStep4(){
+  var g=_curGroup;
+  var parcelId="UP-PARCEL-"+(Date.now()&0xffff).toString(16).toUpperCase()+"-"+(Math.random()*0xffff|0).toString(16).toUpperCase();
+  var html='<div class="breadcrumb"><a href="groups.html" onclick="event.preventDefault();renderGroupsList()">Groups</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><a href="#" onclick="event.preventDefault();openGroup(\''+g.id+'\')">'+ _escHtml(g.name||"Group")+'</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><span>Hand off</span></div>'
+    +'<div style="max-width:580px">'
+    +'<div class="step-bar" style="margin-bottom:24px"><span class="step done">1. Define</span> <span class="sep">·</span> <span class="step done">2. Pre-flight</span> <span class="sep">·</span> <span class="step done">3. Resolve</span> <span class="sep">·</span> <span class="step active">4. Hand off</span></div>'
+    +'<div class="eyebrow" style="margin-bottom:6px">Parcel ready · <span class="id">'+parcelId+'</span></div>'
+    +'<h2 class="h2" style="margin-bottom:8px">The parcel is ready to book.</h2>'
+    +'<p class="lede" style="margin-bottom:24px">Identity, documents, preferences, and consents are pre-staged. Choose where you\'d like to book.</p>'
+    +'<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">'
+    +'<div style="background:var(--surface);border:0.5px solid var(--rule);border-radius:10px;padding:18px 20px;display:flex;align-items:flex-start;gap:14px">'
+    +'<div style="font-size:22px">✈️</div>'
+    +'<div style="flex:1"><div style="font-weight:500;margin-bottom:4px">Book directly with the airline</div><div style="font-size:12px;color:var(--ink-mute)">Generates a verifiable credential to present at booking.</div></div>'
+    +'<span class="pill pill-neutral" style="flex-shrink:0">Coming soon</span>'
+    +'</div>'
+    +'<div style="background:var(--surface);border:0.5px solid var(--ink);border-radius:10px;padding:18px 20px;display:flex;align-items:flex-start;gap:14px">'
+    +'<div style="font-size:22px">📋</div>'
+    +'<div style="flex:1"><div style="font-weight:500;margin-bottom:4px">Hand to a travel agent or TMC</div><div style="font-size:12px;color:var(--ink-mute)">Generates a parcel link your agent can import directly.</div>'
+    +'<button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="copyParcelLink(\''+parcelId+'\')">Copy parcel link</button></div>'
+    +'</div>'
+    +'<div style="background:var(--surface);border:0.5px solid var(--rule);border-radius:10px;padding:18px 20px;display:flex;align-items:flex-start;gap:14px">'
+    +'<div style="font-size:22px">🖱</div>'
+    +'<div style="flex:1"><div style="font-weight:500;margin-bottom:4px">Use it as autofill</div><div style="font-size:12px;color:var(--ink-mute)">Populates the OTA checkout via the browser extension.</div></div>'
+    +'<span class="pill pill-neutral" style="flex-shrink:0">Coming soon</span>'
+    +'</div>'
+    +'</div>'
+    +'<button class="btn btn-secondary" onclick="openGroup(\''+g.id+'\')">← Back to group</button>'
+    +'</div>';
+  _render(html);
+}
+function copyParcelLink(id){
+  var url=window.location.origin+"/parcels/"+id;
+  if(navigator.clipboard)navigator.clipboard.writeText(url).then(function(){showToast("Parcel link copied.");});
+  else showToast("Parcel ID: "+id);
+}
+
+/* ── ═══════════════════════════════════════
+   ROUTER
+═══════════════════════════════════════════ */
+function _route(){
+  var hash=window.location.hash.slice(1);
+  if(!hash||hash==="list"){renderGroupsList();return;}
+  if(hash==="new"){startCreateGroup();return;}
+  var m=hash.match(/^group\/([^/]+)/);
+  if(m){
+    var id=m[1];
+    _curGroup=_allGroups.find(function(g){return g.id===id;})||null;
+    if(_curGroup)renderGroupWorkspace();
+    else renderGroupsList();
+    return;
+  }
+  renderGroupsList();
+}
+
+/* ── Init ── */
+async function groupsInit(){
+  if(!await _auth())return;
+  try{
+    var p=await _req("GET","/api/v1/me");
+    _prof=p;_uid=p.uuid;
+    _sidebarUpdate(p);
+    _allGroups=p.groups||[];
+    _route();
+  }catch(e){console.error(e);_render('<p style="padding:40px;color:var(--ink-mute)">Could not load groups. Please refresh.</p>');}
+}
+window.addEventListener("popstate",function(){_route();});
+groupsInit();
+</script>
+</body>
+</html>
