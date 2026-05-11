@@ -1,29 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Me — UniProfile</title>
-<meta name="robots" content="noindex,nofollow" />
+<meta name="robots" content="noindex,nofollow"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,300;9..144,0,400;9..144,1,300;9..144,1,400&family=Inter+Tight:wght@400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#1a1a1a;--ink-soft:#4a4a48;--ink-mute:#8a8a86;--ink-faint:#b8b8b3;--paper:#faf8f4;--paper-warm:#f3efe7;--paper-cream:#f9f7f2;--rule:rgba(26,26,26,0.08);--rule-strong:rgba(26,26,26,0.18);--green:#2d6a4f;--green-soft:#e8efe9;--amber:#ba7517;--amber-soft:#f9f1e3;--red:#c44d4d;--red-soft:#f4e8e8;--serif:'Fraunces',Georgia,serif;--sans:'Inter Tight',-apple-system,sans-serif;--mono:'JetBrains Mono','SF Mono',Menlo,monospace}
-*{box-sizing:border-box;margin:0;padding:0}html{-webkit-font-smoothing:antialiased}
+:root{
+  --ink:#1a1a1a;--ink-soft:#4a4a48;--ink-mute:#8a8a86;--ink-faint:#b8b8b3;
+  --paper:#faf8f4;--paper-warm:#f3efe7;--paper-cream:#f9f7f2;
+  --surface:#ffffff;--surface-raise:#ffffff;
+  --rule:rgba(26,26,26,0.08);--rule-strong:rgba(26,26,26,0.18);
+  --green:#2d6a4f;--green-soft:#e8efe9;
+  --amber:#ba7517;--amber-soft:#f9f1e3;
+  --red:#c44d4d;--red-soft:#f4e8e8;
+  --serif:'Fraunces',Georgia,serif;
+  --sans:'Inter Tight',-apple-system,sans-serif;
+  --mono:'JetBrains Mono','SF Mono',Menlo,monospace
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-font-smoothing:antialiased}
 body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;font-size:14px}
-.h1{font-family:var(--serif);font-weight:300;font-size:clamp(32px,5vw,48px);line-height:1.1;letter-spacing:-0.02em}
+
+/* Typography */
+.h1{font-family:var(--serif);font-weight:300;font-size:clamp(28px,4vw,44px);line-height:1.1;letter-spacing:-0.02em}
 .h1 em{font-style:italic;font-weight:300}
-.h2{font-family:var(--serif);font-weight:400;font-size:22px;line-height:1.2;letter-spacing:-0.01em}
-.h3{font-family:var(--serif);font-weight:400;font-size:17px;line-height:1.25}
-.lede{font-family:var(--serif);font-weight:300;font-size:16px;line-height:1.5;color:var(--ink-soft)}
+.h3{font-family:var(--serif);font-weight:400;font-size:20px;line-height:1.2}
+.lede{font-family:var(--serif);font-weight:300;font-size:15px;line-height:1.6;color:var(--ink-soft)}
 .eyebrow{font-size:11px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-mute)}
-.section-label{font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink)}
+.tab-lede{font-family:var(--serif);font-weight:300;font-size:15px;line-height:1.6;color:var(--ink-soft);max-width:580px;margin-bottom:24px}
 .caption{font-size:12px;color:var(--ink-mute)}
-.editorial{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--ink)}
 .id{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:0.04em}
+
+/* Shell */
 .shell{display:flex;min-height:100vh}
-.sidebar{width:240px;background:#fff;border-right:0.5px solid var(--rule);padding:28px 0;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+
+/* Sidebar */
+.sidebar{width:240px;background:var(--surface);border-right:0.5px solid var(--rule);padding:28px 0;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
 .sidebar-wordmark-block{padding:0 24px 24px;border-bottom:0.5px solid rgba(26,26,26,0.06)}
 .wordmark{font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-0.01em;color:var(--ink);text-decoration:none;display:block}
 .wordmark em{font-style:italic;font-weight:300}
@@ -38,34 +54,57 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .nav-item svg{flex-shrink:0}
 .sidebar-user-card{padding:12px;border-top:0.5px solid rgba(26,26,26,0.06)}
 .user-card-inner{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px}
+
+/* Avatar */
 .avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-weight:300;color:var(--ink-soft);flex-shrink:0;border:2px solid #fff}
 .avatar-sm{width:30px;height:30px;font-size:12px}
 .avatar-lg{width:64px;height:64px;font-size:22px}
-.avatar-md{width:36px;height:36px;font-size:13px}
 .avatar-1{background:linear-gradient(135deg,#d8d3c8,#c4bfb3)}
-.avatar-2{background:linear-gradient(135deg,#e0d5c8,#cfc2b0)}
-.avatar-3{background:linear-gradient(135deg,#d4ccd8,#c0b6c8)}
-.avatar-4{background:linear-gradient(135deg,#d8d3d8,#c4bfc4)}
-.avatar-5{background:linear-gradient(135deg,#cdc8d8,#b8b2c8)}
-.main{flex:1;padding:36px 48px;min-width:0;max-width:900px}
-.page-header{margin-bottom:28px}
-.tabs{display:flex;gap:28px;padding-bottom:14px;border-bottom:0.5px solid var(--rule);margin-bottom:32px;overflow-x:auto}
-.tab{font-size:13px;color:var(--ink-mute);text-decoration:none;padding-bottom:14px;margin-bottom:-14.5px;white-space:nowrap;transition:color 120ms ease;cursor:pointer;background:none;border:none;font-family:var(--sans)}
+
+/* Tabs */
+.tabs{display:flex;gap:28px;padding-bottom:14px;border-bottom:0.5px solid var(--rule);margin-bottom:28px;overflow-x:auto}
+.tab{font-size:13px;font-weight:500;color:var(--ink-mute);padding-bottom:14px;margin-bottom:-14.5px;white-space:nowrap;transition:color 120ms ease;cursor:pointer;background:none;border:none;font-family:var(--sans)}
 .tab:hover{color:var(--ink-soft)}
-.tab.active{color:var(--ink);font-weight:500;border-bottom:1.5px solid var(--ink)}
-.section{margin-bottom:32px}
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.card{background:#fff;border:0.5px solid var(--rule);border-radius:12px;padding:20px 22px}
-.card-warm{background:var(--paper-warm);border-radius:12px;padding:20px 24px}
-.card-sub{background:var(--paper-cream);border-radius:10px;padding:16px 18px;margin-top:10px}
-.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:500}
-.pill-ready{background:var(--green-soft);color:var(--green)}
+.tab.active{color:var(--ink);border-bottom:1.5px solid var(--ink)}
+
+/* Main */
+.main{flex:1;padding:36px 48px;min-width:0;max-width:860px}
+.page-header{display:flex;gap:22px;align-items:flex-start;margin-bottom:28px}
+
+/* ── Card item — the core pattern ── */
+.card-list{display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
+.card-item{background:var(--surface);border:0.5px solid var(--rule);border-radius:12px;padding:22px 24px;transition:border-color 160ms ease,padding 160ms ease}
+.card-item.editing{border-color:var(--rule-strong);padding:26px 28px}
+.card-item-head{display:flex;align-items:flex-start;gap:14px}
+.card-item-icon{width:40px;height:40px;border-radius:8px;background:var(--paper-warm);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--ink-soft)}
+.card-item-title-block{flex:1;min-width:0}
+.card-item-title{font-family:var(--serif);font-weight:400;font-size:20px;line-height:1.2;letter-spacing:-0.01em}
+.card-item-title em{font-size:16px;font-weight:300;color:var(--ink-mute);font-style:italic;letter-spacing:0}
+.card-item-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:auto;padding-left:12px}
+.card-item-body{font-family:var(--serif);font-weight:300;font-size:16px;line-height:1.6;color:var(--ink-soft);margin-top:14px}
+.card-item-body.empty{font-style:italic;color:var(--ink-mute)}
+.card-item-edit{border-top:0.5px solid rgba(26,26,26,0.06);margin-top:16px;padding-top:20px;display:none}
+.card-item.editing .card-item-edit{display:block}
+
+/* ── Universal warm card ── */
+.card-universal{background:var(--paper-warm);border-radius:12px;padding:22px 24px;margin-bottom:24px}
+.card-universal-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.card-universal-body{font-family:var(--serif);font-weight:300;font-size:16px;line-height:1.6;color:var(--ink-soft)}
+.card-universal-edit{border-top:0.5px solid rgba(26,26,26,0.12);margin-top:16px;padding-top:18px;display:none}
+
+/* ── Editing title suffix ── */
+.edit-sfx{display:none;font-size:16px;font-weight:300;color:var(--ink-mute);font-style:italic;letter-spacing:0}
+.card-item.editing .edit-sfx{display:inline}
+
+/* ── Pill ── */
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:100px;font-size:11px;font-weight:500;font-family:var(--sans)}
+.pill-green{background:var(--green-soft);color:var(--green)}
 .pill-amber{background:var(--amber-soft);color:var(--amber)}
+.pill-red{background:var(--red-soft);color:var(--red)}
 .pill-neutral{background:var(--paper-warm);color:var(--ink-soft)}
-.pill-dot{width:6px;height:6px;border-radius:50%}
-.dot-green{background:var(--green)}
-.dot-amber{background:var(--amber)}
-.btn{font-family:var(--sans);font-size:13px;font-weight:500;padding:9px 16px;border-radius:4px;cursor:pointer;letter-spacing:-0.005em;transition:all 140ms ease;display:inline-flex;align-items:center;gap:7px;text-decoration:none;border:0.5px solid transparent;background:none}
+
+/* ── Buttons ── */
+.btn{font-family:var(--sans);font-size:13px;font-weight:500;padding:9px 16px;border-radius:4px;cursor:pointer;transition:all 140ms ease;display:inline-flex;align-items:center;gap:7px;text-decoration:none;border:0.5px solid transparent;background:none}
 .btn-primary{color:#fff;background:var(--ink);border-color:var(--ink)}
 .btn-primary:hover{opacity:0.88}
 .btn-primary:disabled{opacity:0.45;cursor:default}
@@ -74,51 +113,113 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .btn-danger{color:var(--red);background:transparent;border-color:rgba(196,77,77,0.28)}
 .btn-danger:hover{background:var(--red-soft)}
 .btn-sm{font-size:12px;padding:6px 12px}
-.icon{width:16px;height:16px;flex-shrink:0;display:inline-block;vertical-align:middle}
-.list-row{display:flex;align-items:center;gap:14px;padding:15px 18px;background:#fff;border:0.5px solid var(--rule);border-radius:10px;margin-bottom:8px}
-.list-row-icon{width:34px;height:34px;border-radius:8px;background:var(--paper-warm);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--ink-soft)}
-.list-row-main{flex:1;min-width:0}
-.list-row-title{font-size:14px;font-weight:500;margin-bottom:2px}
-.list-row-meta{font-size:12px;color:var(--ink-mute)}
-.list-row-actions{display:flex;gap:5px;flex-shrink:0}
-.kv-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:0.5px solid var(--rule)}
-.kv-row:last-child{border-bottom:none}
-.kv-key{font-size:13px;color:var(--ink-mute)}
-.kv-value{font-size:13px;font-weight:500}
-/* Forms */
-.form-group{margin-bottom:20px}
-.form-group-label{font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:10px;display:block;padding-bottom:8px;border-bottom:0.5px solid var(--rule)}
-.form-field{margin-bottom:12px}
-.form-label{font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:5px;display:block}
-.form-input{width:100%;padding:8px 11px;border:0.5px solid var(--rule-strong);border-radius:6px;font-family:var(--sans);font-size:13px;color:var(--ink);background:#fff;outline:none;transition:border-color 120ms ease;-webkit-appearance:none}
+.btn-xs{font-size:11px;padding:4px 10px}
+.btn-cancel{font-size:12px;color:var(--ink-mute);background:none;border:none;cursor:pointer;font-family:var(--sans);text-decoration:underline;text-decoration-color:transparent;transition:text-decoration-color 120ms}
+.btn-cancel:hover{text-decoration-color:var(--ink-mute)}
+.btn-dashed{width:100%;padding:16px;border:1px dashed rgba(26,26,26,0.2);border-radius:10px;background:none;color:var(--ink-mute);font-size:13px;font-family:var(--sans);cursor:pointer;text-align:center;transition:all 140ms;margin-bottom:8px}
+.btn-dashed:hover{border-color:rgba(26,26,26,0.35);color:var(--ink-soft)}
+
+/* ── Tile grid ── */
+.tile-grid{display:grid;gap:8px;margin-top:8px}
+.tile-grid-2{grid-template-columns:repeat(2,1fr)}
+.tile-grid-3{grid-template-columns:repeat(3,1fr)}
+.tile-grid-4{grid-template-columns:repeat(4,1fr)}
+.tile{padding:10px 12px;background:var(--surface);border:0.5px solid rgba(26,26,26,0.18);border-radius:6px;cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:500;color:var(--ink);text-align:left;transition:all 100ms ease;line-height:1.3}
+.tile:hover:not(.sel){background:rgba(26,26,26,0.02)}
+.tile.sel{background:var(--ink);color:#fff;border-color:var(--ink)}
+.tile small{display:block;font-size:11px;font-weight:400;color:var(--ink-mute);margin-top:2px}
+.tile.sel small{color:rgba(255,255,255,0.6)}
+
+/* ── Form fields ── */
+.form-field{margin-bottom:14px}
+.form-label{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:6px}
+.form-label-helper{font-size:11px;font-style:italic;letter-spacing:0;text-transform:none;font-weight:400}
+.form-input{width:100%;padding:8px 11px;border:0.5px solid var(--rule-strong);border-radius:6px;font-family:var(--sans);font-size:13px;color:var(--ink);background:var(--surface);outline:none;transition:border-color 120ms ease;-webkit-appearance:none}
 .form-input:focus{border-color:var(--ink)}
 .form-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9L12 15L18 9' stroke='%238a8a86' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;cursor:pointer}
-.form-textarea{resize:vertical;min-height:72px}
 .form-row{display:flex;gap:10px}
 .form-row .form-field{flex:1}
-.form-check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
-.form-check{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--ink-soft)}
+.form-check{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--ink-soft);margin-bottom:8px}
 .form-check input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--ink)}
-.form-actions{display:flex;gap:8px;align-items:center;margin-top:18px}
 .form-error{color:var(--red);font-size:12px;margin-top:6px;display:none}
-.form-success{color:var(--green);font-size:12px;margin-top:6px;display:none}
-/* Modal */
+
+/* ── Advanced toggle ── */
+.adv-toggle{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-mute);background:none;border:none;cursor:pointer;font-family:var(--sans);padding:8px 0 0;margin-top:8px;border-top:0.5px solid var(--rule);width:100%}
+.adv-toggle:hover{color:var(--ink-soft)}
+.adv-toggle svg{transition:transform 200ms}
+.adv-toggle.open svg{transform:rotate(180deg)}
+.adv-fields{display:none;margin-top:14px}
+.adv-fields.open{display:block}
+
+/* ── Auto-save note ── */
+.autosave-note{font-size:12px;font-style:italic;color:var(--ink-mute)}
+.edit-footer{display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:14px;border-top:0.5px solid var(--rule)}
+.save-err{font-size:12px;color:var(--red);margin-top:8px;display:none}
+.err-retry{background:none;border:none;color:var(--red);font-family:var(--sans);font-size:12px;cursor:pointer;padding:0;text-decoration:underline}
+
+/* ── Modal ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(26,26,26,0.32);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:opacity 160ms ease;padding:20px}
 .modal-overlay.open{opacity:1;pointer-events:all}
-.modal{background:#fff;border-radius:16px;padding:26px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 48px rgba(26,26,26,0.14)}
+.modal{background:var(--surface);border-radius:16px;padding:26px;width:100%;max-width:460px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 48px rgba(26,26,26,0.14)}
 .modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
-.modal-close{width:28px;height:28px;border-radius:50%;border:none;background:var(--paper-warm);cursor:pointer;color:var(--ink-mute);font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center}
-/* Toast */
+.modal-title{font-family:var(--serif);font-weight:400;font-size:17px}
+.modal-close{width:28px;height:28px;border-radius:50%;border:none;background:var(--paper-warm);cursor:pointer;color:var(--ink-mute);font-size:17px;display:flex;align-items:center;justify-content:center}
+
+/* ── Toast ── */
 .toast{position:fixed;bottom:26px;right:26px;background:var(--ink);color:#fff;padding:10px 17px;border-radius:8px;font-size:13px;z-index:2000;opacity:0;transform:translateY(6px);transition:opacity 200ms ease,transform 200ms ease;pointer-events:none}
 .toast.show{opacity:1;transform:translateY(0)}
-/* Identity edit panel inline */
-.identity-edit-panel{display:none;border-top:0.5px solid var(--rule);margin-top:12px;padding-top:16px}
-/* Loyalty badge colors */
+
+/* ── Loyalty badge colors ── */
 .lb-airline{background:#e8f0fe;color:#1a56db}
 .lb-hotel{background:#fef3c7;color:#92400e}
-.lb-car{background:#e8efe9;color:var(--green)}
-.lb-credit_card,.lb-card{background:var(--paper-warm);color:var(--ink-soft)}
-@media(max-width:900px){.shell{flex-direction:column}.sidebar{width:100%;height:auto;position:relative;padding:16px 0}.sidebar-wordmark-block,.sidebar-id-block{padding:12px 24px}.sidebar-nav{padding:12px;display:flex;gap:4px;flex-wrap:wrap}.sidebar-nav-label{display:none}.nav-item{padding:8px 12px}.sidebar-user-card{display:none}.main{padding:20px;max-width:none}}
+.lb-car{background:var(--green-soft);color:var(--green)}
+.lb-card{background:var(--paper-warm);color:var(--ink-soft)}
+
+.icon{width:16px;height:16px;flex-shrink:0;display:inline-block;vertical-align:middle}
+
+/* ── Responsive ── */
+@media(max-width:900px){
+  .shell{flex-direction:column}
+  .sidebar{width:100%;height:auto;position:relative;padding:16px 0}
+  .sidebar-wordmark-block,.sidebar-id-block{padding:12px 24px}
+  .sidebar-nav{padding:12px;display:flex;gap:4px;flex-wrap:wrap}
+  .sidebar-nav-label{display:none}
+  .nav-item{padding:8px 12px}
+  .sidebar-user-card{display:none}
+  .main{padding:20px;max-width:none}
+  .page-header{flex-direction:column;gap:14px}
+  .tile-grid-4{grid-template-columns:repeat(2,1fr)}
+  .tile-grid-3{grid-template-columns:repeat(2,1fr)}
+  .form-row{flex-direction:column}
+}
+@media(max-width:480px){
+  .sidebar{display:none}
+  .main{padding:16px}
+  .card-item{padding:16px}
+  .card-item.editing{padding:18px}
+  .tabs{gap:18px}
+  .tile{padding:9px 10px;font-size:11px}
+  .tile-grid-2{grid-template-columns:1fr 1fr}
+}
+
+/* ── Dark mode ── */
+@media(prefers-color-scheme:dark){
+  :root{
+    --ink:#e4e4de;--ink-soft:#a8a8a2;--ink-mute:#686864;--ink-faint:#3e3e3a;
+    --paper:#141412;--paper-warm:#1a1814;--paper-cream:#171512;
+    --surface:#1e1e1c;--surface-raise:#242422;
+    --rule:rgba(228,228,222,0.08);--rule-strong:rgba(228,228,222,0.16);
+    --green:#5dab88;--green-soft:#162416;
+    --amber:#d4993a;--amber-soft:#261e0a;
+    --red:#e07070;--red-soft:#2a1212
+  }
+  .avatar-1{background:linear-gradient(135deg,#2a2a26,#36362e)}
+  .lb-airline{background:#141e36;color:#7eb3f5}
+  .lb-hotel{background:#261e0a;color:#d4a855}
+  .lb-car{background:var(--green-soft);color:var(--green)}
+  .tile.sel small{color:rgba(20,20,18,0.6)}
+  .btn-primary:hover{opacity:0.85}
+}
 </style>
 </head>
 <body>
@@ -131,541 +232,842 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   <symbol id="i-privacy" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M8 11V8C8 5.79 9.79 4 12 4C14.21 4 16 5.79 16 8V11" stroke="currentColor" stroke-width="1.25"/><circle cx="12" cy="15.5" r="1" fill="currentColor"/></symbol>
   <symbol id="i-passport" viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="1" stroke="currentColor" stroke-width="1.25"/><circle cx="12" cy="11" r="2.5" stroke="currentColor" stroke-width="1.25"/><path d="M9 17H15" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
   <symbol id="i-visa" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="13" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M3 10H21" stroke="currentColor" stroke-width="1.25"/><path d="M7 14H10M7 16H13" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
-  <symbol id="i-ktn" viewBox="0 0 24 24" fill="none"><path d="M12 3L19 6V12C19 16 16 19.5 12 21C8 19.5 5 16 5 12V6L12 3Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M10 12H14M12 10V14" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none"><path d="M12 3L19 6V12C19 16 16 19.5 12 21C8 19.5 5 16 5 12V6L12 3Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-car" viewBox="0 0 24 24" fill="none"><path d="M5 11L7 6H17L19 11" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><rect x="3" y="11" width="18" height="6" rx="1" stroke="currentColor" stroke-width="1.25"/><circle cx="7.5" cy="17" r="1.5" stroke="currentColor" stroke-width="1.25"/><circle cx="16.5" cy="17" r="1.5" stroke="currentColor" stroke-width="1.25"/></symbol>
+  <symbol id="i-flight" viewBox="0 0 24 24" fill="none"><path d="M21 16L13 10V5C13 4.45 12.55 4 12 4C11.45 4 11 4.45 11 5V10L3 16V18L11 15.5V19.5L9 21V22L12 21L15 22V21L13 19.5V15.5L21 18V16Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></symbol>
+  <symbol id="i-hotel" viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="18" height="13" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M3 12H21M8 12V21M16 12V21M3 8V6C3 5.45 3.45 5 4 5H20C20.55 5 21 5.45 21 6V8" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-cruise" viewBox="0 0 24 24" fill="none"><path d="M3 16L4 13H20L21 16M3 16V19C3 19.55 3.45 20 4 20H20C20.55 20 21 19.55 21 19V16M3 16H21M6 13V8H18V13M9 13V10H15V13" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></symbol>
+  <symbol id="i-rail" viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.25"/><circle cx="9" cy="13.5" r="1.5" stroke="currentColor" stroke-width="1.25"/><circle cx="15" cy="13.5" r="1.5" stroke="currentColor" stroke-width="1.25"/><path d="M5 9H19M9 3V9M15 3V9M7 17L5 21M17 17L19 21" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18" stroke="currentColor" stroke-width="1.25"/></symbol>
+  <symbol id="i-policy" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="18" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M8 8H16M8 12H16M8 16H12" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-card" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="13" rx="1.5" stroke="currentColor" stroke-width="1.25"/><path d="M3 10H21" stroke="currentColor" stroke-width="1.25"/><path d="M7 14H9" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-loyalty" viewBox="0 0 24 24" fill="none"><path d="M12 3l2.5 5L20 9l-4 4 1 5.5L12 16l-5 2.5L8 13 4 9l5.5-1L12 3z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></symbol>
   <symbol id="i-doc" viewBox="0 0 24 24" fill="none"><path d="M6 3H14L18 7V20C18 20.55 17.55 21 17 21H7C6.45 21 6 20.55 6 20V3Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M14 3V7H18" stroke="currentColor" stroke-width="1.25"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-chevron-down" viewBox="0 0 24 24" fill="none"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
   <symbol id="i-add" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.25"/><path d="M12 8V16M8 12H16" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
-  <symbol id="i-loyalty" viewBox="0 0 24 24" fill="none"><path d="M12 3l2.5 5L20 9l-4 4 1 5.5L12 16l-5 2.5L8 13 4 9l5.5-1L12 3z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></symbol>
-  <symbol id="i-card" viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="13" rx="1.5" stroke="currentColor" stroke-width="1.25"/><path d="M3 10H21" stroke="currentColor" stroke-width="1.25"/><path d="M7 14H9" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
-  <symbol id="i-seat" viewBox="0 0 24 24" fill="none"><path d="M7 4v8a2 2 0 002 2h6a2 2 0 002-2V4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M5 14h14M9 18h6M12 14v4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
-  <symbol id="i-building" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18" stroke="currentColor" stroke-width="1.25"/></symbol>
 </svg>
 
 <div class="shell">
-  <aside class="sidebar">
-    <div class="sidebar-wordmark-block">
-      <a href="home.html" class="wordmark">Uni<em>Profile</em></a>
-      <div class="wordmark-tag">Travel identity</div>
-    </div>
-    <div class="sidebar-id-block">
-      <div class="sidebar-id-label">Your number</div>
-      <div class="id" id="sidebar-number">—</div>
-    </div>
-    <nav class="sidebar-nav">
-      <div class="sidebar-nav-label">Navigate</div>
-      <a href="home.html" class="nav-item"><svg class="icon"><use href="#i-home"/></svg>Home</a>
-      <a href="me.html" class="nav-item active"><svg class="icon"><use href="#i-me"/></svg>Me</a>
-      <a href="people.html" class="nav-item"><svg class="icon"><use href="#i-people"/></svg>People</a>
-      <a href="trips.html" class="nav-item"><svg class="icon"><use href="#i-trips"/></svg>Trips</a>
-      <a href="privacy.html" class="nav-item"><svg class="icon"><use href="#i-privacy"/></svg>Privacy</a>
-    </nav>
-    <div class="sidebar-user-card">
-      <div class="user-card-inner">
-        <div class="avatar avatar-sm avatar-1" id="sidebar-avatar">—</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:500;line-height:1.2" id="sidebar-name">—</div>
-          <div class="caption" id="sidebar-tier"></div>
-        </div>
-        <svg class="icon" style="width:13px;height:13px;color:var(--ink-mute)"><use href="#i-chevron"/></svg>
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="sidebar-wordmark-block">
+    <a href="home.html" class="wordmark">Uni<em>Profile</em></a>
+    <div class="wordmark-tag">Travel identity</div>
+  </div>
+  <div class="sidebar-id-block">
+    <div class="sidebar-id-label">Your number</div>
+    <div class="id" id="sidebar-number">—</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-nav-label">Navigate</div>
+    <a href="home.html" class="nav-item"><svg class="icon"><use href="#i-home"/></svg>Home</a>
+    <a href="me.html" class="nav-item active"><svg class="icon"><use href="#i-me"/></svg>Me</a>
+    <a href="people.html" class="nav-item"><svg class="icon"><use href="#i-people"/></svg>People</a>
+    <a href="trips.html" class="nav-item"><svg class="icon"><use href="#i-trips"/></svg>Trips</a>
+    <a href="privacy.html" class="nav-item"><svg class="icon"><use href="#i-privacy"/></svg>Privacy</a>
+  </nav>
+  <div class="sidebar-user-card">
+    <div class="user-card-inner">
+      <div class="avatar avatar-sm avatar-1" id="sidebar-avatar">—</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500;line-height:1.2" id="sidebar-name">—</div>
+        <div class="caption" id="sidebar-tier"></div>
       </div>
+      <svg class="icon" style="width:13px;height:13px;color:var(--ink-mute)"><use href="#i-chevron"/></svg>
     </div>
-  </aside>
+  </div>
+</aside>
 
-  <main class="main">
+<!-- ── Main ── -->
+<main class="main">
 
-    <div class="page-header" style="display:flex;gap:22px;align-items:flex-start;margin-bottom:28px">
-      <div class="avatar avatar-lg avatar-1" id="me-avatar" style="border:none;flex-shrink:0">—</div>
-      <div style="flex:1">
-        <div class="eyebrow" style="margin-bottom:10px">Your profile</div>
-        <h1 class="h1" id="me-name" style="margin-bottom:6px">—</h1>
-        <p class="lede">Everything UniProfile holds about you as a traveler.</p>
+  <!-- Page header -->
+  <div class="page-header">
+    <div class="avatar avatar-lg avatar-1" id="me-avatar" style="border:none;flex-shrink:0">—</div>
+    <div style="flex:1">
+      <div class="eyebrow" style="margin-bottom:10px">Your profile</div>
+      <h1 class="h1" id="me-name" style="margin-bottom:8px">—</h1>
+      <p class="lede">Everything UniProfile holds about you as a traveler.</p>
+    </div>
+  </div>
+
+  <!-- Three-tab strip -->
+  <div class="tabs">
+    <button class="tab active" data-tab="identity" onclick="switchTab(this,'identity')">Identity</button>
+    <button class="tab" data-tab="how-you-travel" onclick="switchTab(this,'how-you-travel')">How you travel</button>
+    <button class="tab" data-tab="business" onclick="switchTab(this,'business')">Business</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       TAB 1 — Identity
+  ══════════════════════════════════════════ -->
+  <div id="tab-identity">
+    <p class="tab-lede">Who you are, by document. Tap any card to view or update. These are what operators see when you book.</p>
+
+    <!-- Universal: Legal identity -->
+    <div class="card-universal">
+      <div class="card-universal-head">
+        <div class="eyebrow">Legal identity</div>
+        <button class="btn btn-secondary btn-xs" onclick="toggleUniversal('legal-id')">Edit</button>
       </div>
-    </div>
-
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab(event,'identity')">Identity &amp; documents</button>
-      <button class="tab" onclick="switchTab(event,'preferences')">Preferences</button>
-      <button class="tab" onclick="switchTab(event,'dna')">Loyalty programs</button>
-      <button class="tab" onclick="switchTab(event,'payment')">Payment</button>
-      <button class="tab" onclick="switchTab(event,'policy')">Corporate policy</button>
-    </div>
-
-    <!-- ── TAB: Identity & documents ─────────────────── -->
-    <div id="tab-identity">
-
-      <div class="section">
-        <div class="section-header">
-          <h2 class="section-label">Government &amp; travel documents</h2>
-          <span class="caption" id="me-doc-count"></span>
+      <p class="card-universal-body" id="legal-id-prose">Loading…</p>
+      <div class="card-universal-edit" id="cu-legal-id-edit">
+        <div class="form-row">
+          <div class="form-field"><label class="form-label">First name</label><input class="form-input" id="edit-first" placeholder="First"/></div>
+          <div class="form-field"><label class="form-label">Middle</label><input class="form-input" id="edit-middle" placeholder="Middle"/></div>
+          <div class="form-field"><label class="form-label">Last name</label><input class="form-input" id="edit-last" placeholder="Last"/></div>
         </div>
-        <div id="me-doc-list"></div>
-        <button class="btn btn-secondary btn-sm" style="margin-top:12px" onclick="openAddDoc()">
-          <svg class="icon" style="width:13px;height:13px"><use href="#i-add"/></svg>
-          Add a document
-        </button>
-      </div>
-
-      <div class="section">
-        <div class="section-header">
-          <h2 class="section-label">Legal identity</h2>
-          <button class="btn btn-secondary btn-sm" id="identity-edit-btn" onclick="showIdentityEdit()">Edit</button>
+        <div class="form-field"><label class="form-label">Display name <span style="text-transform:none;letter-spacing:0;font-size:11px;font-style:italic;font-weight:400">— how you appear to people you invite</span></label><input class="form-input" id="edit-display-name" placeholder="e.g. Rommel"/></div>
+        <div class="form-row">
+          <div class="form-field"><label class="form-label">Date of birth</label><input class="form-input" type="date" id="edit-dob"/></div>
+          <div class="form-field"><label class="form-label">Nationality</label><input class="form-input" id="edit-nationality" placeholder="US" maxlength="2" style="text-transform:uppercase"/></div>
         </div>
-        <div class="card">
-          <div id="identity-display">
-            <div class="kv-row"><span class="kv-key">Legal name</span><span class="kv-value" id="me-legal-name">—</span></div>
-            <div class="kv-row"><span class="kv-key">Display name</span><span class="kv-value" id="me-display-name">—</span></div>
-            <div class="kv-row"><span class="kv-key">Date of birth</span><span class="kv-value" id="me-dob">—</span></div>
-            <div class="kv-row"><span class="kv-key">Nationality</span><span class="kv-value" id="me-nationality">—</span></div>
-            <div class="kv-row"><span class="kv-key">Gender (passport)</span><span class="kv-value" id="me-gender">—</span></div>
-            <div class="kv-row"><span class="kv-key">Home airport</span><span class="kv-value" id="me-home-airport">—</span></div>
+        <div class="form-row">
+          <div class="form-field"><label class="form-label">Gender (passport)</label>
+            <select class="form-input form-select" id="edit-gender">
+              <option value="">—</option><option value="M">M — Male</option><option value="F">F — Female</option><option value="X">X — Unspecified</option>
+            </select>
           </div>
-          <div class="identity-edit-panel" id="identity-edit-panel">
-            <div class="form-row">
-              <div class="form-field"><label class="form-label">First name</label><input class="form-input" id="edit-first" placeholder="First"/></div>
-              <div class="form-field"><label class="form-label">Middle</label><input class="form-input" id="edit-middle" placeholder="Middle"/></div>
-              <div class="form-field"><label class="form-label">Last name</label><input class="form-input" id="edit-last" placeholder="Last"/></div>
-            </div>
-            <div class="form-field"><label class="form-label">Display name</label><input class="form-input" id="edit-display-name" placeholder="How you appear to others"/></div>
-            <div class="form-row">
-              <div class="form-field"><label class="form-label">Date of birth</label><input class="form-input" type="date" id="edit-dob"/></div>
-              <div class="form-field"><label class="form-label">Nationality</label><input class="form-input" id="edit-nationality" placeholder="US" maxlength="2" style="text-transform:uppercase"/></div>
-            </div>
-            <div class="form-row">
-              <div class="form-field"><label class="form-label">Gender (passport)</label>
-                <select class="form-input form-select" id="edit-gender">
-                  <option value="">—</option><option value="M">M — Male</option><option value="F">F — Female</option><option value="X">X — Unspecified</option>
-                </select>
-              </div>
-              <div class="form-field"><label class="form-label">Home airport</label><input class="form-input" id="edit-home-airport" placeholder="SFO" maxlength="3" style="text-transform:uppercase"/></div>
-            </div>
-            <div id="identity-edit-error" class="form-error"></div>
-            <div class="form-actions">
-              <button class="btn btn-primary btn-sm" id="identity-save-btn" onclick="saveIdentity()">Save changes</button>
-              <button class="btn btn-secondary btn-sm" onclick="cancelIdentityEdit()">Cancel</button>
-            </div>
+          <div class="form-field"><label class="form-label">Home airport</label><input class="form-input" id="edit-home-airport" placeholder="SFO" maxlength="3" style="text-transform:uppercase"/></div>
+        </div>
+        <div id="identity-save-err" class="save-err"></div>
+        <div class="edit-footer">
+          <button class="btn-cancel" onclick="closeUniversal('legal-id')">Cancel</button>
+          <span class="autosave-note">Saved automatically as you choose.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Document cards -->
+    <div class="card-list">
+
+      <!-- Passport -->
+      <div class="card-item" id="card-passport">
+        <div class="card-item-head">
+          <div class="card-item-icon"><svg class="icon" style="width:18px;height:18px"><use href="#i-passport"/></svg></div>
+          <div class="card-item-title-block"><div class="card-item-title">Passport<em class="edit-sfx"> — editing</em></div></div>
+          <div class="card-item-actions">
+            <span id="passport-pill"></span>
+            <button class="btn btn-secondary btn-xs" id="passport-btn" onclick="toggleCard('passport')" aria-expanded="false">Set up</button>
           </div>
         </div>
-        <p class="caption" style="margin-top:10px">Legal name is used for tickets, bookings, and credentials.</p>
-      </div>
-
-      <div class="card-warm">
-        <div class="editorial" style="margin-bottom:10px">A small note</div>
-        <p id="me-note" style="font-family:var(--serif);font-size:15px;font-weight:300;line-height:1.55;color:var(--ink-soft)"></p>
-      </div>
-
-    </div><!-- /tab-identity -->
-
-    <!-- ── TAB: Preferences ─────────────────────────── -->
-    <div id="tab-preferences" style="display:none">
-
-      <!-- Flight preferences -->
-      <div class="section">
-        <div class="section-header">
-          <h2 class="section-label">Flight</h2>
-        </div>
-        <div class="card">
-          <div class="form-row">
-            <div class="form-field">
-              <label class="form-label">Cabin — domestic</label>
-              <select class="form-input form-select" id="pref-cabin-dom">
-                <option value="">— Any —</option>
-                <option value="ECONOMY">Economy</option>
-                <option value="ECONOMY_PLUS">Economy Plus / Premium Economy</option>
-                <option value="BUSINESS">Business</option>
-                <option value="FIRST">First</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label class="form-label">Cabin — international</label>
-              <select class="form-input form-select" id="pref-cabin-intl">
-                <option value="">— Any —</option>
-                <option value="ECONOMY">Economy</option>
-                <option value="ECONOMY_PLUS">Economy Plus / Premium Economy</option>
-                <option value="BUSINESS">Business / Business Class</option>
-                <option value="FIRST">First</option>
-              </select>
-            </div>
+        <div class="card-item-body empty" id="passport-body">Your primary travel document. Required for international flights. Add it once and it auto-fills at every booking.</div>
+        <div class="card-item-edit" id="passport-edit">
+          <div class="form-field">
+            <label class="form-label">Document number <span class="form-label-helper">— optional</span></label>
+            <input class="form-input" id="psp-number" placeholder="e.g. A12345678" autocomplete="off"/>
           </div>
           <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">Expiry date</label>
+              <input class="form-input" type="date" id="psp-expiry"/>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Issuing country</label>
+              <input class="form-input" id="psp-country" placeholder="US" maxlength="2" style="text-transform:uppercase"/>
+            </div>
+          </div>
+          <div id="psp-save-err" class="save-err"></div>
+          <div class="edit-footer">
+            <button class="btn-cancel" onclick="toggleCard('passport')">Cancel</button>
+            <span class="autosave-note">Saved automatically as you choose.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visa & residency -->
+      <div class="card-item" id="card-visa">
+        <div class="card-item-head">
+          <div class="card-item-icon"><svg class="icon" style="width:18px;height:18px"><use href="#i-visa"/></svg></div>
+          <div class="card-item-title-block"><div class="card-item-title">Visa &amp; residency<em class="edit-sfx"> — editing</em></div></div>
+          <div class="card-item-actions">
+            <span id="visa-pill"></span>
+            <button class="btn btn-secondary btn-xs" id="visa-btn" onclick="toggleCard('visa')" aria-expanded="false">Set up</button>
+          </div>
+        </div>
+        <div class="card-item-body empty" id="visa-body">Visas, residency permits, work permits, OCI cards. Add any that apply to your travel.</div>
+        <div class="card-item-edit" id="visa-edit">
+          <div id="visa-doc-list"></div>
+          <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="openAddDocType('VISA')">
+            <svg class="icon" style="width:13px;height:13px"><use href="#i-add"/></svg> Add visa or permit
+          </button>
+          <div class="edit-footer">
+            <button class="btn-cancel" onclick="toggleCard('visa')">Done</button>
+            <span class="autosave-note">Items save immediately when added or removed.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trusted traveler -->
+      <div class="card-item" id="card-trusted">
+        <div class="card-item-head">
+          <div class="card-item-icon"><svg class="icon" style="width:18px;height:18px"><use href="#i-shield"/></svg></div>
+          <div class="card-item-title-block"><div class="card-item-title">Trusted traveler<em class="edit-sfx"> — editing</em></div></div>
+          <div class="card-item-actions">
+            <span id="trusted-pill"></span>
+            <button class="btn btn-secondary btn-xs" id="trusted-btn" onclick="toggleCard('trusted')" aria-expanded="false">Set up</button>
+          </div>
+        </div>
+        <div class="card-item-body empty" id="trusted-body">KTN, Global Entry, NEXUS, Clear. Add your number once and it's filled at every eligible booking.</div>
+        <div class="card-item-edit" id="trusted-edit">
+          <div id="trusted-doc-list"></div>
+          <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="openAddDocType('KTN')">
+            <svg class="icon" style="width:13px;height:13px"><use href="#i-add"/></svg> Add trusted traveler document
+          </button>
+          <div class="edit-footer">
+            <button class="btn-cancel" onclick="toggleCard('trusted')">Done</button>
+            <span class="autosave-note">Items save immediately when added or removed.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Driver's license -->
+      <div class="card-item" id="card-drivers">
+        <div class="card-item-head">
+          <div class="card-item-icon"><svg class="icon" style="width:18px;height:18px"><use href="#i-car"/></svg></div>
+          <div class="card-item-title-block"><div class="card-item-title">Driver's license<em class="edit-sfx"> — editing</em></div></div>
+          <div class="card-item-actions">
+            <span id="drivers-pill"></span>
+            <button class="btn btn-secondary btn-xs" id="drivers-btn" onclick="toggleCard('drivers')" aria-expanded="false">Set up</button>
+          </div>
+        </div>
+        <div class="card-item-body empty" id="drivers-body">Used at car rentals and as a U.S. domestic flight backup. Real ID compliance flagged automatically.</div>
+        <div class="card-item-edit" id="drivers-edit">
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">License number <span class="form-label-helper">— optional</span></label>
+              <input class="form-input" id="dl-number" placeholder="e.g. D1234567" autocomplete="off"/>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Issuing country</label>
+              <input class="form-input" id="dl-country" placeholder="US" maxlength="2" style="text-transform:uppercase"/>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Expiry date <span class="form-label-helper">— optional</span></label>
+            <input class="form-input" type="date" id="dl-expiry"/>
+          </div>
+          <div id="dl-save-err" class="save-err"></div>
+          <div class="edit-footer">
+            <button class="btn-cancel" onclick="toggleCard('drivers')">Cancel</button>
+            <span class="autosave-note">Saved automatically as you choose.</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /card-list -->
+
+    <button class="btn-dashed" onclick="openAddDoc()">+ Add another document (OCI, NEXUS, military ID…)</button>
+  </div><!-- /tab-identity -->
+
+
+  <!-- ══════════════════════════════════════════
+       TAB 2 — How you travel
+  ══════════════════════════════════════════ -->
+  <div id="tab-how-you-travel" style="display:none">
+    <p class="tab-lede">A read of how you actually travel, by mode. Tap any card to edit. We'll surface these quietly at booking so you never have to type them again.</p>
+
+    <!-- Universal: Across all travel -->
+    <div class="card-universal">
+      <div class="card-universal-head">
+        <div class="eyebrow">Across all travel</div>
+        <button class="btn btn-secondary btn-xs" onclick="toggleUniversal('universal-travel')">Edit</button>
+      </div>
+      <p class="card-universal-body" id="universal-travel-prose">Loading…</p>
+      <div class="card-universal-edit" id="cu-universal-travel-edit">
+        <div class="form-field">
+          <label class="form-label">Preferred meal</label>
+          <select class="form-input form-select" id="u-meal" onchange="_debounce('universal',_autoSaveUniversal,400)">
+            <option value="">Standard airline meal</option>
+            <optgroup label="Vegetarian &amp; vegan">
+              <option value="VGML">Vegan (VGML)</option>
+              <option value="AVML">Asian vegetarian (AVML)</option>
+              <option value="RVML">Vegetarian lacto-ovo (RVML)</option>
+              <option value="VLML">Vegetarian lacto (VLML)</option>
+            </optgroup>
+            <optgroup label="Religious">
+              <option value="KSML">Kosher (KSML)</option>
+              <option value="MOML">Muslim (MOML)</option>
+              <option value="HNML">Hindu (HNML)</option>
+            </optgroup>
+            <optgroup label="Medical &amp; dietary">
+              <option value="GFML">Gluten-free (GFML)</option>
+              <option value="DBML">Diabetic (DBML)</option>
+              <option value="LCML">Low-calorie (LCML)</option>
+              <option value="LSML">Low-sodium (LSML)</option>
+              <option value="LFML">Low-fat (LFML)</option>
+              <option value="BLML">Bland (BLML)</option>
+            </optgroup>
+            <optgroup label="Other">
+              <option value="BBML">Child meal (BBML)</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Allergies</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+            <label class="form-check"><input type="checkbox" class="u-allergy" value="GLUTEN" onchange="_debounce('universal',_autoSaveUniversal,400)"> Gluten</label>
+            <label class="form-check"><input type="checkbox" class="u-allergy" value="NUTS" onchange="_debounce('universal',_autoSaveUniversal,400)"> Tree nuts</label>
+            <label class="form-check"><input type="checkbox" class="u-allergy" value="PEANUTS" onchange="_debounce('universal',_autoSaveUniversal,400)"> Peanuts</label>
+            <label class="form-check"><input type="checkbox" class="u-allergy" value="DAIRY" onchange="_debounce('universal',_autoSaveUniversal,400)"> Dairy</label>
+            <label class="form-check"><input type="checkbox" class="u-allergy" value="SHELLFISH" onchange="_debounce('universal',_autoSaveUniversal,400)"> Shellfish</label>
+            <label class="form-check"><input type="checkbox" class="u-allergy" value="EGGS" onchange="_debounce('universal',_autoSaveUniversal,400)"> Eggs</label>
+            <label class="form-check"><input type="checkbox" class="u-allergy" value="SOY" onchange="_debounce('universal',_autoSaveUniversal,400)"> Soy</label>
+            <label class="form-check"><input type="checkbox" class="u-allergy" value="FISH" onchange="_debounce('universal',_autoSaveUniversal,400)"> Fish</label>
+          </div>
+        </div>
+        <label class="form-check"><input type="checkbox" id="u-wheelchair" onchange="_debounce('universal',_autoSaveUniversal,400)"> Wheelchair / mobility assistance needed</label>
+        <div id="universal-save-err" class="save-err" style="margin-top:8px"></div>
+        <div class="edit-footer">
+          <button class="btn-cancel" onclick="closeUniversal('universal-travel')">Cancel</button>
+          <span class="autosave-note">Saved automatically as you choose.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mode cards -->
+    <div class="card-list">
+
+      <!-- Flight -->
+      <div class="card-item" id="card-flight">
+        <div class="card-item-head">
+          <div class="card-item-icon"><svg class="icon" style="width:18px;height:18px"><use href="#i-flight"/></svg></div>
+          <div class="card-item-title-block"><div class="card-item-title">Flight<em class="edit-sfx"> — editing</em></div></div>
+          <div class="card-item-actions">
+            <span id="flight-pill"></span>
+            <button class="btn btn-secondary btn-xs" id="flight-btn" onclick="toggleCard('flight')" aria-expanded="false">Set up</button>
+          </div>
+        </div>
+        <div class="card-item-body empty" id="flight-body">Seat position, cabin class, preferred airlines — set once, applied quietly at every booking.</div>
+        <div class="card-item-edit" id="flight-edit">
+          <div class="form-field">
+            <label class="form-label">Seat position</label>
+            <div class="tile-grid tile-grid-4">
+              <button type="button" class="tile" data-group="seat-pos" data-value="AISLE" onclick="_ts(this,'seat-pos',false,'flight',_autoSaveFlight)" aria-pressed="false">Aisle</button>
+              <button type="button" class="tile" data-group="seat-pos" data-value="WINDOW" onclick="_ts(this,'seat-pos',false,'flight',_autoSaveFlight)" aria-pressed="false">Window</button>
+              <button type="button" class="tile" data-group="seat-pos" data-value="MIDDLE" onclick="_ts(this,'seat-pos',false,'flight',_autoSaveFlight)" aria-pressed="false">Middle</button>
+              <button type="button" class="tile" data-group="seat-pos" data-value="" onclick="_ts(this,'seat-pos',false,'flight',_autoSaveFlight)" aria-pressed="false">No preference</button>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Cabin — domestic</label>
+            <div class="tile-grid tile-grid-4">
+              <button type="button" class="tile" data-group="cabin-dom" data-value="ECONOMY" onclick="_ts(this,'cabin-dom',false,'flight',_autoSaveFlight)" aria-pressed="false">Economy</button>
+              <button type="button" class="tile" data-group="cabin-dom" data-value="ECONOMY_PLUS" onclick="_ts(this,'cabin-dom',false,'flight',_autoSaveFlight)" aria-pressed="false">Premium economy</button>
+              <button type="button" class="tile" data-group="cabin-dom" data-value="BUSINESS" onclick="_ts(this,'cabin-dom',false,'flight',_autoSaveFlight)" aria-pressed="false">Business</button>
+              <button type="button" class="tile" data-group="cabin-dom" data-value="FIRST" onclick="_ts(this,'cabin-dom',false,'flight',_autoSaveFlight)" aria-pressed="false">First</button>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Cabin — international</label>
+            <div class="tile-grid tile-grid-4">
+              <button type="button" class="tile" data-group="cabin-intl" data-value="ECONOMY" onclick="_ts(this,'cabin-intl',false,'flight',_autoSaveFlight)" aria-pressed="false">Economy</button>
+              <button type="button" class="tile" data-group="cabin-intl" data-value="ECONOMY_PLUS" onclick="_ts(this,'cabin-intl',false,'flight',_autoSaveFlight)" aria-pressed="false">Premium economy</button>
+              <button type="button" class="tile" data-group="cabin-intl" data-value="BUSINESS" onclick="_ts(this,'cabin-intl',false,'flight',_autoSaveFlight)" aria-pressed="false">Business</button>
+              <button type="button" class="tile" data-group="cabin-intl" data-value="FIRST" onclick="_ts(this,'cabin-intl',false,'flight',_autoSaveFlight)" aria-pressed="false">First</button>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Row preference</label>
+            <div class="tile-grid tile-grid-4">
+              <button type="button" class="tile" data-group="seat-row" data-value="FRONT" onclick="_ts(this,'seat-row',false,'flight',_autoSaveFlight)" aria-pressed="false">Front of cabin</button>
+              <button type="button" class="tile" data-group="seat-row" data-value="EXIT_ROW" onclick="_ts(this,'seat-row',false,'flight',_autoSaveFlight)" aria-pressed="false">Exit row<small>extra legroom</small></button>
+              <button type="button" class="tile" data-group="seat-row" data-value="BULKHEAD" onclick="_ts(this,'seat-row',false,'flight',_autoSaveFlight)" aria-pressed="false">Bulkhead<small>front row</small></button>
+              <button type="button" class="tile" data-group="seat-row" data-value="" onclick="_ts(this,'seat-row',false,'flight',_autoSaveFlight)" aria-pressed="false">No preference</button>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Options</label>
+            <label class="form-check"><input type="checkbox" id="fl-avoid-middle" onchange="_debounce('flight',_autoSaveFlight,400)"> Avoid middle seats</label>
+            <label class="form-check"><input type="checkbox" id="fl-nonstop" onchange="_debounce('flight',_autoSaveFlight,400)"> Prefer nonstop routes</label>
+            <label class="form-check"><input type="checkbox" id="fl-early-board" onchange="_debounce('flight',_autoSaveFlight,400)"> Request early boarding</label>
+            <label class="form-check"><input type="checkbox" id="fl-lounge" onchange="_debounce('flight',_autoSaveFlight,400)"> Use lounge when available</label>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Preferred alliance</label>
+            <div class="tile-grid tile-grid-4">
+              <button type="button" class="tile" data-group="alliance" data-value="STAR" onclick="_ts(this,'alliance',false,'flight',_autoSaveFlight)" aria-pressed="false">Star Alliance</button>
+              <button type="button" class="tile" data-group="alliance" data-value="ONEWORLD" onclick="_ts(this,'alliance',false,'flight',_autoSaveFlight)" aria-pressed="false">oneworld</button>
+              <button type="button" class="tile" data-group="alliance" data-value="SKYTEAM" onclick="_ts(this,'alliance',false,'flight',_autoSaveFlight)" aria-pressed="false">SkyTeam</button>
+              <button type="button" class="tile" data-group="alliance" data-value="" onclick="_ts(this,'alliance',false,'flight',_autoSaveFlight)" aria-pressed="false">No preference</button>
+            </div>
+          </div>
+          <button type="button" class="adv-toggle" onclick="_toggleAdv('flight-adv',this)" aria-expanded="false">
+            <svg class="icon" style="width:12px;height:12px"><use href="#i-chevron-down"/></svg>
+            Show advanced options — upgrade, red-eye, specific airlines
+          </button>
+          <div class="adv-fields" id="flight-adv">
             <div class="form-field">
               <label class="form-label">Upgrade preference</label>
-              <select class="form-input form-select" id="pref-upgrade">
-                <option value="">— No preference —</option>
-                <option value="ALWAYS">Always request upgrade</option>
-                <option value="POINTS_ONLY">Use points / miles only</option>
-                <option value="COMPLIMENTARY_ONLY">Complimentary only</option>
-                <option value="NEVER">Never — prefer to stay in booked cabin</option>
-              </select>
+              <div class="tile-grid tile-grid-3">
+                <button type="button" class="tile" data-group="upgrade" data-value="ALWAYS" onclick="_ts(this,'upgrade',false,'flight',_autoSaveFlight)" aria-pressed="false">Always opt in</button>
+                <button type="button" class="tile" data-group="upgrade" data-value="POINTS_ONLY" onclick="_ts(this,'upgrade',false,'flight',_autoSaveFlight)" aria-pressed="false">Miles only</button>
+                <button type="button" class="tile" data-group="upgrade" data-value="NEVER" onclick="_ts(this,'upgrade',false,'flight',_autoSaveFlight)" aria-pressed="false">Never</button>
+              </div>
             </div>
             <div class="form-field">
               <label class="form-label">Red-eye flights</label>
-              <select class="form-input form-select" id="pref-redeye">
-                <option value="">— No preference —</option>
-                <option value="FINE">Fine with overnight flights</option>
-                <option value="PREFER_AVOID">Prefer to avoid</option>
-                <option value="NEVER">Avoid always</option>
-              </select>
+              <div class="tile-grid tile-grid-3">
+                <button type="button" class="tile" data-group="redeye" data-value="PREFER" onclick="_ts(this,'redeye',false,'flight',_autoSaveFlight)" aria-pressed="false">Prefer</button>
+                <button type="button" class="tile" data-group="redeye" data-value="AVOID" onclick="_ts(this,'redeye',false,'flight',_autoSaveFlight)" aria-pressed="false">Avoid</button>
+                <button type="button" class="tile" data-group="redeye" data-value="" onclick="_ts(this,'redeye',false,'flight',_autoSaveFlight)" aria-pressed="false">No preference</button>
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Preferred airlines <span class="form-label-helper">— IATA codes, comma-separated</span></label>
+              <input class="form-input" id="fl-airlines" placeholder="e.g. UA, AA, LH, SQ" style="text-transform:uppercase" onchange="_debounce('flight',_autoSaveFlight,600)"/>
+            </div>
+            <label class="form-check"><input type="checkbox" id="fl-legroom" onchange="_debounce('flight',_autoSaveFlight,400)"> Extra legroom required</label>
+            <label class="form-check"><input type="checkbox" id="fl-window-view" onchange="_debounce('flight',_autoSaveFlight,400)"> Window for views on long-haul</label>
+          </div>
+          <div id="flight-save-err" class="save-err"></div>
+          <div class="edit-footer">
+            <button class="btn-cancel" onclick="toggleCard('flight')">Cancel</button>
+            <span class="autosave-note">Saved automatically as you choose.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hotel -->
+      <div class="card-item" id="card-hotel">
+        <div class="card-item-head">
+          <div class="card-item-icon"><svg class="icon" style="width:18px;height:18px"><use href="#i-hotel"/></svg></div>
+          <div class="card-item-title-block"><div class="card-item-title">Hotel<em class="edit-sfx"> — editing</em></div></div>
+          <div class="card-item-actions">
+            <span id="hotel-pill"></span>
+            <button class="btn btn-secondary btn-xs" id="hotel-btn" onclick="toggleCard('hotel')" aria-expanded="false">Set up</button>
+          </div>
+        </div>
+        <div class="card-item-body empty" id="hotel-body">Bed type, floor preference, late checkout — set these once and we'll request them on every stay.</div>
+        <div class="card-item-edit" id="hotel-edit">
+          <div class="form-field">
+            <label class="form-label">Bed</label>
+            <div class="tile-grid tile-grid-4">
+              <button type="button" class="tile" data-group="bed" data-value="KING" onclick="_ts(this,'bed',false,'hotel',_autoSaveHotel)" aria-pressed="false">King</button>
+              <button type="button" class="tile" data-group="bed" data-value="QUEEN" onclick="_ts(this,'bed',false,'hotel',_autoSaveHotel)" aria-pressed="false">Queen</button>
+              <button type="button" class="tile" data-group="bed" data-value="TWIN" onclick="_ts(this,'bed',false,'hotel',_autoSaveHotel)" aria-pressed="false">Twin</button>
+              <button type="button" class="tile" data-group="bed" data-value="" onclick="_ts(this,'bed',false,'hotel',_autoSaveHotel)" aria-pressed="false">No preference</button>
             </div>
           </div>
           <div class="form-field">
-            <label class="form-label">Preferred airlines <span class="caption" style="text-transform:none;letter-spacing:0">(IATA codes, comma-separated — e.g. UA, AA, DL)</span></label>
-            <input class="form-input" id="pref-airlines" placeholder="e.g. UA, AA, LH, SQ" style="text-transform:uppercase"/>
-          </div>
-          <div style="margin-top:2px">
-            <label class="form-label">Flight options</label>
-            <div class="form-check-grid">
-              <label class="form-check"><input type="checkbox" id="pref-early-boarding"> Request early boarding</label>
-              <label class="form-check"><input type="checkbox" id="pref-lounge"> Use lounge when available</label>
-              <label class="form-check"><input type="checkbox" id="pref-no-stop"> Prefer non-stop routes</label>
-              <label class="form-check"><input type="checkbox" id="pref-window-view"> Window for views (long-haul)</label>
-            </div>
-          </div>
-          <div id="pref-flight-error" class="form-error"></div>
-          <div class="form-actions">
-            <button class="btn btn-primary btn-sm" id="pref-flight-btn" onclick="saveFlightPrefs()">Save flight preferences</button>
-            <span class="caption" id="pref-flight-ok" style="display:none;color:var(--green)">Saved.</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Seat preferences -->
-      <div class="section">
-        <div class="section-header">
-          <h2 class="section-label">Seat</h2>
-        </div>
-        <div class="card">
-          <div class="form-row">
-            <div class="form-field">
-              <label class="form-label">Seat position</label>
-              <select class="form-input form-select" id="pref-seat-pos">
-                <option value="">— Any —</option>
-                <option value="WINDOW">Window</option>
-                <option value="AISLE">Aisle</option>
-                <option value="MIDDLE">Middle</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label class="form-label">Row preference</label>
-              <select class="form-input form-select" id="pref-row">
-                <option value="">— Any —</option>
-                <option value="FRONT">Front of cabin</option>
-                <option value="MIDDLE">Middle of cabin</option>
-                <option value="BACK">Back of cabin</option>
-                <option value="EXIT_ROW">Exit row (extra legroom)</option>
-                <option value="BULKHEAD">Bulkhead (front row)</option>
-              </select>
-            </div>
-          </div>
-          <div style="margin-top:2px">
-            <label class="form-label">Seat options</label>
-            <div class="form-check-grid">
-              <label class="form-check"><input type="checkbox" id="pref-extra-legroom"> Extra legroom required</label>
-              <label class="form-check"><input type="checkbox" id="pref-avoid-last-row"> Avoid last row (non-reclining)</label>
-              <label class="form-check"><input type="checkbox" id="pref-avoid-middle"> Avoid middle seats</label>
-              <label class="form-check"><input type="checkbox" id="pref-wheelchair"> Wheelchair / mobility assistance</label>
-            </div>
-          </div>
-          <div id="pref-seat-error" class="form-error"></div>
-          <div class="form-actions">
-            <button class="btn btn-primary btn-sm" id="pref-seat-btn" onclick="saveSeatPrefs()">Save seat preferences</button>
-            <span class="caption" id="pref-seat-ok" style="display:none;color:var(--green)">Saved.</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Hotel preferences -->
-      <div class="section">
-        <div class="section-header">
-          <h2 class="section-label">Hotel</h2>
-        </div>
-        <div class="card">
-          <div class="form-row">
-            <div class="form-field">
-              <label class="form-label">Room type</label>
-              <select class="form-input form-select" id="pref-hotel-room">
-                <option value="">— Any —</option>
-                <option value="KING">King bed</option>
-                <option value="QUEEN">Queen bed</option>
-                <option value="DOUBLE">Double / two beds</option>
-                <option value="TWIN">Twin beds</option>
-                <option value="SUITE">Suite</option>
-                <option value="STUDIO">Studio / junior suite</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label class="form-label">Floor preference</label>
-              <select class="form-input form-select" id="pref-hotel-floor">
-                <option value="">— No preference —</option>
-                <option value="HIGH">High floor (view)</option>
-                <option value="LOW">Low floor (accessibility)</option>
-                <option value="MID">Mid floor</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label class="form-label">Smoking room</label>
-              <select class="form-input form-select" id="pref-hotel-smoking">
-                <option value="NON_SMOKING">Non-smoking</option>
-                <option value="">No preference</option>
-                <option value="SMOKING">Smoking</option>
-              </select>
+            <label class="form-label">Floor</label>
+            <div class="tile-grid tile-grid-4">
+              <button type="button" class="tile" data-group="hotel-floor" data-value="LOW" onclick="_ts(this,'hotel-floor',false,'hotel',_autoSaveHotel)" aria-pressed="false">Lower</button>
+              <button type="button" class="tile" data-group="hotel-floor" data-value="MID" onclick="_ts(this,'hotel-floor',false,'hotel',_autoSaveHotel)" aria-pressed="false">Mid</button>
+              <button type="button" class="tile" data-group="hotel-floor" data-value="HIGH" onclick="_ts(this,'hotel-floor',false,'hotel',_autoSaveHotel)" aria-pressed="false">Higher</button>
+              <button type="button" class="tile" data-group="hotel-floor" data-value="" onclick="_ts(this,'hotel-floor',false,'hotel',_autoSaveHotel)" aria-pressed="false">No preference</button>
             </div>
           </div>
           <div class="form-field">
-            <label class="form-label">Preferred hotel brands <span class="caption" style="text-transform:none;letter-spacing:0">(comma-separated — e.g. Marriott, Hilton, Hyatt)</span></label>
-            <input class="form-input" id="pref-hotel-brands" placeholder="e.g. Marriott, Hyatt, IHG, Hilton"/>
+            <label class="form-label">Room preferences</label>
+            <label class="form-check"><input type="checkbox" id="h-quiet" onchange="_debounce('hotel',_autoSaveHotel,400)"> Quiet room</label>
+            <label class="form-check"><input type="checkbox" id="h-high-floor" onchange="_debounce('hotel',_autoSaveHotel,400)"> Auto-request high floor</label>
+            <label class="form-check"><input type="checkbox" id="h-away-elev" onchange="_debounce('hotel',_autoSaveHotel,400)"> Away from elevator</label>
+            <label class="form-check"><input type="checkbox" id="h-accessible" onchange="_debounce('hotel',_autoSaveHotel,400)"> Accessible room needed</label>
           </div>
-          <div style="margin-top:2px">
-            <label class="form-label">Check-in / checkout</label>
-            <div class="form-check-grid">
-              <label class="form-check"><input type="checkbox" id="pref-early-checkin"> Request early check-in</label>
-              <label class="form-check"><input type="checkbox" id="pref-late-checkout"> Request late checkout</label>
-              <label class="form-check"><input type="checkbox" id="pref-quiet-room"> Request quiet room</label>
-              <label class="form-check"><input type="checkbox" id="pref-high-floor-auto"> Auto-request high floor</label>
-            </div>
-          </div>
-          <div id="pref-hotel-error" class="form-error"></div>
-          <div class="form-actions">
-            <button class="btn btn-primary btn-sm" id="pref-hotel-btn" onclick="saveHotelPrefs()">Save hotel preferences</button>
-            <span class="caption" id="pref-hotel-ok" style="display:none;color:var(--green)">Saved.</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Car rental preferences -->
-      <div class="section">
-        <div class="section-header">
-          <h2 class="section-label">Car rental</h2>
-        </div>
-        <div class="card">
-          <div class="form-row">
-            <div class="form-field">
-              <label class="form-label">Car class</label>
-              <select class="form-input form-select" id="pref-car">
-                <option value="">— Any —</option>
-                <option value="ECONOMY">Economy</option>
-                <option value="COMPACT">Compact</option>
-                <option value="MIDSIZE">Midsize</option>
-                <option value="FULL_SIZE">Full-size / Standard</option>
-                <option value="SUV">SUV</option>
-                <option value="MINIVAN">Minivan</option>
-                <option value="LUXURY">Luxury</option>
-                <option value="CONVERTIBLE">Convertible</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label class="form-label">Transmission</label>
-              <select class="form-input form-select" id="pref-car-trans">
-                <option value="">— No preference —</option>
-                <option value="AUTOMATIC">Automatic</option>
-                <option value="MANUAL">Manual</option>
-              </select>
-            </div>
-          </div>
-          <div style="margin-top:2px">
-            <label class="form-label">Car options</label>
-            <div class="form-check-grid">
-              <label class="form-check"><input type="checkbox" id="pref-car-ev"> Electric / hybrid preferred</label>
-              <label class="form-check"><input type="checkbox" id="pref-car-gps"> GPS / navigation included</label>
-              <label class="form-check"><input type="checkbox" id="pref-car-child-seat"> Child seat required</label>
-              <label class="form-check"><input type="checkbox" id="pref-car-full-tank"> Full-to-full fuel policy</label>
-            </div>
-          </div>
-          <div id="pref-car-error" class="form-error"></div>
-          <div class="form-actions">
-            <button class="btn btn-primary btn-sm" id="pref-car-btn" onclick="saveCarPrefs()">Save car preferences</button>
-            <span class="caption" id="pref-car-ok" style="display:none;color:var(--green)">Saved.</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Dining preferences -->
-      <div class="section">
-        <div class="section-header">
-          <h2 class="section-label">Dining</h2>
-        </div>
-        <div class="card">
-          <div class="form-row">
-            <div class="form-field">
-              <label class="form-label">IATA meal code</label>
-              <select class="form-input form-select" id="pref-meal-code">
-                <option value="">— Standard airline meal —</option>
-                <optgroup label="Vegetarian &amp; vegan">
-                  <option value="VGML">VGML — Vegan (strict, no animal products)</option>
-                  <option value="AVML">AVML — Asian vegetarian (lacto, spiced)</option>
-                  <option value="RVML">RVML — Vegetarian (lacto-ovo)</option>
-                  <option value="VLML">VLML — Vegetarian (lacto, no eggs)</option>
-                </optgroup>
-                <optgroup label="Religious">
-                  <option value="KSML">KSML — Kosher (prepared under rabbinical supervision)</option>
-                  <option value="MOML">MOML — Muslim / Halal</option>
-                  <option value="HNML">HNML — Hindu (no beef, may include dairy/eggs)</option>
-                  <option value="JNML">JNML — Jain (no root vegetables)</option>
-                </optgroup>
-                <optgroup label="Medical &amp; dietary">
-                  <option value="GFML">GFML — Gluten-free</option>
-                  <option value="DBML">DBML — Diabetic (low sugar, low fat)</option>
-                  <option value="LSML">LSML — Low sodium / low salt</option>
-                  <option value="LCML">LCML — Low calorie</option>
-                  <option value="LFML">LFML — Low fat / low cholesterol</option>
-                  <option value="NLML">NLML — Low lactose (no milk products)</option>
-                  <option value="BLML">BLML — Bland (soft, low-fiber, easy to digest)</option>
-                </optgroup>
-                <optgroup label="Other">
-                  <option value="SFML">SFML — Seafood</option>
-                  <option value="FPML">FPML — Fruit platter</option>
-                  <option value="CHML">CHML — Child meal (hot)</option>
-                  <option value="BBML">BBML — Baby / infant meal</option>
-                  <option value="SPML">SPML — Special (describe in dietary notes)</option>
-                </optgroup>
-              </select>
-            </div>
-            <div class="form-field">
-              <label class="form-label">Beverage preference</label>
-              <select class="form-input form-select" id="pref-bev">
-                <option value="">— Standard —</option>
-                <option value="NON_ALCOHOLIC">Non-alcoholic only</option>
-                <option value="NO_CAFFEINE">No caffeine</option>
-                <option value="WATER_ONLY">Water only</option>
-                <option value="JUICE_ONLY">Juice / soft drinks only</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-field" style="margin-top:6px">
-            <label class="form-label">Allergies <span class="caption" style="text-transform:none;letter-spacing:0">— applied to all bookings and shared with airlines</span></label>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">
-              <label class="form-check" style="padding:8px 10px;background:var(--paper-cream);border-radius:6px;border:0.5px solid var(--rule)"><input type="checkbox" class="allergy-cb" value="NUTS" style="accent-color:#c44d4d"> <span>Tree nuts &amp; peanuts</span></label>
-              <label class="form-check" style="padding:8px 10px;background:var(--paper-cream);border-radius:6px;border:0.5px solid var(--rule)"><input type="checkbox" class="allergy-cb" value="SHELLFISH" style="accent-color:#c44d4d"> <span>Shellfish &amp; crustaceans</span></label>
-              <label class="form-check" style="padding:8px 10px;background:var(--paper-cream);border-radius:6px;border:0.5px solid var(--rule)"><input type="checkbox" class="allergy-cb" value="DAIRY" style="accent-color:#c44d4d"> <span>Dairy / milk products</span></label>
-              <label class="form-check" style="padding:8px 10px;background:var(--paper-cream);border-radius:6px;border:0.5px solid var(--rule)"><input type="checkbox" class="allergy-cb" value="GLUTEN" style="accent-color:#c44d4d"> <span>Gluten / wheat</span></label>
-              <label class="form-check" style="padding:8px 10px;background:var(--paper-cream);border-radius:6px;border:0.5px solid var(--rule)"><input type="checkbox" class="allergy-cb" value="EGGS" style="accent-color:#c44d4d"> <span>Eggs</span></label>
-              <label class="form-check" style="padding:8px 10px;background:var(--paper-cream);border-radius:6px;border:0.5px solid var(--rule)"><input type="checkbox" class="allergy-cb" value="SOY" style="accent-color:#c44d4d"> <span>Soy</span></label>
-              <label class="form-check" style="padding:8px 10px;background:var(--paper-cream);border-radius:6px;border:0.5px solid var(--rule)"><input type="checkbox" class="allergy-cb" value="FISH" style="accent-color:#c44d4d"> <span>Fish</span></label>
-              <label class="form-check" style="padding:8px 10px;background:var(--paper-cream);border-radius:6px;border:0.5px solid var(--rule)"><input type="checkbox" class="allergy-cb" value="SESAME" style="accent-color:#c44d4d"> <span>Sesame</span></label>
-            </div>
-          </div>
-
-          <div class="form-field" style="margin-top:10px">
-            <label class="form-label">Items to avoid <span class="caption" style="text-transform:none;letter-spacing:0">(comma-separated — e.g. onions, cilantro)</span></label>
-            <input class="form-input" id="pref-avoid-items" placeholder="e.g. cilantro, blue cheese, raw onion"/>
-          </div>
-
           <div class="form-field">
-            <label class="form-label">Dietary notes <span class="caption" style="text-transform:none;letter-spacing:0">— shown to airlines and hotels at booking</span></label>
-            <textarea class="form-input form-textarea" id="pref-diet-notes" placeholder="Any additional requirements, severity notes, or context for caterers…" style="min-height:60px"></textarea>
+            <label class="form-label">Smoking</label>
+            <div class="tile-grid tile-grid-2">
+              <button type="button" class="tile" data-group="smoking" data-value="NON_SMOKING" onclick="_ts(this,'smoking',false,'hotel',_autoSaveHotel)" aria-pressed="false">Non-smoking only</button>
+              <button type="button" class="tile" data-group="smoking" data-value="" onclick="_ts(this,'smoking',false,'hotel',_autoSaveHotel)" aria-pressed="false">No preference</button>
+            </div>
           </div>
-
-          <div id="pref-meal-error" class="form-error"></div>
-          <div class="form-actions">
-            <button class="btn btn-primary btn-sm" id="pref-meal-btn" onclick="saveMealPrefs()">Save dining preferences</button>
-            <span class="caption" id="pref-meal-ok" style="display:none;color:var(--green)">Saved.</span>
+          <div class="form-field">
+            <label class="form-label">Late check-out</label>
+            <div class="tile-grid tile-grid-3">
+              <button type="button" class="tile" data-group="late-co" data-value="ALWAYS" onclick="_ts(this,'late-co',false,'hotel',_autoSaveHotel)" aria-pressed="false">Always request</button>
+              <button type="button" class="tile" data-group="late-co" data-value="ON_REQUEST" onclick="_ts(this,'late-co',false,'hotel',_autoSaveHotel)" aria-pressed="false">On request</button>
+              <button type="button" class="tile" data-group="late-co" data-value="" onclick="_ts(this,'late-co',false,'hotel',_autoSaveHotel)" aria-pressed="false">No preference</button>
+            </div>
           </div>
-        </div>
-      </div>
-
-    </div><!-- /tab-preferences -->
-
-    <!-- ── TAB: Loyalty programs ─────────────────────── -->
-    <div id="tab-dna" style="display:none">
-
-      <div class="section">
-        <div class="section-header">
-          <h2 class="section-label">Loyalty programs</h2>
-          <button class="btn btn-secondary btn-sm" onclick="openAddLoyalty()">
-            <svg class="icon" style="width:13px;height:13px"><use href="#i-add"/></svg>
-            Add program
+          <button type="button" class="adv-toggle" onclick="_toggleAdv('hotel-adv',this)" aria-expanded="false">
+            <svg class="icon" style="width:12px;height:12px"><use href="#i-chevron-down"/></svg>
+            Show advanced options — brands, early check-in
           </button>
+          <div class="adv-fields" id="hotel-adv">
+            <div class="form-field" style="margin-top:14px">
+              <label class="form-label">Preferred hotel brands <span class="form-label-helper">— comma-separated</span></label>
+              <input class="form-input" id="h-brands" placeholder="e.g. Marriott, Hyatt, IHG, Hilton" onchange="_debounce('hotel',_autoSaveHotel,600)"/>
+            </div>
+            <label class="form-check"><input type="checkbox" id="h-early-ci" onchange="_debounce('hotel',_autoSaveHotel,400)"> Request early check-in</label>
+          </div>
+          <div id="hotel-save-err" class="save-err"></div>
+          <div class="edit-footer">
+            <button class="btn-cancel" onclick="toggleCard('hotel')">Cancel</button>
+            <span class="autosave-note">Saved automatically as you choose.</span>
+          </div>
         </div>
-        <div id="loyalty-list"></div>
       </div>
 
-    </div><!-- /tab-dna -->
-
-    <!-- ── TAB: Payment ──────────────────────────────── -->
-    <div id="tab-payment" style="display:none">
-
-      <div class="section">
-        <div class="section-header"><h2 class="section-label">Personal payment</h2></div>
-        <div class="card">
+      <!-- Cruise -->
+      <div class="card-item" id="card-cruise">
+        <div class="card-item-head">
+          <div class="card-item-icon"><svg class="icon" style="width:18px;height:18px"><use href="#i-cruise"/></svg></div>
+          <div class="card-item-title-block"><div class="card-item-title">Cruise<em class="edit-sfx"> — editing</em></div></div>
+          <div class="card-item-actions">
+            <span id="cruise-pill"></span>
+            <button class="btn btn-secondary btn-xs" id="cruise-btn" onclick="toggleCard('cruise')" aria-expanded="false">Set up</button>
+          </div>
+        </div>
+        <div class="card-item-body empty" id="cruise-body">Tell us how you like to cruise — cabin, dining, excursions, accessibility — and we'll quietly apply it at every booking.</div>
+        <div class="card-item-edit" id="cruise-edit">
           <div class="form-field">
-            <label class="form-label">Preferred card (last 4 or label)</label>
-            <input class="form-input" id="pay-personal-card" placeholder="e.g. Amex 4567 or Chase Sapphire"/>
+            <label class="form-label">Cabin</label>
+            <div class="tile-grid tile-grid-4">
+              <button type="button" class="tile" data-group="cruise-cabin" data-value="INTERIOR" onclick="_ts(this,'cruise-cabin',false,'cruise',_autoSaveCruise)" aria-pressed="false">Interior<small>No window</small></button>
+              <button type="button" class="tile" data-group="cruise-cabin" data-value="OCEAN_VIEW" onclick="_ts(this,'cruise-cabin',false,'cruise',_autoSaveCruise)" aria-pressed="false">Ocean view<small>Window</small></button>
+              <button type="button" class="tile" data-group="cruise-cabin" data-value="BALCONY" onclick="_ts(this,'cruise-cabin',false,'cruise',_autoSaveCruise)" aria-pressed="false">Balcony<small>Private deck</small></button>
+              <button type="button" class="tile" data-group="cruise-cabin" data-value="SUITE" onclick="_ts(this,'cruise-cabin',false,'cruise',_autoSaveCruise)" aria-pressed="false">Suite<small>Premium</small></button>
+            </div>
           </div>
-          <div id="pay-personal-error" class="form-error"></div>
-          <div class="form-actions">
-            <button class="btn btn-primary btn-sm" id="pay-personal-btn" onclick="savePaymentPersonal()">Save</button>
-            <span class="caption" id="pay-personal-ok" style="display:none;color:var(--green)">Saved.</span>
+          <div class="form-field">
+            <label class="form-label">Deck level <span class="form-label-helper">— lower decks feel less motion</span></label>
+            <div class="tile-grid tile-grid-4">
+              <button type="button" class="tile" data-group="cruise-deck" data-value="NO_PREFERENCE" onclick="_ts(this,'cruise-deck',false,'cruise',_autoSaveCruise)" aria-pressed="false">No preference</button>
+              <button type="button" class="tile" data-group="cruise-deck" data-value="LOWER" onclick="_ts(this,'cruise-deck',false,'cruise',_autoSaveCruise)" aria-pressed="false">Lower</button>
+              <button type="button" class="tile" data-group="cruise-deck" data-value="MID" onclick="_ts(this,'cruise-deck',false,'cruise',_autoSaveCruise)" aria-pressed="false">Mid</button>
+              <button type="button" class="tile" data-group="cruise-deck" data-value="HIGHER" onclick="_ts(this,'cruise-deck',false,'cruise',_autoSaveCruise)" aria-pressed="false">Higher</button>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Dining</label>
+            <div class="tile-grid tile-grid-3">
+              <button type="button" class="tile" data-group="cruise-dining" data-value="EARLY" onclick="_ts(this,'cruise-dining',false,'cruise',_autoSaveCruise)" aria-pressed="false">Early seating</button>
+              <button type="button" class="tile" data-group="cruise-dining" data-value="LATE" onclick="_ts(this,'cruise-dining',false,'cruise',_autoSaveCruise)" aria-pressed="false">Late seating</button>
+              <button type="button" class="tile" data-group="cruise-dining" data-value="ANYTIME" onclick="_ts(this,'cruise-dining',false,'cruise',_autoSaveCruise)" aria-pressed="false">Anytime</button>
+            </div>
+            <label class="form-check" style="margin-top:10px"><input type="checkbox" id="cruise-share" onchange="_debounce('cruise',_autoSaveCruise,400)"> Happy to share a table with other guests</label>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Bed configuration</label>
+            <div class="tile-grid tile-grid-2">
+              <button type="button" class="tile" data-group="cruise-bed" data-value="ONE_BED" onclick="_ts(this,'cruise-bed',false,'cruise',_autoSaveCruise)" aria-pressed="false">One bed<small>queen or king</small></button>
+              <button type="button" class="tile" data-group="cruise-bed" data-value="TWO_BEDS" onclick="_ts(this,'cruise-bed',false,'cruise',_autoSaveCruise)" aria-pressed="false">Two beds<small>twin</small></button>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Excursion style <span class="form-label-helper">— select all that apply</span></label>
+            <div class="tile-grid tile-grid-4">
+              <button type="button" class="tile" data-group="cruise-exc" data-value="CULTURAL" onclick="_ts(this,'cruise-exc',true,'cruise',_autoSaveCruise)" aria-pressed="false">Cultural</button>
+              <button type="button" class="tile" data-group="cruise-exc" data-value="ACTIVE" onclick="_ts(this,'cruise-exc',true,'cruise',_autoSaveCruise)" aria-pressed="false">Active</button>
+              <button type="button" class="tile" data-group="cruise-exc" data-value="RELAXED" onclick="_ts(this,'cruise-exc',true,'cruise',_autoSaveCruise)" aria-pressed="false">Relaxed</button>
+              <button type="button" class="tile" data-group="cruise-exc" data-value="BEACH" onclick="_ts(this,'cruise-exc',true,'cruise',_autoSaveCruise)" aria-pressed="false">Beach</button>
+            </div>
+          </div>
+          <button type="button" class="adv-toggle" onclick="_toggleAdv('cruise-adv',this)" aria-expanded="false">
+            <svg class="icon" style="width:12px;height:12px"><use href="#i-chevron-down"/></svg>
+            Show advanced options — drink package, sailing type, gratuity
+          </button>
+          <div class="adv-fields" id="cruise-adv">
+            <div class="form-field" style="margin-top:14px">
+              <label class="form-label">Drink package</label>
+              <div class="tile-grid tile-grid-4">
+                <button type="button" class="tile" data-group="cruise-drinks" data-value="NONE" onclick="_ts(this,'cruise-drinks',false,'cruise',_autoSaveCruise)" aria-pressed="false">None</button>
+                <button type="button" class="tile" data-group="cruise-drinks" data-value="STANDARD" onclick="_ts(this,'cruise-drinks',false,'cruise',_autoSaveCruise)" aria-pressed="false">Standard</button>
+                <button type="button" class="tile" data-group="cruise-drinks" data-value="PREMIUM" onclick="_ts(this,'cruise-drinks',false,'cruise',_autoSaveCruise)" aria-pressed="false">Premium</button>
+                <button type="button" class="tile" data-group="cruise-drinks" data-value="ADD_AT_BOOKING" onclick="_ts(this,'cruise-drinks',false,'cruise',_autoSaveCruise)" aria-pressed="false">Add at booking</button>
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Embarkation</label>
+              <div class="tile-grid tile-grid-3">
+                <button type="button" class="tile" data-group="cruise-embark" data-value="EARLY" onclick="_ts(this,'cruise-embark',false,'cruise',_autoSaveCruise)" aria-pressed="false">Early boarding</button>
+                <button type="button" class="tile" data-group="cruise-embark" data-value="STANDARD" onclick="_ts(this,'cruise-embark',false,'cruise',_autoSaveCruise)" aria-pressed="false">Standard</button>
+                <button type="button" class="tile" data-group="cruise-embark" data-value="LATE_OK" onclick="_ts(this,'cruise-embark',false,'cruise',_autoSaveCruise)" aria-pressed="false">Late OK</button>
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Sailing type <span class="form-label-helper">— select all that apply</span></label>
+              <div class="tile-grid tile-grid-3">
+                <button type="button" class="tile" data-group="cruise-sail" data-value="OCEAN" onclick="_ts(this,'cruise-sail',true,'cruise',_autoSaveCruise)" aria-pressed="false">Ocean</button>
+                <button type="button" class="tile" data-group="cruise-sail" data-value="RIVER" onclick="_ts(this,'cruise-sail',true,'cruise',_autoSaveCruise)" aria-pressed="false">River</button>
+                <button type="button" class="tile" data-group="cruise-sail" data-value="EXPEDITION" onclick="_ts(this,'cruise-sail',true,'cruise',_autoSaveCruise)" aria-pressed="false">Expedition</button>
+                <button type="button" class="tile" data-group="cruise-sail" data-value="LUXURY" onclick="_ts(this,'cruise-sail',true,'cruise',_autoSaveCruise)" aria-pressed="false">Luxury</button>
+                <button type="button" class="tile" data-group="cruise-sail" data-value="FAMILY" onclick="_ts(this,'cruise-sail',true,'cruise',_autoSaveCruise)" aria-pressed="false">Family</button>
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Gratuity</label>
+              <div class="tile-grid tile-grid-2">
+                <button type="button" class="tile" data-group="cruise-grat" data-value="PRE_PAID" onclick="_ts(this,'cruise-grat',false,'cruise',_autoSaveCruise)" aria-pressed="false">Pre-paid</button>
+                <button type="button" class="tile" data-group="cruise-grat" data-value="PAY_AT_END" onclick="_ts(this,'cruise-grat',false,'cruise',_autoSaveCruise)" aria-pressed="false">Pay at end</button>
+              </div>
+            </div>
+          </div>
+          <div id="cruise-save-err" class="save-err"></div>
+          <div class="edit-footer">
+            <button class="btn-cancel" onclick="toggleCard('cruise')">Cancel</button>
+            <span class="autosave-note">Saved automatically as you choose.</span>
           </div>
         </div>
       </div>
 
-      <div class="section">
-        <div class="section-header"><h2 class="section-label">Corporate card</h2></div>
-        <div class="card">
+      <!-- Rail & ground -->
+      <div class="card-item" id="card-rail">
+        <div class="card-item-head">
+          <div class="card-item-icon"><svg class="icon" style="width:18px;height:18px"><use href="#i-rail"/></svg></div>
+          <div class="card-item-title-block"><div class="card-item-title">Rail &amp; ground<em class="edit-sfx"> — editing</em></div></div>
+          <div class="card-item-actions">
+            <span id="rail-pill"></span>
+            <button class="btn btn-secondary btn-xs" id="rail-btn" onclick="toggleCard('rail')" aria-expanded="false">Set up</button>
+          </div>
+        </div>
+        <div class="card-item-body empty" id="rail-body">Train class, seat facing, car rental size — set your ground preferences and they follow you everywhere.</div>
+        <div class="card-item-edit" id="rail-edit">
+          <div class="form-field">
+            <label class="form-label">Train class</label>
+            <div class="tile-grid tile-grid-3">
+              <button type="button" class="tile" data-group="rail-class" data-value="FIRST" onclick="_ts(this,'rail-class',false,'rail',_autoSaveRail)" aria-pressed="false">First class</button>
+              <button type="button" class="tile" data-group="rail-class" data-value="BUSINESS" onclick="_ts(this,'rail-class',false,'rail',_autoSaveRail)" aria-pressed="false">Business</button>
+              <button type="button" class="tile" data-group="rail-class" data-value="COACH" onclick="_ts(this,'rail-class',false,'rail',_autoSaveRail)" aria-pressed="false">Coach</button>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Seat facing</label>
+            <div class="tile-grid tile-grid-2">
+              <button type="button" class="tile" data-group="rail-facing" data-value="FORWARD" onclick="_ts(this,'rail-facing',false,'rail',_autoSaveRail)" aria-pressed="false">Forward-facing</button>
+              <button type="button" class="tile" data-group="rail-facing" data-value="BACKWARD" onclick="_ts(this,'rail-facing',false,'rail',_autoSaveRail)" aria-pressed="false">Backward-facing</button>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Car rental size</label>
+            <div class="tile-grid tile-grid-4">
+              <button type="button" class="tile" data-group="car-size" data-value="ECONOMY" onclick="_ts(this,'car-size',false,'rail',_autoSaveRail)" aria-pressed="false">Economy</button>
+              <button type="button" class="tile" data-group="car-size" data-value="COMPACT" onclick="_ts(this,'car-size',false,'rail',_autoSaveRail)" aria-pressed="false">Compact</button>
+              <button type="button" class="tile" data-group="car-size" data-value="MIDSIZE" onclick="_ts(this,'car-size',false,'rail',_autoSaveRail)" aria-pressed="false">Midsize</button>
+              <button type="button" class="tile" data-group="car-size" data-value="FULLSIZE" onclick="_ts(this,'car-size',false,'rail',_autoSaveRail)" aria-pressed="false">Full-size</button>
+            </div>
+            <div class="tile-grid tile-grid-3" style="margin-top:8px">
+              <button type="button" class="tile" data-group="car-size" data-value="SUV" onclick="_ts(this,'car-size',false,'rail',_autoSaveRail)" aria-pressed="false">SUV</button>
+              <button type="button" class="tile" data-group="car-size" data-value="VAN" onclick="_ts(this,'car-size',false,'rail',_autoSaveRail)" aria-pressed="false">Minivan</button>
+              <button type="button" class="tile" data-group="car-size" data-value="LUXURY" onclick="_ts(this,'car-size',false,'rail',_autoSaveRail)" aria-pressed="false">Luxury</button>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Transmission</label>
+            <div class="tile-grid tile-grid-3">
+              <button type="button" class="tile" data-group="car-trans" data-value="AUTOMATIC" onclick="_ts(this,'car-trans',false,'rail',_autoSaveRail)" aria-pressed="false">Automatic</button>
+              <button type="button" class="tile" data-group="car-trans" data-value="MANUAL" onclick="_ts(this,'car-trans',false,'rail',_autoSaveRail)" aria-pressed="false">Manual</button>
+              <button type="button" class="tile" data-group="car-trans" data-value="" onclick="_ts(this,'car-trans',false,'rail',_autoSaveRail)" aria-pressed="false">No preference</button>
+            </div>
+          </div>
+          <button class="adv-toggle" id="rail-adv-btn" onclick="_toggleAdv('rail-adv',this)" aria-expanded="false">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            More options
+          </button>
+          <div class="adv-fields" id="rail-adv">
+            <label class="form-check"><input type="checkbox" id="car-ev" onchange="_debounce('rail',_autoSaveRail,400)"> Prefer electric / hybrid</label>
+            <label class="form-check"><input type="checkbox" id="car-gps" onchange="_debounce('rail',_autoSaveRail,400)"> Request GPS / navigation</label>
+            <label class="form-check"><input type="checkbox" id="car-child-seat" onchange="_debounce('rail',_autoSaveRail,400)"> Child seat required</label>
+          </div>
+          <div id="rail-save-err" class="save-err"></div>
+          <div class="edit-footer">
+            <button class="btn-cancel" onclick="toggleCard('rail')">Done</button>
+            <span class="autosave-note">Saved automatically as you choose.</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /card-list -->
+  </div><!-- /tab-how-you-travel -->
+
+
+  <!-- ══════════════════════════════════════════
+       TAB 3 — Business
+  ══════════════════════════════════════════ -->
+  <div id="tab-business" style="display:none">
+    <p class="tab-lede">Your work travel context. Kept separate from personal so the right rules apply automatically when you book on company time.</p>
+
+    <!-- Universal: Default booking context -->
+    <div class="card-universal">
+      <div class="card-universal-head">
+        <div class="eyebrow">Default booking context</div>
+        <button class="btn btn-secondary btn-xs" onclick="openComingSoon()">Edit rules</button>
+      </div>
+      <p class="card-universal-body">Personal travel by default. Switch to corporate at checkout when needed, or set rules to switch automatically.</p>
+    </div>
+
+    <!-- Business cards -->
+    <div class="card-list">
+
+      <!-- Employer & role -->
+      <div class="card-item" id="card-employer">
+        <div class="card-item-head">
+          <div class="card-item-icon"><svg class="icon" style="width:18px;height:18px"><use href="#i-building"/></svg></div>
+          <div class="card-item-title-block"><div class="card-item-title">Employer &amp; role<em class="edit-sfx"> — editing</em></div></div>
+          <div class="card-item-actions">
+            <span id="employer-pill"></span>
+            <button class="btn btn-secondary btn-xs" id="employer-btn" onclick="toggleCard('employer')" aria-expanded="false">Set up</button>
+          </div>
+        </div>
+        <div class="card-item-body empty" id="employer-body">Add your employer and role so UniProfile can apply the right booking context and expense policy automatically.</div>
+        <div class="card-item-edit" id="employer-edit">
+          <div class="form-field">
+            <label class="form-label">Employer name</label>
+            <input class="form-input" id="emp-name" placeholder="e.g. Acme Corp" onchange="_debounce('employer',_autoSaveEmployer,500)"/>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Role / title <span class="form-label-helper">— optional</span></label>
+            <input class="form-input" id="emp-role" placeholder="e.g. Senior Account Executive" onchange="_debounce('employer',_autoSaveEmployer,500)"/>
+          </div>
           <div class="form-row">
-            <div class="form-field"><label class="form-label">Company name</label><input class="form-input" id="pay-corp-company" placeholder="Acme Corp"/></div>
-            <div class="form-field"><label class="form-label">Cost center</label><input class="form-input" id="pay-corp-cc" placeholder="ENG-001"/></div>
+            <div class="form-field">
+              <label class="form-label">Cost center <span class="form-label-helper">— optional</span></label>
+              <input class="form-input" id="emp-cost-center" placeholder="e.g. CC-4421" onchange="_debounce('employer',_autoSaveEmployer,500)"/>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Employee ID <span class="form-label-helper">— optional</span></label>
+              <input class="form-input" id="emp-id" placeholder="e.g. EMP-00234" onchange="_debounce('employer',_autoSaveEmployer,500)"/>
+            </div>
           </div>
-          <div class="form-field"><label class="form-label">Corporate card (last 4 or label)</label><input class="form-input" id="pay-corp-card" placeholder="Amex Corp 8901"/></div>
-          <div class="form-field"><label class="form-label">Expense platform</label>
-            <select class="form-input form-select" id="pay-corp-platform">
-              <option value="">— Select —</option><option value="CONCUR">SAP Concur</option><option value="EXPENSIFY">Expensify</option><option value="NAVAN">Navan</option><option value="BREX">Brex</option><option value="RAMP">Ramp</option><option value="DIVVY">Divvy</option><option value="OTHER">Other</option>
-            </select>
-          </div>
-          <div id="pay-corp-error" class="form-error"></div>
-          <div class="form-actions">
-            <button class="btn btn-primary btn-sm" id="pay-corp-btn" onclick="savePaymentCorporate()">Save</button>
-            <span class="caption" id="pay-corp-ok" style="display:none;color:var(--green)">Saved.</span>
+          <div id="employer-save-err" class="save-err"></div>
+          <div class="edit-footer">
+            <button class="btn-cancel" onclick="toggleCard('employer')">Done</button>
+            <span class="autosave-note">Saved automatically as you type.</span>
           </div>
         </div>
       </div>
 
-    </div><!-- /tab-payment -->
-
-    <!-- ── TAB: Corporate policy ─────────────────────── -->
-    <div id="tab-policy" style="display:none">
-
-      <div class="section">
-        <div class="section-header"><h2 class="section-label">Travel policy</h2></div>
-        <div class="card">
-          <div class="form-field">
-            <label class="form-label">Policy description</label>
-            <textarea class="form-input form-textarea" id="policy-desc" placeholder="e.g. Flights must be booked 14+ days ahead. Economy only for routes under 4h. Max hotel rate $250/night." style="min-height:100px"></textarea>
-          </div>
-          <div class="form-field">
-            <label class="form-label">Booking context</label>
-            <select class="form-input form-select" id="policy-context">
-              <option value="PERSONAL">Personal travel</option><option value="CORPORATE">Corporate travel</option><option value="BLEISURE">Bleisure</option>
-            </select>
-          </div>
-          <div id="policy-error" class="form-error"></div>
-          <div class="form-actions">
-            <button class="btn btn-primary btn-sm" id="policy-save-btn" onclick="savePolicySettings()">Save policy</button>
-            <span class="caption" id="policy-ok" style="display:none;color:var(--green)">Saved.</span>
+      <!-- Travel policy -->
+      <div class="card-item" id="card-policy">
+        <div class="card-item-head">
+          <div class="card-item-icon"><svg class="icon" style="width:18px;height:18px"><use href="#i-policy"/></svg></div>
+          <div class="card-item-title-block"><div class="card-item-title">Travel policy<em class="edit-sfx"> — editing</em></div></div>
+          <div class="card-item-actions">
+            <span id="policy-pill"></span>
+            <button class="btn btn-secondary btn-xs" id="policy-btn" onclick="toggleCard('policy')" aria-expanded="false">Set up</button>
           </div>
         </div>
-        <p class="caption" style="margin-top:10px">Policy rules are applied when generating booking recommendations and check reports.</p>
+        <div class="card-item-body empty" id="policy-body">Cabin rules, hotel caps, pre-approval thresholds — your expense policy, applied automatically at booking.</div>
+        <div class="card-item-edit" id="policy-edit">
+          <div class="form-field">
+            <label class="form-label">Policy description <span class="form-label-helper">— plain text, shown at booking</span></label>
+            <textarea class="form-input" id="policy-desc" rows="4" placeholder="e.g. Economy on domestic flights under 4 hours. Business on international. Hotel cap $250/night. Pre-approval required above $5,000." style="resize:vertical" oninput="_debounce('policy',_autoSavePolicy,600)"></textarea>
+          </div>
+          <p style="font-size:12px;color:var(--ink-mute);margin-top:4px">This is a free-text field. Your TMC or admin may overwrite this with your company's official policy.</p>
+          <div id="policy-save-err" class="save-err"></div>
+          <div class="edit-footer">
+            <button class="btn-cancel" onclick="toggleCard('policy')">Done</button>
+            <span class="autosave-note">Saved automatically as you type.</span>
+          </div>
+        </div>
       </div>
 
-    </div><!-- /tab-policy -->
+      <!-- Corporate payment -->
+      <div class="card-item" id="card-corp-pay">
+        <div class="card-item-head">
+          <div class="card-item-icon"><svg class="icon" style="width:18px;height:18px"><use href="#i-card"/></svg></div>
+          <div class="card-item-title-block"><div class="card-item-title">Corporate payment<em class="edit-sfx"> — editing</em></div></div>
+          <div class="card-item-actions">
+            <span id="corp-pay-pill"></span>
+            <button class="btn btn-secondary btn-xs" id="corp-pay-btn" onclick="toggleCard('corp-pay')" aria-expanded="false">Set up</button>
+          </div>
+        </div>
+        <div class="card-item-body empty" id="corp-pay-body">Add your corporate card and expense platform so receipts route correctly every time.</div>
+        <div class="card-item-edit" id="corp-pay-edit">
+          <div class="form-field">
+            <label class="form-label">Company name <span class="form-label-helper">— optional</span></label>
+            <input class="form-input" id="corp-company" placeholder="e.g. Acme Corp" onchange="_debounce('corp-pay',_autoSaveCorpPay,500)"/>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Corporate card <span class="form-label-helper">— last 4 digits or card name</span></label>
+            <input class="form-input" id="corp-card" placeholder="e.g. Amex Corporate ···4821" onchange="_debounce('corp-pay',_autoSaveCorpPay,500)"/>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Expense platform <span class="form-label-helper">— optional</span></label>
+            <input class="form-input" id="corp-expense" placeholder="e.g. Concur, Expensify, Navan" onchange="_debounce('corp-pay',_autoSaveCorpPay,500)"/>
+          </div>
+          <div id="corp-pay-save-err" class="save-err"></div>
+          <div class="edit-footer">
+            <button class="btn-cancel" onclick="toggleCard('corp-pay')">Done</button>
+            <span class="autosave-note">Saved automatically as you type.</span>
+          </div>
+        </div>
+      </div>
 
-  </main>
-</div>
+      <!-- Personal payment -->
+      <div class="card-item" id="card-pers-pay">
+        <div class="card-item-head">
+          <div class="card-item-icon"><svg class="icon" style="width:18px;height:18px"><use href="#i-card"/></svg></div>
+          <div class="card-item-title-block"><div class="card-item-title">Personal payment<em class="edit-sfx"> — editing</em></div></div>
+          <div class="card-item-actions">
+            <span id="pers-pay-pill"></span>
+            <button class="btn btn-secondary btn-xs" id="pers-pay-btn" onclick="toggleCard('pers-pay')" aria-expanded="false">Set up</button>
+          </div>
+        </div>
+        <div class="card-item-body empty" id="pers-pay-body">Your personal preferred card. Set once and UniProfile uses it by default on personal bookings.</div>
+        <div class="card-item-edit" id="pers-pay-edit">
+          <div class="form-field">
+            <label class="form-label">Preferred card <span class="form-label-helper">— last 4 digits or card name</span></label>
+            <input class="form-input" id="pers-card" placeholder="e.g. Chase Sapphire ···9204" onchange="_debounce('pers-pay',_autoSavePersPay,500)"/>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Billing address <span class="form-label-helper">— optional, for bookings that require it</span></label>
+            <input class="form-input" id="pers-billing" placeholder="e.g. 123 Main St, Austin TX 78701" onchange="_debounce('pers-pay',_autoSavePersPay,500)"/>
+          </div>
+          <div id="pers-pay-save-err" class="save-err"></div>
+          <div class="edit-footer">
+            <button class="btn-cancel" onclick="toggleCard('pers-pay')">Done</button>
+            <span class="autosave-note">Saved automatically as you type.</span>
+          </div>
+        </div>
+      </div>
 
-<!-- ── Document modal ─────────────────────────────────── -->
+      <!-- Loyalty programs -->
+      <div class="card-item" id="card-loyalty">
+        <div class="card-item-head">
+          <div class="card-item-icon"><svg class="icon" style="width:18px;height:18px"><use href="#i-loyalty"/></svg></div>
+          <div class="card-item-title-block"><div class="card-item-title">Loyalty programs</div></div>
+          <div class="card-item-actions">
+            <span id="loyalty-pill"></span>
+            <button class="btn btn-secondary btn-xs" id="loyalty-btn" onclick="toggleCard('loyalty')" aria-expanded="false">Set up</button>
+          </div>
+        </div>
+        <div class="card-item-body empty" id="loyalty-body">Link your airline, hotel, and car loyalty numbers — UniProfile fills them in silently at booking.</div>
+        <div class="card-item-edit" id="loyalty-edit">
+          <div id="loyalty-list-inner" style="margin-bottom:4px"></div>
+          <button class="btn btn-secondary btn-sm" style="margin-top:8px" onclick="openAddLoyalty()">
+            <svg class="icon" style="width:13px;height:13px"><use href="#i-add"/></svg> Add program
+          </button>
+          <div class="edit-footer">
+            <button class="btn-cancel" onclick="toggleCard('loyalty')">Done</button>
+            <span class="autosave-note">Saved automatically as you choose.</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /card-list -->
+  </div><!-- /tab-business -->
+
+</main>
+</div><!-- /shell -->
+
+<!-- ── Document modal ── -->
 <div class="modal-overlay" id="doc-modal" onclick="if(event.target===this)closeDocModal()">
   <div class="modal">
     <div class="modal-header">
-      <h2 class="h3" id="doc-modal-title">Add a document</h2>
+      <span class="modal-title" id="doc-modal-title">Add a document</span>
       <button class="modal-close" onclick="closeDocModal()">&#x2715;</button>
     </div>
     <div class="form-field">
       <label class="form-label">Document type</label>
       <select class="form-input form-select" id="doc-type">
         <option value="">— Select type —</option>
-        <option value="PASSPORT">Passport</option><option value="VISA">Visa</option><option value="US_GREEN_CARD">Permanent Resident Card</option>
-        <option value="KTN">Known Traveler Number (KTN)</option><option value="GLOBAL_ENTRY">Global Entry</option><option value="NEXUS">NEXUS</option><option value="SENTRI">SENTRI</option>
-        <option value="ESTA">ESTA</option><option value="NATIONAL_ID">National ID</option><option value="DRIVERS_LICENSE">Driver's License</option><option value="BIRTH_CERTIFICATE">Birth Certificate</option>
+        <option value="PASSPORT">Passport</option>
+        <option value="VISA">Visa</option>
+        <option value="US_GREEN_CARD">Permanent Resident Card</option>
+        <option value="KTN">Known Traveler Number (KTN)</option>
+        <option value="GLOBAL_ENTRY">Global Entry</option>
+        <option value="NEXUS">NEXUS</option>
+        <option value="SENTRI">SENTRI</option>
+        <option value="ESTA">ESTA</option>
+        <option value="NATIONAL_ID">National ID</option>
+        <option value="DRIVERS_LICENSE">Driver's License</option>
+        <option value="BIRTH_CERTIFICATE">Birth Certificate</option>
+        <option value="MILITARY_ID">Military ID</option>
+        <option value="OCI_CARD">OCI Card</option>
       </select>
     </div>
     <div class="form-field"><label class="form-label">Document number</label><input class="form-input" id="doc-number" placeholder="e.g. A12345678" autocomplete="off"/></div>
@@ -674,23 +1076,23 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       <div class="form-field"><label class="form-label">Issuing country</label><input class="form-input" id="doc-country" placeholder="US" maxlength="2" style="text-transform:uppercase"/></div>
     </div>
     <div id="doc-modal-error" class="form-error"></div>
-    <div class="form-actions">
+    <div style="display:flex;gap:8px;margin-top:18px">
       <button class="btn btn-primary btn-sm" id="doc-submit-btn" onclick="submitDoc()">Add document</button>
       <button class="btn btn-secondary btn-sm" onclick="closeDocModal()">Cancel</button>
     </div>
   </div>
 </div>
 
-<!-- ── Loyalty modal ──────────────────────────────────── -->
+<!-- ── Loyalty modal ── -->
 <div class="modal-overlay" id="loyalty-modal" onclick="if(event.target===this)closeLoyaltyModal()">
   <div class="modal">
     <div class="modal-header">
-      <h2 class="h3" id="loyalty-modal-title">Add loyalty program</h2>
+      <span class="modal-title" id="loyalty-modal-title">Add loyalty program</span>
       <button class="modal-close" onclick="closeLoyaltyModal()">&#x2715;</button>
     </div>
     <div class="form-row">
       <div class="form-field">
-        <label class="form-label">Program type</label>
+        <label class="form-label">Type</label>
         <select class="form-input form-select" id="loy-type">
           <option value="AIRLINE">Airline</option><option value="HOTEL">Hotel</option><option value="CAR">Car rental</option><option value="CREDIT_CARD">Credit card</option>
         </select>
@@ -701,21 +1103,29 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     <div class="form-field"><label class="form-label">Member number</label><input class="form-input" id="loy-number" placeholder="MP12345678" autocomplete="off"/></div>
     <div class="form-row">
       <div class="form-field">
-        <label class="form-label">Status / tier</label>
+        <label class="form-label">Status tier</label>
         <select class="form-input form-select" id="loy-tier">
           <option value="">— No status —</option><option value="SILVER">Silver</option><option value="GOLD">Gold</option><option value="PLATINUM">Platinum</option><option value="DIAMOND">Diamond</option><option value="1K">1K / top tier</option>
         </select>
       </div>
       <div class="form-field"><label class="form-label">Points balance</label><input class="form-input" type="number" id="loy-points" placeholder="0"/></div>
     </div>
-    <div class="form-field">
-      <label class="form-check" style="margin-top:4px"><input type="checkbox" id="loy-auto-apply" checked> Auto-apply to bookings</label>
-    </div>
+    <label class="form-check" style="margin-top:4px"><input type="checkbox" id="loy-auto-apply" checked> Auto-apply to bookings</label>
     <div id="loyalty-modal-error" class="form-error"></div>
-    <div class="form-actions">
+    <div style="display:flex;gap:8px;margin-top:18px">
       <button class="btn btn-primary btn-sm" id="loyalty-submit-btn" onclick="submitLoyalty()">Save program</button>
       <button class="btn btn-secondary btn-sm" onclick="closeLoyaltyModal()">Cancel</button>
     </div>
+  </div>
+</div>
+
+<!-- ── Coming soon modal ── -->
+<div class="modal-overlay" id="coming-soon-modal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal" style="max-width:360px;text-align:center;padding:36px 28px">
+    <div style="font-size:36px;margin-bottom:14px">🗓</div>
+    <div class="modal-title" style="margin-bottom:10px">Coming soon</div>
+    <p class="lede" style="font-size:14px;margin-bottom:22px">Automatic context-switching rules are on the roadmap. For now, switch context manually at checkout.</p>
+    <button class="btn btn-secondary btn-sm" onclick="document.getElementById('coming-soon-modal').classList.remove('open')">Got it</button>
   </div>
 </div>
 
@@ -728,8 +1138,10 @@ var _CID="2heljmdli4f9cv2i4m0i020mfc";
 var _tok=null,_prof=null,_uid=null;
 var _docsMap={},_editingDocId=null;
 var _loyaltyMap={},_editingLoyaltyId=null;
+var _saveTimers={};
+var _TABS=["identity","how-you-travel","business"];
 
-/* ── Core ── */
+/* ── Core helpers ── */
 function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent(window.location.origin+window.location.pathname);}
 function _ph(){var p=new URLSearchParams(window.location.hash.slice(1));return p.get("id_token")||p.get("access_token");}
 async function _req(method,ep,body){
@@ -747,13 +1159,49 @@ function _ht(id,v){var e=document.getElementById(id);if(e)e.innerHTML=v;}
 function _val(id){var e=document.getElementById(id);return e?e.value:"";}
 function _setval(id,v){var e=document.getElementById(id);if(e)e.value=v||"";}
 function _chk(id,v){var e=document.getElementById(id);if(e)e.checked=!!v;}
+function _chkv(id){var e=document.getElementById(id);return e?e.checked:false;}
 function _fmt(s){if(!s)return"—";return new Date(s).toLocaleDateString("en-US",{day:"numeric",month:"long",year:"numeric"});}
+function _pill(cls,txt){return'<span class="pill '+cls+'">'+txt+'</span>';}
+function _showErr(id,msg){var e=document.getElementById(id);if(e){e.textContent=msg;e.style.display=msg?"block":"none";}}
+function showToast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},3000);}
+function _debounce(key,fn,ms){if(_saveTimers[key])clearTimeout(_saveTimers[key]);_saveTimers[key]=setTimeout(fn,ms||400);}
+
+/* ── Retry-aware error display ── */
+var _retryFns={};
+function _showErrRetry(id,fn){
+  _retryFns[id]=fn;
+  var e=document.getElementById(id);
+  if(!e)return;
+  e.innerHTML='Couldn\'t save that change. <button class="err-retry" onclick="_retryFns[\''+id+'\']&&_retryFns[\''+id+'\']()">Try again</button>';
+  e.style.display='block';
+}
+
+/* ── Tile keyboard navigation ── */
+document.addEventListener('keydown',function(e){
+  var t=e.target;
+  if(!t||!t.classList||!t.classList.contains('tile'))return;
+  var grp=t.getAttribute('data-group');
+  if(!grp)return;
+  var tiles=Array.from(document.querySelectorAll('.tile[data-group="'+grp+'"]'));
+  var idx=tiles.indexOf(t);
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'){
+    e.preventDefault();
+    tiles[(idx+1)%tiles.length].focus();
+  }else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){
+    e.preventDefault();
+    tiles[(idx-1+tiles.length)%tiles.length].focus();
+  }
+});
+
+/* ── Sidebar ── */
 function _sidebarUpdate(p){
   _st("sidebar-number",p.uniprofile_number||"—");
   _st("sidebar-name",_dn(p));
   _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
   _st("sidebar-avatar",_ini(p));
 }
+
+/* ── Auth ── */
 async function _auth(){
   var h=_ph();
   if(h){_tok=h;localStorage.setItem("up_token",_tok);history.replaceState(null,"",window.location.pathname);}
@@ -761,36 +1209,431 @@ async function _auth(){
   if(!_tok){location.href=_loginUrl();return false;}
   return true;
 }
-function showToast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},3000);}
-function _showErr(id,msg){var e=document.getElementById(id);if(e){e.textContent=msg;e.style.display=msg?"block":"none";}}
-function _showOk(id,msg){var e=document.getElementById(id);if(e){e.textContent=msg||"Saved.";e.style.display="block";setTimeout(function(){if(e)e.style.display="none";},3000);}}
 
-/* ── Tab switching ── */
-function switchTab(e,name){
+/* ── Tab switching with hash routing ── */
+function switchTab(btn,name){
   document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active");});
-  e.currentTarget.classList.add("active");
-  ["identity","preferences","dna","payment","policy"].forEach(function(id){
+  btn.classList.add("active");
+  _TABS.forEach(function(id){
     var el=document.getElementById("tab-"+id);
-    if(el)el.style.display=id===name?"":"none";
+    if(el)el.style.display=(id===name)?"":"none";
   });
+  history.replaceState(null,"",window.location.pathname+"#"+name);
+}
+function _initTabFromHash(){
+  var hash=window.location.hash.slice(1);
+  var active=_TABS.indexOf(hash)>-1?hash:"identity";
+  var btn=document.querySelector('[data-tab="'+active+'"]');
+  if(btn){
+    document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active");});
+    btn.classList.add("active");
+    _TABS.forEach(function(id){
+      var el=document.getElementById("tab-"+id);
+      if(el)el.style.display=(id===active)?"":"none";
+    });
+  }
 }
 
-/* ── Doc helpers ── */
-function _docLabel(t){var m={PASSPORT:"Passport",US_GREEN_CARD:"Permanent Resident Card",KTN:"Known Traveler No.",GLOBAL_ENTRY:"Global Entry",ESTA:"ESTA",VISA:"Visa",NEXUS:"NEXUS",SENTRI:"SENTRI",NATIONAL_ID:"National ID",DRIVERS_LICENSE:"Driver's License",BIRTH_CERTIFICATE:"Birth Certificate"};return m[t]||(t||"Document").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();});}
-function _daysLabel(d){if(d===null||d===undefined)return"No expiry";if(d<0)return"Expired";if(d===0)return"Expires today";if(d<=30)return"Expires in "+d+" days";return"Expires "+new Date(Date.now()+d*86400000).toLocaleDateString("en-US",{month:"short",year:"numeric"});}
-function _docIcon(t){var m={PASSPORT:"#i-passport",VISA:"#i-visa",US_GREEN_CARD:"#i-visa",KTN:"#i-ktn",GLOBAL_ENTRY:"#i-ktn",NEXUS:"#i-ktn",SENTRI:"#i-ktn"};return m[t]||"#i-doc";}
-function _docPill(d){
-  if(d.days_remaining===null||d.days_remaining===undefined)return'<span class="pill pill-neutral">No expiry</span>';
-  if(d.days_remaining<0)return'<span class="pill pill-amber"><span class="pill-dot dot-amber"></span>Expired</span>';
-  if(d.days_remaining<=90)return'<span class="pill pill-amber"><span class="pill-dot dot-amber"></span>Expiring</span>';
-  return'<span class="pill pill-ready"><span class="pill-dot dot-green"></span>Valid</span>';
+/* ── Card expand/collapse ── */
+function toggleCard(name){
+  var card=document.getElementById("card-"+name);
+  if(!card)return;
+  var wasOpen=card.classList.contains("editing");
+  document.querySelectorAll(".card-item.editing").forEach(function(c){
+    c.classList.remove("editing");
+    var btn=c.querySelector("[aria-expanded]");
+    if(btn)btn.setAttribute("aria-expanded","false");
+  });
+  if(!wasOpen){
+    card.classList.add("editing");
+    var btn=card.querySelector("[aria-expanded]");
+    if(btn)btn.setAttribute("aria-expanded","true");
+  }
 }
 
-/* ── Document CRUD ── */
+/* ── Universal card open/close ── */
+function toggleUniversal(name){
+  var el=document.getElementById("cu-"+name+"-edit");
+  if(!el)return;
+  var opening=el.style.display!=="block";
+  el.style.display=opening?"block":"none";
+  if(opening&&name==="universal-travel"&&typeof _populateUniversalEdit==="function")_populateUniversalEdit(_prof);
+}
+function closeUniversal(name){
+  var el=document.getElementById("cu-"+name+"-edit");
+  if(el)el.style.display="none";
+}
+
+/* ── Coming soon ── */
+function openComingSoon(){document.getElementById("coming-soon-modal").classList.add("open");}
+
+/* ── Label helpers ── */
+function _docLabel(t){var m={PASSPORT:"Passport",US_GREEN_CARD:"Permanent Resident Card",KTN:"Known Traveler No.",GLOBAL_ENTRY:"Global Entry",ESTA:"ESTA",VISA:"Visa",NEXUS:"NEXUS",SENTRI:"SENTRI",NATIONAL_ID:"National ID",DRIVERS_LICENSE:"Driver's License",BIRTH_CERTIFICATE:"Birth Certificate",MILITARY_ID:"Military ID",OCI_CARD:"OCI Card"};return m[t]||(t||"Document").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();});}
+function _fmt2(s){if(!s)return null;return new Date(s).toLocaleDateString("en-US",{month:"short",year:"numeric"});}
+function _mealLabel(c){return{VGML:"Vegan",AVML:"Asian vegetarian",RVML:"Vegetarian",VLML:"Vegetarian lacto",KSML:"Kosher",MOML:"Muslim",HNML:"Hindu",GFML:"Gluten-free",DBML:"Diabetic",LCML:"Low-calorie",LSML:"Low-sodium",BLML:"Bland",LFML:"Low-fat",BBML:"Child"}[c]||c;}
+function _seatLabel(v){return{WINDOW:"Window",AISLE:"Aisle",MIDDLE:"Middle"}[v]||v;}
+function _rowLabel(v){return{FRONT:"front of cabin",MIDDLE:"mid-cabin",BACK:"back of cabin",EXIT_ROW:"exit row",BULKHEAD:"bulkhead"}[v]||v;}
+function _cabinLabel(v){return{ECONOMY:"Economy",ECONOMY_PLUS:"Premium economy",BUSINESS:"Business class",FIRST:"First class"}[v]||v;}
+function _bedLabel(v){return{KING:"King",QUEEN:"Queen",DOUBLE:"Double",TWIN:"Twin",SUITE:"Suite",STUDIO:"Studio"}[v]||v;}
+function _floorLabel(v){return{HIGH:"high",MID:"mid",LOW:"low"}[v]||v;}
+
+/* ── Read-state renderers ── */
+function _renderHeader(p){
+  var id=p.identity||{};
+  _st("me-avatar",_ini(p));
+  var ne=document.getElementById("me-name");
+  if(ne)ne.innerHTML=(id.legal_first||_dn(p))+(id.legal_last?" <em>"+id.legal_last+"</em>":"");
+}
+
+function _renderLegalIdCard(p){
+  var id=p.identity||{};
+  var parts=[];
+  var ln=[id.legal_first,id.legal_middle,id.legal_last].filter(Boolean).join(" ");
+  if(ln)parts.push(ln);
+  if(id.dob)parts.push("born "+_fmt(id.dob));
+  if(id.nationality)parts.push(id.nationality+" national");
+  if(id.gender_code){var gmap={M:"male",F:"female",X:"unspecified gender"};parts.push(gmap[id.gender_code]||id.gender_code);}
+  var prose=parts.length?parts.join(", ")+".":"Legal name and identity not yet set.";
+  if(p.display_name&&p.display_name.trim())prose+=' Called "'+p.display_name.trim()+'" in your household.';
+  _st("legal-id-prose",prose);
+  // Pre-fill edit fields
+  _setval("edit-first",id.legal_first);_setval("edit-middle",id.legal_middle);_setval("edit-last",id.legal_last);
+  _setval("edit-display-name",p.display_name);
+  _setval("edit-dob",id.dob?id.dob.slice(0,10):"");
+  _setval("edit-nationality",id.nationality);_setval("edit-gender",id.gender_code);_setval("edit-home-airport",id.home_airport);
+  // Wire auto-save
+  ["edit-first","edit-middle","edit-last","edit-display-name","edit-dob","edit-nationality","edit-home-airport"].forEach(function(fid){
+    var el=document.getElementById(fid);if(el)el.onchange=function(){_debounce("identity",_autoSaveIdentity,500);};
+  });
+  var gs=document.getElementById("edit-gender");if(gs)gs.onchange=function(){_debounce("identity",_autoSaveIdentity,500);};
+}
+
+async function _autoSaveIdentity(){
+  _showErr("identity-save-err","");
+  try{
+    var data={};
+    var f=_val("edit-first").trim(),m=_val("edit-middle").trim(),l=_val("edit-last").trim();
+    var dob=_val("edit-dob"),nat=_val("edit-nationality").trim().toUpperCase(),gen=_val("edit-gender");
+    var hap=_val("edit-home-airport").trim().toUpperCase(),dn=_val("edit-display-name").trim();
+    if(f)data.legal_first=f;if(m)data.legal_middle=m;if(l)data.legal_last=l;
+    if(dob)data.dob=dob;if(nat)data.nationality=nat;if(gen)data.gender_code=gen;
+    if(hap)data.home_airport=hap;if(dn)data.display_name=dn;
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"identity",data:data});
+    showToast("Identity saved.");
+    var p=await _req("GET","/api/v1/me");_prof=p;_renderLegalIdCard(p);_renderHeader(p);_sidebarUpdate(p);
+  }catch(e){_showErrRetry("identity-save-err",_autoSaveIdentity);}
+}
+
+function _renderIdentityCards(p){
+  var docs=p.documents||[];
+  _docsMap={};
+  docs.forEach(function(d){var did=d.id||d.doc_id;_docsMap[did]=d;});
+
+  var passport=docs.find(function(d){return d.doc_type==="PASSPORT";});
+  var visaTypes=["VISA","US_GREEN_CARD","ESTA","NATIONAL_ID","OCI_CARD","BIRTH_CERTIFICATE","MILITARY_ID"];
+  var visaDocs=docs.filter(function(d){return visaTypes.indexOf(d.doc_type)>-1;});
+  var ttTypes=["KTN","GLOBAL_ENTRY","NEXUS","SENTRI"];
+  var ttDocs=docs.filter(function(d){return ttTypes.indexOf(d.doc_type)>-1;});
+  var license=docs.find(function(d){return d.doc_type==="DRIVERS_LICENSE";});
+
+  // Passport
+  var pb=document.getElementById("passport-body");
+  var pbtn=document.getElementById("passport-btn");
+  if(passport){
+    var dr=passport.days_remaining;
+    var pillCls=dr<0?"pill-red":dr<=90?"pill-amber":"pill-green";
+    var pillTxt=dr<0?"Expired":dr<=90?"Expiring soon":"Valid";
+    _ht("passport-pill",_pill(pillCls,pillTxt));
+    pb.className="card-item-body";
+    pb.textContent="Issued by "+(passport.issuing_country||"—")+(passport.expiry_date?". Expires "+_fmt2(passport.expiry_date)+".":".");
+    if(pbtn)pbtn.textContent="Edit";
+  }else{
+    _ht("passport-pill",_pill("pill-neutral","Not set"));
+    pb.className="card-item-body empty";
+    pb.textContent="Your primary travel document. Required for international flights. Add it once and it auto-fills at every booking.";
+    if(pbtn)pbtn.textContent="Set up";
+  }
+
+  // Visa & residency
+  var vb=document.getElementById("visa-body");
+  var vbtn=document.getElementById("visa-btn");
+  if(visaDocs.length){
+    _ht("visa-pill",_pill("pill-green",visaDocs.length+" on file"));
+    vb.className="card-item-body";
+    vb.textContent=visaDocs.map(function(d){return _docLabel(d.doc_type)+(d.issuing_country?" ("+d.issuing_country+")":'');}).join(", ")+".";
+    if(vbtn)vbtn.textContent="Edit";
+  }else{
+    _ht("visa-pill",_pill("pill-neutral","Not set"));
+    vb.className="card-item-body empty";
+    vb.textContent="Visas, residency permits, work permits, OCI cards. Add any that apply to your travel.";
+    if(vbtn)vbtn.textContent="Set up";
+  }
+
+  // Trusted traveler
+  var tb=document.getElementById("trusted-body");
+  var tbtn=document.getElementById("trusted-btn");
+  if(ttDocs.length){
+    var tPillTxt=ttDocs.length>=2?"Both active":ttDocs.length+" active";
+    _ht("trusted-pill",_pill("pill-green",tPillTxt));
+    tb.className="card-item-body";
+    tb.textContent=ttDocs.map(function(d){return _docLabel(d.doc_type)+(d.doc_number?" ···"+d.doc_number.slice(-4):"");}).join(", ")+". Applied automatically on U.S.-touching bookings.";
+    if(tbtn)tbtn.textContent="Edit";
+  }else{
+    _ht("trusted-pill",_pill("pill-neutral","Not set"));
+    tb.className="card-item-body empty";
+    tb.textContent="KTN, Global Entry, NEXUS, Clear. Add your number once and it's filled at every eligible booking.";
+    if(tbtn)tbtn.textContent="Set up";
+  }
+
+  // Driver's license
+  var db=document.getElementById("drivers-body");
+  var dbtn=document.getElementById("drivers-btn");
+  if(license){
+    _ht("drivers-pill",_pill("pill-green","On file"));
+    db.className="card-item-body";
+    db.textContent="On file"+(license.issuing_country?" ("+license.issuing_country+")":'')+(license.expiry_date?". Expires "+_fmt2(license.expiry_date):".")+".";
+    if(dbtn)dbtn.textContent="Edit";
+  }else{
+    _ht("drivers-pill",_pill("pill-neutral","Not set"));
+    db.className="card-item-body empty";
+    db.textContent="Used at car rentals and as a U.S. domestic flight backup. Real ID compliance flagged automatically.";
+    if(dbtn)dbtn.textContent="Set up";
+  }
+}
+
+function _renderUniversalTravel(p){
+  var m=p.meal_preferences||{};
+  var s=p.seat_preferences||{};
+  var parts=[];
+  if(m.primary_meal_code)parts.push(_mealLabel(m.primary_meal_code)+" meals");
+  else parts.push("Standard meals");
+  parts.push("English preferred");
+  parts.push(s.wheelchair_needed?"Wheelchair assistance requested":"No accessibility needs");
+  _st("universal-travel-prose",parts.join(". ")+".");
+}
+
+function _renderFlightCard(p){
+  var s=p.seat_preferences||{};
+  var f=p.fly_preferences||{};
+  var hasData=s.seat_position||s.cabin_domestic||s.cabin_international||(f.preferred_airlines&&f.preferred_airlines.length);
+  var fb=document.getElementById("flight-body");
+  var fbtn=document.getElementById("flight-btn");
+  if(hasData){
+    _ht("flight-pill",_pill("pill-green","Set"));
+    fb.className="card-item-body";
+    var parts=[];
+    if(s.seat_position)parts.push(_seatLabel(s.seat_position)+" seat");
+    if(s.avoid_middle_seats)parts.push("avoid middle seats");
+    if(s.row_preference)parts.push(_rowLabel(s.row_preference)+" when possible");
+    var body=parts.length?parts.join(", ")+". ":"";
+    if(s.cabin_domestic)body+=_cabinLabel(s.cabin_domestic)+" on domestic flights";
+    if(s.cabin_domestic&&s.cabin_international)body+="; ";
+    if(s.cabin_international)body+=_cabinLabel(s.cabin_international)+" internationally";
+    if(s.cabin_domestic||s.cabin_international)body+=".";
+    if(f.preferred_airlines&&f.preferred_airlines.length)body+=" "+f.preferred_airlines.join(", ")+" preferred.";
+    fb.textContent=body||"Flight preferences set.";
+    if(fbtn)fbtn.textContent="Edit";
+  }else{
+    _ht("flight-pill",_pill("pill-neutral","Not set"));
+    fb.className="card-item-body empty";
+    fb.textContent="Seat position, cabin class, preferred airlines — set once, applied quietly at every booking.";
+    if(fbtn)fbtn.textContent="Set up";
+  }
+}
+
+function _renderHotelCard(p){
+  var s=p.seat_preferences||{};
+  var t=p.travel_preferences||{};
+  var hasData=s.hotel_room_type||s.hotel_floor_pref||(t.preferred_hotel_brands&&t.preferred_hotel_brands.length);
+  var hb=document.getElementById("hotel-body");
+  var hbtn=document.getElementById("hotel-btn");
+  if(hasData){
+    _ht("hotel-pill",_pill("pill-green","Set"));
+    hb.className="card-item-body";
+    var parts=[];
+    if(s.hotel_room_type)parts.push(_bedLabel(s.hotel_room_type)+" bed");
+    if(s.hotel_floor_pref)parts.push(_floorLabel(s.hotel_floor_pref)+" floor");
+    if(t.quiet_room)parts.push("quiet room");
+    var body=parts.length?parts.join(", ")+". ":"";
+    if(t.late_checkout)body+="Late check-out requested. ";
+    if(t.preferred_hotel_brands&&t.preferred_hotel_brands.length)body+=t.preferred_hotel_brands.join(", ")+" loyalty linked.";
+    hb.textContent=body||"Hotel preferences set.";
+    if(hbtn)hbtn.textContent="Edit";
+  }else{
+    _ht("hotel-pill",_pill("pill-neutral","Not set"));
+    hb.className="card-item-body empty";
+    hb.textContent="Bed type, floor preference, late checkout — set these once and we'll request them on every stay.";
+    if(hbtn)hbtn.textContent="Set up";
+  }
+}
+
+function _renderCruiseCard(p){
+  var c=(p.travel_preferences&&p.travel_preferences.cruise)||{};
+  var cb=document.getElementById("cruise-body");
+  var cbtn=document.getElementById("cruise-btn");
+  if(c.cabin_type||c.dining_time){
+    _ht("cruise-pill",_pill("pill-green","Set"));
+    cb.className="card-item-body";
+    var parts=[];
+    if(c.cabin_type)parts.push(c.cabin_type.charAt(0)+c.cabin_type.slice(1).toLowerCase()+" cabin");
+    if(c.deck_level&&c.deck_level!=="NO_PREFERENCE")parts.push(c.deck_level.toLowerCase()+"-deck");
+    if(c.bed_config)parts.push(c.bed_config==="ONE_BED"?"one bed":"two beds");
+    var body=parts.length?parts.join(", ")+". ":"";
+    if(c.dining_time)body+=({EARLY:"Early seating",LATE:"Late seating",ANYTIME:"Anytime dining"}[c.dining_time]||c.dining_time);
+    if(c.table_sharing)body+=", happy to share a table";
+    body+=".";
+    if(c.excursion_style&&c.excursion_style.length)body+=" "+(Array.isArray(c.excursion_style)?c.excursion_style.map(function(s){return s.charAt(0)+s.slice(1).toLowerCase();}).join(", ")+" excursions.":"");
+    cb.textContent=body;
+    if(cbtn)cbtn.textContent="Edit";
+  }else{
+    _ht("cruise-pill",_pill("pill-neutral","Not set"));
+    cb.className="card-item-body empty";
+    cb.textContent="Tell us how you like to cruise — cabin, dining, excursions, accessibility — and we'll quietly apply it at every booking.";
+    if(cbtn)cbtn.textContent="Set up";
+  }
+}
+
+function _renderRailCard(p){
+  var t=p.travel_preferences||{};
+  var s=p.seat_preferences||{};
+  var hasData=t.rail_class||s.car_type_pref;
+  var rb=document.getElementById("rail-body");
+  var rbtn=document.getElementById("rail-btn");
+  if(hasData){
+    _ht("rail-pill",_pill("pill-green","Set"));
+    rb.className="card-item-body";
+    var parts=[];
+    if(t.rail_class)parts.push({STANDARD:"Standard class",FIRST:"First class",BUSINESS:"Business class"}[t.rail_class]||t.rail_class);
+    if(t.rail_seat_facing)parts.push({FORWARD:"forward-facing",BACKWARD:"backward-facing"}[t.rail_seat_facing]||t.rail_seat_facing);
+    if(s.car_type_pref)parts.push(s.car_type_pref.toLowerCase().replace("_"," ")+" car rental");
+    rb.textContent=parts.join(", ")+".";
+    if(rbtn)rbtn.textContent="Edit";
+  }else{
+    _ht("rail-pill",_pill("pill-neutral","Not set"));
+    rb.className="card-item-body empty";
+    rb.textContent="Train class, seat facing, car rental size — set your ground preferences and they follow you everywhere.";
+    if(rbtn)rbtn.textContent="Set up";
+  }
+}
+
+function _renderEmployerCard(p){
+  var t=p.travel_preferences||{};
+  var eb=document.getElementById("employer-body");
+  var ebtn=document.getElementById("employer-btn");
+  if(t.employer_name){
+    _ht("employer-pill",_pill("pill-green","Manual"));
+    eb.className="card-item-body";
+    var parts=[t.employer_name+(t.employer_role?" — "+t.employer_role:"")];
+    if(t.cost_center)parts.push("Cost center "+t.cost_center);
+    if(t.employee_id)parts.push("Employee ID "+t.employee_id);
+    eb.textContent=parts.join(". ")+".";
+    if(ebtn)ebtn.textContent="Edit";
+  }else{
+    _ht("employer-pill",_pill("pill-neutral","Not set"));
+    eb.className="card-item-body empty";
+    eb.textContent="Add your employer and role so UniProfile can apply the right booking context and expense policy automatically.";
+    if(ebtn)ebtn.textContent="Set up";
+  }
+}
+
+function _renderPolicyCard(p){
+  var profiles=p.payment_profiles||[];
+  var corp=profiles.find(function(x){return x.context==="CORPORATE";});
+  var desc=corp&&corp.policy_description;
+  var pb=document.getElementById("policy-body");
+  var pbtn=document.getElementById("policy-btn");
+  if(desc){
+    _ht("policy-pill",_pill("pill-green","Active"));
+    pb.className="card-item-body";
+    pb.textContent=desc.length>120?desc.slice(0,117)+"…":desc;
+    if(pbtn)pbtn.textContent="Edit";
+  }else{
+    _ht("policy-pill",_pill("pill-neutral","Not set"));
+    pb.className="card-item-body empty";
+    pb.textContent="Cabin rules, hotel caps, pre-approval thresholds — your expense policy, applied automatically at booking.";
+    if(pbtn)pbtn.textContent="Set up";
+  }
+}
+
+function _renderCorpPayCard(p){
+  var profiles=p.payment_profiles||[];
+  var corp=profiles.find(function(x){return x.context==="CORPORATE";});
+  var cpb=document.getElementById("corp-pay-body");
+  var cpbtn=document.getElementById("corp-pay-btn");
+  if(corp&&corp.corporate_card){
+    _ht("corp-pay-pill",_pill("pill-green","On file"));
+    cpb.className="card-item-body";
+    cpb.textContent=(corp.company_name?corp.company_name+" — ":"")+corp.corporate_card+" on file for travel bookings."+(corp.expense_platform?" Receipts via "+corp.expense_platform+".":"");
+    if(cpbtn)cpbtn.textContent="Edit";
+  }else{
+    _ht("corp-pay-pill",_pill("pill-neutral","Not set"));
+    cpb.className="card-item-body empty";
+    cpb.textContent="Add your corporate card and expense platform so receipts route correctly every time.";
+    if(cpbtn)cpbtn.textContent="Set up";
+  }
+}
+
+function _renderPersPayCard(p){
+  var profiles=p.payment_profiles||[];
+  var personal=profiles.find(function(x){return x.context==="PERSONAL";});
+  var ppb=document.getElementById("pers-pay-body");
+  var ppbtn=document.getElementById("pers-pay-btn");
+  if(personal&&personal.preferred_card){
+    _ht("pers-pay-pill",_pill("pill-green","On file"));
+    ppb.className="card-item-body";
+    ppb.textContent=personal.preferred_card+" — default for personal travel.";
+    if(ppbtn)ppbtn.textContent="Edit";
+  }else{
+    _ht("pers-pay-pill",_pill("pill-neutral","Not set"));
+    ppb.className="card-item-body empty";
+    ppb.textContent="Your personal preferred card. Set once and UniProfile uses it by default on personal bookings.";
+    if(ppbtn)ppbtn.textContent="Set up";
+  }
+}
+
+function _renderLoyaltyCard(p){
+  var programs=p.loyalty_programs||[];
+  _loyaltyMap={};
+  programs.forEach(function(lp){_loyaltyMap[lp.id]=lp;});
+  var lb=document.getElementById("loyalty-body");
+  var lbtn=document.getElementById("loyalty-btn");
+  if(programs.length){
+    _ht("loyalty-pill",_pill("pill-green",programs.length+" linked"));
+    lb.className="card-item-body";
+    var top=programs.slice(0,3).map(function(lp){return(lp.provider_name||lp.program_name||"Program")+(lp.tier_status?" "+lp.tier_status:"");});
+    lb.textContent=top.join(", ")+(programs.length>3?", and "+(programs.length-3)+" more":"")+". Auto-applied at booking when the carrier or chain matches.";
+    if(lbtn)lbtn.textContent="Manage";
+  }else{
+    _ht("loyalty-pill",_pill("pill-neutral","Not set"));
+    lb.className="card-item-body empty";
+    lb.textContent="Link your airline, hotel, and car loyalty numbers — UniProfile fills them in silently at booking.";
+    if(lbtn)lbtn.textContent="Set up";
+  }
+  // Render inline list inside expanded card
+  if(!programs.length){_ht("loyalty-list-inner","<div style='padding:10px 0;color:var(--ink-mute);font-size:13px'>No programs added yet.</div>");return;}
+  var html="";
+  programs.forEach(function(lp){
+    var name=lp.provider_name||lp.program_name||"Program";
+    var badge=({AIRLINE:"lb-airline",HOTEL:"lb-hotel",CAR:"lb-car",CREDIT_CARD:"lb-card"})[lp.program_type]||"lb-card";
+    var tier=lp.tier_status?(' <span class="pill '+badge+'">'+lp.tier_status+"</span>"):"";
+    var pts=lp.points_balance?(' <span class="caption" style="margin-left:5px">'+Number(lp.points_balance).toLocaleString()+" pts</span>"):"";
+    html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--rule)">'
+      +'<div style="flex:1;min-width:0">'
+      +'<div style="font-size:13px;font-weight:500">'+name+(lp.program_name&&lp.program_name!==name?" · "+lp.program_name:"")+'</div>'
+      +'<div style="font-size:12px;color:var(--ink-mute);display:flex;align-items:center;flex-wrap:wrap;gap:4px">'+(lp.member_number?"···"+lp.member_number.slice(-4)+" ":"")+tier+pts+'</div>'
+      +'</div>'
+      +'<div style="display:flex;gap:5px;flex-shrink:0">'
+      +'<button class="btn btn-secondary btn-xs" onclick="openEditLoyalty(\''+lp.id+'\')">Edit</button>'
+      +'<button class="btn btn-danger btn-xs" onclick="deleteLoyalty(\''+lp.id+'\')">Delete</button>'
+      +'</div></div>';
+  });
+  _ht("loyalty-list-inner",html);
+}
+
+/* ── Document modal ── */
 function openAddDoc(){
   _editingDocId=null;
-  _st("doc-modal-title","Add a document");
-  _st("doc-submit-btn","Add document");
+  _st("doc-modal-title","Add a document");_st("doc-submit-btn","Add document");
   ["doc-type","doc-number","doc-expiry","doc-country"].forEach(function(id){_setval(id,"");});
   _showErr("doc-modal-error","");
   document.getElementById("doc-modal").classList.add("open");
@@ -798,12 +1641,9 @@ function openAddDoc(){
 function openEditDocById(id){
   var d=_docsMap[id];if(!d)return;
   _editingDocId=id;
-  document.getElementById("doc-modal-title").textContent="Edit document";
-  document.getElementById("doc-submit-btn").textContent="Save changes";
-  _setval("doc-type",d.doc_type);
-  _setval("doc-number",d.doc_number);
-  _setval("doc-expiry",d.expiry_date?d.expiry_date.slice(0,10):"");
-  _setval("doc-country",d.issuing_country);
+  _st("doc-modal-title","Edit document");_st("doc-submit-btn","Save changes");
+  _setval("doc-type",d.doc_type);_setval("doc-number",d.doc_number);
+  _setval("doc-expiry",d.expiry_date?d.expiry_date.slice(0,10):"");_setval("doc-country",d.issuing_country);
   _showErr("doc-modal-error","");
   document.getElementById("doc-modal").classList.add("open");
 }
@@ -811,21 +1651,17 @@ function closeDocModal(){document.getElementById("doc-modal").classList.remove("
 async function submitDoc(){
   var type=_val("doc-type"),num=_val("doc-number").trim(),expiry=_val("doc-expiry"),country=_val("doc-country").trim().toUpperCase();
   if(!type){_showErr("doc-modal-error","Please select a document type.");return;}
-  var btn=document.getElementById("doc-submit-btn");
-  btn.disabled=true;btn.textContent="Saving…";
+  var btn=document.getElementById("doc-submit-btn");btn.disabled=true;btn.textContent="Saving…";
   _showErr("doc-modal-error","");
   try{
     var data={doc_type:type};
-    if(num)data.doc_number=num;
-    if(expiry)data.expiry_date=expiry;
-    if(country)data.issuing_country=country;
+    if(num)data.doc_number=num;if(expiry)data.expiry_date=expiry;if(country)data.issuing_country=country;
     if(_editingDocId)data.doc_id=_editingDocId;
     await _req("PUT","/api/v1/profile/"+_uid,{module:_editingDocId?"document_update":"document_add",data:data});
-    closeDocModal();
-    showToast(_editingDocId?"Document updated.":"Document added.");
-    await meRefresh();
+    closeDocModal();showToast(_editingDocId?"Document updated.":"Document added.");await meRefresh();
+    _renderInlineDocList("visa-doc-list",_VISA_TYPES);_renderInlineDocList("trusted-doc-list",_TT_TYPES);
   }catch(e){
-    _showErr("doc-modal-error","Save failed: "+(e.message||"Please try again."));
+    _showErr("doc-modal-error","Save failed: "+(e.message||"Try again."));
     btn.disabled=false;btn.textContent=_editingDocId?"Save changes":"Add document";
   }
 }
@@ -834,257 +1670,11 @@ async function deleteDoc(docId){
   try{
     await _req("PUT","/api/v1/profile/"+_uid,{module:"document_delete",data:{doc_id:docId}});
     showToast("Document removed.");await meRefresh();
+    _renderInlineDocList("visa-doc-list",_VISA_TYPES);_renderInlineDocList("trusted-doc-list",_TT_TYPES);
   }catch(e){showToast("Error: "+(e.message||"Failed."));}
 }
 
-/* ── Identity edit ── */
-function showIdentityEdit(){
-  var id=_prof?(_prof.identity||{}):{};
-  _setval("edit-first",id.legal_first);_setval("edit-middle",id.legal_middle);_setval("edit-last",id.legal_last);
-  _setval("edit-display-name",_prof?_prof.display_name:"");
-  _setval("edit-dob",id.dob?id.dob.slice(0,10):"");
-  _setval("edit-nationality",id.nationality);_setval("edit-gender",id.gender_code);
-  _setval("edit-home-airport",id.home_airport);
-  _showErr("identity-edit-error","");
-  document.getElementById("identity-edit-panel").style.display="block";
-  document.getElementById("identity-edit-btn").style.display="none";
-}
-function cancelIdentityEdit(){
-  document.getElementById("identity-edit-panel").style.display="none";
-  document.getElementById("identity-edit-btn").style.display="";
-}
-async function saveIdentity(){
-  var btn=document.getElementById("identity-save-btn");
-  btn.disabled=true;btn.textContent="Saving…";
-  _showErr("identity-edit-error","");
-  try{
-    var data={};
-    var first=_val("edit-first").trim(),mid=_val("edit-middle").trim(),last=_val("edit-last").trim();
-    var dob=_val("edit-dob"),nat=_val("edit-nationality").trim().toUpperCase(),gen=_val("edit-gender");
-    var hap=_val("edit-home-airport").trim().toUpperCase();
-    if(first)data.legal_first=first;if(mid)data.legal_middle=mid;if(last)data.legal_last=last;
-    if(dob)data.dob=dob;if(nat)data.nationality=nat;if(gen)data.gender_code=gen;if(hap)data.home_airport=hap;
-    await _req("PUT","/api/v1/profile/"+_uid,{module:"identity",data:data});
-    showToast("Identity saved.");cancelIdentityEdit();await meRefresh();
-  }catch(e){
-    _showErr("identity-edit-error","Save failed: "+(e.message||"Please try again."));
-    btn.disabled=false;btn.textContent="Save changes";
-  }
-}
-
-/* ── Preferences ── */
-function _chkv(id){var e=document.getElementById(id);return e?e.checked:false;}
-function _populatePreferences(p){
-  var s=p.seat_preferences||{};
-  _setval("pref-cabin-dom",s.cabin_domestic);
-  _setval("pref-cabin-intl",s.cabin_international);
-  _setval("pref-seat-pos",s.seat_position);
-  _setval("pref-row",s.row_preference);
-  _chk("pref-avoid-last-row",s.avoid_last_row);
-  _chk("pref-avoid-middle",s.avoid_middle_seats);
-  _chk("pref-wheelchair",s.wheelchair_needed);
-  _setval("pref-hotel-room",s.hotel_room_type);
-  _setval("pref-hotel-floor",s.hotel_floor_pref);
-  _setval("pref-car",s.car_type_pref);
-  /* fly_preferences (flexible JSON module) */
-  var f=p.fly_preferences||{};
-  _setval("pref-upgrade",f.upgrade_pref);
-  _setval("pref-redeye",f.red_eye_pref);
-  _setval("pref-airlines",(f.preferred_airlines||[]).join(", "));
-  _chk("pref-early-boarding",f.early_boarding);
-  _chk("pref-lounge",f.lounge_access);
-  _chk("pref-no-stop",f.prefer_nonstop);
-  _chk("pref-window-view",f.window_for_views);
-  _chk("pref-extra-legroom",f.extra_legroom);
-  /* travel_preferences (flexible JSON module) */
-  var t=p.travel_preferences||{};
-  _setval("pref-hotel-smoking",t.smoking_pref||"NON_SMOKING");
-  _setval("pref-hotel-brands",(t.preferred_hotel_brands||[]).join(", "));
-  _chk("pref-early-checkin",t.early_checkin);
-  _chk("pref-late-checkout",t.late_checkout);
-  _chk("pref-quiet-room",t.quiet_room);
-  _chk("pref-high-floor-auto",t.auto_high_floor);
-  _setval("pref-car-trans",t.car_transmission);
-  _chk("pref-car-ev",t.car_electric);
-  _chk("pref-car-gps",t.car_gps);
-  _chk("pref-car-child-seat",t.car_child_seat);
-  _chk("pref-car-full-tank",t.car_full_tank);
-  /* meal_preferences */
-  var m=p.meal_preferences||{};
-  _setval("pref-meal-code",m.primary_meal_code);
-  _setval("pref-bev",m.beverage_pref);
-  _setval("pref-diet-notes",m.dietary_notes);
-  var avoidItems=m.avoid_items;
-  if(Array.isArray(avoidItems)) _setval("pref-avoid-items",avoidItems.join(", "));
-  else if(typeof avoidItems==="string") _setval("pref-avoid-items",avoidItems);
-  var allg=m.allergies||[];
-  document.querySelectorAll(".allergy-cb").forEach(function(cb){cb.checked=allg.indexOf(cb.value)>-1;});
-}
-
-function _seatPrefsData(){
-  return{
-    cabin_domestic:_val("pref-cabin-dom")||null,
-    cabin_international:_val("pref-cabin-intl")||null,
-    seat_position:_val("pref-seat-pos")||null,
-    row_preference:_val("pref-row")||null,
-    avoid_last_row:_chkv("pref-avoid-last-row"),
-    avoid_middle_seats:_chkv("pref-avoid-middle"),
-    wheelchair_needed:_chkv("pref-wheelchair"),
-    hotel_room_type:_val("pref-hotel-room")||null,
-    hotel_floor_pref:_val("pref-hotel-floor")||null,
-    car_type_pref:_val("pref-car")||null
-  };
-}
-
-async function saveFlightPrefs(){
-  var btn=document.getElementById("pref-flight-btn");
-  btn.disabled=true;btn.textContent="Saving…";
-  _showErr("pref-flight-error","");
-  try{
-    var airlines=_val("pref-airlines").split(",").map(function(s){return s.trim().toUpperCase();}).filter(Boolean);
-    await _req("PUT","/api/v1/profile/"+_uid,{
-      module:"fly_preferences",
-      data:{
-        upgrade_pref:_val("pref-upgrade")||null,
-        red_eye_pref:_val("pref-redeye")||null,
-        preferred_airlines:airlines,
-        early_boarding:_chkv("pref-early-boarding"),
-        lounge_access:_chkv("pref-lounge"),
-        prefer_nonstop:_chkv("pref-no-stop"),
-        window_for_views:_chkv("pref-window-view"),
-        extra_legroom:_chkv("pref-extra-legroom")
-      }
-    });
-    _showOk("pref-flight-ok");showToast("Flight preferences saved.");
-    await meRefresh();
-  }catch(e){_showErr("pref-flight-error","Save failed. "+(e.message||"Try again."));}
-  btn.disabled=false;btn.textContent="Save flight preferences";
-}
-
-async function saveSeatPrefs(){
-  var btn=document.getElementById("pref-seat-btn");
-  btn.disabled=true;btn.textContent="Saving…";
-  _showErr("pref-seat-error","");
-  try{
-    await _req("PUT","/api/v1/profile/"+_uid,{module:"seat_preferences",data:_seatPrefsData()});
-    _showOk("pref-seat-ok");showToast("Seat preferences saved.");
-    await meRefresh();
-  }catch(e){_showErr("pref-seat-error","Save failed. "+(e.message||"Try again."));}
-  btn.disabled=false;btn.textContent="Save seat preferences";
-}
-
-async function saveHotelPrefs(){
-  var btn=document.getElementById("pref-hotel-btn");
-  btn.disabled=true;btn.textContent="Saving…";
-  _showErr("pref-hotel-error","");
-  try{
-    var brands=_val("pref-hotel-brands").split(",").map(function(s){return s.trim();}).filter(Boolean);
-    await _req("PUT","/api/v1/profile/"+_uid,{module:"seat_preferences",data:_seatPrefsData()});
-    await _req("PUT","/api/v1/profile/"+_uid,{
-      module:"travel_preferences",
-      data:{
-        smoking_pref:_val("pref-hotel-smoking")||null,
-        preferred_hotel_brands:brands,
-        early_checkin:_chkv("pref-early-checkin"),
-        late_checkout:_chkv("pref-late-checkout"),
-        quiet_room:_chkv("pref-quiet-room"),
-        auto_high_floor:_chkv("pref-high-floor-auto"),
-        car_transmission:_val("pref-car-trans")||null,
-        car_electric:_chkv("pref-car-ev"),
-        car_gps:_chkv("pref-car-gps"),
-        car_child_seat:_chkv("pref-car-child-seat"),
-        car_full_tank:_chkv("pref-car-full-tank")
-      }
-    });
-    _showOk("pref-hotel-ok");showToast("Hotel preferences saved.");
-    await meRefresh();
-  }catch(e){_showErr("pref-hotel-error","Save failed. "+(e.message||"Try again."));}
-  btn.disabled=false;btn.textContent="Save hotel preferences";
-}
-
-async function saveCarPrefs(){
-  var btn=document.getElementById("pref-car-btn");
-  btn.disabled=true;btn.textContent="Saving…";
-  _showErr("pref-car-error","");
-  try{
-    var brands=_val("pref-hotel-brands").split(",").map(function(s){return s.trim();}).filter(Boolean);
-    await _req("PUT","/api/v1/profile/"+_uid,{module:"seat_preferences",data:_seatPrefsData()});
-    await _req("PUT","/api/v1/profile/"+_uid,{
-      module:"travel_preferences",
-      data:{
-        smoking_pref:_val("pref-hotel-smoking")||null,
-        preferred_hotel_brands:brands,
-        early_checkin:_chkv("pref-early-checkin"),
-        late_checkout:_chkv("pref-late-checkout"),
-        quiet_room:_chkv("pref-quiet-room"),
-        auto_high_floor:_chkv("pref-high-floor-auto"),
-        car_transmission:_val("pref-car-trans")||null,
-        car_electric:_chkv("pref-car-ev"),
-        car_gps:_chkv("pref-car-gps"),
-        car_child_seat:_chkv("pref-car-child-seat"),
-        car_full_tank:_chkv("pref-car-full-tank")
-      }
-    });
-    _showOk("pref-car-ok");showToast("Car preferences saved.");
-    await meRefresh();
-  }catch(e){_showErr("pref-car-error","Save failed. "+(e.message||"Try again."));}
-  btn.disabled=false;btn.textContent="Save car preferences";
-}
-
-async function saveMealPrefs(){
-  var btn=document.getElementById("pref-meal-btn");
-  btn.disabled=true;btn.textContent="Saving…";
-  _showErr("pref-meal-error","");
-  try{
-    var allg=[];
-    document.querySelectorAll(".allergy-cb:checked").forEach(function(cb){allg.push(cb.value);});
-    var avoidRaw=_val("pref-avoid-items").split(",").map(function(s){return s.trim();}).filter(Boolean);
-    await _req("PUT","/api/v1/profile/"+_uid,{
-      module:"meal_preferences",
-      data:{
-        primary_meal_code:_val("pref-meal-code")||null,
-        beverage_pref:_val("pref-bev")||null,
-        allergies:allg,
-        avoid_items:avoidRaw,
-        dietary_notes:_val("pref-diet-notes")||null
-      }
-    });
-    _showOk("pref-meal-ok");showToast("Dining preferences saved.");
-    await meRefresh();
-  }catch(e){_showErr("pref-meal-error","Save failed. "+(e.message||"Try again."));}
-  btn.disabled=false;btn.textContent="Save dining preferences";
-}
-
-/* ── Loyalty ── */
-function _loyBadge(type){var cl={AIRLINE:"lb-airline",HOTEL:"lb-hotel",CAR:"lb-car",CREDIT_CARD:"lb-card"};return cl[type]||"lb-card";}
-function _renderLoyalty(programs){
-  if(!programs||!programs.length){
-    _ht("loyalty-list","<div style='padding:24px 0;color:var(--ink-mute);font-size:13px;'>No loyalty programs added yet.</div>");
-    return;
-  }
-  _loyaltyMap={};
-  var html="";
-  programs.forEach(function(lp){
-    _loyaltyMap[lp.id]=lp;
-    var name=lp.provider_name||lp.program_name||"Program";
-    var ini=name.slice(0,2).toUpperCase();
-    var tier=lp.tier_status?(' <span class="pill '+_loyBadge(lp.program_type)+'">'+lp.tier_status+"</span>"):"";
-    var pts=lp.points_balance?('<span class="caption" style="margin-left:8px">'+Number(lp.points_balance).toLocaleString()+" pts</span>"):"";
-    html+='<div class="list-row">'
-      +'<div class="list-row-icon" style="font-size:11px;font-weight:600;font-family:var(--mono)">'+ini+'</div>'
-      +'<div class="list-row-main">'
-      +'<div class="list-row-title">'+name+(lp.program_name&&lp.program_name!==name?" · "+lp.program_name:"")+'</div>'
-      +'<div class="list-row-meta" style="display:flex;align-items:center">'+_val_or_dash(lp.member_number)+tier+pts+'</div>'
-      +'</div>'
-      +'<div class="list-row-actions">'
-      +'<button class="btn btn-secondary btn-sm" onclick="openEditLoyalty(\''+lp.id+'\')">Edit</button>'
-      +'<button class="btn btn-danger btn-sm" onclick="deleteLoyalty(\''+lp.id+'\')">Delete</button>'
-      +'</div>'
-      +'</div>';
-  });
-  _ht("loyalty-list",html);
-}
-function _val_or_dash(v){return v||"";}
+/* ── Loyalty modal ── */
 function openAddLoyalty(){
   _editingLoyaltyId=null;
   _st("loyalty-modal-title","Add loyalty program");_st("loyalty-submit-btn","Save program");
@@ -1109,24 +1699,16 @@ async function submitLoyalty(){
   var provider=_val("loy-provider").trim(),num=_val("loy-number").trim();
   if(!provider){_showErr("loyalty-modal-error","Enter a provider name.");return;}
   if(!num){_showErr("loyalty-modal-error","Enter your member number.");return;}
-  var btn=document.getElementById("loyalty-submit-btn");
-  btn.disabled=true;btn.textContent="Saving…";
+  var btn=document.getElementById("loyalty-submit-btn");btn.disabled=true;btn.textContent="Saving…";
   _showErr("loyalty-modal-error","");
   try{
     var pts=_val("loy-points");
-    var data={
-      program_type:_val("loy-type"),provider_name:provider,
-      program_name:_val("loy-program").trim()||provider,
-      member_number:num,tier_status:_val("loy-tier")||null,
-      points_balance:pts?parseInt(pts,10):null,
-      auto_apply:document.getElementById("loy-auto-apply").checked
-    };
+    var data={program_type:_val("loy-type"),provider_name:provider,program_name:_val("loy-program").trim()||provider,member_number:num,tier_status:_val("loy-tier")||null,points_balance:pts?parseInt(pts,10):null,auto_apply:_chkv("loy-auto-apply")};
     if(_editingLoyaltyId)data.loyalty_id=_editingLoyaltyId;
     await _req("PUT","/api/v1/profile/"+_uid,{module:_editingLoyaltyId?"loyalty_update":"loyalty_add",data:data});
-    closeLoyaltyModal();showToast(_editingLoyaltyId?"Program updated.":"Program added.");
-    await meRefresh();
+    closeLoyaltyModal();showToast(_editingLoyaltyId?"Program updated.":"Program added.");await meRefresh();
   }catch(e){
-    _showErr("loyalty-modal-error","Save failed: "+(e.message||"Please try again."));
+    _showErr("loyalty-modal-error","Save failed: "+(e.message||"Try again."));
     btn.disabled=false;btn.textContent=_editingLoyaltyId?"Save changes":"Save program";
   }
 }
@@ -1138,122 +1720,456 @@ async function deleteLoyalty(id){
   }catch(e){showToast("Error: "+(e.message||"Failed."));}
 }
 
-/* ── Payment ── */
-function _populatePayment(p){
-  var profiles=p.payment_profiles||[];
-  var personal=profiles.find(function(x){return x.context==="PERSONAL";});
-  var corp=profiles.find(function(x){return x.context==="CORPORATE";});
-  _setval("pay-personal-card",(personal&&personal.preferred_card)||"");
-  _setval("pay-corp-company",(corp&&corp.company_name)||"");
-  _setval("pay-corp-cc",(corp&&corp.cost_center)||"");
-  _setval("pay-corp-card",(corp&&corp.corporate_card)||"");
-  _setval("pay-corp-platform",(corp&&corp.expense_platform)||"");
-  _setval("policy-desc",(corp&&corp.policy_description)||"");
+/* ── Identity card — passport auto-save ── */
+function _prefillPassport(){
+  var passport=Object.values(_docsMap).find(function(d){return d.doc_type==="PASSPORT";});
+  _setval("psp-number",passport?passport.doc_number:"");
+  _setval("psp-expiry",passport&&passport.expiry_date?passport.expiry_date.slice(0,10):"");
+  _setval("psp-country",passport?passport.issuing_country:"");
+  _showErr("psp-save-err","");
+  ["psp-number","psp-expiry","psp-country"].forEach(function(fid){
+    var el=document.getElementById(fid);
+    if(el)el.onchange=function(){_debounce("passport",_autoSavePassport,500);};
+  });
 }
-async function savePaymentPersonal(){
-  var btn=document.getElementById("pay-personal-btn");
-  btn.disabled=true;btn.textContent="Saving…";
-  _showErr("pay-personal-error","");
+async function _autoSavePassport(){
+  _showErr("psp-save-err","");
+  var num=_val("psp-number").trim(),expiry=_val("psp-expiry"),country=_val("psp-country").trim().toUpperCase();
+  if(!num&&!expiry&&!country)return;
+  var existing=Object.values(_docsMap).find(function(d){return d.doc_type==="PASSPORT";});
+  var data={doc_type:"PASSPORT"};
+  if(num)data.doc_number=num;if(expiry)data.expiry_date=expiry;if(country)data.issuing_country=country;
+  if(existing)data.doc_id=existing.id||existing.doc_id;
   try{
-    await _req("PUT","/api/v1/profile/"+_uid,{module:"payment_personal",data:{preferred_card:_val("pay-personal-card").trim()||null}});
-    _showOk("pay-personal-ok");showToast("Personal payment saved.");await meRefresh();
-  }catch(e){_showErr("pay-personal-error","Save failed: "+(e.message||"Try again."));}
-  btn.disabled=false;btn.textContent="Save";
-}
-async function savePaymentCorporate(){
-  var btn=document.getElementById("pay-corp-btn");
-  btn.disabled=true;btn.textContent="Saving…";
-  _showErr("pay-corp-error","");
-  try{
-    await _req("PUT","/api/v1/profile/"+_uid,{
-      module:"payment_corporate",
-      data:{
-        company_name:_val("pay-corp-company").trim()||null,
-        cost_center:_val("pay-corp-cc").trim()||null,
-        corporate_card:_val("pay-corp-card").trim()||null,
-        expense_platform:_val("pay-corp-platform")||null
-      }
-    });
-    _showOk("pay-corp-ok");showToast("Corporate payment saved.");await meRefresh();
-  }catch(e){_showErr("pay-corp-error","Save failed: "+(e.message||"Try again."));}
-  btn.disabled=false;btn.textContent="Save";
+    await _req("PUT","/api/v1/profile/"+_uid,{module:existing?"document_update":"document_add",data:data});
+    showToast("Passport saved.");
+    var p=await _req("GET","/api/v1/me");_prof=p;_docsMap={};(p.documents||[]).forEach(function(d){var did=d.id||d.doc_id;_docsMap[did]=d;});
+    _renderIdentityCards(p);
+  }catch(e){_showErrRetry("psp-save-err",_autoSavePassport);}
 }
 
-/* ── Policy ── */
-function _populatePolicy(p){
-  var profiles=p.payment_profiles||[];
-  var corp=profiles.find(function(x){return x.context==="CORPORATE";});
-  _setval("policy-desc",(corp&&corp.policy_description)||"");
-  _setval("policy-context",p.active_context||"PERSONAL");
+/* ── Identity card — driver's license auto-save ── */
+function _prefillDriversLicense(){
+  var dl=Object.values(_docsMap).find(function(d){return d.doc_type==="DRIVERS_LICENSE";});
+  _setval("dl-number",dl?dl.doc_number:"");
+  _setval("dl-country",dl?dl.issuing_country:"");
+  _setval("dl-expiry",dl&&dl.expiry_date?dl.expiry_date.slice(0,10):"");
+  _showErr("dl-save-err","");
+  ["dl-number","dl-country","dl-expiry"].forEach(function(fid){
+    var el=document.getElementById(fid);
+    if(el)el.onchange=function(){_debounce("drivers",_autoSaveDriversLicense,500);};
+  });
 }
-async function savePolicySettings(){
-  var btn=document.getElementById("policy-save-btn");
-  btn.disabled=true;btn.textContent="Saving…";
-  _showErr("policy-error","");
+async function _autoSaveDriversLicense(){
+  _showErr("dl-save-err","");
+  var num=_val("dl-number").trim(),country=_val("dl-country").trim().toUpperCase(),expiry=_val("dl-expiry");
+  var existing=Object.values(_docsMap).find(function(d){return d.doc_type==="DRIVERS_LICENSE";});
+  var data={doc_type:"DRIVERS_LICENSE"};
+  if(num)data.doc_number=num;if(country)data.issuing_country=country;if(expiry)data.expiry_date=expiry;
+  if(existing)data.doc_id=existing.id||existing.doc_id;
   try{
-    await _req("PUT","/api/v1/profile/"+_uid,{
-      module:"payment_corporate",
-      data:{policy_description:_val("policy-desc").trim()||null}
-    });
-    _showOk("policy-ok");showToast("Policy saved.");await meRefresh();
-  }catch(e){_showErr("policy-error","Save failed: "+(e.message||"Try again."));}
-  btn.disabled=false;btn.textContent="Save policy";
+    await _req("PUT","/api/v1/profile/"+_uid,{module:existing?"document_update":"document_add",data:data});
+    showToast("Driver's license saved.");
+    var p=await _req("GET","/api/v1/me");_prof=p;_docsMap={};(p.documents||[]).forEach(function(d){var did=d.id||d.doc_id;_docsMap[did]=d;});
+    _renderIdentityCards(p);
+  }catch(e){_showErrRetry("dl-save-err",_autoSaveDriversLicense);}
 }
 
-/* ── Main ── */
+/* ── Identity card — inline doc list renderers (visa & trusted) ── */
+var _VISA_TYPES=["VISA","US_GREEN_CARD","ESTA","NATIONAL_ID","OCI_CARD","BIRTH_CERTIFICATE","MILITARY_ID"];
+var _TT_TYPES=["KTN","GLOBAL_ENTRY","NEXUS","SENTRI"];
+
+function _renderInlineDocList(containerId,typeFilter){
+  var container=document.getElementById(containerId);if(!container)return;
+  var items=Object.values(_docsMap).filter(function(d){return typeFilter.indexOf(d.doc_type)>-1;});
+  if(!items.length){container.innerHTML='<div style="font-size:13px;color:var(--ink-mute);padding:8px 0;font-style:italic">None added yet.</div>';return;}
+  var html="";
+  items.forEach(function(d){
+    var did=d.id||d.doc_id;
+    var exp=d.expiry_date?_fmt2(d.expiry_date):"No expiry";
+    var dr=d.days_remaining;
+    var pillCls=dr===null||dr===undefined?"pill-neutral":dr<0?"pill-red":dr<=90?"pill-amber":"pill-green";
+    var pillTxt=dr===null||dr===undefined?"No expiry":dr<0?"Expired":dr<=90?"Expiring":"Valid";
+    html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--rule)">'
+      +'<div style="flex:1;min-width:0">'
+      +'<div style="font-size:13px;font-weight:500">'+_docLabel(d.doc_type)+(d.issuing_country?" ("+d.issuing_country+")":'')+'</div>'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-top:3px">'
+      +(d.doc_number?'<span style="font-size:12px;color:var(--ink-mute)">···'+d.doc_number.slice(-4)+'</span>':'')
+      +'<span class="pill '+pillCls+'" style="font-size:10px;padding:2px 7px">'+pillTxt+'</span>'
+      +(exp?'<span style="font-size:12px;color:var(--ink-mute)">'+exp+'</span>':'')
+      +'</div>'
+      +'</div>'
+      +'<div style="display:flex;gap:5px;flex-shrink:0">'
+      +'<button class="btn btn-secondary btn-xs" onclick="openEditDocById(\''+did+'\')">Edit</button>'
+      +'<button class="btn btn-danger btn-xs" onclick="deleteDoc(\''+did+'\')">Delete</button>'
+      +'</div></div>';
+  });
+  container.innerHTML=html;
+}
+
+/* ── Open doc modal pre-typed ── */
+function openAddDocType(defaultType){
+  _editingDocId=null;
+  _st("doc-modal-title","Add a document");_st("doc-submit-btn","Add document");
+  ["doc-number","doc-expiry","doc-country"].forEach(function(id){_setval(id,"");});
+  _setval("doc-type",defaultType||"");
+  _showErr("doc-modal-error","");
+  document.getElementById("doc-modal").classList.add("open");
+}
+
+/* ── Override toggleCard to prefill on open ── */
+var _origToggleCard=toggleCard;
+toggleCard=function(name){
+  _origToggleCard(name);
+  var card=document.getElementById("card-"+name);
+  if(card&&card.classList.contains("editing")){
+    if(name==="passport")_prefillPassport();
+    if(name==="drivers")_prefillDriversLicense();
+    if(name==="visa")_renderInlineDocList("visa-doc-list",_VISA_TYPES);
+    if(name==="trusted")_renderInlineDocList("trusted-doc-list",_TT_TYPES);
+    if(name==="flight")_populateFlightEdit(_prof);
+    if(name==="hotel")_populateHotelEdit(_prof);
+    if(name==="cruise")_populateCruiseEdit(_prof);
+    if(name==="rail")_populateRailEdit(_prof);
+    if(name==="employer")_populateEmployerEdit(_prof);
+    if(name==="policy")_populatePolicyEdit(_prof);
+    if(name==="corp-pay")_populateCorpPayEdit(_prof);
+    if(name==="pers-pay")_populatePersPayEdit(_prof);
+  }
+};
+
+/* ── Tile infrastructure ── */
+function _tileSelect(btn,grp,multi){
+  if(!multi){document.querySelectorAll('.tile[data-group="'+grp+'"]').forEach(function(t){t.classList.remove('sel');t.setAttribute('aria-pressed','false');});}
+  btn.classList.toggle('sel');btn.setAttribute('aria-pressed',btn.classList.contains('sel')?'true':'false');
+}
+function _tileVal(grp){var s=document.querySelector('.tile[data-group="'+grp+'"].sel');return s?s.getAttribute('data-value'):'';}
+function _tileVals(grp){return Array.from(document.querySelectorAll('.tile[data-group="'+grp+'"].sel')).map(function(t){return t.getAttribute('data-value');});}
+function _tileSet(grp,val){document.querySelectorAll('.tile[data-group="'+grp+'"]').forEach(function(t){var m=t.getAttribute('data-value')===val;t.classList.toggle('sel',m);t.setAttribute('aria-pressed',m?'true':'false');});}
+function _tileSetMulti(grp,vals){var a=vals||[];document.querySelectorAll('.tile[data-group="'+grp+'"]').forEach(function(t){var m=a.indexOf(t.getAttribute('data-value'))>-1;t.classList.toggle('sel',m);t.setAttribute('aria-pressed',m?'true':'false');});}
+function _toggleAdv(id,btn){var el=document.getElementById(id);if(!el)return;var open=el.classList.toggle('open');btn.classList.toggle('open',open);btn.setAttribute('aria-expanded',open?'true':'false');}
+function _ts(btn,grp,multi,key,fn){_tileSelect(btn,grp,multi);_debounce(key,fn,400);}
+
+/* ── Universal populate + auto-save ── */
+function _populateUniversalEdit(p){
+  var mp=p.meal_preferences||{};
+  var sp=p.seat_preferences||{};
+  _setval("u-meal",mp.meal_code||"");
+  var allergies=mp.allergies||[];
+  document.querySelectorAll(".u-allergy").forEach(function(cb){cb.checked=allergies.indexOf(cb.value)>-1;});
+  var wc=document.getElementById("u-wheelchair");if(wc)wc.checked=!!(sp.wheelchair_needed);
+}
+async function _autoSaveUniversal(){
+  _showErr("universal-save-err","");
+  try{
+    var mealCode=_val("u-meal");
+    var allergies=Array.from(document.querySelectorAll(".u-allergy:checked")).map(function(c){return c.value;});
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"meal_preferences",data:{meal_code:mealCode||null,allergies:allergies}});
+    var wc=document.getElementById("u-wheelchair");
+    var sp=_prof.seat_preferences||{};
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"seat_preferences",data:{
+      seat_preference:sp.seat_preference||null,
+      row_preference:sp.row_preference||null,
+      cabin_preference:sp.cabin_preference||null,
+      cabin_pref_intl:sp.cabin_pref_intl||null,
+      hotel_room_type:sp.hotel_room_type||null,
+      hotel_floor_pref:sp.hotel_floor_pref||null,
+      car_type_pref:sp.car_type_pref||null,
+      wheelchair_needed:wc?wc.checked:false
+    }});
+    showToast("Preferences saved.");
+    var p=await _req("GET","/api/v1/me");_prof=p;_renderUniversalTravel(p);
+  }catch(e){_showErrRetry("universal-save-err",_autoSaveUniversal);}
+}
+
+/* ── Flight populate + auto-save ── */
+function _populateFlightEdit(p){
+  var sp=p.seat_preferences||{};
+  var fp=p.fly_preferences||{};
+  _tileSet("seat-pos",sp.seat_preference||"");
+  _tileSet("cabin-dom",sp.cabin_preference||"");
+  _tileSet("cabin-intl",sp.cabin_pref_intl||"");
+  _tileSet("seat-row",sp.row_preference||"");
+  _chk("fl-avoid-middle",!!(fp.avoid_middle));
+  _chk("fl-nonstop",!!(fp.prefer_nonstop));
+  _chk("fl-early-board",!!(fp.early_boarding));
+  _chk("fl-lounge",!!(fp.use_lounge));
+  _tileSet("alliance",fp.alliance_preference||"");
+  _tileSet("upgrade",fp.upgrade_preference||"");
+  _tileSet("redeye",fp.redeye_preference||"");
+  _setval("fl-airlines",(fp.preferred_airlines||[]).join(", "));
+  _chk("fl-legroom",!!(fp.extra_legroom));
+  _chk("fl-window-view",!!(fp.window_view));
+}
+async function _autoSaveFlight(){
+  _showErr("flight-save-err","");
+  try{
+    var sp=_prof.seat_preferences||{};
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"seat_preferences",data:{
+      seat_preference:_tileVal("seat-pos")||null,
+      cabin_preference:_tileVal("cabin-dom")||null,
+      cabin_pref_intl:_tileVal("cabin-intl")||null,
+      row_preference:_tileVal("seat-row")||null,
+      hotel_room_type:sp.hotel_room_type||null,
+      hotel_floor_pref:sp.hotel_floor_pref||null,
+      car_type_pref:sp.car_type_pref||null,
+      wheelchair_needed:sp.wheelchair_needed||false
+    }});
+    var airlines=_val("fl-airlines").split(",").map(function(s){return s.trim().toUpperCase();}).filter(Boolean);
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"fly_preferences",data:{
+      avoid_middle:_chkv("fl-avoid-middle"),
+      prefer_nonstop:_chkv("fl-nonstop"),
+      early_boarding:_chkv("fl-early-board"),
+      use_lounge:_chkv("fl-lounge"),
+      alliance_preference:_tileVal("alliance")||null,
+      upgrade_preference:_tileVal("upgrade")||null,
+      redeye_preference:_tileVal("redeye")||null,
+      preferred_airlines:airlines.length?airlines:null,
+      extra_legroom:_chkv("fl-legroom"),
+      window_view:_chkv("fl-window-view")
+    }});
+    showToast("Flight preferences saved.");
+    var p=await _req("GET","/api/v1/me");_prof=p;_renderFlightCard(p);
+  }catch(e){_showErrRetry("flight-save-err",_autoSaveFlight);}
+}
+/* ── Hotel populate + auto-save ── */
+function _populateHotelEdit(p){
+  var sp=p.seat_preferences||{};
+  var tp=p.travel_preferences||{};
+  _tileSet("bed",sp.hotel_room_type||"");
+  _tileSet("hotel-floor",sp.hotel_floor_pref||"");
+  _chk("h-quiet",!!(tp.hotel_quiet));
+  _chk("h-high-floor",!!(tp.hotel_high_floor));
+  _chk("h-away-elev",!!(tp.hotel_away_elevator));
+  _chk("h-accessible",!!(tp.hotel_accessible));
+  _tileSet("smoking",tp.hotel_smoking||"");
+  _tileSet("late-co",tp.hotel_late_checkout||"");
+  _setval("h-brands",(tp.hotel_brands||[]).join(", "));
+  _chk("h-early-ci",!!(tp.hotel_early_checkin));
+}
+async function _autoSaveHotel(){
+  _showErr("hotel-save-err","");
+  try{
+    var sp=_prof.seat_preferences||{};
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"seat_preferences",data:{
+      seat_preference:sp.seat_preference||null,
+      cabin_preference:sp.cabin_preference||null,
+      cabin_pref_intl:sp.cabin_pref_intl||null,
+      row_preference:sp.row_preference||null,
+      hotel_room_type:_tileVal("bed")||null,
+      hotel_floor_pref:_tileVal("hotel-floor")||null,
+      car_type_pref:sp.car_type_pref||null,
+      wheelchair_needed:sp.wheelchair_needed||false
+    }});
+    var brands=_val("h-brands").split(",").map(function(s){return s.trim();}).filter(Boolean);
+    var tp=_prof.travel_preferences||{};
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"travel_preferences",data:Object.assign({},tp,{
+      hotel_quiet:_chkv("h-quiet"),
+      hotel_high_floor:_chkv("h-high-floor"),
+      hotel_away_elevator:_chkv("h-away-elev"),
+      hotel_accessible:_chkv("h-accessible"),
+      hotel_smoking:_tileVal("smoking")||null,
+      hotel_late_checkout:_tileVal("late-co")||null,
+      hotel_brands:brands.length?brands:null,
+      hotel_early_checkin:_chkv("h-early-ci")
+    })});
+    showToast("Hotel preferences saved.");
+    var p=await _req("GET","/api/v1/me");_prof=p;_renderHotelCard(p);
+  }catch(e){_showErrRetry("hotel-save-err",_autoSaveHotel);}
+}
+
+/* ── Cruise populate + auto-save ── */
+function _populateCruiseEdit(p){
+  var cruise=(p.travel_preferences||{}).cruise||{};
+  _tileSet("cruise-cabin",cruise.cabin_type||"");
+  _tileSet("cruise-deck",cruise.deck_level||"");
+  _tileSet("cruise-dining",cruise.dining_preference||"");
+  _chk("cruise-share",!!(cruise.dining_share));
+  _tileSet("cruise-bed",cruise.bed_config||"");
+  _tileSetMulti("cruise-exc",cruise.excursion_styles||[]);
+  _tileSet("cruise-drinks",cruise.drink_package||"");
+  _tileSet("cruise-embark",cruise.embarkation||"");
+  _tileSetMulti("cruise-sail",cruise.sailing_types||[]);
+  _tileSet("cruise-grat",cruise.gratuity||"");
+}
+async function _autoSaveCruise(){
+  _showErr("cruise-save-err","");
+  try{
+    var tp=_prof.travel_preferences||{};
+    var cruise={
+      cabin_type:_tileVal("cruise-cabin")||null,
+      deck_level:_tileVal("cruise-deck")||null,
+      dining_preference:_tileVal("cruise-dining")||null,
+      dining_share:_chkv("cruise-share"),
+      bed_config:_tileVal("cruise-bed")||null,
+      excursion_styles:_tileVals("cruise-exc"),
+      drink_package:_tileVal("cruise-drinks")||null,
+      embarkation:_tileVal("cruise-embark")||null,
+      sailing_types:_tileVals("cruise-sail"),
+      gratuity:_tileVal("cruise-grat")||null
+    };
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"travel_preferences",data:Object.assign({},tp,{cruise:cruise})});
+    showToast("Cruise preferences saved.");
+    var p=await _req("GET","/api/v1/me");_prof=p;_renderCruiseCard(p);
+  }catch(e){_showErrRetry("cruise-save-err",_autoSaveCruise);}
+}
+
+/* ── Rail populate + auto-save ── */
+function _populateRailEdit(p){
+  var tp=p.travel_preferences||{};
+  _tileSet("rail-class",tp.rail_class||"");
+  _tileSet("rail-facing",tp.rail_facing||"");
+  _tileSet("car-size",tp.car_size||"");
+  _tileSet("car-trans",tp.car_transmission||"");
+  _chk("car-ev",!!(tp.car_ev));
+  _chk("car-gps",!!(tp.car_gps));
+  _chk("car-child-seat",!!(tp.car_child_seat));
+}
+async function _autoSaveRail(){
+  _showErr("rail-save-err","");
+  try{
+    var tp=_prof.travel_preferences||{};
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"travel_preferences",data:Object.assign({},tp,{
+      rail_class:_tileVal("rail-class")||null,
+      rail_facing:_tileVal("rail-facing")||null,
+      car_size:_tileVal("car-size")||null,
+      car_transmission:_tileVal("car-trans")||null,
+      car_ev:_chkv("car-ev"),
+      car_gps:_chkv("car-gps"),
+      car_child_seat:_chkv("car-child-seat")
+    })});
+    showToast("Rail & ground preferences saved.");
+    var p=await _req("GET","/api/v1/me");_prof=p;_renderRailCard(p);
+  }catch(e){_showErrRetry("rail-save-err",_autoSaveRail);}
+}
+
+/* ── Business tab populate + auto-save ── */
+function _populateEmployerEdit(p){
+  var t=p.travel_preferences||{};
+  _setval("emp-name",t.employer_name||"");
+  _setval("emp-role",t.employer_role||"");
+  _setval("emp-cost-center",t.cost_center||"");
+  _setval("emp-id",t.employee_id||"");
+}
+async function _autoSaveEmployer(){
+  _showErr("employer-save-err","");
+  try{
+    var tp=_prof.travel_preferences||{};
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"travel_preferences",data:Object.assign({},tp,{
+      employer_name:_val("emp-name").trim()||null,
+      employer_role:_val("emp-role").trim()||null,
+      cost_center:_val("emp-cost-center").trim()||null,
+      employee_id:_val("emp-id").trim()||null
+    })});
+    showToast("Employer saved.");
+    var p=await _req("GET","/api/v1/me");_prof=p;_renderEmployerCard(p);
+  }catch(e){_showErrRetry("employer-save-err",_autoSaveEmployer);}
+}
+
+function _populatePolicyEdit(p){
+  var profiles=p.payment_profiles||[];
+  var corp=profiles.find(function(x){return x.context==="CORPORATE";})||{};
+  _setval("policy-desc",corp.policy_description||"");
+}
+async function _autoSavePolicy(){
+  _showErr("policy-save-err","");
+  try{
+    var profiles=_prof.payment_profiles||[];
+    var corp=profiles.find(function(x){return x.context==="CORPORATE";})||{};
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"payment_corporate",data:{
+      context:"CORPORATE",
+      company_name:corp.company_name||null,
+      corporate_card:corp.corporate_card||null,
+      expense_platform:corp.expense_platform||null,
+      policy_description:_val("policy-desc").trim()||null
+    }});
+    showToast("Policy saved.");
+    var p=await _req("GET","/api/v1/me");_prof=p;_renderPolicyCard(p);
+  }catch(e){_showErrRetry("policy-save-err",_autoSavePolicy);}
+}
+
+function _populateCorpPayEdit(p){
+  var profiles=p.payment_profiles||[];
+  var corp=profiles.find(function(x){return x.context==="CORPORATE";})||{};
+  _setval("corp-company",corp.company_name||"");
+  _setval("corp-card",corp.corporate_card||"");
+  _setval("corp-expense",corp.expense_platform||"");
+}
+async function _autoSaveCorpPay(){
+  _showErr("corp-pay-save-err","");
+  try{
+    var profiles=_prof.payment_profiles||[];
+    var corp=profiles.find(function(x){return x.context==="CORPORATE";})||{};
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"payment_corporate",data:{
+      context:"CORPORATE",
+      company_name:_val("corp-company").trim()||null,
+      corporate_card:_val("corp-card").trim()||null,
+      expense_platform:_val("corp-expense").trim()||null,
+      policy_description:corp.policy_description||null
+    }});
+    showToast("Corporate payment saved.");
+    var p=await _req("GET","/api/v1/me");_prof=p;_renderCorpPayCard(p);
+  }catch(e){_showErrRetry("corp-pay-save-err",_autoSaveCorpPay);}
+}
+
+function _populatePersPayEdit(p){
+  var profiles=p.payment_profiles||[];
+  var personal=profiles.find(function(x){return x.context==="PERSONAL";})||{};
+  _setval("pers-card",personal.preferred_card||"");
+  _setval("pers-billing",personal.billing_address||"");
+}
+async function _autoSavePersPay(){
+  _showErr("pers-pay-save-err","");
+  try{
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"payment_personal",data:{
+      context:"PERSONAL",
+      preferred_card:_val("pers-card").trim()||null,
+      billing_address:_val("pers-billing").trim()||null
+    }});
+    showToast("Personal payment saved.");
+    var p=await _req("GET","/api/v1/me");_prof=p;_renderPersPayCard(p);
+  }catch(e){_showErrRetry("pers-pay-save-err",_autoSavePersPay);}
+}
+
+/* ── meRefresh ── */
 async function meRefresh(){
   try{
     var p=await _req("GET","/api/v1/me");
     _prof=p;_uid=p.uuid;
     _sidebarUpdate(p);
-    var id=p.identity||{};
-    var ln=[id.legal_first,id.legal_middle,id.legal_last].filter(Boolean).join(" ")||"—";
-    _st("me-avatar",_ini(p));
-    var ne=document.getElementById("me-name");
-    if(ne)ne.innerHTML=(id.legal_first||_dn(p))+(id.legal_last?" <em>"+id.legal_last+"</em>":"");
-    _st("me-legal-name",ln);
-    _st("me-display-name",p.display_name||id.legal_first||"Not set");
-    _st("me-dob",id.dob?_fmt(id.dob):"—");
-    _st("me-nationality",id.nationality||"—");
-    _st("me-gender",id.gender_code||"—");
-    _st("me-home-airport",id.home_airport||"—");
-    /* docs */
-    var docs=p.documents||[];
-    _st("me-doc-count",docs.length+" on file");
-    _docsMap={};
-    if(docs.length){
-      var dhtml="";
-      docs.forEach(function(d){
-        var did=d.id||d.doc_id;
-        _docsMap[did]=d;
-        dhtml+='<div class="list-row">'
-          +'<div class="list-row-icon"><svg class="icon"><use href="'+_docIcon(d.doc_type)+'"/></svg></div>'
-          +'<div class="list-row-main">'
-          +'<div class="list-row-title">'+_docLabel(d.doc_type)+'</div>'
-          +'<div class="list-row-meta">'+(d.doc_number?"···"+d.doc_number.slice(-4)+" · ":"")+_daysLabel(d.days_remaining)+'</div>'
-          +'</div>'
-          +_docPill(d)
-          +'<div class="list-row-actions">'
-          +'<button class="btn btn-secondary btn-sm" onclick="openEditDocById(\''+did+'\')">Edit</button>'
-          +'<button class="btn btn-danger btn-sm" onclick="deleteDoc(\''+did+'\')">Delete</button>'
-          +'</div></div>';
-      });
-      _ht("me-doc-list",dhtml);
-    }else{_ht("me-doc-list","<div style='color:var(--ink-mute);font-size:13px;padding:14px 0'>No documents added yet.</div>");}
-    var ktn=docs.find(function(d){return d.doc_type==="KTN"||d.doc_type==="GLOBAL_ENTRY";});
-    _st("me-note",ktn?"Your Known Traveler Number is applied automatically on every U.S.-touching booking.":"Add your KTN or Global Entry number to have it applied at booking automatically.");
-    /* preferences */
-    _populatePreferences(p);
-    /* loyalty */
-    _renderLoyalty(p.loyalty_programs||[]);
-    /* payment + policy */
-    _populatePayment(p);
-    _populatePolicy(p);
+    _renderHeader(p);
+    _renderLegalIdCard(p);
+    _renderIdentityCards(p);
+    _renderUniversalTravel(p);
+    _renderFlightCard(p);
+    _renderHotelCard(p);
+    _renderCruiseCard(p);
+    _renderRailCard(p);
+    _renderEmployerCard(p);
+    _renderPolicyCard(p);
+    _renderCorpPayCard(p);
+    _renderPersPayCard(p);
+    _renderLoyaltyCard(p);
   }catch(e){console.error(e);}
 }
 
+/* ── Accessibility init ── */
+function _initAccessibility(){
+  document.querySelectorAll('.tile-grid').forEach(function(g){
+    g.setAttribute('role','group');
+    var field=g.closest('.form-field');
+    if(field){
+      var lbl=field.querySelector('.form-label');
+      if(lbl)g.setAttribute('aria-label',lbl.textContent.trim().replace(/\s*—.*$/,''));
+    }
+  });
+}
+
+/* ── Init ── */
 async function meInit(){
   if(!await _auth())return;
+  _initTabFromHash();
+  _initAccessibility();
   await meRefresh();
 }
 meInit();
