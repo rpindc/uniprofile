@@ -1611,31 +1611,30 @@ function _renderEmployerCard(p){
   }
 }
 
-function _policyProse(corp){
+function _policyProse(pol){
   var cab={ECONOMY:"Economy",ECONOMY_PLUS:"Premium economy",BUSINESS:"Business class",FIRST:"First class"};
   var parts=[];
-  var dom=corp.policy_flight_domestic,intl=corp.policy_flight_intl;
+  var dom=pol.flight_domestic,intl=pol.flight_intl;
   if(dom&&intl&&dom===intl) parts.push((cab[dom]||dom)+" on all flights");
   else{
     if(dom) parts.push((cab[dom]||dom)+" on domestic");
     if(intl) parts.push((cab[intl]||intl)+" on international");
   }
-  if(corp.policy_advance_days) parts.push("book "+corp.policy_advance_days+"+ days out");
+  if(pol.advance_days) parts.push("book "+pol.advance_days+"+ days out");
   var hotelP=[];
-  if(corp.policy_hotel_cap) hotelP.push("$"+corp.policy_hotel_cap+" nightly cap");
-  if(corp.policy_hotel_stars) hotelP.push(corp.policy_hotel_stars+"-star max");
+  if(pol.hotel_cap) hotelP.push("$"+pol.hotel_cap+" nightly cap");
+  if(pol.hotel_stars) hotelP.push(pol.hotel_stars+"-star max");
   if(hotelP.length) parts.push("Hotels — "+hotelP.join(", "));
-  if(corp.policy_car_class){
-    var cl={ECONOMY:"Economy",COMPACT:"Compact",MIDSIZE:"Midsize",FULLSIZE:"Full-size"}[corp.policy_car_class];
+  if(pol.car_class){
+    var cl={ECONOMY:"Economy",COMPACT:"Compact",MIDSIZE:"Midsize",FULLSIZE:"Full-size"}[pol.car_class];
     if(cl) parts.push(cl+" car rental max");
   }
-  if(corp.policy_preapproval_threshold) parts.push("pre-approval above $"+Number(corp.policy_preapproval_threshold).toLocaleString("en-US"));
+  if(pol.preapproval_threshold) parts.push("pre-approval above $"+Number(pol.preapproval_threshold).toLocaleString("en-US"));
   return parts.length?parts.join(". ")+".":null;
 }
 function _renderPolicyCard(p){
-  var profiles=p.payment_profiles||[];
-  var corp=profiles.find(function(x){return x.context==="CORPORATE";})||{};
-  var prose=_policyProse(corp);
+  var pol=(p.travel_preferences||{}).policy||{};
+  var prose=_policyProse(pol);
   var pb=document.getElementById("policy-body");
   var pbtn=document.getElementById("policy-btn");
   if(prose){
@@ -2163,40 +2162,35 @@ async function _autoSaveEmployer(){
 }
 
 function _populatePolicyEdit(p){
-  var profiles=p.payment_profiles||[];
-  var corp=profiles.find(function(x){return x.context==="CORPORATE";})||{};
-  _tileSet("pol-dom",corp.policy_flight_domestic||"");
-  _tileSet("pol-intl",corp.policy_flight_intl||"");
-  _tileSet("pol-adv",corp.policy_advance_days?String(corp.policy_advance_days):"");
-  _setval("pol-hotel-cap",corp.policy_hotel_cap||"");
-  _tileSet("pol-stars",corp.policy_hotel_stars?String(corp.policy_hotel_stars):"");
-  _tileSet("pol-car",corp.policy_car_class||"");
-  _setval("pol-preapproval",corp.policy_preapproval_threshold||"");
-  _setval("policy-desc",corp.policy_description||"");
+  var pol=(p.travel_preferences||{}).policy||{};
+  _tileSet("pol-dom",pol.flight_domestic||"");
+  _tileSet("pol-intl",pol.flight_intl||"");
+  _tileSet("pol-adv",pol.advance_days?String(pol.advance_days):"");
+  _setval("pol-hotel-cap",pol.hotel_cap||"");
+  _tileSet("pol-stars",pol.hotel_stars?String(pol.hotel_stars):"");
+  _tileSet("pol-car",pol.car_class||"");
+  _setval("pol-preapproval",pol.preapproval_threshold||"");
+  _setval("policy-desc",pol.notes||"");
 }
 async function _autoSavePolicy(){
   _showErr("policy-save-err","");
   try{
-    var profiles=_prof.payment_profiles||[];
-    var corp=profiles.find(function(x){return x.context==="CORPORATE";})||{};
+    var tp=_prof.travel_preferences||{};
     var advDays=_tileVal("pol-adv");
     var stars=_tileVal("pol-stars");
     var hotelCap=_val("pol-hotel-cap").trim();
     var preapproval=_val("pol-preapproval").trim();
-    await _req("PUT","/api/v1/profile/"+_uid,{module:"payment_corporate",data:{
-      context:"CORPORATE",
-      company_name:corp.company_name||null,
-      corporate_card:corp.corporate_card||null,
-      expense_platform:corp.expense_platform||null,
-      policy_flight_domestic:_tileVal("pol-dom")||null,
-      policy_flight_intl:_tileVal("pol-intl")||null,
-      policy_advance_days:advDays?parseInt(advDays,10):null,
-      policy_hotel_cap:hotelCap?parseFloat(hotelCap):null,
-      policy_hotel_stars:stars?parseInt(stars,10):null,
-      policy_car_class:_tileVal("pol-car")||null,
-      policy_preapproval_threshold:preapproval?parseFloat(preapproval):null,
-      policy_description:_val("policy-desc").trim()||null
-    }});
+    var pol={
+      flight_domestic:_tileVal("pol-dom")||null,
+      flight_intl:_tileVal("pol-intl")||null,
+      advance_days:advDays?parseInt(advDays,10):null,
+      hotel_cap:hotelCap?parseFloat(hotelCap):null,
+      hotel_stars:stars?parseInt(stars,10):null,
+      car_class:_tileVal("pol-car")||null,
+      preapproval_threshold:preapproval?parseFloat(preapproval):null,
+      notes:_val("policy-desc").trim()||null
+    };
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"travel_preferences",data:Object.assign({},tp,{policy:pol})});
     showToast("Policy saved.");
     var p=await _req("GET","/api/v1/me");_prof=p;_renderPolicyCard(p);
   }catch(e){_showErrRetry("policy-save-err",_autoSavePolicy);}
@@ -2219,7 +2213,6 @@ async function _autoSaveCorpPay(){
       company_name:_val("corp-company").trim()||null,
       corporate_card:_val("corp-card").trim()||null,
       expense_platform:_val("corp-expense").trim()||null,
-      policy_description:corp.policy_description||null
     }});
     showToast("Corporate payment saved.");
     var p=await _req("GET","/api/v1/me");_prof=p;_renderCorpPayCard(p);
