@@ -258,116 +258,309 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     <!-- ── TAB: Preferences ─────────────────────────── -->
     <div id="tab-preferences" style="display:none">
 
+      <!-- Flight preferences -->
       <div class="section">
         <div class="section-header">
-          <h2 class="section-label">Flight &amp; seat</h2>
+          <h2 class="section-label">Flight</h2>
         </div>
         <div class="card">
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Cabin (domestic)</label>
+              <label class="form-label">Cabin — domestic</label>
               <select class="form-input form-select" id="pref-cabin-dom">
-                <option value="">— Any —</option><option value="ECONOMY">Economy</option><option value="ECONOMY_PLUS">Economy Plus</option><option value="BUSINESS">Business</option><option value="FIRST">First</option>
+                <option value="">— Any —</option>
+                <option value="ECONOMY">Economy</option>
+                <option value="ECONOMY_PLUS">Economy Plus / Premium Economy</option>
+                <option value="BUSINESS">Business</option>
+                <option value="FIRST">First</option>
               </select>
             </div>
             <div class="form-field">
-              <label class="form-label">Cabin (international)</label>
+              <label class="form-label">Cabin — international</label>
               <select class="form-input form-select" id="pref-cabin-intl">
-                <option value="">— Any —</option><option value="ECONOMY">Economy</option><option value="ECONOMY_PLUS">Economy Plus</option><option value="BUSINESS">Business</option><option value="FIRST">First</option>
+                <option value="">— Any —</option>
+                <option value="ECONOMY">Economy</option>
+                <option value="ECONOMY_PLUS">Economy Plus / Premium Economy</option>
+                <option value="BUSINESS">Business / Business Class</option>
+                <option value="FIRST">First</option>
               </select>
             </div>
           </div>
           <div class="form-row">
             <div class="form-field">
+              <label class="form-label">Upgrade preference</label>
+              <select class="form-input form-select" id="pref-upgrade">
+                <option value="">— No preference —</option>
+                <option value="ALWAYS">Always request upgrade</option>
+                <option value="POINTS_ONLY">Use points / miles only</option>
+                <option value="COMPLIMENTARY_ONLY">Complimentary only</option>
+                <option value="NEVER">Never — prefer to stay in booked cabin</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Red-eye flights</label>
+              <select class="form-input form-select" id="pref-redeye">
+                <option value="">— No preference —</option>
+                <option value="FINE">Fine with overnight flights</option>
+                <option value="PREFER_AVOID">Prefer to avoid</option>
+                <option value="NEVER">Avoid always</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Preferred airlines <span class="caption" style="text-transform:none;letter-spacing:0">(IATA codes, comma-separated — e.g. UA, AA, DL)</span></label>
+            <input class="form-input" id="pref-airlines" placeholder="e.g. UA, AA, LH, SQ" style="text-transform:uppercase"/>
+          </div>
+          <div style="margin-top:2px">
+            <label class="form-label">Flight options</label>
+            <div class="form-check-grid">
+              <label class="form-check"><input type="checkbox" id="pref-early-boarding"> Request early boarding</label>
+              <label class="form-check"><input type="checkbox" id="pref-lounge"> Use lounge when available</label>
+              <label class="form-check"><input type="checkbox" id="pref-no-stop"> Prefer non-stop routes</label>
+              <label class="form-check"><input type="checkbox" id="pref-window-view"> Window for views (long-haul)</label>
+            </div>
+          </div>
+          <div id="pref-flight-error" class="form-error"></div>
+          <div class="form-actions">
+            <button class="btn btn-primary btn-sm" id="pref-flight-btn" onclick="saveFlightPrefs()">Save flight preferences</button>
+            <span class="caption" id="pref-flight-ok" style="display:none;color:var(--green)">Saved.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Seat preferences -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-label">Seat</h2>
+        </div>
+        <div class="card">
+          <div class="form-row">
+            <div class="form-field">
               <label class="form-label">Seat position</label>
               <select class="form-input form-select" id="pref-seat-pos">
-                <option value="">— Any —</option><option value="WINDOW">Window</option><option value="AISLE">Aisle</option><option value="MIDDLE">Middle</option>
+                <option value="">— Any —</option>
+                <option value="WINDOW">Window</option>
+                <option value="AISLE">Aisle</option>
+                <option value="MIDDLE">Middle</option>
               </select>
             </div>
             <div class="form-field">
               <label class="form-label">Row preference</label>
               <select class="form-input form-select" id="pref-row">
-                <option value="">— Any —</option><option value="FRONT">Front</option><option value="MIDDLE">Middle</option><option value="BACK">Back</option><option value="EXIT_ROW">Exit row</option>
+                <option value="">— Any —</option>
+                <option value="FRONT">Front of cabin</option>
+                <option value="MIDDLE">Middle of cabin</option>
+                <option value="BACK">Back of cabin</option>
+                <option value="EXIT_ROW">Exit row (extra legroom)</option>
+                <option value="BULKHEAD">Bulkhead (front row)</option>
               </select>
             </div>
           </div>
-          <div style="margin-top:4px">
+          <div style="margin-top:2px">
             <label class="form-label">Seat options</label>
             <div class="form-check-grid">
-              <label class="form-check"><input type="checkbox" id="pref-avoid-last-row"> Avoid last row</label>
+              <label class="form-check"><input type="checkbox" id="pref-extra-legroom"> Extra legroom required</label>
+              <label class="form-check"><input type="checkbox" id="pref-avoid-last-row"> Avoid last row (non-reclining)</label>
               <label class="form-check"><input type="checkbox" id="pref-avoid-middle"> Avoid middle seats</label>
-              <label class="form-check"><input type="checkbox" id="pref-wheelchair"> Wheelchair assistance</label>
+              <label class="form-check"><input type="checkbox" id="pref-wheelchair"> Wheelchair / mobility assistance</label>
             </div>
+          </div>
+          <div id="pref-seat-error" class="form-error"></div>
+          <div class="form-actions">
+            <button class="btn btn-primary btn-sm" id="pref-seat-btn" onclick="saveSeatPrefs()">Save seat preferences</button>
+            <span class="caption" id="pref-seat-ok" style="display:none;color:var(--green)">Saved.</span>
           </div>
         </div>
       </div>
 
+      <!-- Hotel preferences -->
       <div class="section">
-        <div class="section-header"><h2 class="section-label">Hotel &amp; car</h2></div>
+        <div class="section-header">
+          <h2 class="section-label">Hotel</h2>
+        </div>
         <div class="card">
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Hotel room type</label>
+              <label class="form-label">Room type</label>
               <select class="form-input form-select" id="pref-hotel-room">
-                <option value="">— Any —</option><option value="KING">King</option><option value="QUEEN">Queen</option><option value="DOUBLE">Double</option><option value="TWIN">Twin</option><option value="SUITE">Suite</option>
+                <option value="">— Any —</option>
+                <option value="KING">King bed</option>
+                <option value="QUEEN">Queen bed</option>
+                <option value="DOUBLE">Double / two beds</option>
+                <option value="TWIN">Twin beds</option>
+                <option value="SUITE">Suite</option>
+                <option value="STUDIO">Studio / junior suite</option>
               </select>
             </div>
             <div class="form-field">
               <label class="form-label">Floor preference</label>
               <select class="form-input form-select" id="pref-hotel-floor">
-                <option value="">— Any —</option><option value="HIGH">High floor</option><option value="LOW">Low floor</option>
+                <option value="">— No preference —</option>
+                <option value="HIGH">High floor (view)</option>
+                <option value="LOW">Low floor (accessibility)</option>
+                <option value="MID">Mid floor</option>
               </select>
             </div>
             <div class="form-field">
-              <label class="form-label">Car type</label>
-              <select class="form-input form-select" id="pref-car">
-                <option value="">— Any —</option><option value="ECONOMY">Economy</option><option value="COMPACT">Compact</option><option value="MIDSIZE">Midsize</option><option value="FULL_SIZE">Full-size</option><option value="SUV">SUV</option><option value="LUXURY">Luxury</option>
+              <label class="form-label">Smoking room</label>
+              <select class="form-input form-select" id="pref-hotel-smoking">
+                <option value="NON_SMOKING">Non-smoking</option>
+                <option value="">No preference</option>
+                <option value="SMOKING">Smoking</option>
               </select>
             </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Preferred hotel brands <span class="caption" style="text-transform:none;letter-spacing:0">(comma-separated — e.g. Marriott, Hilton, Hyatt)</span></label>
+            <input class="form-input" id="pref-hotel-brands" placeholder="e.g. Marriott, Hyatt, IHG, Hilton"/>
+          </div>
+          <div style="margin-top:2px">
+            <label class="form-label">Check-in / checkout</label>
+            <div class="form-check-grid">
+              <label class="form-check"><input type="checkbox" id="pref-early-checkin"> Request early check-in</label>
+              <label class="form-check"><input type="checkbox" id="pref-late-checkout"> Request late checkout</label>
+              <label class="form-check"><input type="checkbox" id="pref-quiet-room"> Request quiet room</label>
+              <label class="form-check"><input type="checkbox" id="pref-high-floor-auto"> Auto-request high floor</label>
+            </div>
+          </div>
+          <div id="pref-hotel-error" class="form-error"></div>
+          <div class="form-actions">
+            <button class="btn btn-primary btn-sm" id="pref-hotel-btn" onclick="saveHotelPrefs()">Save hotel preferences</button>
+            <span class="caption" id="pref-hotel-ok" style="display:none;color:var(--green)">Saved.</span>
           </div>
         </div>
       </div>
 
+      <!-- Car rental preferences -->
       <div class="section">
-        <div class="section-header"><h2 class="section-label">Dining preferences</h2></div>
+        <div class="section-header">
+          <h2 class="section-label">Car rental</h2>
+        </div>
         <div class="card">
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label">Meal type</label>
+              <label class="form-label">Car class</label>
+              <select class="form-input form-select" id="pref-car">
+                <option value="">— Any —</option>
+                <option value="ECONOMY">Economy</option>
+                <option value="COMPACT">Compact</option>
+                <option value="MIDSIZE">Midsize</option>
+                <option value="FULL_SIZE">Full-size / Standard</option>
+                <option value="SUV">SUV</option>
+                <option value="MINIVAN">Minivan</option>
+                <option value="LUXURY">Luxury</option>
+                <option value="CONVERTIBLE">Convertible</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Transmission</label>
+              <select class="form-input form-select" id="pref-car-trans">
+                <option value="">— No preference —</option>
+                <option value="AUTOMATIC">Automatic</option>
+                <option value="MANUAL">Manual</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:2px">
+            <label class="form-label">Car options</label>
+            <div class="form-check-grid">
+              <label class="form-check"><input type="checkbox" id="pref-car-ev"> Electric / hybrid preferred</label>
+              <label class="form-check"><input type="checkbox" id="pref-car-gps"> GPS / navigation included</label>
+              <label class="form-check"><input type="checkbox" id="pref-car-child-seat"> Child seat required</label>
+              <label class="form-check"><input type="checkbox" id="pref-car-full-tank"> Full-to-full fuel policy</label>
+            </div>
+          </div>
+          <div id="pref-car-error" class="form-error"></div>
+          <div class="form-actions">
+            <button class="btn btn-primary btn-sm" id="pref-car-btn" onclick="saveCarPrefs()">Save car preferences</button>
+            <span class="caption" id="pref-car-ok" style="display:none;color:var(--green)">Saved.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dining preferences -->
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-label">Dining</h2>
+        </div>
+        <div class="card">
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">IATA meal code</label>
               <select class="form-input form-select" id="pref-meal-code">
-                <option value="">— Standard —</option>
-                <option value="VGML">Vegan</option><option value="RVML">Vegetarian</option><option value="KSML">Kosher</option><option value="MOML">Halal</option><option value="GFML">Gluten-free</option><option value="DBML">Diabetic</option><option value="LCML">Low-calorie</option><option value="LSML">Low-sodium</option><option value="HNML">Hindu</option><option value="SFML">Seafood</option><option value="FPML">Fruit platter</option><option value="BBML">Child meal</option>
+                <option value="">— Standard airline meal —</option>
+                <optgroup label="Vegetarian &amp; vegan">
+                  <option value="VGML">VGML — Vegan (strict, no animal products)</option>
+                  <option value="AVML">AVML — Asian vegetarian (lacto, spiced)</option>
+                  <option value="RVML">RVML — Vegetarian (lacto-ovo)</option>
+                  <option value="VLML">VLML — Vegetarian (lacto, no eggs)</option>
+                </optgroup>
+                <optgroup label="Religious">
+                  <option value="KSML">KSML — Kosher (prepared under rabbinical supervision)</option>
+                  <option value="MOML">MOML — Muslim / Halal</option>
+                  <option value="HNML">HNML — Hindu (no beef, may include dairy/eggs)</option>
+                  <option value="JNML">JNML — Jain (no root vegetables)</option>
+                </optgroup>
+                <optgroup label="Medical &amp; dietary">
+                  <option value="GFML">GFML — Gluten-free</option>
+                  <option value="DBML">DBML — Diabetic (low sugar, low fat)</option>
+                  <option value="LSML">LSML — Low sodium / low salt</option>
+                  <option value="LCML">LCML — Low calorie</option>
+                  <option value="LFML">LFML — Low fat / low cholesterol</option>
+                  <option value="NLML">NLML — Low lactose (no milk products)</option>
+                  <option value="BLML">BLML — Bland (soft, low-fiber, easy to digest)</option>
+                </optgroup>
+                <optgroup label="Other">
+                  <option value="SFML">SFML — Seafood</option>
+                  <option value="FPML">FPML — Fruit platter</option>
+                  <option value="CHML">CHML — Child meal (hot)</option>
+                  <option value="BBML">BBML — Baby / infant meal</option>
+                  <option value="SPML">SPML — Special (describe in dietary notes)</option>
+                </optgroup>
               </select>
             </div>
             <div class="form-field">
               <label class="form-label">Beverage preference</label>
               <select class="form-input form-select" id="pref-bev">
-                <option value="">— Standard —</option><option value="NON_ALCOHOLIC">Non-alcoholic only</option><option value="NO_CAFFEINE">No caffeine</option><option value="WATER_ONLY">Water only</option>
+                <option value="">— Standard —</option>
+                <option value="NON_ALCOHOLIC">Non-alcoholic only</option>
+                <option value="NO_CAFFEINE">No caffeine</option>
+                <option value="WATER_ONLY">Water only</option>
+                <option value="JUICE_ONLY">Juice / soft drinks only</option>
               </select>
             </div>
           </div>
-          <div class="form-field" style="margin-top:4px">
-            <label class="form-label">Allergies</label>
-            <div class="form-check-grid">
-              <label class="form-check"><input type="checkbox" class="allergy-cb" value="NUTS"> Tree nuts / peanuts</label>
-              <label class="form-check"><input type="checkbox" class="allergy-cb" value="SHELLFISH"> Shellfish</label>
-              <label class="form-check"><input type="checkbox" class="allergy-cb" value="DAIRY"> Dairy</label>
-              <label class="form-check"><input type="checkbox" class="allergy-cb" value="GLUTEN"> Gluten / wheat</label>
-              <label class="form-check"><input type="checkbox" class="allergy-cb" value="SOY"> Soy</label>
-              <label class="form-check"><input type="checkbox" class="allergy-cb" value="EGGS"> Eggs</label>
+
+          <div class="form-field" style="margin-top:6px">
+            <label class="form-label">Allergies <span class="caption" style="text-transform:none;letter-spacing:0">— applied to all bookings and shared with airlines</span></label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px">
+              <label class="form-check" style="padding:8px 10px;background:var(--paper-cream);border-radius:6px;border:0.5px solid var(--rule)"><input type="checkbox" class="allergy-cb" value="NUTS" style="accent-color:#c44d4d"> <span>Tree nuts &amp; peanuts</span></label>
+              <label class="form-check" style="padding:8px 10px;background:var(--paper-cream);border-radius:6px;border:0.5px solid var(--rule)"><input type="checkbox" class="allergy-cb" value="SHELLFISH" style="accent-color:#c44d4d"> <span>Shellfish &amp; crustaceans</span></label>
+              <label class="form-check" style="padding:8px 10px;background:var(--paper-cream);border-radius:6px;border:0.5px solid var(--rule)"><input type="checkbox" class="allergy-cb" value="DAIRY" style="accent-color:#c44d4d"> <span>Dairy / milk products</span></label>
+              <label class="form-check" style="padding:8px 10px;background:var(--paper-cream);border-radius:6px;border:0.5px solid var(--rule)"><input type="checkbox" class="allergy-cb" value="GLUTEN" style="accent-color:#c44d4d"> <span>Gluten / wheat</span></label>
+              <label class="form-check" style="padding:8px 10px;background:var(--paper-cream);border-radius:6px;border:0.5px solid var(--rule)"><input type="checkbox" class="allergy-cb" value="EGGS" style="accent-color:#c44d4d"> <span>Eggs</span></label>
+              <label class="form-check" style="padding:8px 10px;background:var(--paper-cream);border-radius:6px;border:0.5px solid var(--rule)"><input type="checkbox" class="allergy-cb" value="SOY" style="accent-color:#c44d4d"> <span>Soy</span></label>
+              <label class="form-check" style="padding:8px 10px;background:var(--paper-cream);border-radius:6px;border:0.5px solid var(--rule)"><input type="checkbox" class="allergy-cb" value="FISH" style="accent-color:#c44d4d"> <span>Fish</span></label>
+              <label class="form-check" style="padding:8px 10px;background:var(--paper-cream);border-radius:6px;border:0.5px solid var(--rule)"><input type="checkbox" class="allergy-cb" value="SESAME" style="accent-color:#c44d4d"> <span>Sesame</span></label>
             </div>
           </div>
+
+          <div class="form-field" style="margin-top:10px">
+            <label class="form-label">Items to avoid <span class="caption" style="text-transform:none;letter-spacing:0">(comma-separated — e.g. onions, cilantro)</span></label>
+            <input class="form-input" id="pref-avoid-items" placeholder="e.g. cilantro, blue cheese, raw onion"/>
+          </div>
+
           <div class="form-field">
-            <label class="form-label">Dietary notes</label>
-            <textarea class="form-input form-textarea" id="pref-diet-notes" placeholder="Any other dietary requirements or notes…"></textarea>
+            <label class="form-label">Dietary notes <span class="caption" style="text-transform:none;letter-spacing:0">— shown to airlines and hotels at booking</span></label>
+            <textarea class="form-input form-textarea" id="pref-diet-notes" placeholder="Any additional requirements, severity notes, or context for caterers…" style="min-height:60px"></textarea>
+          </div>
+
+          <div id="pref-meal-error" class="form-error"></div>
+          <div class="form-actions">
+            <button class="btn btn-primary btn-sm" id="pref-meal-btn" onclick="saveMealPrefs()">Save dining preferences</button>
+            <span class="caption" id="pref-meal-ok" style="display:none;color:var(--green)">Saved.</span>
           </div>
         </div>
-      </div>
-
-      <div id="pref-error" class="form-error" style="margin-bottom:10px"></div>
-      <div class="form-actions">
-        <button class="btn btn-primary" id="pref-save-btn" onclick="savePreferences()">Save preferences</button>
-        <span class="caption" id="pref-saved-msg" style="display:none;color:var(--green)">Saved.</span>
       </div>
 
     </div><!-- /tab-preferences -->
@@ -680,52 +873,186 @@ async function saveIdentity(){
 }
 
 /* ── Preferences ── */
+function _chkv(id){var e=document.getElementById(id);return e?e.checked:false;}
 function _populatePreferences(p){
   var s=p.seat_preferences||{};
-  _setval("pref-cabin-dom",s.cabin_domestic);_setval("pref-cabin-intl",s.cabin_international);
-  _setval("pref-seat-pos",s.seat_position);_setval("pref-row",s.row_preference);
-  _chk("pref-avoid-last-row",s.avoid_last_row);_chk("pref-avoid-middle",s.avoid_middle_seats);_chk("pref-wheelchair",s.wheelchair_needed);
-  _setval("pref-hotel-room",s.hotel_room_type);_setval("pref-hotel-floor",s.hotel_floor_pref);_setval("pref-car",s.car_type_pref);
+  _setval("pref-cabin-dom",s.cabin_domestic);
+  _setval("pref-cabin-intl",s.cabin_international);
+  _setval("pref-seat-pos",s.seat_position);
+  _setval("pref-row",s.row_preference);
+  _chk("pref-avoid-last-row",s.avoid_last_row);
+  _chk("pref-avoid-middle",s.avoid_middle_seats);
+  _chk("pref-wheelchair",s.wheelchair_needed);
+  _setval("pref-hotel-room",s.hotel_room_type);
+  _setval("pref-hotel-floor",s.hotel_floor_pref);
+  _setval("pref-car",s.car_type_pref);
+  /* fly_preferences (flexible JSON module) */
+  var f=p.fly_preferences||{};
+  _setval("pref-upgrade",f.upgrade_pref);
+  _setval("pref-redeye",f.red_eye_pref);
+  _setval("pref-airlines",(f.preferred_airlines||[]).join(", "));
+  _chk("pref-early-boarding",f.early_boarding);
+  _chk("pref-lounge",f.lounge_access);
+  _chk("pref-no-stop",f.prefer_nonstop);
+  _chk("pref-window-view",f.window_for_views);
+  _chk("pref-extra-legroom",f.extra_legroom);
+  /* travel_preferences (flexible JSON module) */
+  var t=p.travel_preferences||{};
+  _setval("pref-hotel-smoking",t.smoking_pref||"NON_SMOKING");
+  _setval("pref-hotel-brands",(t.preferred_hotel_brands||[]).join(", "));
+  _chk("pref-early-checkin",t.early_checkin);
+  _chk("pref-late-checkout",t.late_checkout);
+  _chk("pref-quiet-room",t.quiet_room);
+  _chk("pref-high-floor-auto",t.auto_high_floor);
+  _setval("pref-car-trans",t.car_transmission);
+  _chk("pref-car-ev",t.car_electric);
+  _chk("pref-car-gps",t.car_gps);
+  _chk("pref-car-child-seat",t.car_child_seat);
+  _chk("pref-car-full-tank",t.car_full_tank);
+  /* meal_preferences */
   var m=p.meal_preferences||{};
-  _setval("pref-meal-code",m.primary_meal_code);_setval("pref-bev",m.beverage_pref);
+  _setval("pref-meal-code",m.primary_meal_code);
+  _setval("pref-bev",m.beverage_pref);
   _setval("pref-diet-notes",m.dietary_notes);
+  var avoidItems=m.avoid_items;
+  if(Array.isArray(avoidItems)) _setval("pref-avoid-items",avoidItems.join(", "));
+  else if(typeof avoidItems==="string") _setval("pref-avoid-items",avoidItems);
   var allg=m.allergies||[];
   document.querySelectorAll(".allergy-cb").forEach(function(cb){cb.checked=allg.indexOf(cb.value)>-1;});
 }
-async function savePreferences(){
-  var btn=document.getElementById("pref-save-btn");
+
+function _seatPrefsData(){
+  return{
+    cabin_domestic:_val("pref-cabin-dom")||null,
+    cabin_international:_val("pref-cabin-intl")||null,
+    seat_position:_val("pref-seat-pos")||null,
+    row_preference:_val("pref-row")||null,
+    avoid_last_row:_chkv("pref-avoid-last-row"),
+    avoid_middle_seats:_chkv("pref-avoid-middle"),
+    wheelchair_needed:_chkv("pref-wheelchair"),
+    hotel_room_type:_val("pref-hotel-room")||null,
+    hotel_floor_pref:_val("pref-hotel-floor")||null,
+    car_type_pref:_val("pref-car")||null
+  };
+}
+
+async function saveFlightPrefs(){
+  var btn=document.getElementById("pref-flight-btn");
   btn.disabled=true;btn.textContent="Saving…";
-  _showErr("pref-error","");
+  _showErr("pref-flight-error","");
+  try{
+    var airlines=_val("pref-airlines").split(",").map(function(s){return s.trim().toUpperCase();}).filter(Boolean);
+    await _req("PUT","/api/v1/profile/"+_uid,{
+      module:"fly_preferences",
+      data:{
+        upgrade_pref:_val("pref-upgrade")||null,
+        red_eye_pref:_val("pref-redeye")||null,
+        preferred_airlines:airlines,
+        early_boarding:_chkv("pref-early-boarding"),
+        lounge_access:_chkv("pref-lounge"),
+        prefer_nonstop:_chkv("pref-no-stop"),
+        window_for_views:_chkv("pref-window-view"),
+        extra_legroom:_chkv("pref-extra-legroom")
+      }
+    });
+    _showOk("pref-flight-ok");showToast("Flight preferences saved.");
+    await meRefresh();
+  }catch(e){_showErr("pref-flight-error","Save failed. "+(e.message||"Try again."));}
+  btn.disabled=false;btn.textContent="Save flight preferences";
+}
+
+async function saveSeatPrefs(){
+  var btn=document.getElementById("pref-seat-btn");
+  btn.disabled=true;btn.textContent="Saving…";
+  _showErr("pref-seat-error","");
+  try{
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"seat_preferences",data:_seatPrefsData()});
+    _showOk("pref-seat-ok");showToast("Seat preferences saved.");
+    await meRefresh();
+  }catch(e){_showErr("pref-seat-error","Save failed. "+(e.message||"Try again."));}
+  btn.disabled=false;btn.textContent="Save seat preferences";
+}
+
+async function saveHotelPrefs(){
+  var btn=document.getElementById("pref-hotel-btn");
+  btn.disabled=true;btn.textContent="Saving…";
+  _showErr("pref-hotel-error","");
+  try{
+    var brands=_val("pref-hotel-brands").split(",").map(function(s){return s.trim();}).filter(Boolean);
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"seat_preferences",data:_seatPrefsData()});
+    await _req("PUT","/api/v1/profile/"+_uid,{
+      module:"travel_preferences",
+      data:{
+        smoking_pref:_val("pref-hotel-smoking")||null,
+        preferred_hotel_brands:brands,
+        early_checkin:_chkv("pref-early-checkin"),
+        late_checkout:_chkv("pref-late-checkout"),
+        quiet_room:_chkv("pref-quiet-room"),
+        auto_high_floor:_chkv("pref-high-floor-auto"),
+        car_transmission:_val("pref-car-trans")||null,
+        car_electric:_chkv("pref-car-ev"),
+        car_gps:_chkv("pref-car-gps"),
+        car_child_seat:_chkv("pref-car-child-seat"),
+        car_full_tank:_chkv("pref-car-full-tank")
+      }
+    });
+    _showOk("pref-hotel-ok");showToast("Hotel preferences saved.");
+    await meRefresh();
+  }catch(e){_showErr("pref-hotel-error","Save failed. "+(e.message||"Try again."));}
+  btn.disabled=false;btn.textContent="Save hotel preferences";
+}
+
+async function saveCarPrefs(){
+  var btn=document.getElementById("pref-car-btn");
+  btn.disabled=true;btn.textContent="Saving…";
+  _showErr("pref-car-error","");
+  try{
+    var brands=_val("pref-hotel-brands").split(",").map(function(s){return s.trim();}).filter(Boolean);
+    await _req("PUT","/api/v1/profile/"+_uid,{module:"seat_preferences",data:_seatPrefsData()});
+    await _req("PUT","/api/v1/profile/"+_uid,{
+      module:"travel_preferences",
+      data:{
+        smoking_pref:_val("pref-hotel-smoking")||null,
+        preferred_hotel_brands:brands,
+        early_checkin:_chkv("pref-early-checkin"),
+        late_checkout:_chkv("pref-late-checkout"),
+        quiet_room:_chkv("pref-quiet-room"),
+        auto_high_floor:_chkv("pref-high-floor-auto"),
+        car_transmission:_val("pref-car-trans")||null,
+        car_electric:_chkv("pref-car-ev"),
+        car_gps:_chkv("pref-car-gps"),
+        car_child_seat:_chkv("pref-car-child-seat"),
+        car_full_tank:_chkv("pref-car-full-tank")
+      }
+    });
+    _showOk("pref-car-ok");showToast("Car preferences saved.");
+    await meRefresh();
+  }catch(e){_showErr("pref-car-error","Save failed. "+(e.message||"Try again."));}
+  btn.disabled=false;btn.textContent="Save car preferences";
+}
+
+async function saveMealPrefs(){
+  var btn=document.getElementById("pref-meal-btn");
+  btn.disabled=true;btn.textContent="Saving…";
+  _showErr("pref-meal-error","");
   try{
     var allg=[];
     document.querySelectorAll(".allergy-cb:checked").forEach(function(cb){allg.push(cb.value);});
-    await _req("PUT","/api/v1/profile/"+_uid,{
-      module:"seat_preferences",
-      data:{
-        cabin_domestic:_val("pref-cabin-dom")||null,cabin_international:_val("pref-cabin-intl")||null,
-        seat_position:_val("pref-seat-pos")||null,row_preference:_val("pref-row")||null,
-        avoid_last_row:document.getElementById("pref-avoid-last-row").checked,
-        avoid_middle_seats:document.getElementById("pref-avoid-middle").checked,
-        wheelchair_needed:document.getElementById("pref-wheelchair").checked,
-        hotel_room_type:_val("pref-hotel-room")||null,hotel_floor_pref:_val("pref-hotel-floor")||null,
-        car_type_pref:_val("pref-car")||null
-      }
-    });
+    var avoidRaw=_val("pref-avoid-items").split(",").map(function(s){return s.trim();}).filter(Boolean);
     await _req("PUT","/api/v1/profile/"+_uid,{
       module:"meal_preferences",
       data:{
         primary_meal_code:_val("pref-meal-code")||null,
         beverage_pref:_val("pref-bev")||null,
         allergies:allg,
+        avoid_items:avoidRaw,
         dietary_notes:_val("pref-diet-notes")||null
       }
     });
-    _showOk("pref-saved-msg");showToast("Preferences saved.");
+    _showOk("pref-meal-ok");showToast("Dining preferences saved.");
     await meRefresh();
-  }catch(e){
-    _showErr("pref-error","Save failed: "+(e.message||"Please try again."));
-  }
-  btn.disabled=false;btn.textContent="Save preferences";
+  }catch(e){_showErr("pref-meal-error","Save failed. "+(e.message||"Try again."));}
+  btn.disabled=false;btn.textContent="Save dining preferences";
 }
 
 /* ── Loyalty ── */
