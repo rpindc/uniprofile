@@ -153,6 +153,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 
 /* ── Auto-save note ── */
 .autosave-note{font-size:12px;font-style:italic;color:var(--ink-mute)}
+.form-section-head{font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);padding-bottom:6px;border-bottom:0.5px solid var(--rule);margin-bottom:12px}
 .edit-footer{display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:14px;border-top:0.5px solid var(--rule)}
 .save-err{font-size:12px;color:var(--red);margin-top:8px;display:none}
 .err-retry{background:none;border:none;color:var(--red);font-family:var(--sans);font-size:12px;cursor:pointer;padding:0;text-decoration:underline}
@@ -942,15 +943,89 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
         </div>
         <div class="card-item-body empty" id="policy-body">Cabin rules, hotel caps, pre-approval thresholds — your expense policy, applied automatically at booking.</div>
         <div class="card-item-edit" id="policy-edit">
+          <p class="form-section-head">Flights</p>
           <div class="form-field">
-            <label class="form-label">Policy description <span class="form-label-helper">— plain text, shown at booking</span></label>
-            <textarea class="form-input" id="policy-desc" rows="4" placeholder="e.g. Economy on domestic flights under 4 hours. Business on international. Hotel cap $250/night. Pre-approval required above $5,000." style="resize:vertical" oninput="_debounce('policy',_autoSavePolicy,600)"></textarea>
+            <label class="form-label">Domestic — max cabin class</label>
+            <div class="tile-grid tile-grid-3">
+              <button type="button" class="tile" data-group="pol-dom" data-value="ECONOMY" onclick="_ts(this,'pol-dom',false,'policy',_autoSavePolicy)" aria-pressed="false">Economy</button>
+              <button type="button" class="tile" data-group="pol-dom" data-value="ECONOMY_PLUS" onclick="_ts(this,'pol-dom',false,'policy',_autoSavePolicy)" aria-pressed="false">Premium eco</button>
+              <button type="button" class="tile" data-group="pol-dom" data-value="BUSINESS" onclick="_ts(this,'pol-dom',false,'policy',_autoSavePolicy)" aria-pressed="false">Business</button>
+              <button type="button" class="tile" data-group="pol-dom" data-value="FIRST" onclick="_ts(this,'pol-dom',false,'policy',_autoSavePolicy)" aria-pressed="false">First</button>
+              <button type="button" class="tile" data-group="pol-dom" data-value="" onclick="_ts(this,'pol-dom',false,'policy',_autoSavePolicy)" aria-pressed="false">No rule</button>
+            </div>
           </div>
-          <p style="font-size:12px;color:var(--ink-mute);margin-top:4px">This is a free-text field. Your TMC or admin may overwrite this with your company's official policy.</p>
+          <div class="form-field">
+            <label class="form-label">International — max cabin class</label>
+            <div class="tile-grid tile-grid-3">
+              <button type="button" class="tile" data-group="pol-intl" data-value="ECONOMY" onclick="_ts(this,'pol-intl',false,'policy',_autoSavePolicy)" aria-pressed="false">Economy</button>
+              <button type="button" class="tile" data-group="pol-intl" data-value="ECONOMY_PLUS" onclick="_ts(this,'pol-intl',false,'policy',_autoSavePolicy)" aria-pressed="false">Premium eco</button>
+              <button type="button" class="tile" data-group="pol-intl" data-value="BUSINESS" onclick="_ts(this,'pol-intl',false,'policy',_autoSavePolicy)" aria-pressed="false">Business</button>
+              <button type="button" class="tile" data-group="pol-intl" data-value="FIRST" onclick="_ts(this,'pol-intl',false,'policy',_autoSavePolicy)" aria-pressed="false">First</button>
+              <button type="button" class="tile" data-group="pol-intl" data-value="" onclick="_ts(this,'pol-intl',false,'policy',_autoSavePolicy)" aria-pressed="false">No rule</button>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Advance booking required</label>
+            <div class="tile-grid tile-grid-3">
+              <button type="button" class="tile" data-group="pol-adv" data-value="7" onclick="_ts(this,'pol-adv',false,'policy',_autoSavePolicy)" aria-pressed="false">7 days</button>
+              <button type="button" class="tile" data-group="pol-adv" data-value="14" onclick="_ts(this,'pol-adv',false,'policy',_autoSavePolicy)" aria-pressed="false">14 days</button>
+              <button type="button" class="tile" data-group="pol-adv" data-value="21" onclick="_ts(this,'pol-adv',false,'policy',_autoSavePolicy)" aria-pressed="false">21 days</button>
+              <button type="button" class="tile" data-group="pol-adv" data-value="30" onclick="_ts(this,'pol-adv',false,'policy',_autoSavePolicy)" aria-pressed="false">30 days</button>
+              <button type="button" class="tile" data-group="pol-adv" data-value="" onclick="_ts(this,'pol-adv',false,'policy',_autoSavePolicy)" aria-pressed="false">No requirement</button>
+            </div>
+          </div>
+          <p class="form-section-head" style="margin-top:6px">Hotels</p>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">Nightly cap</label>
+              <div style="position:relative">
+                <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink-mute);font-size:13px;pointer-events:none">$</span>
+                <input class="form-input" id="pol-hotel-cap" type="number" min="0" step="25" placeholder="e.g. 250" style="padding-left:22px" onchange="_debounce('policy',_autoSavePolicy,500)"/>
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Max star rating</label>
+              <div class="tile-grid tile-grid-4">
+                <button type="button" class="tile" data-group="pol-stars" data-value="3" onclick="_ts(this,'pol-stars',false,'policy',_autoSavePolicy)" aria-pressed="false">3★</button>
+                <button type="button" class="tile" data-group="pol-stars" data-value="4" onclick="_ts(this,'pol-stars',false,'policy',_autoSavePolicy)" aria-pressed="false">4★</button>
+                <button type="button" class="tile" data-group="pol-stars" data-value="5" onclick="_ts(this,'pol-stars',false,'policy',_autoSavePolicy)" aria-pressed="false">5★</button>
+                <button type="button" class="tile" data-group="pol-stars" data-value="" onclick="_ts(this,'pol-stars',false,'policy',_autoSavePolicy)" aria-pressed="false">No cap</button>
+              </div>
+            </div>
+          </div>
+          <p class="form-section-head" style="margin-top:6px">Car rental</p>
+          <div class="form-field">
+            <label class="form-label">Max class</label>
+            <div class="tile-grid tile-grid-3">
+              <button type="button" class="tile" data-group="pol-car" data-value="ECONOMY" onclick="_ts(this,'pol-car',false,'policy',_autoSavePolicy)" aria-pressed="false">Economy</button>
+              <button type="button" class="tile" data-group="pol-car" data-value="COMPACT" onclick="_ts(this,'pol-car',false,'policy',_autoSavePolicy)" aria-pressed="false">Compact</button>
+              <button type="button" class="tile" data-group="pol-car" data-value="MIDSIZE" onclick="_ts(this,'pol-car',false,'policy',_autoSavePolicy)" aria-pressed="false">Midsize</button>
+              <button type="button" class="tile" data-group="pol-car" data-value="FULLSIZE" onclick="_ts(this,'pol-car',false,'policy',_autoSavePolicy)" aria-pressed="false">Full-size</button>
+              <button type="button" class="tile" data-group="pol-car" data-value="" onclick="_ts(this,'pol-car',false,'policy',_autoSavePolicy)" aria-pressed="false">No cap</button>
+            </div>
+          </div>
+          <p class="form-section-head" style="margin-top:6px">Spending</p>
+          <div class="form-field">
+            <label class="form-label">Pre-approval required above</label>
+            <div style="position:relative">
+              <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink-mute);font-size:13px;pointer-events:none">$</span>
+              <input class="form-input" id="pol-preapproval" type="number" min="0" step="100" placeholder="e.g. 5000" style="padding-left:22px" onchange="_debounce('policy',_autoSavePolicy,500)"/>
+            </div>
+          </div>
+          <button class="adv-toggle" id="policy-adv-btn" onclick="_toggleAdv('policy-adv',this)" aria-expanded="false">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Additional notes
+          </button>
+          <div class="adv-fields" id="policy-adv">
+            <div class="form-field" style="margin-top:14px">
+              <label class="form-label">Free-text notes <span class="form-label-helper">— shown at booking</span></label>
+              <textarea class="form-input" id="policy-desc" rows="3" placeholder="Any additional policy notes…" style="resize:vertical" oninput="_debounce('policy',_autoSavePolicy,600)"></textarea>
+            </div>
+          </div>
           <div id="policy-save-err" class="save-err"></div>
           <div class="edit-footer">
             <button class="btn-cancel" onclick="toggleCard('policy')">Done</button>
-            <span class="autosave-note">Saved automatically as you type.</span>
+            <span class="autosave-note">Saved automatically as you choose.</span>
           </div>
         </div>
       </div>
@@ -1536,16 +1611,32 @@ function _renderEmployerCard(p){
   }
 }
 
+function _policyProse(corp){
+  var cab={ECONOMY:"Economy",ECONOMY_PLUS:"Premium economy",BUSINESS:"Business class",FIRST:"First class"};
+  var parts=[];
+  var dom=corp.policy_flight_domestic,intl=corp.policy_flight_intl;
+  if(dom&&intl&&dom===intl) parts.push((cab[dom]||dom)+" on all flights");
+  else{if(dom)parts.push((cab[dom]||dom)+" domestic");if(intl)parts.push((cab[intl]||intl)+" international");}
+  if(corp.policy_advance_days) parts.push("book "+corp.policy_advance_days+"+ days out");
+  var hotelP=[];
+  if(corp.policy_hotel_cap) hotelP.push("$"+corp.policy_hotel_cap+"/night cap");
+  if(corp.policy_hotel_stars) hotelP.push(corp.policy_hotel_stars+"★ max");
+  if(hotelP.length) parts.push("Hotels: "+hotelP.join(", "));
+  if(corp.policy_car_class){var cl={ECONOMY:"Economy",COMPACT:"Compact",MIDSIZE:"Midsize",FULLSIZE:"Full-size"}[corp.policy_car_class];if(cl)parts.push(cl+" car rental max");}
+  if(corp.policy_preapproval_threshold) parts.push("pre-approval above $"+Number(corp.policy_preapproval_threshold).toLocaleString());
+  if(corp.policy_description) parts.push(corp.policy_description);
+  return parts.length?parts.join(". ")+".":null;
+}
 function _renderPolicyCard(p){
   var profiles=p.payment_profiles||[];
-  var corp=profiles.find(function(x){return x.context==="CORPORATE";});
-  var desc=corp&&corp.policy_description;
+  var corp=profiles.find(function(x){return x.context==="CORPORATE";})||{};
+  var prose=_policyProse(corp);
   var pb=document.getElementById("policy-body");
   var pbtn=document.getElementById("policy-btn");
-  if(desc){
+  if(prose){
     _ht("policy-pill",_pill("pill-green","Active"));
     pb.className="card-item-body";
-    pb.textContent=desc.length>120?desc.slice(0,117)+"…":desc;
+    pb.textContent=prose;
     if(pbtn)pbtn.textContent="Edit";
   }else{
     _ht("policy-pill",_pill("pill-neutral","Not set"));
@@ -2069,6 +2160,13 @@ async function _autoSaveEmployer(){
 function _populatePolicyEdit(p){
   var profiles=p.payment_profiles||[];
   var corp=profiles.find(function(x){return x.context==="CORPORATE";})||{};
+  _tileSet("pol-dom",corp.policy_flight_domestic||"");
+  _tileSet("pol-intl",corp.policy_flight_intl||"");
+  _tileSet("pol-adv",corp.policy_advance_days?String(corp.policy_advance_days):"");
+  _setval("pol-hotel-cap",corp.policy_hotel_cap||"");
+  _tileSet("pol-stars",corp.policy_hotel_stars?String(corp.policy_hotel_stars):"");
+  _tileSet("pol-car",corp.policy_car_class||"");
+  _setval("pol-preapproval",corp.policy_preapproval_threshold||"");
   _setval("policy-desc",corp.policy_description||"");
 }
 async function _autoSavePolicy(){
@@ -2076,11 +2174,22 @@ async function _autoSavePolicy(){
   try{
     var profiles=_prof.payment_profiles||[];
     var corp=profiles.find(function(x){return x.context==="CORPORATE";})||{};
+    var advDays=_tileVal("pol-adv");
+    var stars=_tileVal("pol-stars");
+    var hotelCap=_val("pol-hotel-cap").trim();
+    var preapproval=_val("pol-preapproval").trim();
     await _req("PUT","/api/v1/profile/"+_uid,{module:"payment_corporate",data:{
       context:"CORPORATE",
       company_name:corp.company_name||null,
       corporate_card:corp.corporate_card||null,
       expense_platform:corp.expense_platform||null,
+      policy_flight_domestic:_tileVal("pol-dom")||null,
+      policy_flight_intl:_tileVal("pol-intl")||null,
+      policy_advance_days:advDays?parseInt(advDays,10):null,
+      policy_hotel_cap:hotelCap?parseFloat(hotelCap):null,
+      policy_hotel_stars:stars?parseInt(stars,10):null,
+      policy_car_class:_tileVal("pol-car")||null,
+      policy_preapproval_threshold:preapproval?parseFloat(preapproval):null,
       policy_description:_val("policy-desc").trim()||null
     }});
     showToast("Policy saved.");
