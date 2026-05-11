@@ -5,441 +5,108 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Home — UniProfile</title>
 <meta name="robots" content="noindex,nofollow" />
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,300;9..144,0,400;9..144,1,300;9..144,1,400&family=Inter+Tight:wght@400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
-
 <style>
-/* ============================================================
-   UNIPROFILE — SHARED DESIGN SYSTEM
-   This block is identical across all 5 pages.
-   Typography, color, spacing, components — single source of truth.
-   ============================================================ */
+:root{--ink:#1a1a1a;--ink-soft:#4a4a48;--ink-mute:#8a8a86;--ink-faint:#b8b8b3;--paper:#faf8f4;--paper-warm:#f3efe7;--paper-cream:#f9f7f2;--rule:rgba(26,26,26,0.08);--rule-strong:rgba(26,26,26,0.18);--green:#2d6a4f;--green-soft:#e8efe9;--amber:#ba7517;--amber-soft:#f9f1e3;--red:#c44d4d;--red-soft:#f4e8e8;--serif:'Fraunces',Georgia,serif;--sans:'Inter Tight',-apple-system,sans-serif;--mono:'JetBrains Mono','SF Mono',Menlo,monospace}
+*{box-sizing:border-box;margin:0;padding:0}html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;font-size:14px;font-weight:400}
+.h1{font-family:var(--serif);font-weight:300;font-size:clamp(36px,5vw,52px);line-height:1.1;letter-spacing:-0.02em;color:var(--ink)}
+.h1 em{font-style:italic;font-weight:300}
+.h2{font-family:var(--serif);font-weight:400;font-size:24px;line-height:1.2;letter-spacing:-0.01em;color:var(--ink)}
+.h2 em{font-style:italic;font-weight:300}
+.h3{font-family:var(--serif);font-weight:400;font-size:18px;line-height:1.25;letter-spacing:-0.005em;color:var(--ink)}
+.lede{font-family:var(--serif);font-weight:300;font-size:17px;line-height:1.5;letter-spacing:-0.005em;color:var(--ink-soft)}
+.eyebrow{font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-mute)}
+.section-label{font-family:var(--sans);font-size:12px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink)}
+.micro-label{font-family:var(--sans);font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute)}
+.body{font-size:14px;line-height:1.55;color:var(--ink-soft)}
+.caption{font-size:12px;line-height:1.5;color:var(--ink-mute)}
+.editorial{font-family:var(--serif);font-style:italic;font-weight:400;font-size:16px;color:var(--ink)}
+.id{font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:0.04em;color:var(--ink)}
+.shell{display:flex;min-height:100vh}
+.sidebar{width:240px;background:#fff;border-right:0.5px solid var(--rule);padding:28px 0;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.sidebar-wordmark-block{padding:0 24px 24px;border-bottom:0.5px solid rgba(26,26,26,0.06)}
+.wordmark{font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-0.01em;line-height:1;color:var(--ink);text-decoration:none;display:block}
+.wordmark em{font-style:italic;font-weight:300}
+.wordmark-tag{font-family:var(--sans);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;margin-top:6px}
+.sidebar-id-block{padding:18px 24px;border-bottom:0.5px solid rgba(26,26,26,0.06)}
+.sidebar-id-label{font-family:var(--sans);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;margin-bottom:6px}
+.sidebar-nav{padding:20px 12px;flex:1}
+.sidebar-nav-label{font-family:var(--sans);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-faint);font-weight:500;padding:0 12px 12px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:6px;text-decoration:none;color:var(--ink-soft);font-size:14px;font-weight:400;margin-bottom:2px;transition:background 120ms ease}
+.nav-item:hover{background:rgba(26,26,26,0.03)}
+.nav-item.active{background:rgba(26,26,26,0.05);color:var(--ink);font-weight:500}
+.nav-item svg{flex-shrink:0}
+.sidebar-user-card{padding:12px;border-top:0.5px solid rgba(26,26,26,0.06)}
+.user-card-inner{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;cursor:pointer;transition:background 120ms ease}
+.user-card-inner:hover{background:rgba(26,26,26,0.03)}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-weight:300;color:var(--ink-soft);flex-shrink:0;border:2px solid #fff}
+.avatar-sm{width:30px;height:30px;font-size:12px}
+.avatar-1{background:linear-gradient(135deg,#d8d3c8,#c4bfb3)}
+.main{flex:1;padding:36px 48px;min-width:0;max-width:880px}
+.page-header{margin-bottom:36px}
+.section{margin-bottom:32px}
+.section-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+.card{background:#fff;border:0.5px solid var(--rule);border-radius:12px;padding:22px 24px}
+.card-amber{border:0.5px solid rgba(186,117,23,0.4)}
+.card-warm{background:var(--paper-warm);border-radius:12px;padding:22px 26px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:100px;font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.02em}
+.pill-ready{background:var(--green-soft);color:var(--green)}
+.pill-amber{background:var(--amber-soft);color:var(--amber)}
+.pill-neutral{background:var(--paper-warm);color:var(--ink-soft)}
+.pill-dot{width:6px;height:6px;border-radius:50%}
+.dot-green{background:var(--green)}
+.dot-amber{background:var(--amber)}
+.dot-red{background:var(--red)}
+.dot-mute{background:var(--ink-mute)}
+.btn{font-family:var(--sans);font-size:13px;font-weight:500;padding:10px 18px;border-radius:4px;cursor:pointer;letter-spacing:-0.005em;transition:all 140ms ease;display:inline-flex;align-items:center;gap:8px;text-decoration:none;border:0.5px solid transparent;background:none}
+.btn-primary{color:#fff;background:var(--ink);border-color:var(--ink)}
+.btn-primary:hover{opacity:0.88}
+.btn-secondary{color:var(--ink);background:transparent;border-color:var(--rule-strong)}
+.btn-secondary:hover{background:rgba(26,26,26,0.03)}
+.btn-sm{font-size:12px;padding:6px 12px}
+.icon{width:16px;height:16px;flex-shrink:0;display:inline-block;vertical-align:middle}
+.icon-bg{border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.icon-bg-amber{background:var(--amber-soft);color:var(--amber)}
+.icon-bg-red{background:var(--red-soft);color:var(--red)}
+.icon-bg-neutral{background:var(--paper-warm);color:var(--ink-soft)}
+.icon-bg-green{background:var(--green-soft);color:var(--green)}
+.link{color:var(--ink);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:0.5px;font-size:12px}
+.link-mute{color:var(--ink-mute)}
 
-:root {
-  /* Color tokens */
-  --ink: #1a1a1a;
-  --ink-soft: #4a4a48;
-  --ink-mute: #8a8a86;
-  --ink-faint: #b8b8b3;
-  --paper: #faf8f4;
-  --paper-warm: #f3efe7;
-  --paper-cream: #f9f7f2;
-  --rule: rgba(26, 26, 26, 0.08);
-  --rule-strong: rgba(26, 26, 26, 0.18);
-  --field-bg: #ffffff;
-  --green: #2d6a4f;
-  --green-soft: #e8efe9;
-  --amber: #ba7517;
-  --amber-soft: #f9f1e3;
-  --red: #c44d4d;
-  --red-soft: #f4e8e8;
+/* Quick stats row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:32px}
+.stat-card{background:#fff;border:0.5px solid var(--rule);border-radius:10px;padding:16px 18px}
+.stat-num{font-family:var(--serif);font-size:28px;font-weight:300;line-height:1;color:var(--ink);margin-bottom:4px}
+.stat-label{font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute)}
+.stat-sub{font-size:11px;color:var(--ink-mute);margin-top:3px}
 
-  /* Type stacks */
-  --serif: 'Fraunces', Georgia, serif;
-  --sans: 'Inter Tight', -apple-system, sans-serif;
-  --mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
-}
+/* Progress bar */
+.progress-bar{height:4px;background:var(--paper-warm);border-radius:2px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;background:var(--ink);border-radius:2px;transition:width 500ms ease}
+.progress-fill.good{background:var(--green)}
+.progress-fill.warn{background:var(--amber)}
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+/* Health checklist */
+.check-list{display:flex;flex-direction:column;gap:0}
+.check-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--rule)}
+.check-item:last-child{border-bottom:none}
+.check-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:10px;font-weight:600}
+.check-done{background:var(--green-soft);color:var(--green)}
+.check-miss{background:var(--paper-warm);color:var(--ink-mute);border:0.5px solid var(--rule-strong)}
+.check-warn{background:var(--amber-soft);color:var(--amber)}
 
-body {
-  font-family: var(--sans);
-  background: var(--paper);
-  color: var(--ink);
-  line-height: 1.55;
-  font-size: 14px;
-  font-weight: 400;
-}
+/* Alert card */
+.alert-card{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;margin-bottom:10px;border-radius:10px;border:0.5px solid rgba(186,117,23,0.35);background:#fff}
+.alert-card.red{border-color:rgba(196,77,77,0.35)}
 
-/* ===== TYPOGRAPHY (uniform across all pages) ===== */
-
-.h1 {
-  font-family: var(--serif);
-  font-weight: 300;
-  font-size: clamp(36px, 5vw, 52px);
-  line-height: 1.1;
-  letter-spacing: -0.02em;
-  color: var(--ink);
-}
-.h1 em { font-style: italic; font-weight: 300; }
-
-.h2 {
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: 24px;
-  line-height: 1.2;
-  letter-spacing: -0.01em;
-  color: var(--ink);
-}
-.h2 em { font-style: italic; font-weight: 300; }
-
-.h3 {
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: 18px;
-  line-height: 1.25;
-  letter-spacing: -0.005em;
-  color: var(--ink);
-}
-
-.lede {
-  font-family: var(--serif);
-  font-weight: 300;
-  font-size: 17px;
-  line-height: 1.5;
-  letter-spacing: -0.005em;
-  color: var(--ink-soft);
-}
-
-.eyebrow {
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-}
-
-.section-label {
-  font-family: var(--sans);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink);
-}
-
-.micro-label {
-  font-family: var(--sans);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-}
-
-.body { font-size: 14px; line-height: 1.55; color: var(--ink-soft); }
-.body-ink { font-size: 14px; line-height: 1.55; color: var(--ink); }
-.caption { font-size: 12px; line-height: 1.5; color: var(--ink-mute); }
-.editorial {
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 400;
-  font-size: 16px;
-  color: var(--ink);
-}
-
-.id { font-family: var(--mono); font-size: 13px; font-weight: 500; letter-spacing: 0.04em; color: var(--ink); }
-.id-large { font-family: var(--mono); font-size: 17px; font-weight: 500; letter-spacing: 0.04em; color: var(--ink); }
-
-/* ===== LAYOUT — sidebar + main shell (used by all 5 pages) ===== */
-
-.shell { display: flex; min-height: 100vh; }
-
-.sidebar {
-  width: 240px;
-  background: #fff;
-  border-right: 0.5px solid var(--rule);
-  padding: 28px 0;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-}
-
-.sidebar-wordmark-block {
-  padding: 0 24px 24px;
-  border-bottom: 0.5px solid rgba(26, 26, 26, 0.06);
-}
-.wordmark {
-  font-family: var(--serif);
-  font-size: 22px;
-  font-weight: 400;
-  letter-spacing: -0.01em;
-  line-height: 1;
-  color: var(--ink);
-  text-decoration: none;
-  display: block;
-}
-.wordmark em { font-style: italic; font-weight: 300; }
-.wordmark-tag {
-  font-family: var(--sans);
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-  font-weight: 500;
-  margin-top: 6px;
-}
-
-.sidebar-id-block {
-  padding: 18px 24px;
-  border-bottom: 0.5px solid rgba(26, 26, 26, 0.06);
-}
-.sidebar-id-label {
-  font-family: var(--sans);
-  font-size: 9px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
-  font-weight: 500;
-  margin-bottom: 6px;
-}
-
-.sidebar-nav {
-  padding: 20px 12px;
-  flex: 1;
-}
-.sidebar-nav-label {
-  font-family: var(--sans);
-  font-size: 9px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-  font-weight: 500;
-  padding: 0 12px 12px;
-}
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: 6px;
-  text-decoration: none;
-  color: var(--ink-soft);
-  font-size: 14px;
-  font-weight: 400;
-  margin-bottom: 2px;
-  transition: background 120ms ease;
-}
-.nav-item:hover { background: rgba(26, 26, 26, 0.03); }
-.nav-item.active {
-  background: rgba(26, 26, 26, 0.05);
-  color: var(--ink);
-  font-weight: 500;
-}
-.nav-item svg { flex-shrink: 0; }
-
-.sidebar-user-card {
-  padding: 12px;
-  border-top: 0.5px solid rgba(26, 26, 26, 0.06);
-}
-.user-card-inner {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 120ms ease;
-}
-.user-card-inner:hover { background: rgba(26, 26, 26, 0.03); }
-
-.avatar {
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--serif);
-  font-style: italic;
-  font-weight: 300;
-  color: var(--ink-soft);
-  flex-shrink: 0;
-  border: 2px solid #fff;
-}
-.avatar-sm { width: 30px; height: 30px; font-size: 12px; }
-.avatar-md { width: 36px; height: 36px; font-size: 13px; }
-.avatar-lg { width: 44px; height: 44px; font-size: 16px; }
-
-.avatar-1 { background: linear-gradient(135deg, #d8d3c8, #c4bfb3); }
-.avatar-2 { background: linear-gradient(135deg, #e0d5c8, #cfc2b0); }
-.avatar-3 { background: linear-gradient(135deg, #d4ccd8, #c0b6c8); }
-.avatar-4 { background: linear-gradient(135deg, #d8d3d8, #c4bfc4); }
-.avatar-5 { background: linear-gradient(135deg, #cdc8d8, #b8b2c8); }
-
-/* Main content shell */
-.main {
-  flex: 1;
-  padding: 36px 48px;
-  min-width: 0;
-  max-width: 880px;
-}
-
-/* ===== PAGE HEADER (consistent across all pages) ===== */
-.page-header { margin-bottom: 36px; }
-.page-header .eyebrow { margin-bottom: 12px; }
-.page-header .h1 { margin-bottom: 8px; }
-
-/* ===== TABS (used by Me, Privacy) ===== */
-.tabs {
-  display: flex;
-  gap: 28px;
-  padding-bottom: 14px;
-  border-bottom: 0.5px solid var(--rule);
-  margin-bottom: 32px;
-}
-.tab {
-  font-family: var(--sans);
-  font-size: 13px;
-  color: var(--ink-mute);
-  text-decoration: none;
-  padding-bottom: 14px;
-  margin-bottom: -14.5px;
-  transition: color 120ms ease;
-}
-.tab:hover { color: var(--ink-soft); }
-.tab.active {
-  color: var(--ink);
-  font-weight: 500;
-  border-bottom: 1.5px solid var(--ink);
-}
-
-/* ===== SECTION (used everywhere) ===== */
-.section { margin-bottom: 36px; }
-.section-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-.section-header.with-rule {
-  padding-bottom: 12px;
-  border-bottom: 0.5px solid var(--rule);
-  margin-bottom: 20px;
-}
-
-/* ===== CARDS ===== */
-.card {
-  background: #fff;
-  border: 0.5px solid var(--rule);
-  border-radius: 12px;
-  padding: 22px 24px;
-}
-.card-strong { border: 0.5px solid var(--rule-strong); }
-.card-amber { border: 0.5px solid rgba(186, 117, 23, 0.4); }
-.card-soft { background: var(--paper-cream); border-radius: 12px; padding: 22px 24px; }
-.card-warm { background: var(--paper-warm); border-radius: 12px; padding: 22px 26px; }
-
-/* ===== STATUS PILLS ===== */
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 100px;
-  font-family: var(--sans);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-}
-.pill-ready { background: var(--green-soft); color: var(--green); }
-.pill-amber { background: var(--amber-soft); color: var(--amber); }
-.pill-neutral { background: var(--paper-warm); color: var(--ink-soft); }
-.pill-faint { background: var(--paper-warm); color: var(--ink-mute); }
-
-.pill-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-.dot-green { background: var(--green); }
-.dot-amber { background: var(--amber); }
-.dot-red { background: var(--red); }
-.dot-mute { background: var(--ink-mute); }
-
-/* ===== BUTTONS ===== */
-.btn {
-  font-family: var(--sans);
-  font-size: 13px;
-  font-weight: 500;
-  padding: 10px 18px;
-  border-radius: 4px;
-  cursor: pointer;
-  letter-spacing: -0.005em;
-  transition: background 160ms ease, border-color 160ms ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none;
-  border: 0.5px solid transparent;
-}
-.btn-primary {
-  color: #fff;
-  background: var(--ink);
-  border-color: var(--ink);
-}
-.btn-primary:hover { background: #2a2a2a; }
-.btn-secondary {
-  color: var(--ink);
-  background: transparent;
-  border-color: var(--rule-strong);
-}
-.btn-secondary:hover { background: rgba(26, 26, 26, 0.04); border-color: var(--ink); }
-.btn-tertiary {
-  color: var(--ink-soft);
-  background: transparent;
-  border-color: var(--rule);
-}
-.btn-tertiary:hover { background: rgba(26, 26, 26, 0.02); }
-.btn-sm { font-size: 12px; padding: 8px 14px; }
-
-/* Inline links */
-.link {
-  color: var(--ink);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  text-decoration-thickness: 0.5px;
-  font-size: 12px;
-}
-.link-mute { color: var(--ink-mute); }
-
-/* ===== AVATAR STACK ===== */
-.avatar-stack {
-  display: flex;
-  align-items: center;
-}
-.avatar-stack .avatar:not(:first-child) { margin-left: -8px; }
-.avatar-ring-amber { box-shadow: 0 0 0 1.5px var(--amber); }
-
-/* ===== ICONS ===== */
-.icon {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  display: inline-block;
-  vertical-align: middle;
-}
-.icon-bg {
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.icon-bg-amber { background: var(--amber-soft); color: var(--amber); }
-.icon-bg-neutral { background: var(--paper-warm); color: var(--ink-soft); }
-
-/* Responsive */
-@media (max-width: 900px) {
-  .shell { flex-direction: column; }
-  .sidebar { width: 100%; height: auto; position: relative; padding: 16px 0; }
-  .sidebar-wordmark-block, .sidebar-id-block { padding: 12px 24px; }
-  .sidebar-nav { padding: 12px; display: flex; gap: 4px; flex-wrap: wrap; }
-  .sidebar-nav-label { display: none; }
-  .nav-item { padding: 8px 12px; }
-  .sidebar-user-card { display: none; }
-  .main { padding: 24px; max-width: none; }
-}
+@media(max-width:900px){.shell{flex-direction:column}.sidebar{width:100%;height:auto;position:relative;padding:16px 0}.sidebar-wordmark-block,.sidebar-id-block{padding:12px 24px}.sidebar-nav{padding:12px;display:flex;gap:4px;flex-wrap:wrap}.sidebar-nav-label{display:none}.nav-item{padding:8px 12px}.sidebar-user-card{display:none}.main{padding:24px;max-width:none}.stats-row{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 
-<!-- Icon symbols, inline once per page -->
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
   <symbol id="i-home" viewBox="0 0 24 24" fill="none"><path d="M4 11L12 4L20 11V19C20 19.55 19.55 20 19 20H5C4.45 20 4 19.55 4 19V11Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M10 20V14H14V20" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></symbol>
   <symbol id="i-me" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="3.5" stroke="currentColor" stroke-width="1.25"/><path d="M5 20C5 16 8 14 12 14C16 14 19 16 19 20" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
@@ -448,22 +115,20 @@ body {
   <symbol id="i-privacy" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M8 11V8C8 5.79 9.79 4 12 4C14.21 4 16 5.79 16 8V11" stroke="currentColor" stroke-width="1.25"/><circle cx="12" cy="15.5" r="1" fill="currentColor"/></symbol>
   <symbol id="i-attention" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.25"/><path d="M12 8V13" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><circle cx="12" cy="16" r="0.6" fill="currentColor"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none"><path d="M5 13L9 17L19 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 </svg>
 
 <div class="shell">
 
-  <!-- ============ SIDEBAR ============ -->
   <aside class="sidebar">
     <div class="sidebar-wordmark-block">
       <a href="home.html" class="wordmark">Uni<em>Profile</em></a>
       <div class="wordmark-tag">Travel identity</div>
     </div>
-
     <div class="sidebar-id-block">
       <div class="sidebar-id-label">Your number</div>
       <div class="id" id="sidebar-number">—</div>
     </div>
-
     <nav class="sidebar-nav">
       <div class="sidebar-nav-label">Navigate</div>
       <a href="home.html" class="nav-item active"><svg class="icon"><use href="#i-home"/></svg>Home</a>
@@ -472,135 +137,98 @@ body {
       <a href="trips.html" class="nav-item"><svg class="icon"><use href="#i-trips"/></svg>Trips</a>
       <a href="privacy.html" class="nav-item"><svg class="icon"><use href="#i-privacy"/></svg>Privacy</a>
     </nav>
-
     <div class="sidebar-user-card">
       <div class="user-card-inner">
-        <div class="avatar avatar-sm avatar-1">RP</div>
-        <div style="flex: 1; min-width: 0;">
-          <div style="font-size: 13px; font-weight: 500; line-height: 1.2;" id="sidebar-name">—</div>
+        <div class="avatar avatar-sm avatar-1" id="sidebar-avatar">—</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500;line-height:1.2" id="sidebar-name">—</div>
           <div class="caption" id="sidebar-tier"></div>
         </div>
-        <svg class="icon" style="width: 14px; height: 14px; color: var(--ink-mute);"><use href="#i-chevron"/></svg>
+        <svg class="icon" style="width:14px;height:14px;color:var(--ink-mute)"><use href="#i-chevron"/></svg>
       </div>
     </div>
   </aside>
 
-  <!-- ============ MAIN ============ -->
   <main class="main">
 
     <!-- Greeting -->
     <div class="page-header">
       <div class="eyebrow" id="home-date"></div>
-      <h1 class="h1" id="home-greeting"></h1>
+      <h1 class="h1" id="home-greeting" style="margin-bottom:8px"></h1>
       <p class="lede" id="home-lede"></p>
     </div>
 
-    <!-- ZONE 1: Needs attention -->
-    <section class="section">
+    <!-- Quick stats -->
+    <div class="stats-row" id="home-stats">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-trips">—</div>
+        <div class="stat-label">Trips</div>
+        <div class="stat-sub" id="stat-trips-sub"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-docs">—</div>
+        <div class="stat-label">Documents</div>
+        <div class="stat-sub" id="stat-docs-sub"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-loyalty">—</div>
+        <div class="stat-label">Loyalty programs</div>
+        <div class="stat-sub" id="stat-loyalty-sub"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="stat-pct">—</div>
+        <div class="stat-label">Profile complete</div>
+        <div class="progress-bar" style="margin-top:6px"><div class="progress-fill" id="stat-progress" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- Alerts -->
+    <section class="section" id="section-alerts">
       <div class="section-header">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <span class="pill-dot dot-amber"></span>
-          <h2 class="section-label">Needs your attention</h2>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="pill-dot dot-amber" id="alert-dot"></span>
+          <h2 class="section-label">Needs attention</h2>
         </div>
         <span class="caption" id="home-attn-count"></span>
       </div>
-
-      <div id="home-attn" style="display: flex; flex-direction: column; gap: 10px;">
-
-        <div class="card card-amber" style="display: flex; gap: 14px; align-items: flex-start; padding: 18px 20px;">
-          <div class="icon-bg icon-bg-amber" style="width: 32px; height: 32px;">
-            <svg class="icon" style="width: 14px; height: 14px;"><use href="#i-attention"/></svg>
-          </div>
-          <div style="flex: 1; min-width: 0;">
-            <div style="font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 4px;">Veer's passport expires before your Bali return</div>
-            <div class="body" style="margin-bottom: 10px;">Indonesia requires six months' validity. Renew at a State Department agency — about two to three weeks for a child renewal.</div>
-            <div style="display: flex; gap: 14px;">
-              <a href="#" class="link">Start renewal</a>
-              <a href="#" class="link link-mute">Snooze</a>
-            </div>
-          </div>
-        </div>
-
-        <div class="card" style="display: flex; gap: 14px; align-items: flex-start; padding: 18px 20px; border-color: var(--rule-strong);">
-          <div class="icon-bg icon-bg-neutral" style="width: 32px; height: 32px;">
-            <svg class="icon" style="width: 14px; height: 14px;"><use href="#i-privacy"/></svg>
-          </div>
-          <div style="flex: 1; min-width: 0;">
-            <div style="font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 4px;">Add a second sign-in factor</div>
-            <div class="body" style="margin-bottom: 10px;">Your account holds passport details and family identity data. A passkey or authenticator app takes thirty seconds to set up.</div>
-            <div style="display: flex; gap: 14px;">
-              <a href="#" class="link">Set up now</a>
-              <a href="#" class="link link-mute">Remind me later</a>
-            </div>
-          </div>
-        </div>
-
-      </div>
+      <div id="home-attn"></div>
     </section>
 
-    <!-- ZONE 2: What's next -->
+    <!-- Next trip -->
     <section class="section">
       <div class="section-header">
         <h2 class="section-label">What's next</h2>
-        <a href="trips.html" class="caption" style="text-decoration: none;">All trips →</a>
+        <a href="trips.html" class="caption" style="text-decoration:none">All trips →</a>
       </div>
+      <div id="home-next-trip"></div>
+    </section>
 
-      <div class="card" id="home-next-trip" style="padding: 24px 26px;">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px;">
-          <div>
-            <div class="micro-label" style="margin-bottom: 8px;">Patel household · 5 travelers</div>
-            <h3 class="h2" style="font-size: 28px; margin-bottom: 4px;">Bali, <em>Indonesia</em></h3>
-            <div class="body">Aug 12 – 22 · 10 days · school-holiday window</div>
-          </div>
-          <div style="text-align: right;">
-            <div style="font-family: var(--serif); font-size: 32px; font-weight: 300; line-height: 1; color: var(--ink);">94</div>
-            <div class="micro-label" style="margin-top: 4px;">Days away</div>
-          </div>
-        </div>
-
-        <div style="display: flex; align-items: center; gap: 14px; padding: 14px 0; border-top: 0.5px solid var(--rule); border-bottom: 0.5px solid var(--rule); margin-bottom: 16px;">
-          <div class="avatar-stack">
-            <div class="avatar avatar-sm avatar-1">RP</div>
-            <div class="avatar avatar-sm avatar-2">AP</div>
-            <div class="avatar avatar-sm avatar-3 avatar-ring-amber">VP</div>
-            <div class="avatar avatar-sm avatar-4">SP</div>
-            <div class="avatar avatar-sm avatar-5">RV</div>
-          </div>
-          <div class="body" style="flex: 1;">
-            Four ready, one needs attention. <span style="color: var(--ink);">Veer's passport</span> renewal in motion.
-          </div>
-        </div>
-
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr;">
-          <div style="border-right: 0.5px solid var(--rule); padding-right: 16px;">
-            <div class="micro-label" style="margin-bottom: 4px;">Bookings</div>
-            <div style="color: var(--ink); font-weight: 500; font-size: 13px;">3 in vault</div>
-          </div>
-          <div style="border-right: 0.5px solid var(--rule); padding: 0 16px;">
-            <div class="micro-label" style="margin-bottom: 4px;">Visa</div>
-            <div style="color: var(--ink); font-weight: 500; font-size: 13px;">VOA · all 5</div>
-          </div>
-          <div style="padding-left: 16px;">
-            <div class="micro-label" style="margin-bottom: 4px;">Insurance</div>
-            <div style="color: var(--ink); font-weight: 500; font-size: 13px;">Covered</div>
-          </div>
-        </div>
+    <!-- Profile health -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-label">Profile health</h2>
+        <a href="me.html" class="caption" style="text-decoration:none">Edit profile →</a>
+      </div>
+      <div class="card" style="padding:16px 22px">
+        <div class="check-list" id="health-list"></div>
       </div>
     </section>
 
-    <!-- ZONE 3: We noticed -->
-    <section class="card-warm">
-      <div class="editorial" style="margin-bottom: 12px;">We noticed</div>
-      <p style="font-family: var(--serif); font-size: 16px; font-weight: 300; line-height: 1.55; color: var(--ink-soft);">Your household has settled into a rhythm — about six trips a year, mostly eight to twelve days, mostly on Star Alliance carriers in premium economy. The Bali trip fits the pattern almost exactly.</p>
+    <!-- Insight -->
+    <section class="card-warm" id="home-insight" style="display:none">
+      <div class="editorial" style="margin-bottom:10px">A pattern</div>
+      <p id="home-insight-text" style="font-family:var(--serif);font-size:16px;font-weight:300;line-height:1.55;color:var(--ink-soft)"></p>
     </section>
 
   </main>
 </div>
 
-<script>var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
+<script>
+var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
-var _tok=null,_prof=null,_uid=null;
+var _tok=null,_uid=null;
+
 function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent(window.location.origin+window.location.pathname);}
 function _ph(){var p=new URLSearchParams(window.location.hash.slice(1));return p.get("id_token")||p.get("access_token");}
 async function _req(method,ep,body){
@@ -615,17 +243,19 @@ function _dn(p){if(!p)return"Traveler";if(p.display_name&&p.display_name.trim())
 function _ini(p){var s=_dn(p).trim();return s.length>=2?s.slice(0,2).toUpperCase():s.toUpperCase();}
 function _st(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
 function _ht(id,v){var e=document.getElementById(id);if(e)e.innerHTML=v;}
+function _fmt(s){if(!s)return"—";return new Date(s).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}
+function _fmtShort(s){if(!s)return"";return new Date(s).toLocaleDateString("en-US",{month:"short",day:"numeric"});}
 function _docLabel(t){var m={PASSPORT:"Passport",US_GREEN_CARD:"Permanent Resident Card",KTN:"Known Traveler No.",GLOBAL_ENTRY:"Global Entry",ESTA:"ESTA",VISA:"Visa",NEXUS:"NEXUS",SENTRI:"SENTRI",NATIONAL_ID:"National ID",DRIVERS_LICENSE:"Driver's License",BIRTH_CERTIFICATE:"Birth Certificate"};return m[t]||(t||"Document").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();});}
-function _daysLabel(d){if(d===null||d===undefined)return"No expiry";if(d<0)return"Expired";if(d===0)return"Expires today";if(d<=30)return"Expires in "+d+" days";return"Expires "+new Date(Date.now()+d*86400000).toLocaleDateString("en-US",{month:"short",year:"numeric"});}
-function _fmt(s){if(!s)return"\u2014";return new Date(s).toLocaleDateString("en-US",{day:"numeric",month:"long",year:"numeric"});}
-function _tripName(t){return t.trip_name||t.destination_iata||"Trip";}
-function _sidebarUpdate(p){
-  _st("sidebar-number",p.uniprofile_number||"\u2014");
-  _st("sidebar-name",_dn(p));
-  _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
-}
+function _daysLabel(d){if(d===null||d===undefined)return"No expiry";if(d<0)return"Expired";if(d===0)return"Expires today";if(d<=30)return"Expires in "+d+" day"+(d===1?"":"s");return"Expires "+new Date(Date.now()+d*86400000).toLocaleDateString("en-US",{month:"short",year:"numeric"});}
+function _tripName(t){return t.trip_name||((t.origin_iata&&t.destination_iata)?(t.origin_iata+" → "+t.destination_iata):t.destination_iata)||"Trip";}
 function _today(){return new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});}
 function _greet(){var h=new Date().getHours();return h<12?"Good morning":h<17?"Good afternoon":"Good evening";}
+function _sidebarUpdate(p){
+  _st("sidebar-number",p.uniprofile_number||"—");
+  _st("sidebar-name",_dn(p));
+  _st("sidebar-avatar",_ini(p));
+  _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
+}
 async function _auth(){
   var h=_ph();
   if(h){_tok=h;localStorage.setItem("up_token",_tok);history.replaceState(null,"",window.location.pathname);}
@@ -633,52 +263,306 @@ async function _auth(){
   if(!_tok){location.href=_loginUrl();return false;}
   return true;
 }
+
+/* ── Stats row ── */
+function renderStats(p){
+  var today=new Date();today.setHours(0,0,0,0);
+  var trips=p.trips||[];
+  var upcoming=trips.filter(function(t){return t.departure_date&&new Date(t.departure_date)>=today;});
+  var docs=p.documents||[];
+  var loyal=p.loyalty_programs||[];
+  var pct=p.profile_completeness||0;
+
+  _st("stat-trips",trips.length);
+  _st("stat-trips-sub",upcoming.length+" upcoming");
+  _st("stat-docs",docs.length);
+  var expiring=docs.filter(function(d){return d.days_remaining!==null&&d.days_remaining<=90&&d.days_remaining>=0;});
+  _st("stat-docs-sub",expiring.length?expiring.length+" expiring soon":"All current");
+  _st("stat-loyalty",loyal.length);
+  var autoApply=loyal.filter(function(l){return l.auto_apply;}).length;
+  _st("stat-loyalty-sub",autoApply+" auto-applied");
+  _st("stat-pct",pct+"%");
+  var bar=document.getElementById("stat-progress");
+  if(bar){
+    bar.style.width=pct+"%";
+    bar.className="progress-fill"+(pct>=80?" good":pct>=40?" warn":"");
+  }
+}
+
+/* ── Alerts ── */
+function renderAlerts(p){
+  var docs=p.documents||[];
+  var today=new Date();today.setHours(0,0,0,0);
+  var alerts=[];
+
+  docs.forEach(function(d){
+    if(d.days_remaining!==null){
+      if(d.days_remaining<0){
+        alerts.push({level:"red",title:_docLabel(d.doc_type)+" — expired",body:"This document has expired. Update it before your next trip.",link:"me.html"});
+      } else if(d.days_remaining<=90){
+        alerts.push({level:"amber",title:_docLabel(d.doc_type)+" — expiring in "+d.days_remaining+" day"+(d.days_remaining===1?"":"s"),body:"Most countries require 6 months' validity beyond your travel dates. Renew soon.",link:"me.html"});
+      }
+    }
+  });
+
+  /* Profile gaps that matter */
+  var id=p.identity||{};
+  if(!id.legal_first||!id.legal_last){
+    alerts.push({level:"amber",title:"Legal name not set",body:"Your full legal name is required for ticket issuance and TSA pre-check matching.",link:"me.html"});
+  }
+  if(!docs.find(function(d){return d.doc_type==="PASSPORT";})){
+    alerts.push({level:"amber",title:"No passport on file",body:"Add your passport to enable document expiry tracking and visa requirement checks.",link:"me.html"});
+  }
+
+  var attnCount=document.getElementById("home-attn-count");
+  var dot=document.getElementById("alert-dot");
+  if(attnCount)attnCount.textContent=alerts.length+" item"+(alerts.length===1?"":"s");
+  if(dot)dot.className="pill-dot "+(alerts.length?"dot-amber":"dot-green");
+
+  if(!alerts.length){
+    _ht("home-attn","<div class='card' style='padding:16px 18px;display:flex;align-items:center;gap:10px'><span class='pill-dot dot-green'></span><span style='font-size:13px;color:var(--ink-mute)'>No document alerts right now — all clear.</span></div>");
+    return;
+  }
+
+  var html="";
+  alerts.forEach(function(a){
+    html+='<div class="alert-card'+(a.level==="red"?" red":"")+'">'
+      +'<div class="icon-bg '+(a.level==="red"?"icon-bg-red":"icon-bg-amber")+'" style="width:32px;height:32px;flex-shrink:0">'
+      +'<svg class="icon" style="width:14px;height:14px"><use href="#i-attention"/></svg></div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:3px">'+a.title+'</div>'
+      +'<div class="body" style="margin-bottom:8px">'+a.body+'</div>'
+      +'<a href="'+a.link+'" class="link">Fix now →</a>'
+      +'</div></div>';
+  });
+  _ht("home-attn",html);
+}
+
+/* ── Next trip ── */
+function renderNextTrip(p){
+  var today=new Date();today.setHours(0,0,0,0);
+  var trips=p.trips||[];
+  var upcoming=trips
+    .filter(function(t){return t.departure_date&&new Date(t.departure_date)>=today;})
+    .sort(function(a,b){return new Date(a.departure_date)-new Date(b.departure_date);});
+
+  if(!upcoming.length){
+    _ht("home-next-trip",
+      "<div class='card' style='padding:22px 24px;color:var(--ink-mute);font-size:13px;display:flex;align-items:center;justify-content:space-between'>"
+      +"<span>No upcoming trips planned.</span>"
+      +"<a href='trips.html' class='btn btn-secondary btn-sm'>Add a trip</a>"
+      +"</div>"
+    );
+    return;
+  }
+
+  var t=upcoming[0];
+  var dep=new Date(t.departure_date);
+  var days=Math.round((dep-today)/86400000);
+  var ctxColors={CORPORATE:"background:#e8efe9;color:#2d6a4f",BLEISURE:"background:#f9f1e3;color:#ba7517",PERSONAL:"background:#e8f0fe;color:#1a56db"};
+  var ctxColor=ctxColors[t.trip_context]||ctxColors.PERSONAL;
+  var ctxLabel=t.trip_context==="CORPORATE"?"Business":t.trip_context==="BLEISURE"?"Bleisure":"Personal";
+
+  var route="";
+  if(t.origin_iata&&t.destination_iata){
+    route='<span style="font-family:var(--mono);font-size:13px;color:var(--ink-mute);margin-bottom:4px;display:block">'+t.origin_iata.toUpperCase()+' → '+t.destination_iata.toUpperCase()+'</span>';
+  }
+
+  var dates=_fmtShort(t.departure_date)+(t.return_date?" — "+_fmtShort(t.return_date):"");
+  if(t.departure_date&&t.return_date){
+    var nights=Math.round((new Date(t.return_date)-dep)/86400000);
+    if(nights>0)dates+=" · "+nights+" night"+(nights===1?"":"s");
+  }
+
+  var pnr=t.trip_locator?'<div style="margin-top:6px"><span class="micro-label">PNR</span> <span class="id" style="font-size:12px">'+t.trip_locator+'</span></div>':"";
+  var notes=t.notes?'<div class="caption" style="margin-top:4px">'+t.notes+'</div>':"";
+
+  /* other upcoming trips */
+  var moreHtml="";
+  if(upcoming.length>1){
+    moreHtml='<div style="border-top:0.5px solid var(--rule);margin-top:16px;padding-top:12px">'
+      +'<div class="micro-label" style="margin-bottom:8px">Also coming up</div>';
+    upcoming.slice(1,4).forEach(function(u){
+      var ud=new Date(u.departure_date);
+      var udays=Math.round((ud-today)/86400000);
+      moreHtml+='<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid var(--rule)">'
+        +'<span style="font-size:13px;color:var(--ink)">'+_tripName(u)+'</span>'
+        +'<span class="caption">'+_fmtShort(u.departure_date)+' · '+udays+'d</span>'
+        +'</div>';
+    });
+    moreHtml+='<a href="trips.html" class="link" style="display:inline-block;margin-top:10px">All trips →</a></div>';
+  }
+
+  _ht("home-next-trip",
+    '<div class="card" style="padding:22px 24px">'
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">'
+    +'<div>'
+    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+    +'<span style="font-size:11px;padding:2px 9px;border-radius:100px;font-weight:500;'+ctxColor+'">'+ctxLabel+'</span>'
+    +'</div>'
+    +'<h3 class="h2" style="font-size:26px;margin-bottom:4px">'+_tripName(t)+'</h3>'
+    +route
+    +'<div class="body">'+dates+'</div>'
+    +pnr+notes
+    +'</div>'
+    +'<div style="text-align:right;flex-shrink:0;margin-left:20px">'
+    +'<div style="font-family:var(--serif);font-size:40px;font-weight:300;line-height:1;color:var(--ink)">'+days+'</div>'
+    +'<div class="micro-label" style="margin-top:4px">Day'+(days===1?"":"s")+" away</div>"
+    +'</div>'
+    +'</div>'
+    +moreHtml
+    +'</div>'
+  );
+}
+
+/* ── Profile health ── */
+function renderHealth(p){
+  var id=p.identity||{};
+  var docs=p.documents||[];
+  var seat=p.seat_preferences||null;
+  var meal=p.meal_preferences||null;
+  var loyal=p.loyalty_programs||[];
+  var payment=p.payment_profiles||[];
+  var trips=p.trips||[];
+
+  var checks=[
+    {
+      label:"Legal name",
+      detail:id.legal_first&&id.legal_last?(id.legal_first+" "+id.legal_last):"Not set — required for ticketing",
+      done:!!(id.legal_first&&id.legal_last),
+      link:"me.html"
+    },
+    {
+      label:"Date of birth & nationality",
+      detail:id.dob&&id.nationality?(id.dob.slice(0,10)+" · "+id.nationality):"Needed for document matching",
+      done:!!(id.dob&&id.nationality),
+      link:"me.html"
+    },
+    {
+      label:"Passport on file",
+      detail:docs.find(function(d){return d.doc_type==="PASSPORT";})?"Valid passport recorded":"No passport — add it to enable visa checks",
+      done:!!(docs.find(function(d){return d.doc_type==="PASSPORT";})),
+      link:"me.html"
+    },
+    {
+      label:"Trusted traveler (KTN / Global Entry)",
+      detail:docs.find(function(d){return d.doc_type==="KTN"||d.doc_type==="GLOBAL_ENTRY";})?"Auto-applied to US bookings":"Not set — skip the security line",
+      done:!!(docs.find(function(d){return d.doc_type==="KTN"||d.doc_type==="GLOBAL_ENTRY";})),
+      link:"me.html",
+      optional:true
+    },
+    {
+      label:"Seat & cabin preferences",
+      detail:seat&&seat.seat_position?(seat.seat_position+" · "+(seat.cabin_international||seat.cabin_domestic||"")):"Not set — helps with seat selection",
+      done:!!(seat&&(seat.seat_position||seat.cabin_domestic||seat.cabin_international)),
+      link:"me.html"
+    },
+    {
+      label:"Meal preferences",
+      detail:meal&&meal.primary_meal_code?("IATA code: "+meal.primary_meal_code+(meal.allergies&&meal.allergies.length?" · "+meal.allergies.length+" allerg"+(meal.allergies.length===1?"y":"ies"):"")):"Not set — applied at check-in",
+      done:!!(meal&&(meal.primary_meal_code||(meal.allergies&&meal.allergies.length))),
+      link:"me.html"
+    },
+    {
+      label:"Loyalty program",
+      detail:loyal.length?(loyal.length+" program"+(loyal.length===1?"":"s")+" — "+loyal.filter(function(l){return l.auto_apply;}).length+" auto-applied"):"None — add to earn miles automatically",
+      done:loyal.length>0,
+      link:"me.html"
+    },
+    {
+      label:"First trip in vault",
+      detail:trips.length?(trips.length+" trip"+(trips.length===1?"":"s")+" recorded"):"No trips — add one to start tracking",
+      done:trips.length>0,
+      link:"trips.html"
+    }
+  ];
+
+  var html="";
+  checks.forEach(function(c){
+    var iconCls=c.done?"check-done":c.optional?"check-miss":"check-miss";
+    var iconContent=c.done?'<svg style="width:10px;height:10px"><use href="#i-check"/></svg>':"·";
+    html+='<div class="check-item">'
+      +'<div class="check-icon '+iconCls+'">'+iconContent+'</div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div style="font-size:13px;font-weight:500;color:'+(c.done?"var(--ink)":"var(--ink-soft)")+'">'+c.label+'</div>'
+      +'<div class="caption">'+c.detail+'</div>'
+      +'</div>'
+      +(!c.done?'<a href="'+c.link+'" class="btn btn-secondary btn-sm" style="flex-shrink:0">Add</a>':"")
+      +'</div>';
+  });
+  _ht("health-list",html);
+}
+
+/* ── Insight ── */
+function renderInsight(p){
+  var trips=p.trips||[];
+  var today=new Date();today.setHours(0,0,0,0);
+  var past=trips.filter(function(t){return t.departure_date&&new Date(t.departure_date)<today;});
+  var upcoming=trips.filter(function(t){return t.departure_date&&new Date(t.departure_date)>=today;});
+  var section=document.getElementById("home-insight");
+  var text=document.getElementById("home-insight-text");
+  if(!section||!text)return;
+
+  var msg="";
+  if(trips.length===0){
+    msg="Forward a booking confirmation email to trips@uniprofile.net and it'll appear here automatically — no manual entry needed.";
+  } else if(trips.length===1&&upcoming.length===1){
+    msg="You have one trip coming up. Once you're back, your travel history will start revealing patterns — preferred airlines, typical trip length, seasonal rhythms.";
+  } else if(past.length>=3){
+    var biz=trips.filter(function(t){return t.trip_context==="CORPORATE";}).length;
+    var pct=Math.round((biz/trips.length)*100);
+    var lens=past.map(function(t){
+      if(!t.departure_date||!t.return_date)return null;
+      return Math.round((new Date(t.return_date)-new Date(t.departure_date))/86400000);
+    }).filter(function(n){return n!==null&&n>0;});
+    var avgLen=lens.length?Math.round(lens.reduce(function(a,b){return a+b;},0)/lens.length):null;
+    if(biz>0&&pct>50){
+      msg="Most of your trips ("+pct+"%) are business travel. You have "+upcoming.length+" trip"+(upcoming.length===1?"":"s")+" coming up."+(avgLen?" Your average trip runs about "+avgLen+" day"+(avgLen===1?"":"s")+".":"");
+    } else if(avgLen){
+      msg="You have "+trips.length+" trip"+(trips.length===1?"":"s")+" recorded"+(upcoming.length?", with "+upcoming.length+" coming up":"")+". Your average trip runs about "+avgLen+" day"+(avgLen===1?"":"s")+".";
+    } else {
+      msg="You have "+trips.length+" trip"+(trips.length===1?"":"s")+" in your vault"+(upcoming.length?", "+upcoming.length+" coming up":"")+"."
+    }
+  } else {
+    return;
+  }
+
+  text.textContent=msg;
+  section.style.display="";
+}
+
+/* ── Init ── */
 async function homeInit(){
   if(!await _auth())return;
   try{
     var prof=await _req("GET","/api/v1/me");
-    _prof=prof;_uid=prof.uuid;
+    _uid=prof.uuid;
     _sidebarUpdate(prof);
     _st("home-date",_today());
     _st("home-greeting",_greet()+", "+_dn(prof)+".");
-    var alertsRes={alerts:[]};
-    try{alertsRes=await _req("GET","/api/v1/profile/"+prof.uuid+"/alerts");}catch(e){}
-    var alerts=alertsRes.alerts||[];
-    var html="";
-    alerts.forEach(function(a){
-      html+='<div class="card card-amber" style="display:flex;gap:14px;align-items:flex-start;padding:18px 20px;">'
-          +'<div class="icon-bg icon-bg-amber" style="width:32px;height:32px;"><svg class="icon" style="width:14px;height:14px;"><use href="#i-attention"/></svg></div>'
-          +'<div style="flex:1;min-width:0;">'
-          +'<div style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:4px;">'+_docLabel(a.doc_type)+" \u2014 "+(a.alert_level==="EXPIRED"?"expired":_daysLabel(a.days_remaining))+'</div>'
-          +'<div class="body">'+( a.alert_level==="EXPIRED"?"This document has expired and needs attention.":"Renew before your next trip to avoid check-in issues.")+'</div>'
-          +'</div></div>';
-    });
-    if(!html)html='<div class="card" style="padding:18px 20px;color:var(--ink-mute);font-size:13px;">No document alerts right now.</div>';
-    _ht("home-attn",html);
-    _st("home-attn-count",alerts.length+" item"+(alerts.length===1?"":"s"));
+
     var today=new Date();today.setHours(0,0,0,0);
-    var upcoming=(prof.trips||[]).filter(function(t){return t.departure_date&&new Date(t.departure_date)>=today;}).sort(function(a,b){return new Date(a.departure_date)-new Date(b.departure_date);});
-    var lede="";
+    var trips=prof.trips||[];
+    var upcoming=trips.filter(function(t){return t.departure_date&&new Date(t.departure_date)>=today;});
+    var alerts_count=(prof.documents||[]).filter(function(d){return d.days_remaining!==null&&d.days_remaining<=90;}).length;
+
+    var ledeParts=[];
+    if(alerts_count)ledeParts.push(alerts_count+" document alert"+(alerts_count===1?"":"s"));
     if(upcoming.length){
       var next=upcoming[0];
       var days=Math.round((new Date(next.departure_date)-today)/86400000);
-      lede=(alerts.length?alerts.length+" alert"+(alerts.length===1?"":"s")+" need attention":"Everything looks good")+" \u00b7 "+_tripName(next)+" in "+days+" day"+(days===1?"":"s")+".";
-      var dep=new Date(next.departure_date);
-      var tripHtml='<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;">'
-        +'<div><div class="micro-label" style="margin-bottom:8px;">'+( next.trip_context||"Trip")+'</div>'
-        +'<h3 class="h2" style="font-size:28px;margin-bottom:4px;">'+_tripName(next)+'</h3>'
-        +'<div class="body">'+dep.toLocaleDateString("en-US",{month:"short",day:"numeric"})+(next.return_date?" \u2013 "+new Date(next.return_date).toLocaleDateString("en-US",{month:"short",day:"numeric"}):"")+(next.status?" \u00b7 "+next.status:"")+'</div></div>'
-        +'<div style="text-align:right;"><div style="font-family:var(--serif);font-size:32px;font-weight:300;line-height:1;color:var(--ink);">'+days+'</div><div class="micro-label" style="margin-top:4px;">Days away</div></div>'
-        +'</div>'
-        +'<div style="padding:14px 0;border-top:0.5px solid var(--rule);"><a href="trips.html" class="link">View all trips \u2192</a></div>';
-      _ht("home-next-trip",tripHtml);
-    } else {
-      lede="No upcoming trips planned.";
-      _ht("home-next-trip","<div style='padding:8px 0;color:var(--ink-mute);font-size:13px;'>No upcoming trips. <a href='trips.html' class='link'>Go to Trips \u2192</a></div>");
+      ledeParts.push(_tripName(next)+(days===0?" is today":" in "+days+" day"+(days===1?"":"s")));
     }
-    _st("home-lede",lede);
+    _st("home-lede",ledeParts.length?ledeParts.join(" · ")+".":(trips.length?"All clear — no alerts.":"Welcome. Start by adding your identity and first trip."));
+
+    renderStats(prof);
+    renderAlerts(prof);
+    renderNextTrip(prof);
+    renderHealth(prof);
+    renderInsight(prof);
   }catch(e){console.error(e);}
 }
-homeInit();</script>
+homeInit();
+</script>
 </body>
 </html>
