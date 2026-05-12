@@ -455,7 +455,7 @@ body {
   <!-- ============ SIDEBAR ============ -->
   <aside class="sidebar">
     <div class="sidebar-wordmark-block">
-      <a href="home.html" class="wordmark">Uni<em>Profile</em></a>
+      <a href="/home.html" class="wordmark">Uni<em>Profile</em></a>
       <div class="wordmark-tag">Travel identity</div>
     </div>
 
@@ -466,11 +466,12 @@ body {
 
     <nav class="sidebar-nav">
       <div class="sidebar-nav-label">Navigate</div>
-      <a href="home.html" class="nav-item active"><svg class="icon"><use href="#i-home"/></svg>Home</a>
-      <a href="me.html" class="nav-item"><svg class="icon"><use href="#i-me"/></svg>Me</a>
-      <a href="people.html" class="nav-item"><svg class="icon"><use href="#i-people"/></svg>People</a>
-      <a href="trips.html" class="nav-item"><svg class="icon"><use href="#i-trips"/></svg>Trips</a>
-      <a href="privacy.html" class="nav-item"><svg class="icon"><use href="#i-privacy"/></svg>Privacy</a>
+      <a href="/home.html" class="nav-item active"><svg class="icon"><use href="#i-home"/></svg>Home</a>
+      <a href="/me.html" class="nav-item"><svg class="icon"><use href="#i-me"/></svg>Me</a>
+      <a href="/people.html" class="nav-item"><svg class="icon"><use href="#i-people"/></svg>People</a>
+      <a href="/trips.html" class="nav-item"><svg class="icon"><use href="#i-trips"/></svg>Trips</a>
+      <a href="/groups.html" class="nav-item"><svg class="icon"><use href="#i-groups"/></svg>Groups</a>
+      <a href="/privacy.html" class="nav-item"><svg class="icon"><use href="#i-privacy"/></svg>Privacy</a>
     </nav>
 
     <div class="sidebar-user-card">
@@ -542,7 +543,7 @@ body {
     <section class="section">
       <div class="section-header">
         <h2 class="section-label">What's next</h2>
-        <a href="trips.html" class="caption" style="text-decoration: none;">All trips →</a>
+        <a href="/trips.html" class="caption" style="text-decoration: none;">All trips →</a>
       </div>
 
       <div class="card" id="home-next-trip" style="padding: 24px 26px;">
@@ -670,7 +671,7 @@ async function homeInit(){
         +'<div class="body">'+dep.toLocaleDateString("en-US",{month:"short",day:"numeric"})+(next.return_date?" \u2013 "+new Date(next.return_date).toLocaleDateString("en-US",{month:"short",day:"numeric"}):"")+(next.status?" \u00b7 "+next.status:"")+'</div></div>'
         +'<div style="text-align:right;"><div style="font-family:var(--serif);font-size:32px;font-weight:300;line-height:1;color:var(--ink);">'+days+'</div><div class="micro-label" style="margin-top:4px;">Days away</div></div>'
         +'</div>'
-        +'<div style="padding:14px 0;border-top:0.5px solid var(--rule);"><a href="trips.html" class="link">View all trips \u2192</a></div>';
+        +'<div style="padding:14px 0;border-top:0.5px solid var(--rule);"><a href="/trips.html" class="link">View all trips \u2192</a></div>';
       _ht("home-next-trip",tripHtml);
     } else {
       lede="No upcoming trips planned.";
