@@ -118,6 +118,17 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .past .trip-date{background:transparent;border:0.5px solid var(--rule)}
 .past .trip-date-day{color:var(--ink-mute)}
 .past .trip-title{color:var(--ink-soft)}
+/* Segment block */
+.seg-block{border-top:0.5px solid var(--rule);margin-top:14px;padding-top:14px;display:flex;flex-direction:column;gap:12px}
+.seg-group{display:flex;flex-direction:column;gap:6px}
+.seg-return-label{font-family:var(--serif);font-style:italic;font-weight:300;font-size:13px;color:var(--ink-mute);margin-bottom:2px}
+.seg-date-header{font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.13em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:4px}
+.seg-row{display:flex;align-items:flex-start;gap:9px}
+.seg-icon{width:13px;height:13px;flex-shrink:0;color:var(--ink-mute);margin-top:2px}
+.seg-content{flex:1;min-width:0}
+.seg-main{font-size:13px;color:var(--ink-soft);line-height:1.3}
+.seg-route{font-family:var(--mono);letter-spacing:0.04em}
+.seg-sub{font-size:12px;color:var(--ink-mute);margin-top:1px;line-height:1.4}
 @media(max-width:900px){.shell{flex-direction:column}.sidebar{width:100%;height:auto;position:relative;padding:16px 0}.sidebar-wordmark-block,.sidebar-id-block{padding:12px 24px}.sidebar-nav{padding:12px;display:flex;gap:4px;flex-wrap:wrap}.sidebar-nav-label{display:none}.nav-item{padding:8px 12px}.sidebar-user-card{display:none}.main{padding:24px;max-width:none}.page-header{flex-direction:column;gap:16px}.trip-actions{flex-direction:column;align-items:flex-start;gap:6px}.trip-details{grid-template-columns:1fr}}
 </style>
 </head>
@@ -132,6 +143,8 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   <symbol id="i-groups" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><circle cx="16" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><path d="M2 20C2 17 4.7 15 8 15" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M10 18C10 15.5 12.5 14 16 14C19.5 14 22 15.5 22 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
   <symbol id="i-add" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.25"/><path d="M12 8V16M8 12H16" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-flight" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-hotel" viewBox="0 0 24 24" fill="none"><rect x="4" y="2" width="16" height="20" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M9 6H10.5M13.5 6H15M9 10H10.5M13.5 10H15M9 14H10.5M13.5 14H15" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><rect x="9" y="17" width="6" height="5" stroke="currentColor" stroke-width="1.25"/></symbol>
 </svg>
 
 <div class="shell">
@@ -313,6 +326,73 @@ function _filteredTrips(){
   return _allTrips;
 }
 
+/* ── Segment helpers ── */
+function _fmtSegTime(dt){
+  if(!dt)return'';
+  var s=String(dt);
+  var tp=s.indexOf(' ')>-1?s.split(' ')[1]:s.split('T')[1]||'';
+  if(!tp)return'';
+  var p=tp.split(':');
+  var h=parseInt(p[0],10);
+  return(h%12||12)+':'+p[1]+' '+(h>=12?'pm':'am');
+}
+function _fmtSegDate(dt){
+  if(!dt)return'';
+  var s=String(dt);
+  var dp=s.indexOf(' ')>-1?s.split(' ')[0]:s.split('T')[0];
+  return dp?new Date(dp+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
+}
+function _toTitleCase(s){return s.replace(/\w\S*/g,function(w){return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase();});}
+function _segmentsBlock(segments){
+  if(!segments||!segments.length)return'';
+  var segs=segments.slice().sort(function(a,b){return(a.segment_order||0)-(b.segment_order||0);});
+  var groups=[];
+  segs.forEach(function(s){
+    var dt=s.departure_datetime||'';
+    var date=dt?String(dt).split(' ')[0]:'';
+    var last=groups[groups.length-1];
+    if(last&&last.date===date){last.segs.push(s);}
+    else{groups.push({date:date,segs:[s]});}
+  });
+  var retIdx=-1;
+  if(groups.length>1){
+    var maxGap=0,maxI=-1;
+    for(var i=1;i<groups.length;i++){
+      if(!groups[i-1].date||!groups[i].date)continue;
+      var gap=Math.round((new Date(groups[i].date+'T00:00:00Z')-new Date(groups[i-1].date+'T00:00:00Z'))/86400000);
+      if(gap>maxGap){maxGap=gap;maxI=i;}
+    }
+    if(maxGap>=2)retIdx=maxI;
+  }
+  var html='<div class="seg-block">';
+  groups.forEach(function(g,gi){
+    html+='<div class="seg-group">';
+    if(gi===retIdx)html+='<div class="seg-return-label"><em>Returning</em></div>';
+    if(g.date){
+      html+='<div class="seg-date-header">'+new Date(g.date+'T00:00:00').toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'})+'</div>';
+    }
+    g.segs.forEach(function(s){
+      var hotel=s.segment_type==='HOTEL';
+      var icon=hotel?'#i-hotel':'#i-flight';
+      if(hotel){
+        var ci=_fmtSegDate(s.departure_datetime);
+        var co=_fmtSegDate(s.arrival_datetime);
+        var dr=ci+(co?' → '+co:'');
+        var sub=[dr,s.cabin_class?_toTitleCase(s.cabin_class):''].filter(Boolean).join(' \xb7 ');
+        html+='<div class="seg-row"><svg class="seg-icon" aria-hidden="true"><use href="'+icon+'"/></svg><div class="seg-content">'+(s.carrier?'<div class="seg-main">'+s.carrier+'</div>':'')+(sub?'<div class="seg-sub">'+sub+'</div>':'')+'</div></div>';
+      }else{
+        var orig=(s.origin_iata||'').toUpperCase();
+        var dest=(s.destination_iata||'').toUpperCase();
+        var rt=orig+(dest?' → '+dest:'');
+        var dep=_fmtSegTime(s.departure_datetime);
+        var sub2=[s.carrier||'',dep,s.cabin_class?_toTitleCase(s.cabin_class):''].filter(Boolean).join(' \xb7 ');
+        html+='<div class="seg-row"><svg class="seg-icon" aria-hidden="true"><use href="'+icon+'"/></svg><div class="seg-content">'+(rt?'<div class="seg-main seg-route">'+rt+'</div>':'')+(sub2?'<div class="seg-sub">'+sub2+'</div>':'')+'</div></div>';
+      }
+    });
+    html+='</div>';
+  });
+  return html+'</div>';
+}
 /* ── Trip card render ── */
 function _ctxLabel(c){return c==="CORPORATE"?"Business":c==="BLEISURE"?"Bleisure":"Personal";}
 function _ctxPill(c){
@@ -371,6 +451,7 @@ function _tripCard(t){
     +'</div>'
     +'</div>'
     +details
+    +_segmentsBlock(t.segments)
     +'</div>';
 }
 function renderTrips(trips){
