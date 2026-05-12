@@ -16,6 +16,7 @@ frontend:
       - home.html
       - me.html
       - people.html
+      - groups.html
       - trips.html
       - privacy.html
       - icons.html
