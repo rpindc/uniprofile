@@ -252,7 +252,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 
   <aside class="sidebar">
     <div class="sidebar-wordmark-block">
-      <a href="home.html" class="wordmark">Uni<em>Profile</em></a>
+      <a href="/home.html" class="wordmark">Uni<em>Profile</em></a>
       <div class="wordmark-tag">Travel identity</div>
     </div>
     <div class="sidebar-id-block">
@@ -261,12 +261,12 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     </div>
     <nav class="sidebar-nav">
       <div class="sidebar-nav-label">Navigate</div>
-      <a href="home.html" class="nav-item"><svg class="icon" style="width:16px;height:16px"><use href="#i-home"/></svg>Home</a>
-      <a href="me.html" class="nav-item"><svg class="icon" style="width:16px;height:16px"><use href="#i-me"/></svg>Me</a>
-      <a href="people.html" class="nav-item"><svg class="icon" style="width:16px;height:16px"><use href="#i-people"/></svg>People</a>
-      <a href="groups.html" class="nav-item active"><svg class="icon" style="width:16px;height:16px"><use href="#i-groups"/></svg>Groups</a>
-      <a href="trips.html" class="nav-item"><svg class="icon" style="width:16px;height:16px"><use href="#i-trips"/></svg>Trips</a>
-      <a href="privacy.html" class="nav-item"><svg class="icon" style="width:16px;height:16px"><use href="#i-privacy"/></svg>Privacy</a>
+      <a href="/home.html" class="nav-item"><svg class="icon" style="width:16px;height:16px"><use href="#i-home"/></svg>Home</a>
+      <a href="/me.html" class="nav-item"><svg class="icon" style="width:16px;height:16px"><use href="#i-me"/></svg>Me</a>
+      <a href="/people.html" class="nav-item"><svg class="icon" style="width:16px;height:16px"><use href="#i-people"/></svg>People</a>
+      <a href="/groups.html" class="nav-item active"><svg class="icon" style="width:16px;height:16px"><use href="#i-groups"/></svg>Groups</a>
+      <a href="/trips.html" class="nav-item"><svg class="icon" style="width:16px;height:16px"><use href="#i-trips"/></svg>Trips</a>
+      <a href="/privacy.html" class="nav-item"><svg class="icon" style="width:16px;height:16px"><use href="#i-privacy"/></svg>Privacy</a>
     </nav>
     <div class="sidebar-user-card">
       <div class="user-card-inner">
@@ -669,7 +669,7 @@ function renderGroupWorkspace(){
   var tabLabels={members:"Members",trips:"Trips",documents:"Documents",preferences:"Preferences",permissions:"Permissions",plan:"Plan a trip"};
   var tabBar=tabs.map(function(t){return'<button class="tab'+(t===_curSubTab?" active":"")+'" onclick="switchSubTab(\''+t+'\')">'+tabLabels[t]+'</button>';}).join("");
   var memberCount=members.length+1; /* +1 for the primary user */
-  var html='<div class="breadcrumb"><a href="groups.html" onclick="event.preventDefault();renderGroupsList()">Groups</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><span>'+_escHtml(g.name||"Group")+'</span></div>'
+  var html='<div class="breadcrumb"><a href="/groups.html" onclick="event.preventDefault();renderGroupsList()">Groups</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><span>'+_escHtml(g.name||"Group")+'</span></div>'
     +'<div class="eyebrow" style="margin-bottom:8px">'+typeLabel+' · '+memberCount+' members</div>'
     +'<h1 class="h1" style="margin-bottom:8px">'+_escHtml(g.name||"Group")+'.</h1>'
     +'<p class="lede" style="margin-bottom:24px">You created this group. You are the primary contact, but every adult member controls their own data.</p>'
@@ -975,7 +975,7 @@ function renderPlanStep2(){
     +'</div>'
     +'</div>'
     +'</div>';
-  _render('<div class="breadcrumb"><a href="groups.html" onclick="event.preventDefault();renderGroupsList()">Groups</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><a href="#" onclick="event.preventDefault();openGroup(\''+g.id+'\')">'+ _escHtml(g.name)+'</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><span>Plan a trip</span></div>'+html);
+  _render('<div class="breadcrumb"><a href="/groups.html" onclick="event.preventDefault();renderGroupsList()">Groups</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><a href="#" onclick="event.preventDefault();openGroup(\''+g.id+'\')">'+ _escHtml(g.name)+'</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><span>Plan a trip</span></div>'+html);
 }
 function _checkCard(c){
   var res=c.key?_parcel.resolved[c.key]:null;
@@ -1111,7 +1111,7 @@ function renderPlanStep3(){
     +'<button class="btn btn-primary" onclick="renderPlanStep4()">Continue to hand off →</button>'
     +'<button class="btn btn-secondary" onclick="renderPlanStep2()">← Back to pre-flight</button>'
     +'</div></div>';
-  _render('<div class="breadcrumb"><a href="groups.html" onclick="event.preventDefault();renderGroupsList()">Groups</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><a href="#" onclick="event.preventDefault();openGroup(\''+g.id+'\')">'+ _escHtml(g.name)+'</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><span>Resolve</span></div>'+html);
+  _render('<div class="breadcrumb"><a href="/groups.html" onclick="event.preventDefault();renderGroupsList()">Groups</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><a href="#" onclick="event.preventDefault();openGroup(\''+g.id+'\')">'+ _escHtml(g.name)+'</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><span>Resolve</span></div>'+html);
 }
 
 function renderPlanStep4(){
@@ -1119,7 +1119,7 @@ function renderPlanStep4(){
   var parcelId=_parcel.parcelId||("UP-PARCEL-"+(Date.now()&0xffff).toString(16).toUpperCase()+"-"+(Math.random()*0xffff|0).toString(16).toUpperCase());
   if(!_parcel.parcelId)_parcel.parcelId=parcelId;
   var locked=_parcel.status==="committed";
-  var crumb='<div class="breadcrumb"><a href="groups.html" onclick="event.preventDefault();renderGroupsList()">Groups</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><a href="#" onclick="event.preventDefault();openGroup(\''+g.id+'\')">'+ _escHtml(g.name||"Group")+'</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><span>Hand off</span></div>';
+  var crumb='<div class="breadcrumb"><a href="/groups.html" onclick="event.preventDefault();renderGroupsList()">Groups</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><a href="#" onclick="event.preventDefault();openGroup(\''+g.id+'\')">'+ _escHtml(g.name||"Group")+'</a><svg style="width:12px;height:12px;color:var(--ink-faint)" viewBox="0 0 24 24" fill="none"><use href="#i-chevron-right"/></svg><span>Hand off</span></div>';
   /* Parcel preview */
   var members=g.members||[];
   var myPassport=(_prof.documents||[]).find(function(d){return d.doc_type==="PASSPORT";});
