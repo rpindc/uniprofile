@@ -333,8 +333,7 @@ function _fmtSegTime(dt){
   var tp=s.indexOf(' ')>-1?s.split(' ')[1]:s.split('T')[1]||'';
   if(!tp)return'';
   var p=tp.split(':');
-  var h=parseInt(p[0],10);
-  return(h%12||12)+':'+p[1]+' '+(h>=12?'pm':'am');
+  return p[0]+':'+p[1];
 }
 function _fmtSegDate(dt){
   if(!dt)return'';
@@ -342,7 +341,23 @@ function _fmtSegDate(dt){
   var dp=s.indexOf(' ')>-1?s.split(' ')[0]:s.split('T')[0];
   return dp?new Date(dp+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
 }
-function _toTitleCase(s){return s.replace(/\w\S*/g,function(w){return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase();});}
+function _dayDiff(dep,arr){
+  if(!dep||!arr)return 0;
+  var d1=new Date(String(dep).split(' ')[0]+'T00:00:00Z');
+  var d2=new Date(String(arr).split(' ')[0]+'T00:00:00Z');
+  return Math.round((d2-d1)/86400000);
+}
+function _fmtFlightNum(flt){
+  if(!flt)return'';
+  return flt.trim().replace(/^([A-Z0-9]{1,3}[A-Z])(d+)$/,'$1 $2');
+}
+function _fmtLabel(raw){
+  if(!raw)return'';
+  return raw.replace(/[A-Za-z0-9]+/g,function(tok){
+    if(tok.length<=4&&tok===tok.toUpperCase()&&/[A-Z]/.test(tok))return tok;
+    return tok.charAt(0).toUpperCase()+tok.slice(1).toLowerCase();
+  });
+}
 function _segmentsBlock(segments){
   if(!segments||!segments.length)return'';
   var segs=segments.slice().sort(function(a,b){return(a.segment_order||0)-(b.segment_order||0);});
@@ -369,7 +384,9 @@ function _segmentsBlock(segments){
     html+='<div class="seg-group">';
     if(gi===retIdx)html+='<div class="seg-return-label"><em>Returning</em></div>';
     if(g.date){
-      html+='<div class="seg-date-header">'+new Date(g.date+'T00:00:00').toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'})+'</div>';
+      var gd=new Date(g.date+'T00:00:00');
+      var yr="'"+gd.getFullYear().toString().slice(2);
+      html+='<div class="seg-date-header">'+gd.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'})+', '+yr+'</div>';
     }
     g.segs.forEach(function(s){
       var hotel=s.segment_type==='HOTEL';
@@ -378,14 +395,19 @@ function _segmentsBlock(segments){
         var ci=_fmtSegDate(s.departure_datetime);
         var co=_fmtSegDate(s.arrival_datetime);
         var dr=ci+(co?' → '+co:'');
-        var sub=[dr,s.cabin_class?_toTitleCase(s.cabin_class):''].filter(Boolean).join(' \xb7 ');
+        var sub=[dr,s.cabin_class?_fmtLabel(s.cabin_class):''].filter(Boolean).join(' \xb7 ');
         html+='<div class="seg-row"><svg class="seg-icon" aria-hidden="true"><use href="'+icon+'"/></svg><div class="seg-content">'+(s.carrier?'<div class="seg-main">'+s.carrier+'</div>':'')+(sub?'<div class="seg-sub">'+sub+'</div>':'')+'</div></div>';
       }else{
         var orig=(s.origin_iata||'').toUpperCase();
         var dest=(s.destination_iata||'').toUpperCase();
         var rt=orig+(dest?' → '+dest:'');
         var dep=_fmtSegTime(s.departure_datetime);
-        var sub2=[s.carrier||'',dep,s.cabin_class?_toTitleCase(s.cabin_class):''].filter(Boolean).join(' \xb7 ');
+                var arr=_fmtSegTime(s.arrival_datetime);
+        var nd=_dayDiff(s.departure_datetime,s.arrival_datetime);
+        var fltNum=_fmtFlightNum(s.flight_number);
+        var carrierStr=s.carrier?(fltNum?s.carrier+' '+fltNum:s.carrier):fltNum;
+        var timeStr=dep?(arr?dep+' → '+arr+(nd>0?'+'+nd:''):dep):'';
+        var sub2=[carrierStr,timeStr,s.cabin_class?_fmtLabel(s.cabin_class):''].filter(Boolean).join(' · ');
         html+='<div class="seg-row"><svg class="seg-icon" aria-hidden="true"><use href="'+icon+'"/></svg><div class="seg-content">'+(rt?'<div class="seg-main seg-route">'+rt+'</div>':'')+(sub2?'<div class="seg-sub">'+sub2+'</div>':'')+'</div></div>';
       }
     });
