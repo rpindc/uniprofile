@@ -50,9 +50,11 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .page-header .eyebrow{margin-bottom:12px}
 .page-header .h1{margin-bottom:8px}
 .tabs{display:flex;gap:28px;padding-bottom:14px;border-bottom:0.5px solid var(--rule);margin-bottom:32px;overflow-x:auto}
-.tab{font-family:var(--sans);font-size:13px;color:var(--ink-mute);text-decoration:none;padding-bottom:14px;margin-bottom:-14.5px;white-space:nowrap;transition:color 120ms ease}
+.tab{font-family:var(--sans);font-size:13px;color:var(--ink-mute);background:none;border:none;padding-bottom:14px;margin-bottom:-14.5px;white-space:nowrap;transition:color 120ms ease;cursor:pointer}
 .tab:hover{color:var(--ink-soft)}
 .tab.active{color:var(--ink);font-weight:500;border-bottom:1.5px solid var(--ink)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
 .section{margin-bottom:36px}
 .section-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
 .card{background:#fff;border:0.5px solid var(--rule);border-radius:12px;padding:22px 24px}
@@ -67,22 +69,23 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .btn{font-family:var(--sans);font-size:13px;font-weight:500;padding:10px 18px;border-radius:4px;cursor:pointer;letter-spacing:-0.005em;transition:background 160ms ease,border-color 160ms ease;display:inline-flex;align-items:center;gap:8px;text-decoration:none;border:0.5px solid transparent}
 .btn-primary{color:#fff;background:var(--ink);border-color:var(--ink)}
 .btn-secondary{color:var(--ink);background:transparent;border-color:var(--rule-strong)}
+.btn-danger{color:var(--red);background:transparent;border-color:rgba(196,77,77,0.28)}
+.btn-danger:hover{background:var(--red-soft)}
 .btn-sm{font-size:12px;padding:8px 14px}
 .link{color:var(--ink);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:0.5px;font-size:12px}
 .icon{width:16px;height:16px;flex-shrink:0;display:inline-block;vertical-align:middle}
-@media(max-width:900px){.shell{flex-direction:column}.sidebar{width:100%;height:auto;position:relative;padding:16px 0}.sidebar-wordmark-block,.sidebar-id-block{padding:12px 24px}.sidebar-nav{padding:12px;display:flex;gap:4px;flex-wrap:wrap}.sidebar-nav-label{display:none}.nav-item{padding:8px 12px}.sidebar-user-card{display:none}.main{padding:24px;max-width:none}}
-
-/* Consent grant rows */
-.grant-row{display:flex;align-items:center;gap:16px;padding:18px 20px;background:#fff;border:0.5px solid var(--rule);border-radius:10px;margin-bottom:8px}
-.grant-icon{width:36px;height:36px;border-radius:8px;background:var(--paper-warm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:var(--serif);font-size:13px;color:var(--ink-soft);font-weight:500}
-.grant-main{flex:1;min-width:0}
-.grant-title{font-size:14px;font-weight:500;color:var(--ink);margin-bottom:2px}
-.grant-meta{font-size:12px;color:var(--ink-mute)}
 .activity-row{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:0.5px solid var(--rule)}
 .activity-row:last-child{border-bottom:none}
-.activity-time{font-size:12px;color:var(--ink-mute);width:120px;flex-shrink:0}
+.activity-time{font-size:12px;color:var(--ink-mute);width:130px;flex-shrink:0}
 .activity-text{flex:1;font-size:13px;color:var(--ink-soft)}
-.activity-meta{font-size:11px;color:var(--ink-faint);font-family:var(--mono);}
+.activity-meta{font-size:11px;color:var(--ink-faint);font-family:var(--mono)}
+.factor-row{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:0.5px solid var(--rule)}
+.factor-row:last-child{border-bottom:none}
+.factor-icon{width:36px;height:36px;border-radius:8px;background:var(--paper-warm);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
+.factor-main{flex:1;min-width:0}
+.factor-name{font-size:14px;font-weight:500;color:var(--ink);margin-bottom:2px}
+.factor-meta{font-size:12px;color:var(--ink-mute)}
+@media(max-width:900px){.shell{flex-direction:column}.sidebar{width:100%;height:auto;position:relative;padding:16px 0}.sidebar-wordmark-block,.sidebar-id-block{padding:12px 24px}.sidebar-nav{padding:12px;display:flex;gap:4px;flex-wrap:wrap}.sidebar-nav-label{display:none}.nav-item{padding:8px 12px}.sidebar-user-card{display:none}.main{padding:24px;max-width:none}}
 </style>
 </head>
 <body>
@@ -119,7 +122,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     </nav>
     <div class="sidebar-user-card">
       <div class="user-card-inner">
-        <div class="avatar avatar-sm avatar-1">RP</div>
+        <div class="avatar avatar-sm avatar-1" id="sidebar-avatar">RP</div>
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:500;line-height:1.2;" id="sidebar-name">—</div>
           <div class="caption" id="sidebar-tier"></div>
@@ -135,41 +138,47 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     <div class="page-header">
       <div class="eyebrow">Privacy &amp; security</div>
       <h1 class="h1">Who sees <em>what</em>.</h1>
-      <p class="lede">Every grant, every revocation, every login — visible to you. Nothing hidden, nothing sold.</p>
+      <p class="lede">Every grant, every revocation, every login — visible to you.</p>
     </div>
 
     <div class="tabs">
-      <a href="#" class="tab active">Active consents</a>
-      <a href="#activity" class="tab">Recent activity</a>
-      <a href="#security" class="tab">Security</a>
+      <button class="tab active" onclick="switchTab('activity')">Recent activity</button>
+      <button class="tab" id="tab-security" onclick="switchTab('security')">Security</button>
     </div>
 
-    <!-- Active consents -->
-    <section class="section">
-      <div class="section-header">
-        <h2 class="section-label">Active grants</h2>
-        <span class="caption">4 operators have access</span>
+    <!-- Recent activity panel -->
+    <div class="tab-panel active" id="panel-activity">
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-label">Recent activity</h2>
+        </div>
+        <div class="card" style="padding:8px 24px;">
+          <div id="privacy-activity-rows"></div>
+        </div>
       </div>
+    </div>
 
-      <div id="privacy-grants"></div>
-    </section>
-
-    <!-- Recent activity -->
-    <section class="section">
-      <div class="section-header">
-        <h2 class="section-label">Recent activity</h2>
-        <a href="#" class="caption" style="text-decoration:none;">Full log →</a>
+    <!-- Security panel -->
+    <div class="tab-panel" id="panel-security">
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-label">Two-factor authentication</h2>
+        </div>
+        <div class="card" style="padding:8px 24px;">
+          <div id="privacy-factors"></div>
+        </div>
       </div>
-
-      <div class="card" style="padding:8px 24px;">
-        <div id="privacy-activity-rows"></div>
+      <div class="section">
+        <div class="section-header">
+          <h2 class="section-label">Recovery codes</h2>
+        </div>
+        <div class="card" style="padding:20px 24px;">
+          <p style="font-size:13px;color:var(--ink-soft);margin-bottom:16px;">Recovery codes let you regain access if you lose your authenticator. Each code can only be used once.</p>
+          <div id="privacy-recovery-info" style="font-size:13px;color:var(--ink-mute);margin-bottom:16px;"></div>
+          <button class="btn btn-secondary btn-sm" id="regen-btn" onclick="regenCodes()" style="display:none">Regenerate codes</button>
+        </div>
       </div>
-    </section>
-
-    <section class="card-warm">
-      <div class="editorial" style="margin-bottom:12px;">A note on this page</div>
-      <p style="font-family:var(--serif);font-size:16px;font-weight:300;line-height:1.55;color:var(--ink-soft);">Everything you see here is also exportable as a structured data file. Your data is yours. Take it whenever you want.</p>
-    </section>
+    </div>
 
   </main>
 </div>
@@ -189,20 +198,120 @@ async function _req(method,ep,body){
   return r.json();
 }
 function _dn(p){if(!p)return"Traveler";if(p.display_name&&p.display_name.trim())return p.display_name.trim();if(p.identity&&p.identity.legal_first)return p.identity.legal_first;return p.uniprofile_number||p.email||"Traveler";}
-function _ini(p){var s=_dn(p).trim();return s.length>=2?s.slice(0,2).toUpperCase():s.toUpperCase();}
 function _st(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
 function _ht(id,v){var e=document.getElementById(id);if(e)e.innerHTML=v;}
-function _docLabel(t){var m={PASSPORT:"Passport",US_GREEN_CARD:"Permanent Resident Card",KTN:"Known Traveler No.",GLOBAL_ENTRY:"Global Entry",ESTA:"ESTA",VISA:"Visa",NEXUS:"NEXUS",SENTRI:"SENTRI",NATIONAL_ID:"National ID",DRIVERS_LICENSE:"Driver's License",BIRTH_CERTIFICATE:"Birth Certificate"};return m[t]||(t||"Document").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();});}
-function _daysLabel(d){if(d===null||d===undefined)return"No expiry";if(d<0)return"Expired";if(d===0)return"Expires today";if(d<=30)return"Expires in "+d+" days";return"Expires "+new Date(Date.now()+d*86400000).toLocaleDateString("en-US",{month:"short",year:"numeric"});}
-function _fmt(s){if(!s)return"\u2014";return new Date(s).toLocaleDateString("en-US",{day:"numeric",month:"long",year:"numeric"});}
-function _tripName(t){return t.trip_name||t.destination_iata||"Trip";}
 function _sidebarUpdate(p){
-  _st("sidebar-number",p.uniprofile_number||"\u2014");
+  _st("sidebar-number",p.uniprofile_number||"—");
   _st("sidebar-name",_dn(p));
   _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
 }
-function _today(){return new Date().toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});}
-function _greet(){var h=new Date().getHours();return h<12?"Good morning":h<17?"Good afternoon":"Good evening";}
+function _evtLabel(type){
+  var m={
+    totp_enrolled:"Authenticator app enrolled",
+    step_up_granted:"Step-up verified",
+    recovery_code_used:"Recovery code used",
+    recovery_codes_regenerated:"Recovery codes regenerated",
+    factor_removed:"Security factor removed",
+    display_name_changed:"Display name updated",
+    identity_updated:"Identity updated",
+    document_added:"Document added",
+    document_updated:"Document updated",
+    document_deleted:"Document deleted",
+    trip_added:"Trip added",
+    trip_deleted:"Trip deleted",
+    context_switched:"Context switched",
+    login:"Sign in",
+    logout:"Sign out"
+  };
+  return m[type]||(type||"Event").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();});
+}
+function _evtMeta(e){
+  if(!e.metadata)return"";
+  var m=e.metadata;
+  if(m.doc_type)return m.doc_type.replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();});
+  if(m.destination)return m.destination;
+  if(m.context)return m.context.charAt(0)+m.context.slice(1).toLowerCase();
+  if(m.factor)return m.factor;
+  return"";
+}
+function _evtTime(ts){
+  if(!ts)return"";
+  var d=new Date(ts);
+  return d.toLocaleDateString("en-US",{month:"short",day:"numeric"})+" · "+d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"});
+}
+function _fmt(s){if(!s)return"—";return new Date(s).toLocaleDateString("en-US",{day:"numeric",month:"long",year:"numeric"});}
+
+function switchTab(name){
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active");});
+  document.querySelectorAll(".tab-panel").forEach(function(p){p.classList.remove("active");});
+  var panelEl=document.getElementById("panel-"+name);
+  if(panelEl)panelEl.classList.add("active");
+  var tabIdx=name==="activity"?0:1;
+  var tabs=document.querySelectorAll(".tab");
+  if(tabs[tabIdx])tabs[tabIdx].classList.add("active");
+}
+
+async function regenCodes(){
+  if(!confirm("This will invalidate all existing recovery codes. Continue?"))return;
+  try{
+    var res=await _req("POST","/api/v1/auth/recovery-codes/regenerate");
+    if(res.recovery_codes&&res.recovery_codes.length){
+      var msg="New codes:\n\n"+res.recovery_codes.join("\n")+"\n\nSave these somewhere safe — they won't be shown again.";
+      alert(msg);
+    }
+    await loadFactors();
+  }catch(e){alert("Failed to regenerate codes.");}
+}
+
+async function removeFactor(factorId){
+  if(!confirm("Remove this security factor? You will no longer need it to verify your identity."))return;
+  try{
+    await _req("DELETE","/api/v1/auth/factors/"+factorId);
+    await loadFactors();
+  }catch(e){alert("Failed to remove factor.");}
+}
+
+async function loadFactors(){
+  var factorsRes={factors:[],recovery_codes_remaining:0};
+  try{factorsRes=await _req("GET","/api/v1/auth/factors");}catch(e){}
+  var factors=factorsRes.factors||[];
+  var rcRemaining=factorsRes.recovery_codes_remaining||0;
+  var activeFactors=factors.filter(function(f){return f.is_active;});
+
+  // Render factors
+  var fHtml="";
+  if(!activeFactors.length){
+    fHtml='<div class="factor-row"><div class="factor-main"><div class="factor-name" style="font-weight:400;color:var(--ink-mute);">No two-factor authentication enrolled.</div><div class="factor-meta">Your account is protected by password only.</div></div></div>';
+  } else {
+    activeFactors.forEach(function(f){
+      var icon=f.factor_type==="totp"?"🔐":"🔑";
+      var label=f.factor_type==="totp"?"Authenticator app":"Security key";
+      var since=f.created_at?("Added "+_fmt(f.created_at)):"";
+      fHtml+='<div class="factor-row">'
+        +'<div class="factor-icon">'+icon+'</div>'
+        +'<div class="factor-main"><div class="factor-name">'+label+(f.label?" · "+f.label:"")+'</div><div class="factor-meta">'+since+'</div></div>'
+        +'<button class="btn btn-danger btn-sm" onclick="removeFactor(\''+f.id+'\')">Remove</button>'
+        +'</div>';
+    });
+  }
+  _ht("privacy-factors",fHtml);
+
+  // Recovery codes info
+  var secTab=document.getElementById("tab-security");
+  if(secTab)secTab.textContent=activeFactors.length?"Security":"Security · No 2FA";
+  var rcEl=document.getElementById("privacy-recovery-info");
+  var regenBtn=document.getElementById("regen-btn");
+  if(rcEl){
+    if(!activeFactors.length){
+      rcEl.textContent="Enroll an authenticator app to generate recovery codes.";
+      if(regenBtn)regenBtn.style.display="none";
+    } else {
+      rcEl.textContent=rcRemaining+" code"+(rcRemaining===1?"":"s")+" remaining.";
+      if(regenBtn)regenBtn.style.display="";
+    }
+  }
+}
+
 async function _auth(){
   var h=_ph();
   if(h){_tok=h;localStorage.setItem("up_token",_tok);history.replaceState(null,"",window.location.pathname);}
@@ -210,43 +319,32 @@ async function _auth(){
   if(!_tok){location.href=_loginUrl();return false;}
   return true;
 }
-function _evtLabel(type){
-  var m={totp_enrolled:"Authenticator app enrolled",totp_verified:"Step-up verified",recovery_code_used:"Recovery code used",factor_removed:"Security factor removed",display_name_changed:"Display name updated",login:"Sign in",logout:"Sign out"};
-  return m[type]||(type||"Event").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();});
-}
-function _evtTime(ts){if(!ts)return"";var d=new Date(ts);return d.toLocaleDateString("en-US",{month:"short",day:"numeric"})+" \u00b7 "+d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"});}
+
 async function privacyInit(){
   if(!await _auth())return;
   try{
     var p=await _req("GET","/api/v1/me");
     _prof=p;_uid=p.uuid;
     _sidebarUpdate(p);
-    var eventsRes={events:[]},factorsRes={factors:[]};
+
+    // Load activity events
+    var eventsRes={events:[]};
     try{eventsRes=await _req("GET","/api/v1/auth/events");}catch(e){}
-    try{factorsRes=await _req("GET","/api/v1/auth/factors");}catch(e){}
-    _ht("privacy-grants","<div style='padding:20px 0;color:var(--ink-mute);font-size:13px;'>Consent grants are managed in the main app under Consent &amp; Access. <a href='/' class='link'>Go there \u2192</a></div>");
-    var factors=factorsRes.factors||[];
     var events=eventsRes.events||[];
     var rows="";
-    factors.forEach(function(f){
-      rows+='<div class="activity-row">'
-        +'<div class="activity-time">'+_evtTime(f.created_at)+'</div>'
-        +'<div class="activity-text">'+( f.factor_type==="totp"?"Authenticator app":"Security factor")+" added"+(f.label?" \u00b7 "+f.label:"")+'</div>'
-        +'<div class="activity-meta">'+( f.is_active?"Active":"Pending")+'</div></div>';
-    });
-    events.slice(0,10).forEach(function(e){
-      var meta=e.meta&&e.meta.label?e.meta.label:e.event_type||"";
+    events.slice(0,20).forEach(function(e){
       rows+='<div class="activity-row">'
         +'<div class="activity-time">'+_evtTime(e.created_at||e.event_at)+'</div>'
         +'<div class="activity-text">'+_evtLabel(e.event_type)+'</div>'
-        +'<div class="activity-meta">'+meta+'</div></div>';
+        +'<div class="activity-meta">'+_evtMeta(e)+'</div>'
+        +'</div>';
     });
-    if(!rows)rows='<div class="activity-row"><div class="activity-time">\u2014</div><div class="activity-text">No recent activity recorded.</div><div class="activity-meta"></div></div>';
+    if(!rows)rows='<div class="activity-row"><div class="activity-time">—</div><div class="activity-text" style="color:var(--ink-mute);">No activity recorded yet. Actions like updating your profile, adding documents, or changing context will appear here.</div><div class="activity-meta"></div></div>';
     _ht("privacy-activity-rows",rows);
-    if(!factors.length){
-      var t=document.querySelector('.tab[href="#security"]');
-      if(t)t.textContent="Security \u00b7 No 2FA";
-    }
+
+    // Load security factors
+    await loadFactors();
+
   }catch(e){console.error(e);}
 }
 privacyInit();</script>
