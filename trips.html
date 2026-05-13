@@ -108,8 +108,25 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .trip-title em{font-style:italic;font-weight:300}
 .trip-route{font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-bottom:10px;letter-spacing:0.04em}
 .trip-meta-line{border-top:0.5px solid var(--rule);margin-top:14px;padding-top:12px;font-size:12px;color:var(--ink-mute);line-height:1.5}
-.trip-actions{flex-shrink:0;display:flex;align-items:flex-start;gap:8px;padding-top:2px}
-.trip-ctx-select{font-family:var(--sans);font-size:12px;padding:5px 26px 5px 10px;border-radius:6px;border:0.5px solid var(--rule-strong);background:#fff;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9L12 15L18 9' stroke='%238a8a86' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;color:var(--ink-soft);cursor:pointer;outline:none;-webkit-appearance:none}
+.trip-actions{flex-shrink:0;display:flex;align-items:flex-start;gap:4px;padding-top:2px}
+.trip-ctx-wrap{position:relative;display:inline}
+.trip-ctx-btn{font-family:var(--sans);font-size:12px;color:var(--ink-mute);background:none;border:none;padding:0;cursor:pointer;line-height:inherit;letter-spacing:inherit}
+.trip-ctx-btn:hover{color:var(--ink-soft);text-decoration:underline;text-underline-offset:2px}
+.trip-ctx-menu{position:absolute;top:calc(100% + 4px);left:0;background:#fff;border:0.5px solid var(--rule-strong);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.08);min-width:110px;z-index:200;display:none;flex-direction:column;overflow:hidden}
+.trip-ctx-menu.open{display:flex}
+.trip-ctx-menu-item{padding:8px 14px;font-size:13px;font-family:var(--sans);background:none;border:none;cursor:pointer;text-align:left;color:var(--ink-soft);width:100%}
+.trip-ctx-menu-item:hover{background:var(--paper-warm)}
+.trip-ctx-menu-item.active{font-weight:500}
+.trip-kebab-wrap{position:relative}
+.trip-kebab{width:28px;height:28px;border-radius:6px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-mute);opacity:0;transition:opacity 0.15s,background 0.15s;font-size:13px;letter-spacing:1px;line-height:1}
+.trip-kebab:hover{background:rgba(26,26,26,0.06);color:var(--ink-soft)}
+.trip-card:hover .trip-kebab{opacity:1}
+.trip-kebab-menu{position:absolute;top:calc(100% + 4px);right:0;background:#fff;border:0.5px solid var(--rule-strong);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.08);min-width:120px;z-index:200;display:none;flex-direction:column;overflow:hidden}
+.trip-kebab-menu.open{display:flex}
+.trip-kebab-item{padding:9px 14px;font-size:13px;font-family:var(--sans);background:none;border:none;cursor:pointer;text-align:left;color:var(--ink-soft);width:100%}
+.trip-kebab-item:hover{background:var(--paper-warm)}
+.trip-kebab-item.danger{color:var(--red)}
+.trip-kebab-item.danger:hover{background:var(--red-soft)}
 .past .trip-date{background:transparent;border:0.5px solid var(--rule)}
 .past .trip-date-day{color:var(--ink-mute)}
 .past .trip-title{color:var(--ink-soft)}
@@ -124,7 +141,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .seg-main{font-size:13px;color:var(--ink-soft);line-height:1.3}
 .seg-route{font-family:var(--mono);letter-spacing:0.04em}
 .seg-sub{font-size:12px;color:var(--ink-mute);margin-top:1px;line-height:1.4}
-@media(max-width:900px){.shell{flex-direction:column}.sidebar{width:100%;height:auto;position:relative;padding:16px 0}.sidebar-wordmark-block,.sidebar-id-block{padding:12px 24px}.sidebar-nav{padding:12px;display:flex;gap:4px;flex-wrap:wrap}.sidebar-nav-label{display:none}.nav-item{padding:8px 12px}.sidebar-user-card{display:none}.main{padding:24px;max-width:none}.page-header{flex-direction:column;gap:16px}.trip-actions{flex-direction:column;align-items:flex-start;gap:6px}.trip-details{grid-template-columns:1fr}}
+@media(max-width:900px){.shell{flex-direction:column}.sidebar{width:100%;height:auto;position:relative;padding:16px 0}.sidebar-wordmark-block,.sidebar-id-block{padding:12px 24px}.sidebar-nav{padding:12px;display:flex;gap:4px;flex-wrap:wrap}.sidebar-nav-label{display:none}.nav-item{padding:8px 12px}.sidebar-user-card{display:none}.main{padding:24px;max-width:none}.page-header{flex-direction:column;gap:16px}.trip-actions{flex-direction:column;align-items:flex-start;gap:6px}.trip-kebab{opacity:1}}
 </style>
 </head>
 <body>
@@ -447,7 +464,14 @@ function _tripCard(t){
   var metaParts=[_fmtRangeProse(t.departure_date,t.return_date)];
   var nights=_nightCount(t.departure_date,t.return_date);
   if(nights>0) metaParts.push(nights+" night"+(nights===1?"":"s"));
-  metaParts.push(_ctxLabel(t.trip_context));
+  var ctxTrigger='<span class="trip-ctx-wrap">'
+    +'<button class="trip-ctx-btn" onclick="toggleCtxMenu(\''+t.id+'\')" title="Change context">'+_ctxLabel(t.trip_context)+' &#x25BE;</button>'
+    +'<div class="trip-ctx-menu" id="ctxm-'+t.id+'">'
+    +'<button class="trip-ctx-menu-item'+(t.trip_context==="PERSONAL"?" active":"")+'" onclick="selectCtx(\''+t.id+'\',\'PERSONAL\')">Personal</button>'
+    +'<button class="trip-ctx-menu-item'+(t.trip_context==="CORPORATE"?" active":"")+'" onclick="selectCtx(\''+t.id+'\',\'CORPORATE\')">Business</button>'
+    +'<button class="trip-ctx-menu-item'+(t.trip_context==="BLEISURE"?" active":"")+'" onclick="selectCtx(\''+t.id+'\',\'BLEISURE\')">Bleisure</button>'
+    +'</div></span>';
+  metaParts.push(ctxTrigger);
   if(t.trip_locator) metaParts.push("PNR "+t.trip_locator.toUpperCase());
   var details='<p class="trip-meta-line">'+metaParts.join(" · ")+(daysEl?" "+daysEl:"")+"</p>";
   return '<div class="trip-card'+(past?" past":"")+'" id="tc-'+t.id+'">'
@@ -458,13 +482,13 @@ function _tripCard(t){
     +(route?'<div class="trip-route">'+route+'</div>':"")
     +'</div>'
     +'<div class="trip-actions">'
-    +'<select class="trip-ctx-select" onchange="changeContext(\''+t.id+'\',this.value)" title="Trip context">'
-    +'<option value="PERSONAL"'+(t.trip_context==="PERSONAL"?" selected":"")+'>Personal</option>'
-    +'<option value="CORPORATE"'+(t.trip_context==="CORPORATE"?" selected":"")+'>Business</option>'
-    +'<option value="BLEISURE"'+(t.trip_context==="BLEISURE"?" selected":"")+'>Bleisure</option>'
-    +'</select>'
-    +'<button class="btn btn-secondary btn-sm" onclick="openEditTrip(\''+t.id+'\')">Edit</button>'
-    +'<button class="btn btn-danger btn-sm" onclick="deleteTrip(\''+t.id+'\')">Delete</button>'
+    +'<div class="trip-kebab-wrap">'
+    +'<button class="trip-kebab" onclick="toggleKebab(\''+t.id+'\')" title="More options" aria-label="More options">•••</button>'
+    +'<div class="trip-kebab-menu" id="km-'+t.id+'">'
+    +'<button class="trip-kebab-item" onclick="closeKebab();openEditTrip(\''+t.id+'\')">Edit</button>'
+    +'<button class="trip-kebab-item danger" onclick="closeKebab();deleteTrip(\''+t.id+'\')">Delete</button>'
+    +'</div>'
+    +'</div>'
     +'</div>'
     +'</div>'
     +details
@@ -499,6 +523,26 @@ async function changeContext(tripId,newCtx){
     showToast("Context updated.");
   }catch(e){showToast("Error updating context.");}
 }
+function toggleCtxMenu(id){
+  var menu=document.getElementById("ctxm-"+id);
+  if(!menu)return;
+  var isOpen=menu.classList.contains("open");
+  closeCtxMenus();closeKebab();
+  if(!isOpen)menu.classList.add("open");
+}
+function closeCtxMenus(){document.querySelectorAll(".trip-ctx-menu.open").forEach(function(m){m.classList.remove("open");});}
+async function selectCtx(id,ctx){closeCtxMenus();await changeContext(id,ctx);}
+function toggleKebab(id){
+  var menu=document.getElementById("km-"+id);
+  if(!menu)return;
+  var isOpen=menu.classList.contains("open");
+  closeKebab();closeCtxMenus();
+  if(!isOpen)menu.classList.add("open");
+}
+function closeKebab(){document.querySelectorAll(".trip-kebab-menu.open").forEach(function(m){m.classList.remove("open");});}
+document.addEventListener("click",function(e){
+  if(!e.target.closest(".trip-kebab-wrap")&&!e.target.closest(".trip-ctx-wrap")){closeKebab();closeCtxMenus();}
+});
 
 /* ── Delete ── */
 async function deleteTrip(tripId){
