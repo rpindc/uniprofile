@@ -437,7 +437,7 @@ function _tripCard(t){
   var month=dep?dep.toLocaleDateString("en-US",{month:"short"}):"—";
   var day=dep?dep.getDate():"?";
   var name=_tripName(t);
-  var route=(t.origin_iata?t.origin_iata.toUpperCase():"")+(t.destination_iata?" → "+t.destination_iata.toUpperCase():"");
+  var route=(t.origin_iata&&t.destination_iata&&t.origin_iata.toUpperCase()!==t.destination_iata.toUpperCase())?t.origin_iata.toUpperCase()+" → "+t.destination_iata.toUpperCase():"";
   var daysEl="";
   if(dep&&!past){
     var diff=Math.round((dep-today)/86400000);
