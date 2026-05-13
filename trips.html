@@ -466,11 +466,11 @@ function _tripCard(t){
   if(nights>0) metaParts.push(nights+" night"+(nights===1?"":"s"));
   var ctxTrigger='<span class="trip-ctx-wrap">'
     +'<button class="trip-ctx-btn" onclick="toggleCtxMenu(\''+t.id+'\')" title="Change context">'+_ctxLabel(t.trip_context)+' &#x25BE;</button>'
-    +'<div class="trip-ctx-menu" id="ctxm-'+t.id+'">'
+    +'<span class="trip-ctx-menu" id="ctxm-'+t.id+'">'
     +'<button class="trip-ctx-menu-item'+(t.trip_context==="PERSONAL"?" active":"")+'" onclick="selectCtx(\''+t.id+'\',\'PERSONAL\')">Personal</button>'
     +'<button class="trip-ctx-menu-item'+(t.trip_context==="CORPORATE"?" active":"")+'" onclick="selectCtx(\''+t.id+'\',\'CORPORATE\')">Business</button>'
     +'<button class="trip-ctx-menu-item'+(t.trip_context==="BLEISURE"?" active":"")+'" onclick="selectCtx(\''+t.id+'\',\'BLEISURE\')">Bleisure</button>'
-    +'</div></span>';
+    +'</span></span>';
   metaParts.push(ctxTrigger);
   if(t.trip_locator) metaParts.push("PNR "+t.trip_locator.toUpperCase());
   var details='<p class="trip-meta-line">'+metaParts.join(" · ")+(daysEl?" "+daysEl:"")+"</p>";
