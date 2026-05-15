@@ -1,6 +1,8 @@
 const { RDSDataClient, ExecuteStatementCommand } = require("@aws-sdk/client-rds-data");
+const { CognitoIdentityProviderClient, AdminGetUserCommand } = require("@aws-sdk/client-cognito-identity-provider");
 const { CognitoJwtVerifier } = require("aws-jwt-verify");
 const rds = new RDSDataClient({ region: process.env.AWS_REGION || "us-east-1" });
+const cognito = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION || "us-east-1" });
 const DB = { resourceArn: process.env.AURORA_CLUSTER_ARN, secretArn: process.env.AURORA_SECRET_ARN, database: process.env.DB_NAME || "uniprofile" };
 const verifier = CognitoJwtVerifier.create({ userPoolId: process.env.COGNITO_USER_POOL_ID, tokenUse: "id", clientId: process.env.COGNITO_CLIENT_ID });
 async function sql(query, params = []) {
@@ -12,6 +14,8 @@ const strParam=(n,v)=>({name:n,value:(v!=null&&v!==''&&v!=='null')?{stringValue:
 const boolParam=(n,v)=>({name:n,value:v!=null?{booleanValue:Boolean(v)}:{isNull:true}});
 const numParam=(n,v)=>({name:n,value:v!=null?{doubleValue:Number(v)}:{isNull:true}});
 const dateParam=(n,v)=>(v&&v!==''&&v!=='null')?{name:n,value:{stringValue:String(v)},typeHint:"DATE"}:{name:n,value:{isNull:true}};
+function avatarColorFromName(name){const c=['info','warm','cool','muted'];let h=0,s=(name||'').trim().toLowerCase();for(let i=0;i<s.length;i++)h=((h<<5)-h+s.charCodeAt(i))|0;return c[Math.abs(h)%4];}
+const _searchRL={};
 /* ── UniProfile ID — spec v1.0 ───────────────────────────────────────────── */
 const UP_ALPHABET='23456789ABCDEFGHJKMNPQRSTVWXYZ'; // 30 chars, no 0/O/1/I/L/U
 const UP_WEIGHTS=[2,3,5,7,11,13,17];
@@ -46,6 +50,13 @@ async function verifyToken(event){
   if(!auth.startsWith("Bearer ")) throw {status:401,message:"Authentication required"};
   try{return await verifier.verify(auth.slice(7));}catch(e){throw {status:401,message:"Invalid or expired token"};}
 }
+async function fetchEmailFromCognito(sub){
+  try{
+    const res=await cognito.send(new AdminGetUserCommand({UserPoolId:process.env.COGNITO_USER_POOL_ID,Username:sub}));
+    const attr=res.UserAttributes&&res.UserAttributes.find(a=>a.Name==='email');
+    return attr?attr.Value:null;
+  }catch(e){console.error("AdminGetUser error:",e.message);return null;}
+}
 async function getOrCreateTraveler(sub,email){
   let rows=await sql("SELECT uuid,uniprofile_number FROM travelers WHERE cognito_sub=:sub",[strParam("sub",sub)]);
   if(rows.length){
@@ -61,13 +72,19 @@ async function getOrCreateTraveler(sub,email){
     }
     return existing.uuid;
   }
+  let resolvedEmail=email;
+  if(!resolvedEmail){
+    console.warn("email missing from token for sub:",sub,"— fetching from Cognito");
+    resolvedEmail=await fetchEmailFromCognito(sub);
+    if(!resolvedEmail){console.error("Cannot resolve email for sub:",sub);return null;}
+  }
   let upId=generateUpId();
   for(let retry=0;retry<5;retry++){
     const clash=await sql("SELECT 1 FROM travelers WHERE uniprofile_number=:id",[strParam("id",upId)]);
     if(!clash.length)break;
     upId=generateUpId();
   }
-  rows=await sql("INSERT INTO travelers (cognito_sub,email,tier,gdpr_consent_at,uniprofile_number) VALUES (:sub,:email,'free',NOW(),:upid) ON CONFLICT (cognito_sub) DO UPDATE SET email=:email RETURNING uuid",[strParam("sub",sub),strParam("email",email||""),strParam("upid",upId)]);
+  rows=await sql("INSERT INTO travelers (cognito_sub,email,tier,gdpr_consent_at,uniprofile_number) VALUES (:sub,:email,'free',NOW(),:upid) ON CONFLICT (cognito_sub) DO UPDATE SET email=:email RETURNING uuid",[strParam("sub",sub),strParam("email",resolvedEmail),strParam("upid",upId)]);
   return rows[0]&&rows[0].uuid;
 }
 async function buildProfile(uuid){
@@ -117,7 +134,15 @@ async function buildProfile(uuid){
   const groups=groupRows.map(g=>({id:g.id,name:g.name,type:g.type,destination:g.destination,dep:g.dep,ret:g.ret,members:typeof g.members==="string"?JSON.parse(g.members):(g.members||[]),flights:typeof g.flights==="string"?JSON.parse(g.flights):(g.flights||[]),hotel:g.hotel?(typeof g.hotel==="string"?JSON.parse(g.hotel):g.hotel):null,notes:typeof g.notes==="string"?JSON.parse(g.notes):(g.notes||[])}));
   const profileModules={};
   moduleRows.forEach(r=>{try{profileModules[r.module_name]=typeof r.data==="string"?JSON.parse(r.data):r.data;}catch(e){profileModules[r.module_name]={};} });
-  return {uuid,uniprofile_number:meta[0]&&meta[0].uniprofile_number||null,email:meta[0]&&meta[0].email,tier:meta[0]&&meta[0].tier||"free",profile_completeness:meta[0]&&meta[0].profile_complete||0,display_name:meta[0]&&meta[0].display_name||null,active_context:bleisure[0]&&bleisure[0].active_context||"PERSONAL",identity:identity[0]||null,documents:docsWithExpiry,document_types:docTypesGrouped,seat_preferences:seat[0]||null,meal_preferences:mealData,...profileModules,loyalty_programs:loyalty,payment_profiles:payment,trips,trips_count:trips.length,groups,generated_at:new Date().toISOString()};
+  const _milestones=[
+    !!(identity[0]&&identity[0].legal_first&&identity[0].legal_last),
+    docsWithExpiry.some(d=>d.doc_type==="PASSPORT"),
+    !!seat[0],
+    loyalty.length>0,
+    trips.length>0
+  ];
+  const profileCompleteness=Math.round(_milestones.filter(Boolean).length/_milestones.length*100);
+  return {uuid,uniprofile_number:meta[0]&&meta[0].uniprofile_number||null,email:meta[0]&&meta[0].email,tier:meta[0]&&meta[0].tier||"free",profile_completeness:profileCompleteness,display_name:meta[0]&&meta[0].display_name||null,active_context:bleisure[0]&&bleisure[0].active_context||"PERSONAL",identity:identity[0]||null,documents:docsWithExpiry,document_types:docTypesGrouped,seat_preferences:seat[0]||null,meal_preferences:mealData,...profileModules,loyalty_programs:loyalty,payment_profiles:payment,trips,trips_count:trips.length,groups,generated_at:new Date().toISOString()};
 }
 async function updateModule(uuid,module,data){
   switch(module){
@@ -499,9 +524,10 @@ async function buildFamilyProfile(myUuid) {
     "LEFT JOIN travelers t ON t.uuid=fi.target_uuid " +
     "LEFT JOIN traveler_identity i ON i.traveler_uuid=fi.target_uuid " +
     "WHERE fi.requester_uuid=:u AND fi.status='pending'", p);
-  const [myInsurance, myTours] = await Promise.all([
+  const [myInsurance, myTours, namedOnly] = await Promise.all([
     sql("SELECT id,provider,policy_number,coverage_summary,valid_from,valid_until,emergency_phone FROM traveler_insurance WHERE traveler_uuid=:u ORDER BY created_at DESC", p),
     sql("SELECT id,operator,tour_name,tour_date,duration,reference,meeting_point FROM traveler_tours WHERE traveler_uuid=:u ORDER BY tour_date DESC", p),
+    sql("SELECT id,display_name,relationship,notes,avatar_color,created_at FROM people_named_only WHERE owner_uuid=:u ORDER BY created_at DESC", p),
   ]);
   return {
     linked: linked,
@@ -521,6 +547,7 @@ async function buildFamilyProfile(myUuid) {
       to_name: [s.legal_first, s.legal_last].filter(Boolean).join(" ") || s.to_email || s.target_email,
       sent_at: s.created_at,
     })),
+    named_only: namedOnly,
   };
 }
 exports.handler=async function(event){
@@ -581,6 +608,9 @@ exports.handler=async function(event){
       console.log("PUT module=",body.module,"hasData=",!!body.data,"isBase64=",event.isBase64Encoded,"rawBody=",event.body?String(event.body).slice(0,300):"null");
       if(!body.module||!body.data)return err("Missing module or data",event,400);
       await updateModule(uuid,body.module,body.data);
+      const _modEvtMap={identity:["identity_updated",{}],document_add:["document_added",{doc_type:body.data.doc_type}],document_update:["document_updated",{doc_type:body.data.doc_type}],document_delete:["document_deleted",{}],trip_add:["trip_added",{destination:body.data.destination_iata}],trip_delete:["trip_deleted",{}]};
+      const _modEvt=_modEvtMap[body.module];
+      if(_modEvt)await logSecEvent(uuid,_modEvt[0],_modEvt[1],event);
       return ok({success:true,module:body.module,profile:await buildProfile(uuid)},event);
     }
     if(method==="GET"&&path.indexOf("/bleisure")!==-1){
@@ -594,6 +624,7 @@ exports.handler=async function(event){
       const context=body.context;
       if(["PERSONAL","CORPORATE","BLEISURE"].indexOf(context)===-1)return err("Invalid context",event,400);
       await sql("INSERT INTO bleisure_context (traveler_uuid,active_context,last_switched_at,switched_by) VALUES (:u,:ctx,NOW(),'USER') ON CONFLICT (traveler_uuid) DO UPDATE SET active_context=:ctx,last_switched_at=NOW(),switched_by='USER'",[uuidParam("u",uuid),strParam("ctx",context)]);
+      await logSecEvent(uuid,"context_switched",{context},event);
       return ok({success:true,active_context:context},event);
     }
     if(method==="POST"&&path.indexOf("/transactions/")!==-1){
@@ -639,6 +670,74 @@ exports.handler=async function(event){
       }
       if(!result) result = runTimaticRules(nat,destination_iata,transit_iatas||[],daysValid,esta,travelDate);
       return ok({success:true,result},event);
+    }
+    // ── People Routes ─────────────────────────────────────────────────────
+    // GET /api/v1/people/search-uniprofile?q=<query>
+    if(method==="GET"&&path==="/api/v1/people/search-uniprofile"){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const q=((event.queryStringParameters||{}).q||"").trim().slice(0,80);
+      if(!q||q.length<2)return ok([],event);
+      // Rate limit: 30 queries per minute per user
+      const now=Date.now();
+      if(!_searchRL[myUuid])_searchRL[myUuid]=[];
+      _searchRL[myUuid]=_searchRL[myUuid].filter(t=>now-t<60000);
+      if(_searchRL[myUuid].length>=30)return{statusCode:429,headers:cors(go(event)),body:JSON.stringify({error:"Too many requests"})};
+      _searchRL[myUuid].push(now);
+      // Log for abuse detection
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata,ip,user_agent) VALUES(:u,'people_search',:m,:ip,:ua)",
+        [uuidParam("u",myUuid),strParam("m",JSON.stringify({q})),strParam("ip",(event.requestContext&&event.requestContext.identity&&event.requestContext.identity.sourceIp)||null),strParam("ua",(event.headers&&(event.headers["User-Agent"]||event.headers["user-agent"]))||null)]);
+      const isUpId=/^UP-[A-Z0-9]{4}-[A-Z0-9]{4}$/i.test(q.trim());
+      let rows=[];
+      if(isUpId){
+        rows=await sql("SELECT t.uuid,p.up_id,i.legal_first,i.legal_last,EXTRACT(YEAR FROM t.created_at)::int AS joined_year FROM travelers t LEFT JOIN traveler_identity i ON i.traveler_uuid=t.uuid LEFT JOIN traveler_profiles p ON p.traveler_uuid=t.uuid WHERE UPPER(p.up_id)=UPPER(:q) AND t.uuid<>:u LIMIT 10",[strParam("q",q.trim()),uuidParam("u",myUuid)]);
+      } else {
+        rows=await sql("SELECT t.uuid,p.up_id,i.legal_first,i.legal_last,EXTRACT(YEAR FROM t.created_at)::int AS joined_year FROM travelers t LEFT JOIN traveler_identity i ON i.traveler_uuid=t.uuid LEFT JOIN traveler_profiles p ON p.traveler_uuid=t.uuid WHERE (LOWER(i.legal_first)||' '||LOWER(i.legal_last) LIKE :q OR LOWER(i.legal_first) LIKE :q2 OR LOWER(i.legal_last) LIKE :q2) AND t.uuid<>:u LIMIT 15",[strParam("q",'%'+q.toLowerCase()+'%'),strParam("q2",q.toLowerCase()+'%'),uuidParam("u",myUuid)]);
+      }
+      return ok(rows.map(r=>({up_id:r.up_id||null,display_name:[r.legal_first,r.legal_last].filter(Boolean).join(" ")||"UniProfile User",joined_year:r.joined_year||null,member_uuid:r.uuid})),event);
+    }
+    // POST /api/v1/people/named-only
+    if(method==="POST"&&path==="/api/v1/people/named-only"){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const {display_name,relationship,notes}=body;
+      if(!display_name||!display_name.trim())return err("display_name is required",event,400);
+      const dn=display_name.trim().slice(0,120);
+      const color=avatarColorFromName(dn);
+      const rows=await sql("INSERT INTO people_named_only(owner_uuid,display_name,relationship,notes,avatar_color) VALUES(:u,:dn,:rel,:notes,:color) RETURNING id,display_name,relationship,notes,avatar_color,created_at",
+        [uuidParam("u",myUuid),strParam("dn",dn),strParam("rel",(relationship||"").slice(0,40)||null),strParam("notes",(notes||"").slice(0,2000)||null),strParam("color",color)]);
+      const row=rows[0];
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'person_added_named_only',:m)",
+        [uuidParam("u",myUuid),strParam("m",JSON.stringify({named_only_id:row.id,display_name:row.display_name}))]);
+      return{statusCode:201,headers:cors(go(event)),body:JSON.stringify(row)};
+    }
+    // PATCH /api/v1/people/named-only/{id}
+    if(method==="PATCH"&&path.startsWith("/api/v1/people/named-only/")){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const noId=path.replace("/api/v1/people/named-only/","");
+      if(!noId||!/^[0-9a-f-]{36}$/i.test(noId))return err("Invalid id",event,400);
+      const {display_name,relationship,notes}=body;
+      const dn=(display_name||"").trim().slice(0,120);
+      if(!dn)return err("display_name is required",event,400);
+      const color=avatarColorFromName(dn);
+      const rows=await sql("UPDATE people_named_only SET display_name=:dn,relationship=:rel,notes=:notes,avatar_color=:color,updated_at=NOW() WHERE id=:id AND owner_uuid=:u RETURNING id,display_name,relationship,notes,avatar_color,created_at",
+        [strParam("dn",dn),strParam("rel",(relationship||"").slice(0,40)||null),strParam("notes",(notes||"").slice(0,2000)||null),strParam("color",color),uuidParam("id",noId),uuidParam("u",myUuid)]);
+      if(!rows||!rows.length)return err("Not found",event,404);
+      return ok(rows[0],event);
+    }
+    // DELETE /api/v1/people/named-only/{id}
+    if(method==="DELETE"&&path.startsWith("/api/v1/people/named-only/")){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const noId=path.replace("/api/v1/people/named-only/","");
+      if(!noId||!/^[0-9a-f-]{36}$/i.test(noId))return err("Invalid id",event,400);
+      const rows=await sql("DELETE FROM people_named_only WHERE id=:id AND owner_uuid=:u RETURNING display_name",
+        [uuidParam("id",noId),uuidParam("u",myUuid)]);
+      if(!rows||!rows.length)return err("Not found",event,404);
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'person_removed_named_only',:m)",
+        [uuidParam("u",myUuid),strParam("m",JSON.stringify({named_only_id:noId,display_name:rows[0].display_name}))]);
+      return ok({success:true},event);
     }
     // ── Family Profile Routes ──────────────────────────────────────────────
     // GET /api/v1/family/{uuid}
@@ -1275,6 +1374,7 @@ exports.handler=async function(event){
         else if(/^UP-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(display_name))return err("Display name cannot match a UniProfile ID format",event,400);
       }
       await sql("UPDATE travelers SET display_name=:dn WHERE uuid=:u",[strParam("dn",display_name),uuidParam("u",myUuid)]);
+      await logSecEvent(myUuid,"display_name_changed",{},event);
       const prof=await buildProfile(myUuid);
       return ok({success:true,profile:prof},event);
     }

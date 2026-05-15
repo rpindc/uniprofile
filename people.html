@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="/components/mobile-drawer.css">
 
 <style>
-:root{--ink:#1a1a1a;--ink-soft:#4a4a48;--ink-mute:#8a8a86;--ink-faint:#b8b8b3;--paper:#faf8f4;--paper-warm:#f3efe7;--paper-cream:#f9f7f2;--rule:rgba(26,26,26,0.08);--rule-strong:rgba(26,26,26,0.18);--field-bg:#fff;--green:#2d6a4f;--green-soft:#e8efe9;--amber:#ba7517;--amber-soft:#f9f1e3;--red:#c44d4d;--red-soft:#f4e8e8;--serif:'Fraunces',Georgia,serif;--sans:'Inter Tight',-apple-system,sans-serif;--mono:'JetBrains Mono','SF Mono',Menlo,monospace}
+:root{--ink:#1a1a1a;--ink-soft:#4a4a48;--ink-mute:#8a8a86;--ink-faint:#b8b8b3;--paper:#faf8f4;--paper-warm:#f3efe7;--paper-cream:#f9f7f2;--rule:rgba(26,26,26,0.08);--rule-strong:rgba(26,26,26,0.18);--field-bg:#fff;--green:#2d6a4f;--green-soft:#e8efe9;--amber:#ba7517;--amber-soft:#f9f1e3;--red:#c44d4d;--red-soft:#f4e8e8;--serif:'Fraunces',Georgia,serif;--sans:'Inter Tight',-apple-system,sans-serif;--mono:'JetBrains Mono','SF Mono',Menlo,monospace;--color-background-info:#dde7f0;--color-text-info:#244164;--color-background-secondary:#f0efeb;--color-text-secondary:#6b6b66}
 *{box-sizing:border-box;margin:0;padding:0}html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;font-size:14px;font-weight:400}
 .h1{font-family:var(--serif);font-weight:300;font-size:clamp(36px,5vw,52px);line-height:1.1;letter-spacing:-0.02em;color:var(--ink)}
@@ -45,54 +45,115 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-weight:300;color:var(--ink-soft);flex-shrink:0;border:2px solid #fff}
 .avatar-sm{width:30px;height:30px;font-size:12px}
 .avatar-md{width:36px;height:36px;font-size:13px}
+.avatar-44{width:44px;height:44px;font-size:15px;font-style:normal;font-family:var(--sans);font-weight:500;flex-shrink:0}
+/* deterministic palette */
+.av-info{background:var(--color-background-info);color:var(--color-text-info)}
+.av-warm{background:#FDE9C2;color:#6B4711}
+.av-cool{background:#DDE7F0;color:#244164}
+.av-muted{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+/* sidebar avatar fallback */
 .avatar-1{background:linear-gradient(135deg,#d8d3c8,#c4bfb3)}
 .avatar-2{background:linear-gradient(135deg,#e0d5c8,#cfc2b0)}
 .avatar-3{background:linear-gradient(135deg,#d4ccd8,#c0b6c8)}
 .avatar-4{background:linear-gradient(135deg,#d8d3d8,#c4bfc4)}
 .avatar-5{background:linear-gradient(135deg,#cdc8d8,#b8b2c8)}
-.avatar-stack{display:flex;align-items:center}
-.avatar-stack .avatar:not(:first-child){margin-left:-8px}
 .main{flex:1;padding:36px 48px;min-width:0;max-width:880px}
-.page-header{margin-bottom:36px}
-.page-header .eyebrow{margin-bottom:12px}
-.page-header .h1{margin-bottom:8px}
-.section{margin-bottom:36px}
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:36px;gap:16px}
+.page-header-text .eyebrow{margin-bottom:12px}
+.page-header-text .h1{margin-bottom:8px}
 .card{background:#fff;border:0.5px solid var(--rule);border-radius:12px;padding:22px 24px}
-.card-strong{border:0.5px solid var(--rule-strong)}
-.card-warm{background:var(--paper-warm);border-radius:12px;padding:22px 26px}
 .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:100px;font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.02em}
-.pill-ready{background:var(--green-soft);color:var(--green)}
-.pill-amber{background:var(--amber-soft);color:var(--amber)}
-.pill-neutral{background:var(--paper-warm);color:var(--ink-soft)}
+.pill-ready{background:#DDE9CC;color:#2D4A1A}
+.pill-amber{background:#FAEEDA;color:#6B4711}
+.pill-neutral{background:var(--color-background-secondary);color:var(--color-text-secondary)}
 .pill-dot{width:6px;height:6px;border-radius:50%}
-.dot-green{background:var(--green)}
-.dot-amber{background:var(--amber)}
 .btn{font-family:var(--sans);font-size:13px;font-weight:500;padding:10px 18px;border-radius:4px;cursor:pointer;letter-spacing:-0.005em;transition:background 160ms ease,border-color 160ms ease;display:inline-flex;align-items:center;gap:8px;text-decoration:none;border:0.5px solid transparent;background:none}
 .btn-primary{color:#fff;background:var(--ink);border-color:var(--ink)}
 .btn-primary:disabled{opacity:0.5;cursor:default}
 .btn-secondary{color:var(--ink);background:transparent;border-color:var(--rule-strong)}
+.btn-danger{color:#fff;background:var(--red);border-color:var(--red)}
 .btn-sm{font-size:12px;padding:7px 13px}
 .link{color:var(--ink);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:0.5px;font-size:12px}
 .icon{width:16px;height:16px;flex-shrink:0;display:inline-block;vertical-align:middle}
-@media(max-width:767px){}
-
 /* Form */
 .form-field{margin-bottom:14px}
 .form-label{font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:6px;display:block}
 .form-input{width:100%;padding:9px 12px;border:0.5px solid var(--rule-strong);border-radius:6px;font-family:var(--sans);font-size:13px;color:var(--ink);background:#fff;outline:none;transition:border-color 120ms ease;-webkit-appearance:none}
 .form-input:focus{border-color:var(--ink)}
-.form-actions{display:flex;gap:8px;margin-top:14px;align-items:center}
+.form-actions{display:flex;gap:8px;margin-top:16px;align-items:center}
 .form-error{color:var(--red);font-size:12px;margin-top:8px;display:none}
-.form-success{color:var(--green);font-size:12px;margin-top:8px;display:none}
-
-/* Invite panel */
-.invite-panel{background:var(--paper-cream);border:0.5px solid var(--rule);border-radius:12px;padding:20px 22px;margin-top:16px}
-.invite-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-
+.form-hint{font-size:12px;color:var(--ink-mute);margin-top:4px}
 /* Toast */
-.toast{position:fixed;bottom:28px;right:28px;background:var(--ink);color:#fff;padding:11px 18px;border-radius:8px;font-size:13px;z-index:2000;opacity:0;transform:translateY(6px);transition:opacity 200ms ease,transform 200ms ease;pointer-events:none}
+.toast{position:fixed;bottom:28px;right:28px;background:var(--ink);color:#fff;padding:11px 18px;border-radius:8px;font-size:13px;z-index:9000;opacity:0;transform:translateY(6px);transition:opacity 200ms ease,transform 200ms ease;pointer-events:none}
 .toast.show{opacity:1;transform:translateY(0)}
+/* Search + filter bar */
+.people-toolbar{margin-bottom:20px}
+.search-wrap{position:relative;margin-bottom:12px}
+.search-wrap input{width:100%;padding:9px 12px 9px 36px;border:0.5px solid var(--rule-strong);border-radius:6px;font-family:var(--sans);font-size:13px;color:var(--ink);background:#fff;outline:none;transition:border-color 120ms ease}
+.search-wrap input:focus{border-color:var(--ink)}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--ink-mute);pointer-events:none}
+.filter-pills{display:flex;flex-wrap:wrap;gap:6px}
+.fpill{font-family:var(--sans);font-size:12px;font-weight:500;padding:5px 12px;border-radius:100px;border:0.5px solid var(--rule-strong);background:#fff;color:var(--ink-mute);cursor:pointer;transition:background 120ms,color 120ms,border-color 120ms}
+.fpill.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+/* Person card */
+.person-card{background:#fff;border:0.5px solid var(--rule);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:8px;position:relative}
+.person-card:hover{border-color:var(--rule-strong)}
+.person-card-body{flex:1;min-width:0}
+.person-card-name{font-size:14px;font-weight:500;color:var(--ink);line-height:1.3}
+.person-card-sub{font-size:12px;color:var(--ink-mute);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.person-card-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+/* Kebab */
+.kebab-wrap{position:relative}
+.kebab-btn{background:none;border:none;cursor:pointer;padding:6px;border-radius:4px;color:var(--ink-mute);font-size:16px;line-height:1;transition:background 120ms}
+.kebab-btn:hover{background:var(--paper-warm);color:var(--ink)}
+.kebab-menu{position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:0.5px solid var(--rule-strong);border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,0.08);min-width:140px;z-index:200;overflow:hidden;display:none}
+.kebab-menu.open{display:block}
+.kebab-item{display:block;width:100%;padding:10px 14px;font-family:var(--sans);font-size:13px;color:var(--ink);background:none;border:none;cursor:pointer;text-align:left;transition:background 100ms}
+.kebab-item:hover{background:var(--paper-warm)}
+.kebab-item.danger{color:var(--red)}
+/* Starter cards */
+.starter-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.starter-card{background:#fff;border:0.5px solid var(--rule);border-radius:10px;padding:18px;cursor:pointer;transition:border-color 120ms,box-shadow 120ms;text-align:left}
+.starter-card:hover{border-color:var(--rule-strong);box-shadow:0 2px 8px rgba(0,0,0,0.05)}
+.starter-card-icon{font-size:22px;margin-bottom:10px}
+.starter-card-title{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:4px}
+.starter-card-desc{font-size:12px;color:var(--ink-mute);line-height:1.4}
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity 160ms ease}
+.modal-overlay.open{opacity:1;pointer-events:auto}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:480px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.12);transform:translateY(8px);transition:transform 160ms ease}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:20px 24px 0}
+.modal-title{font-family:var(--serif);font-size:20px;font-weight:400;letter-spacing:-0.01em}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--ink-mute);padding:4px;border-radius:4px;display:flex;align-items:center;transition:color 120ms}
+.modal-close:hover{color:var(--ink)}
+.modal-body{padding:20px 24px 24px;overflow-y:auto;flex:1}
+/* Tabs */
+.tab-bar{display:flex;gap:0;border-bottom:0.5px solid var(--rule);margin-bottom:20px}
+.tab-btn{font-family:var(--sans);font-size:12px;font-weight:500;padding:10px 14px;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;color:var(--ink-mute);transition:color 120ms,border-color 120ms;white-space:nowrap}
+.tab-btn.active{color:var(--ink);border-bottom-color:var(--ink)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+/* UP search results */
+.up-results{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.up-result{display:flex;align-items:center;gap:10px;padding:10px 12px;border:0.5px solid var(--rule);border-radius:8px;background:#fff}
+.up-result-body{flex:1;min-width:0}
+.up-result-name{font-size:13px;font-weight:500;color:var(--ink)}
+.up-result-sub{font-size:11px;color:var(--ink-mute);margin-top:1px}
+/* Confirm dialog */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:1100;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity 160ms}
+.confirm-overlay.open{opacity:1;pointer-events:auto}
+.confirm-box{background:#fff;border-radius:12px;max-width:380px;width:100%;padding:24px;box-shadow:0 8px 40px rgba(0,0,0,0.12)}
+.confirm-title{font-family:var(--serif);font-size:18px;font-weight:400;margin-bottom:8px}
+.confirm-body{font-size:13px;color:var(--ink-soft);margin-bottom:20px;line-height:1.5}
+.confirm-actions{display:flex;gap:8px;justify-content:flex-end}
+/* Relationship confirm sub-form in find tab */
+.rel-confirm{margin-top:12px;padding:12px;background:var(--paper-warm);border-radius:8px;border:0.5px solid var(--rule)}
+@media(max-width:767px){
+  .starter-row{grid-template-columns:1fr}
+  .main{padding:20px 16px}
+  .page-header{flex-direction:column;gap:12px}
+}
 </style>
 </head>
 <body>
@@ -105,7 +166,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   <symbol id="i-privacy" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M8 11V8C8 5.79 9.79 4 12 4C14.21 4 16 5.79 16 8V11" stroke="currentColor" stroke-width="1.25"/><circle cx="12" cy="15.5" r="1" fill="currentColor"/></symbol>
   <symbol id="i-groups" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><circle cx="16" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><path d="M2 20C2 17 4.7 15 8 15" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M10 18C10 15.5 12.5 14 16 14C19.5 14 22 15.5 22 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
-  <symbol id="i-add" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.25"/><path d="M12 8V16M8 12H16" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none"><circle cx="10.5" cy="10.5" r="6" stroke="currentColor" stroke-width="1.25"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
 </svg>
 
 <header class="mob-header">
@@ -131,7 +192,6 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 </nav>
 
 <div class="shell">
-
   <aside class="sidebar">
     <div class="sidebar-wordmark-block">
       <a href="/home.html" class="wordmark">Uni<em>Profile</em></a>
@@ -164,51 +224,184 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   </aside>
 
   <main class="main">
-
     <div class="page-header">
-      <div class="eyebrow">Your network</div>
-      <h1 class="h1">The people you <em>travel with</em>.</h1>
-      <p class="lede" id="people-lede">Loading…</p>
+      <div class="page-header-text">
+        <div class="eyebrow">People</div>
+        <h1 class="h1">PEOPLE — <em>The people in your travel life.</em></h1>
+      </div>
+      <button class="btn btn-primary" onclick="openAddModal(null)" style="flex-shrink:0;margin-top:8px;">+ Add a person</button>
     </div>
 
-    <!-- Family links section -->
-    <div class="section">
-      <div class="section-header">
-        <h2 class="section-label">Family links</h2>
-        <button class="btn btn-secondary btn-sm" onclick="toggleInvite()">+ Invite member</button>
+    <!-- Empty state -->
+    <div id="empty-state" style="display:none;">
+      <p class="lede" style="margin-bottom:24px;">No one here yet. Add your first person to get started.</p>
+      <div class="starter-row">
+        <button class="starter-card" onclick="openAddModal('find')">
+          <div class="starter-card-icon">🔍</div>
+          <div class="starter-card-title">Find on UniProfile</div>
+          <div class="starter-card-desc">Search for someone who already has a UniProfile and add them.</div>
+        </button>
+        <button class="starter-card" onclick="openAddModal('email')">
+          <div class="starter-card-icon">✉️</div>
+          <div class="starter-card-title">Invite by email</div>
+          <div class="starter-card-desc">Send an invite to join UniProfile and link with you.</div>
+        </button>
+        <button class="starter-card" onclick="openAddModal('name')">
+          <div class="starter-card-icon">📝</div>
+          <div class="starter-card-title">Add by name only</div>
+          <div class="starter-card-desc">Record someone without sending any email or invite.</div>
+        </button>
+      </div>
+    </div>
+
+    <!-- Populated state -->
+    <div id="populated-state" style="display:none;">
+      <div class="people-toolbar">
+        <div class="search-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6" stroke="currentColor" stroke-width="1.25"/><path d="M15 15L20 20" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>
+          <input type="search" id="people-search" placeholder="Search by name…" oninput="renderList()" autocomplete="off" />
+        </div>
+        <div class="filter-pills" id="filter-pills"></div>
+      </div>
+      <div id="people-list"></div>
+    </div>
+
+    <div id="loading-state" style="padding:40px 0;color:var(--ink-mute);font-size:13px;">Loading…</div>
+  </main>
+</div>
+
+<!-- ── Add a person modal ── -->
+<div class="modal-overlay" id="add-modal-overlay" onclick="if(event.target===this)closeAddModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="add-modal-title">
+    <div class="modal-head">
+      <span class="modal-title" id="add-modal-title">Add a person</span>
+      <button class="modal-close" onclick="closeAddModal()" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 2L16 16M16 2L2 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-find-btn" onclick="switchTab('find')">Find on UniProfile</button>
+        <button class="tab-btn" id="tab-email-btn" onclick="switchTab('email')">Invite by email</button>
+        <button class="tab-btn" id="tab-name-btn" onclick="switchTab('name')">Add by name only</button>
       </div>
 
-      <div id="family-list"></div>
-
-      <!-- Invite form -->
-      <div class="invite-panel" id="invite-panel" style="display:none;">
-        <div class="invite-panel-header">
-          <span class="section-label" style="font-size:11px;">Send invite</span>
-          <button class="btn btn-secondary btn-sm" style="padding:4px 10px;font-size:11px;" onclick="toggleInvite()">Cancel</button>
+      <!-- Tab 1: Find on UniProfile -->
+      <div class="tab-panel active" id="tab-find">
+        <div class="form-field">
+          <label class="form-label">Search by name or UP-ID</label>
+          <input class="form-input" type="text" id="up-search-input" placeholder="e.g. UP-A4K2-7XJ9 or first name" oninput="scheduleUpSearch()" autocomplete="off" />
+          <div class="form-hint">Search is private — they will not be notified.</div>
         </div>
+        <div id="up-results" class="up-results"></div>
+        <div id="find-error" class="form-error"></div>
+      </div>
+
+      <!-- Tab 2: Invite by email -->
+      <div class="tab-panel" id="tab-email">
         <div class="form-field">
           <label class="form-label">Email address</label>
-          <input class="form-input" type="email" id="invite-email" placeholder="traveler@example.com" />
+          <input class="form-input" type="email" id="email-inv-email" placeholder="traveler@example.com" />
         </div>
-        <div id="invite-error" class="form-error"></div>
-        <div id="invite-success" class="form-success"></div>
+        <div class="form-field">
+          <label class="form-label">Display name</label>
+          <input class="form-input" type="text" id="email-inv-name" placeholder="How you'd like to refer to them" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">Relationship <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+          <select class="form-input" id="email-inv-rel">
+            <option value="">— None —</option>
+            <option>Partner or spouse</option><option>Parent</option><option>Child</option>
+            <option>Sibling</option><option>Other family</option><option>Friend</option>
+            <option>Colleague</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Personal message <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional, max 200 chars)</span></label>
+          <textarea class="form-input" id="email-inv-msg" rows="3" maxlength="200" placeholder="Hey — joining UniProfile to coordinate our travel?"></textarea>
+        </div>
+        <div id="email-inv-error" class="form-error"></div>
         <div class="form-actions">
-          <button class="btn btn-primary btn-sm" id="invite-btn" onclick="sendInvite()">Send invite</button>
-          <span class="caption">They'll receive an email to join UniProfile.</span>
+          <button class="btn btn-primary btn-sm" id="email-inv-btn" onclick="sendEmailInvite()">Send invite</button>
+          <button class="btn btn-secondary btn-sm" onclick="closeAddModal()">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Tab 3: Add by name only -->
+      <div class="tab-panel" id="tab-name">
+        <div class="form-field">
+          <label class="form-label">Display name</label>
+          <input class="form-input" type="text" id="name-only-name" placeholder="Their name" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">Relationship <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+          <select class="form-input" id="name-only-rel">
+            <option value="">— None —</option>
+            <option>Partner or spouse</option><option>Parent</option><option>Child</option>
+            <option>Sibling</option><option>Other family</option><option>Friend</option>
+            <option>Colleague</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Notes <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+          <textarea class="form-input" id="name-only-notes" rows="3" placeholder="e.g. Met in Bali 2024"></textarea>
+        </div>
+        <div id="name-only-error" class="form-error"></div>
+        <div class="form-actions">
+          <button class="btn btn-primary btn-sm" id="name-only-btn" onclick="addNamedOnly()">Add person</button>
+          <button class="btn btn-secondary btn-sm" onclick="closeAddModal()">Cancel</button>
         </div>
       </div>
     </div>
+  </div>
+</div>
 
-    <!-- Trip groups section -->
-    <div class="section" id="groups-section" style="display:none;">
-      <div class="section-header">
-        <h2 class="section-label">Trip groups</h2>
-        <span class="caption" id="groups-count"></span>
-      </div>
-      <div id="groups-list"></div>
+<!-- ── Edit modal (named-only only) ── -->
+<div class="modal-overlay" id="edit-modal-overlay" onclick="if(event.target===this)closeEditModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
+    <div class="modal-head">
+      <span class="modal-title" id="edit-modal-title">Edit person</span>
+      <button class="modal-close" onclick="closeEditModal()" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M2 2L16 16M16 2L2 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
     </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label class="form-label">Display name</label>
+        <input class="form-input" type="text" id="edit-name" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Relationship <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+        <select class="form-input" id="edit-rel">
+          <option value="">— None —</option>
+          <option>Partner or spouse</option><option>Parent</option><option>Child</option>
+          <option>Sibling</option><option>Other family</option><option>Friend</option>
+          <option>Colleague</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Notes <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+        <textarea class="form-input" id="edit-notes" rows="3"></textarea>
+      </div>
+      <div id="edit-error" class="form-error"></div>
+      <div class="form-actions">
+        <button class="btn btn-primary btn-sm" id="edit-save-btn" onclick="saveEdit()">Save</button>
+        <button class="btn btn-secondary btn-sm" onclick="closeEditModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-  </main>
+<!-- ── Remove confirm ── -->
+<div class="confirm-overlay" id="remove-overlay" onclick="if(event.target===this)closeRemoveConfirm()">
+  <div class="confirm-box">
+    <div class="confirm-title">Remove person?</div>
+    <div class="confirm-body" id="remove-confirm-body">This will remove them from your People list. This cannot be undone.</div>
+    <div class="confirm-actions">
+      <button class="btn btn-secondary btn-sm" onclick="closeRemoveConfirm()">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="remove-confirm-btn" onclick="confirmRemove()">Remove</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -219,6 +412,11 @@ var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
 var _tok=null,_prof=null,_uid=null;
+var _allPeople=[];
+var _activeFilter="all";
+var _upSearchTimer=null;
+var _editingId=null;
+var _removingId=null,_removingType=null;
 
 function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent(window.location.origin+window.location.pathname);}
 function _ph(){var p=new URLSearchParams(window.location.hash.slice(1));return p.get("id_token")||p.get("access_token");}
@@ -230,15 +428,16 @@ async function _req(method,ep,body){
   if(!r.ok)throw new Error("HTTP "+r.status);
   return r.json();
 }
+function _esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
 function _dn(p){if(!p)return"Traveler";if(p.display_name&&p.display_name.trim())return p.display_name.trim();if(p.identity&&p.identity.legal_first)return p.identity.legal_first;return p.uniprofile_number||p.email||"Traveler";}
-function _ini(p){var s=_dn(p).trim();return s.length>=2?s.slice(0,2).toUpperCase():s.toUpperCase();}
+function _sidebarDn(p){var s=_dn(p);return s.length>=2?s.slice(0,2).toUpperCase():s.toUpperCase();}
 function _st(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
 function _ht(id,v){var e=document.getElementById(id);if(e)e.innerHTML=v;}
 function _sidebarUpdate(p){
   _st("sidebar-number",p.uniprofile_number||"—");
   _st("sidebar-name",_dn(p));
   _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
-  _st("sidebar-avatar",_ini(p));
+  _st("sidebar-avatar",_sidebarDn(p));
 }
 async function _auth(){
   var h=_ph();
@@ -254,120 +453,378 @@ function showToast(msg){
   setTimeout(function(){t.classList.remove("show");},3000);
 }
 
-var _AV=["avatar-1","avatar-2","avatar-3","avatar-4","avatar-5"];
-function _avCol(i){return _AV[i%_AV.length];}
+/* Avatar color from name — mirrors server-side avatarColorFromName */
+function _avColor(name){
+  var c=["info","warm","cool","muted"],s=(name||"").trim().toLowerCase(),h=0;
+  for(var i=0;i<s.length;i++)h=((h<<5)-h+s.charCodeAt(i))|0;
+  return c[Math.abs(h)%4];
+}
+function _ini(name){var s=(name||"").trim();return s.length>=2?s.slice(0,2).toUpperCase():(s.toUpperCase()||"?");}
 
-function _famCard(m,i){
-  var name=[m.member_first,m.member_last].filter(Boolean).join(" ")||m.member_email||"Member";
-  var ini=name.slice(0,2).toUpperCase();
-  var sub=m.member_email||"Family link";
-  return '<div class="card" style="margin-bottom:10px;display:flex;align-items:center;gap:14px;padding:16px 20px;">'
-    +'<div class="avatar avatar-md '+_avCol(i)+'" style="flex-shrink:0;">'+ini+'</div>'
-    +'<div style="flex:1;min-width:0;">'
-    +'<div style="font-size:14px;font-weight:500;color:var(--ink);">'+name+'</div>'
-    +'<div class="caption">'+sub+'</div>'
+/* ── Person card renderer ── */
+function _badge(type){
+  if(type==="linked")return '<span class="pill pill-ready">On UniProfile</span>';
+  if(type==="invite")return '<span class="pill pill-amber">Invite pending</span>';
+  return '<span class="pill pill-neutral">Named-only</span>';
+}
+
+function _personCard(p){
+  var name=_esc(p.display_name||"");
+  var color=p.avatar_color||_avColor(p.display_name||"");
+  var ini=_ini(p.display_name||"");
+  var badge=_badge(p._type);
+  var rel=p.relationship?('<span style="text-transform:capitalize">'+_esc(p.relationship)+'</span> · '):"";
+  var sub2="";
+  if(p._type==="linked"&&p.member_email)sub2=' · <span style="color:var(--ink-faint)">'+_esc(p.member_email)+'</span>';
+  else if(p._type==="invite"&&p.to_email)sub2=' · <span style="color:var(--ink-faint)">'+_esc(p.to_email)+'</span>';
+  var dateStr="";
+  if(p.created_at||p.sent_at){
+    var d=new Date(p.created_at||p.sent_at);
+    dateStr=' · added '+d.toLocaleDateString("en-US",{month:"short",year:"numeric"});
+  }
+  var canEdit=(p._type==="named_only");
+  var editBtn=canEdit?'<button class="kebab-item" onclick="openEditModal(\''+_esc(p.id)+'\')">Edit</button>':"";
+  return '<div class="person-card" data-id="'+_esc(p.id)+'" data-type="'+_esc(p._type)+'">'
+    +'<div class="avatar avatar-44 av-'+color+'">'+ini+'</div>'
+    +'<div class="person-card-body">'
+    +'<div class="person-card-name">'+name+'</div>'
+    +'<div class="person-card-sub">'+rel+(p.display_name||"")+sub2+dateStr+'</div>'
     +'</div>'
-    +'<span class="pill pill-ready"><span class="pill-dot dot-green"></span>Linked</span>'
+    +'<div class="person-card-right">'
+    +badge
+    +'<div class="kebab-wrap">'
+    +'<button class="kebab-btn" onclick="toggleKebab(this)" aria-label="Options">⋯</button>'
+    +'<div class="kebab-menu">'
+    +editBtn
+    +'<button class="kebab-item danger" onclick="openRemoveConfirm(\''+_esc(p.id)+'\',\''+_esc(p._type)+'\',\''+name+'\')">Remove</button>'
+    +'</div>'
+    +'</div>'
+    +'</div>'
     +'</div>';
 }
 
-function _grpCard(g,i){
-  var members=[];
-  try{members=typeof g.members==="string"?JSON.parse(g.members):(g.members||[]);}catch(e){}
-  var dep=g.dep?new Date(g.dep).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"";
-  var ret=g.ret?new Date(g.ret).toLocaleDateString("en-US",{month:"short",day:"numeric"}):"";
-  return '<div class="card '+(i===0?"card-strong":"")+'" style="margin-bottom:10px;">'
-    +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">'
-    +'<div><div class="micro-label" style="margin-bottom:4px;">'+(g.type||"Group")+'</div>'
-    +'<h3 class="'+(i===0?"h2":"h3")+'">'+(g.name||g.destination||"Trip group")+'</h3>'
-    +(dep?'<div class="caption" style="margin-top:4px;">'+dep+(ret?" – "+ret:"")+'</div>':"")
-    +"</div>"
-    +'<span class="pill pill-neutral">Saved</span>'
-    +"</div>"
-    +(members.length?'<div class="caption">'+members.length+" traveler"+(members.length===1?"":"s")+'</div>':"")
-    +"</div>";
+function toggleKebab(btn){
+  document.querySelectorAll(".kebab-menu.open").forEach(function(m){
+    if(m!==btn.nextElementSibling)m.classList.remove("open");
+  });
+  btn.nextElementSibling.classList.toggle("open");
+}
+document.addEventListener("click",function(e){
+  if(!e.target.closest(".kebab-wrap"))document.querySelectorAll(".kebab-menu.open").forEach(function(m){m.classList.remove("open");});
+});
+
+/* ── Filter pills ── */
+function _buildPills(all,linked,invites,named){
+  var pills=[
+    {key:"all",label:"All",count:all},
+    {key:"linked",label:"On UniProfile",count:linked},
+    {key:"invite",label:"Invite pending",count:invites},
+    {key:"named_only",label:"Named-only",count:named},
+  ];
+  return pills.map(function(pill){
+    var active=_activeFilter===pill.key?" active":"";
+    return '<button class="fpill'+active+'" onclick="setFilter(\''+pill.key+'\')">'+_esc(pill.label)+' · '+pill.count+'</button>';
+  }).join("");
 }
 
-/* ── Invite ── */
-function toggleInvite(){
-  var panel=document.getElementById("invite-panel");
-  var isOpen=panel.style.display!=="none";
-  panel.style.display=isOpen?"none":"block";
-  if(!isOpen){
-    document.getElementById("invite-email").value="";
-    document.getElementById("invite-error").style.display="none";
-    document.getElementById("invite-success").style.display="none";
-    document.getElementById("invite-email").focus();
+function setFilter(key){
+  _activeFilter=key;
+  renderList();
+}
+
+function renderList(){
+  var q=(document.getElementById("people-search")||{}).value||"";
+  q=q.toLowerCase().trim();
+  var filtered=_allPeople.filter(function(p){
+    if(_activeFilter!=="all"&&p._type!==_activeFilter)return false;
+    if(q){
+      var name=(p.display_name||"").toLowerCase();
+      var email=(p.member_email||p.to_email||"").toLowerCase();
+      if(!name.includes(q)&&!email.includes(q))return false;
+    }
+    return true;
+  });
+  var linked=_allPeople.filter(function(p){return p._type==="linked";}).length;
+  var invites=_allPeople.filter(function(p){return p._type==="invite";}).length;
+  var named=_allPeople.filter(function(p){return p._type==="named_only";}).length;
+  _ht("filter-pills",_buildPills(_allPeople.length,linked,invites,named));
+  if(!filtered.length){
+    _ht("people-list","<div style='padding:28px 0;color:var(--ink-mute);font-size:13px;'>No people match your filter.</div>");
+  }else{
+    _ht("people-list",filtered.map(function(p){return _personCard(p);}).join(""));
   }
 }
 
-async function sendInvite(){
-  var email=document.getElementById("invite-email").value.trim();
-  var errEl=document.getElementById("invite-error");
-  var okEl=document.getElementById("invite-success");
-  errEl.style.display="none";okEl.style.display="none";
-  if(!email||!email.includes("@")){
-    errEl.textContent="Enter a valid email address.";errEl.style.display="block";return;
-  }
-  var btn=document.getElementById("invite-btn");
-  btn.disabled=true;btn.textContent="Sending…";
-  try{
-    await _req("POST","/api/v1/family/"+_uid+"/invite",{email:email});
-    okEl.textContent="Invite sent to "+email+". They'll get an email to join.";
-    okEl.style.display="block";
-    document.getElementById("invite-email").value="";
-    showToast("Invite sent.");
-    setTimeout(function(){
-      toggleInvite();
-      peopleRefresh();
-    },2000);
-  }catch(e){
-    errEl.textContent="Failed to send invite: "+(e.message||"Please try again.");
-    errEl.style.display="block";
-    btn.disabled=false;
-    btn.textContent="Send invite";
-  }
-  btn.disabled=false;btn.textContent="Send invite";
-}
-
-/* ── Main init ── */
+/* ── Main load ── */
 async function peopleRefresh(){
+  document.getElementById("loading-state").style.display="";
+  document.getElementById("empty-state").style.display="none";
+  document.getElementById("populated-state").style.display="none";
   try{
     var p=await _req("GET","/api/v1/me");
     _prof=p;_uid=p.uuid;
     _sidebarUpdate(p);
 
-    var groups=p.groups||[];
-    var fam=[];
-    try{var fr=await _req("GET","/api/v1/family/"+p.uuid);fam=fr.links||fr.family||[];}catch(e){}
+    var fr={};
+    try{fr=await _req("GET","/api/v1/family/"+p.uuid);}catch(e){}
 
-    var total=groups.length+fam.length;
-    if(total){
-      _st("people-lede",fam.length+" family link"+(fam.length===1?"":"s")+(groups.length?" and "+groups.length+" group"+(groups.length===1?"":"s"):"")+" on file.");
-    }else{
-      _st("people-lede","No links yet. Invite a family member to get started.");
-    }
+    var people=[];
+    (fr.linked||[]).forEach(function(m){
+      people.push({
+        id:m.id,
+        _type:"linked",
+        display_name:[m.member_first,m.member_last].filter(Boolean).join(" ")||m.member_email||"Traveler",
+        member_email:m.member_email,
+        avatar_color:_avColor([m.member_first,m.member_last].filter(Boolean).join(" ")||m.member_email||""),
+        created_at:m.created_at,
+        relationship:null,
+      });
+    });
+    (fr.sent||[]).forEach(function(s){
+      people.push({
+        id:s.id,
+        _type:"invite",
+        display_name:s.to_name||s.to_email||"Invited",
+        to_email:s.to_email,
+        avatar_color:_avColor(s.to_name||s.to_email||""),
+        created_at:s.sent_at,
+        relationship:null,
+      });
+    });
+    (fr.named_only||[]).forEach(function(n){
+      people.push({
+        id:n.id,
+        _type:"named_only",
+        display_name:n.display_name,
+        relationship:n.relationship,
+        notes:n.notes,
+        avatar_color:n.avatar_color||_avColor(n.display_name||""),
+        created_at:n.created_at,
+      });
+    });
+    _allPeople=people;
 
-    if(fam.length){
-      var fhtml="";
-      fam.forEach(function(m,i){fhtml+=_famCard(m,i);});
-      _ht("family-list",fhtml);
+    document.getElementById("loading-state").style.display="none";
+    if(people.length===0){
+      document.getElementById("empty-state").style.display="";
     }else{
-      _ht("family-list","<div style='padding:20px 0;color:var(--ink-mute);font-size:13px;'>No family members linked yet.</div>");
+      document.getElementById("populated-state").style.display="";
+      renderList();
     }
-
-    if(groups.length){
-      document.getElementById("groups-section").style.display="";
-      _st("groups-count",groups.length);
-      var ghtml="";
-      groups.forEach(function(g,i){ghtml+=_grpCard(g,i);});
-      _ht("groups-list",ghtml);
-    }else{
-      document.getElementById("groups-section").style.display="none";
-    }
-  }catch(e){console.error(e);}
+  }catch(e){
+    document.getElementById("loading-state").style.display="none";
+    console.error(e);
+  }
 }
 
+/* ── Add modal ── */
+function openAddModal(tab){
+  switchTab(tab||"find");
+  document.getElementById("add-modal-overlay").classList.add("open");
+  // clear fields
+  ["up-search-input","email-inv-email","email-inv-name","name-only-name","name-only-notes"].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value="";
+  });
+  ["email-inv-rel","name-only-rel"].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.selectedIndex=0;
+  });
+  _ht("up-results","");
+  ["find-error","email-inv-error","name-only-error"].forEach(function(id){
+    var el=document.getElementById(id);if(el){el.style.display="none";el.textContent="";}
+  });
+}
+function closeAddModal(){
+  document.getElementById("add-modal-overlay").classList.remove("open");
+}
+function switchTab(tab){
+  ["find","email","name"].forEach(function(t){
+    document.getElementById("tab-"+t).classList.toggle("active",t===tab);
+    document.getElementById("tab-"+t+"-btn").classList.toggle("active",t===tab);
+  });
+  if(tab==="find")setTimeout(function(){var el=document.getElementById("up-search-input");if(el)el.focus();},60);
+}
+
+/* ── UniProfile search ── */
+function scheduleUpSearch(){
+  clearTimeout(_upSearchTimer);
+  _upSearchTimer=setTimeout(searchUniProfile,300);
+}
+async function searchUniProfile(){
+  var q=(document.getElementById("up-search-input")||{}).value||"";
+  q=q.trim();
+  var resultEl=document.getElementById("up-results");
+  var errEl=document.getElementById("find-error");
+  errEl.style.display="none";
+  if(q.length<2){_ht("up-results","");return;}
+  _ht("up-results","<div style='font-size:12px;color:var(--ink-mute);padding:8px 0;'>Searching…</div>");
+  try{
+    var res=await _req("GET","/api/v1/people/search-uniprofile?q="+encodeURIComponent(q));
+    if(!res||!res.length){_ht("up-results","<div style='font-size:12px;color:var(--ink-mute);padding:8px 0;'>No results.</div>");return;}
+    var html=res.map(function(r){
+      var name=_esc(r.display_name||"UniProfile User");
+      var sub=_esc(r.up_id||"")+(r.joined_year?" · joined "+r.joined_year:"");
+      var color=_avColor(r.display_name||"");
+      var ini=_ini(r.display_name||"");
+      var uid=_esc(r.member_uuid||"");
+      return '<div class="up-result">'
+        +'<div class="avatar avatar-44 av-'+color+'">'+ini+'</div>'
+        +'<div class="up-result-body"><div class="up-result-name">'+name+'</div><div class="up-result-sub">'+sub+'</div></div>'
+        +'<button class="btn btn-secondary btn-sm" onclick="showAddLinkedConfirm(\''+uid+'\',\''+name+'\')">Add</button>'
+        +'</div>';
+    }).join("");
+    _ht("up-results",html);
+  }catch(e){
+    _ht("up-results","");
+    if(e.message&&e.message.includes("429")){errEl.textContent="Too many searches — please wait a moment.";errEl.style.display="block";}
+    else{errEl.textContent="Search failed. Please try again.";errEl.style.display="block";}
+  }
+}
+
+var _pendingLinkedUuid=null;
+function showAddLinkedConfirm(memberUuid,memberName){
+  _pendingLinkedUuid=memberUuid;
+  var resultEl=document.getElementById("up-results");
+  var html='<div class="rel-confirm">'
+    +'<div style="font-size:13px;font-weight:500;margin-bottom:10px;">Adding '+memberName+'</div>'
+    +'<div class="form-field"><label class="form-label">Relationship <span style="font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>'
+    +'<select class="form-input" id="linked-rel"><option value="">— None —</option><option>Partner or spouse</option><option>Parent</option><option>Child</option><option>Sibling</option><option>Other family</option><option>Friend</option><option>Colleague</option><option>Other</option></select></div>'
+    +'<div class="form-actions"><button class="btn btn-primary btn-sm" id="linked-confirm-btn" onclick="addLinked()">Add person</button>'
+    +'<button class="btn btn-secondary btn-sm" onclick="scheduleUpSearch()">Back</button></div>'
+    +'<div id="linked-error" class="form-error"></div>'
+    +'</div>';
+  document.getElementById("up-results").innerHTML=html;
+}
+async function addLinked(){
+  if(!_pendingLinkedUuid)return;
+  var btn=document.getElementById("linked-confirm-btn");
+  btn.disabled=true;btn.textContent="Adding…";
+  var errEl=document.getElementById("linked-error");
+  errEl.style.display="none";
+  try{
+    await _req("POST","/api/v1/family/"+_uid+"/invite",{target_uuid:_pendingLinkedUuid});
+    closeAddModal();
+    showToast("Person added.");
+    await peopleRefresh();
+  }catch(e){
+    errEl.textContent="Failed to add: "+(e.message||"Please try again.");errEl.style.display="block";
+    btn.disabled=false;btn.textContent="Add person";
+  }
+}
+
+/* ── Email invite ── */
+async function sendEmailInvite(){
+  var email=(document.getElementById("email-inv-email")||{}).value||"";
+  var name=(document.getElementById("email-inv-name")||{}).value||"";
+  var rel=(document.getElementById("email-inv-rel")||{}).value||"";
+  var msg=(document.getElementById("email-inv-msg")||{}).value||"";
+  var errEl=document.getElementById("email-inv-error");
+  errEl.style.display="none";
+  if(!email||!email.includes("@")){errEl.textContent="Enter a valid email address.";errEl.style.display="block";return;}
+  if(!name.trim()){errEl.textContent="Enter a display name.";errEl.style.display="block";return;}
+  var btn=document.getElementById("email-inv-btn");
+  btn.disabled=true;btn.textContent="Sending…";
+  try{
+    await _req("POST","/api/v1/family/"+_uid+"/invite",{email:email.trim(),displayName:name.trim(),relationship:rel||null,message:msg||null});
+    closeAddModal();
+    showToast("Invite sent to "+email+".");
+    await peopleRefresh();
+  }catch(e){
+    errEl.textContent="Failed: "+(e.message||"Please try again.");errEl.style.display="block";
+    btn.disabled=false;btn.textContent="Send invite";
+  }
+}
+
+/* ── Named-only ── */
+async function addNamedOnly(){
+  var name=(document.getElementById("name-only-name")||{}).value||"";
+  var rel=(document.getElementById("name-only-rel")||{}).value||"";
+  var notes=(document.getElementById("name-only-notes")||{}).value||"";
+  var errEl=document.getElementById("name-only-error");
+  errEl.style.display="none";
+  if(!name.trim()){errEl.textContent="Enter a display name.";errEl.style.display="block";return;}
+  var btn=document.getElementById("name-only-btn");
+  btn.disabled=true;btn.textContent="Adding…";
+  try{
+    await _req("POST","/api/v1/people/named-only",{display_name:name.trim(),relationship:rel||null,notes:notes||null});
+    closeAddModal();
+    showToast(name.trim()+" added.");
+    await peopleRefresh();
+  }catch(e){
+    errEl.textContent="Failed: "+(e.message||"Please try again.");errEl.style.display="block";
+    btn.disabled=false;btn.textContent="Add person";
+  }
+}
+
+/* ── Edit (named-only) ── */
+function openEditModal(id){
+  document.querySelectorAll(".kebab-menu.open").forEach(function(m){m.classList.remove("open");});
+  var p=_allPeople.find(function(x){return x.id===id;});
+  if(!p||p._type!=="named_only"){showToast("Only named-only entries can be edited here.");return;}
+  _editingId=id;
+  document.getElementById("edit-name").value=p.display_name||"";
+  document.getElementById("edit-notes").value=p.notes||"";
+  var rel=document.getElementById("edit-rel");
+  rel.value="";
+  for(var i=0;i<rel.options.length;i++){if(rel.options[i].value===p.relationship||rel.options[i].text===p.relationship){rel.selectedIndex=i;break;}}
+  var errEl=document.getElementById("edit-error");errEl.style.display="none";errEl.textContent="";
+  document.getElementById("edit-modal-overlay").classList.add("open");
+  setTimeout(function(){document.getElementById("edit-name").focus();},60);
+}
+function closeEditModal(){
+  document.getElementById("edit-modal-overlay").classList.remove("open");
+  _editingId=null;
+}
+async function saveEdit(){
+  var name=(document.getElementById("edit-name")||{}).value||"";
+  var rel=(document.getElementById("edit-rel")||{}).value||"";
+  var notes=(document.getElementById("edit-notes")||{}).value||"";
+  var errEl=document.getElementById("edit-error");errEl.style.display="none";
+  if(!name.trim()){errEl.textContent="Display name is required.";errEl.style.display="block";return;}
+  var btn=document.getElementById("edit-save-btn");btn.disabled=true;btn.textContent="Saving…";
+  try{
+    await _req("PATCH","/api/v1/people/named-only/"+_editingId,{display_name:name.trim(),relationship:rel||null,notes:notes||null});
+    closeEditModal();
+    showToast("Saved.");
+    await peopleRefresh();
+  }catch(e){
+    errEl.textContent="Failed: "+(e.message||"Please try again.");errEl.style.display="block";
+    btn.disabled=false;btn.textContent="Save";
+  }
+}
+
+/* ── Remove ── */
+function openRemoveConfirm(id,type,name){
+  document.querySelectorAll(".kebab-menu.open").forEach(function(m){m.classList.remove("open");});
+  _removingId=id;_removingType=type;
+  _st("remove-confirm-body","Remove "+name+" from your People list? This cannot be undone.");
+  document.getElementById("remove-overlay").classList.add("open");
+}
+function closeRemoveConfirm(){
+  document.getElementById("remove-overlay").classList.remove("open");
+  _removingId=null;_removingType=null;
+}
+async function confirmRemove(){
+  var btn=document.getElementById("remove-confirm-btn");btn.disabled=true;btn.textContent="Removing…";
+  try{
+    if(_removingType==="named_only"){
+      await _req("DELETE","/api/v1/people/named-only/"+_removingId,null);
+    }else if(_removingType==="invite"){
+      // family invite — use existing family endpoint pattern
+      await _req("DELETE","/api/v1/family/"+_uid+"/invite/"+_removingId,null);
+    }else{
+      // linked — use existing family endpoint pattern
+      await _req("DELETE","/api/v1/family/"+_uid+"/link/"+_removingId,null);
+    }
+    closeRemoveConfirm();
+    showToast("Removed.");
+    await peopleRefresh();
+  }catch(e){
+    showToast("Failed to remove: "+(e.message||"Please try again."));
+    btn.disabled=false;btn.textContent="Remove";
+  }
+}
+
+/* ── Init ── */
 async function peopleInit(){
   if(!await _auth())return;
   await peopleRefresh();
