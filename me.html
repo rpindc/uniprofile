@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,300;9..144,0,400;9..144,1,300;9..144,1,400&family=Inter+Tight:wght@400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/components/mobile-drawer.css">
+<link rel="stylesheet" href="/components/country-picker.css">
 <style>
 :root{
   --ink:#1a1a1a;--ink-soft:#4a4a48;--ink-mute:#8a8a86;--ink-faint:#b8b8b3;
@@ -341,7 +342,13 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
         <div class="form-field"><label class="form-label">Display name <span style="text-transform:none;letter-spacing:0;font-size:11px;font-style:italic;font-weight:400">— how you appear to people you invite</span></label><input class="form-input" id="edit-display-name" placeholder="e.g. Rommel"/></div>
         <div class="form-row">
           <div class="form-field"><label class="form-label">Date of birth</label><input class="form-input" type="date" id="edit-dob"/></div>
-          <div class="form-field"><label class="form-label">Nationality</label><input class="form-input" id="edit-nationality" placeholder="US" maxlength="2" style="text-transform:uppercase"/></div>
+          <div class="form-field"><label class="form-label">Nationality</label>
+            <div class="cp-wrap">
+              <input type="text" class="form-input cp-search" id="edit-nationality-search" placeholder="Search country…" autocomplete="off">
+              <input type="hidden" id="edit-nationality">
+              <ul class="cp-dropdown" role="listbox"></ul>
+            </div>
+          </div>
         </div>
         <div class="form-row">
           <div class="form-field"><label class="form-label">Gender (passport)</label>
@@ -385,7 +392,11 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
             </div>
             <div class="form-field">
               <label class="form-label">Issuing country</label>
-              <input class="form-input" id="psp-country" placeholder="US" maxlength="2" style="text-transform:uppercase"/>
+              <div class="cp-wrap">
+                <input type="text" class="form-input cp-search" id="psp-country-search" placeholder="Search country…" autocomplete="off">
+                <input type="hidden" id="psp-country">
+                <ul class="cp-dropdown" role="listbox"></ul>
+              </div>
             </div>
           </div>
           <div id="psp-save-err" class="save-err"></div>
@@ -461,7 +472,11 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
             </div>
             <div class="form-field">
               <label class="form-label">Issuing country</label>
-              <input class="form-input" id="dl-country" placeholder="US" maxlength="2" style="text-transform:uppercase"/>
+              <div class="cp-wrap">
+                <input type="text" class="form-input cp-search" id="dl-country-search" placeholder="Search country…" autocomplete="off">
+                <input type="hidden" id="dl-country">
+                <ul class="cp-dropdown" role="listbox"></ul>
+              </div>
             </div>
           </div>
           <div class="form-field">
@@ -1163,14 +1178,32 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
         <option value="OCI_CARD">OCI Card</option>
       </select>
     </div>
-    <div class="form-field"><label class="form-label">Document number</label><input class="form-input" id="doc-number" placeholder="e.g. A12345678" autocomplete="off"/></div>
+    <div class="form-field">
+      <label class="form-label">Document number</label>
+      <input class="form-input" id="doc-number" placeholder="e.g. A12345678" autocomplete="off"/>
+      <div class="field-hint">Letters and digits, 6–15 characters</div>
+      <div class="field-error" id="doc-number-err"></div>
+    </div>
     <div class="form-row">
-      <div class="form-field"><label class="form-label">Expiry date</label><input class="form-input" type="date" id="doc-expiry"/></div>
-      <div class="form-field"><label class="form-label">Issuing country</label><input class="form-input" id="doc-country" placeholder="US" maxlength="2" style="text-transform:uppercase"/></div>
+      <div class="form-field">
+        <label class="form-label">Expiry date</label>
+        <input class="form-input" type="date" id="doc-expiry"/>
+        <div class="field-hint">Must be in the future</div>
+        <div class="field-error" id="doc-expiry-err"></div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Issuing country</label>
+        <div class="cp-wrap">
+          <input type="text" class="form-input cp-search" id="doc-country-search" placeholder="Search country…" autocomplete="off">
+          <input type="hidden" id="doc-country">
+          <ul class="cp-dropdown" role="listbox"></ul>
+        </div>
+        <div class="field-error" id="doc-country-err"></div>
+      </div>
     </div>
     <div id="doc-modal-error" class="form-error"></div>
     <div style="display:flex;gap:8px;margin-top:18px">
-      <button class="btn btn-primary btn-sm" id="doc-submit-btn" onclick="submitDoc()">Add document</button>
+      <button class="btn btn-primary btn-sm" id="doc-submit-btn" disabled onclick="submitDoc()">Add document</button>
       <button class="btn btn-secondary btn-sm" onclick="closeDocModal()">Cancel</button>
     </div>
   </div>
@@ -1225,6 +1258,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 <div class="toast" id="toast"></div>
 
 <script src="/components/mobile-drawer.js"></script>
+<script src="/components/country-picker.js"></script>
 <script>
 var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
@@ -1232,6 +1266,7 @@ var _CID="2heljmdli4f9cv2i4m0i020mfc";
 var _tok=null,_prof=null,_uid=null;
 var _docsMap={},_editingDocId=null;
 var _loyaltyMap={},_editingLoyaltyId=null;
+var _pickers={};
 var _saveTimers={};
 var _TABS=["identity","how-you-travel","business"];
 
@@ -1394,7 +1429,7 @@ function _renderLegalIdCard(p){
   _setval("edit-first",id.legal_first);_setval("edit-middle",id.legal_middle);_setval("edit-last",id.legal_last);
   _setval("edit-display-name",p.display_name);
   _setval("edit-dob",id.dob?id.dob.slice(0,10):"");
-  _setval("edit-nationality",id.nationality);_setval("edit-gender",id.gender_code);_setval("edit-home-airport",id.home_airport);
+  if(_pickers["edit-nationality"])_pickers["edit-nationality"].setValue(id.nationality||"");_setval("edit-gender",id.gender_code);_setval("edit-home-airport",id.home_airport);
   // Wire auto-save
   ["edit-first","edit-middle","edit-last","edit-display-name","edit-dob","edit-nationality","edit-home-airport"].forEach(function(fid){
     var el=document.getElementById(fid);if(el)el.onchange=function(){_debounce("identity",_autoSaveIdentity,500);};
@@ -1745,23 +1780,61 @@ function _renderLoyaltyCard(p){
 }
 
 /* ── Document modal ── */
+function _clearDocErrors(){
+  _fieldErr("doc-number","doc-number-err","");
+  _fieldErr("doc-expiry","doc-expiry-err","");
+  _fieldErr("doc-country","doc-country-err","");
+  _showErr("doc-modal-error","");
+}
 function openAddDoc(){
   _editingDocId=null;
-  _st("doc-modal-title","Add a document");_st("doc-submit-btn","Add document");
-  ["doc-type","doc-number","doc-expiry","doc-country"].forEach(function(id){_setval(id,"");});
-  _showErr("doc-modal-error","");
+  _st("doc-modal-title","Add a document");
+  var btn=document.getElementById("doc-submit-btn");
+  if(btn){btn.textContent="Add document";btn.disabled=true;}
+  ["doc-type","doc-number","doc-expiry"].forEach(function(id){_setval(id,"");});
+  if(_pickers["doc-country"])_pickers["doc-country"].setValue("");
+  _clearDocErrors();
   document.getElementById("doc-modal").classList.add("open");
 }
 function openEditDocById(id){
   var d=_docsMap[id];if(!d)return;
   _editingDocId=id;
-  _st("doc-modal-title","Edit document");_st("doc-submit-btn","Save changes");
+  _st("doc-modal-title","Edit document");
+  var btn=document.getElementById("doc-submit-btn");
+  if(btn)btn.textContent="Save changes";
   _setval("doc-type",d.doc_type);_setval("doc-number",d.doc_number);
-  _setval("doc-expiry",d.expiry_date?d.expiry_date.slice(0,10):"");_setval("doc-country",d.issuing_country);
-  _showErr("doc-modal-error","");
+  _setval("doc-expiry",d.expiry_date?d.expiry_date.slice(0,10):"");
+  if(_pickers["doc-country"])_pickers["doc-country"].setValue(d.issuing_country||"");
+  _clearDocErrors();
+  _validateDocForm();
   document.getElementById("doc-modal").classList.add("open");
 }
 function closeDocModal(){document.getElementById("doc-modal").classList.remove("open");}
+function _fieldErr(inputId,errId,msg){
+  var inp=document.getElementById(inputId);var err=document.getElementById(errId);
+  if(inp)inp.classList.toggle("has-error",!!msg);
+  if(err){err.textContent=msg;err.classList.toggle("show",!!msg);}
+}
+function _validateDocForm(){
+  var type=_val("doc-type"),num=_val("doc-number").trim(),expiry=_val("doc-expiry"),country=_val("doc-country");
+  var today=new Date().toISOString().slice(0,10);
+  var ok=true;
+  if(num&&!/^[A-Z0-9]{6,15}$/i.test(num)){_fieldErr("doc-number","doc-number-err","Letters and digits, 6–15 characters.");ok=false;}
+  else{_fieldErr("doc-number","doc-number-err","");}
+  if(!num)ok=false;
+  if(expiry&&expiry<=today){_fieldErr("doc-expiry","doc-expiry-err","Expiry date must be in the future.");ok=false;}
+  else{_fieldErr("doc-expiry","doc-expiry-err","");}
+  if(!expiry)ok=false;
+  if(!country)ok=false;
+  if(!type)ok=false;
+  var btn=document.getElementById("doc-submit-btn");if(btn)btn.disabled=!ok;
+}
+function _initDocModal(){
+  var dt=document.getElementById("doc-type");if(dt)dt.addEventListener("change",_validateDocForm);
+  var dn=document.getElementById("doc-number");if(dn)dn.addEventListener("input",function(){_debounce("docnum",_validateDocForm,300);});
+  var de=document.getElementById("doc-expiry");if(de)de.addEventListener("change",_validateDocForm);
+  var dc=document.getElementById("doc-country");if(dc)dc.addEventListener("change",_validateDocForm);
+}
 async function submitDoc(){
   var type=_val("doc-type"),num=_val("doc-number").trim(),expiry=_val("doc-expiry"),country=_val("doc-country").trim().toUpperCase();
   if(!type){_showErr("doc-modal-error","Please select a document type.");return;}
@@ -1839,11 +1912,11 @@ function _prefillPassport(){
   var passport=Object.values(_docsMap).find(function(d){return d.doc_type==="PASSPORT";});
   _setval("psp-number",passport?passport.doc_number:"");
   _setval("psp-expiry",passport&&passport.expiry_date?passport.expiry_date.slice(0,10):"");
-  _setval("psp-country",passport?passport.issuing_country:"");
+  if(_pickers["psp-country"])_pickers["psp-country"].setValue(passport?passport.issuing_country||"":"");
   _showErr("psp-save-err","");
   ["psp-number","psp-expiry","psp-country"].forEach(function(fid){
     var el=document.getElementById(fid);
-    if(el)el.onchange=function(){_debounce("passport",_autoSavePassport,500);};
+    if(el)el.addEventListener("change",function(){_debounce("passport",_autoSavePassport,500);});
   });
 }
 async function _autoSavePassport(){
@@ -1866,12 +1939,12 @@ async function _autoSavePassport(){
 function _prefillDriversLicense(){
   var dl=Object.values(_docsMap).find(function(d){return d.doc_type==="DRIVERS_LICENSE";});
   _setval("dl-number",dl?dl.doc_number:"");
-  _setval("dl-country",dl?dl.issuing_country:"");
+  if(_pickers["dl-country"])_pickers["dl-country"].setValue(dl?dl.issuing_country||"":"");
   _setval("dl-expiry",dl&&dl.expiry_date?dl.expiry_date.slice(0,10):"");
   _showErr("dl-save-err","");
   ["dl-number","dl-country","dl-expiry"].forEach(function(fid){
     var el=document.getElementById(fid);
-    if(el)el.onchange=function(){_debounce("drivers",_autoSaveDriversLicense,500);};
+    if(el)el.addEventListener("change",function(){_debounce("drivers",_autoSaveDriversLicense,500);});
   });
 }
 async function _autoSaveDriversLicense(){
@@ -1924,10 +1997,13 @@ function _renderInlineDocList(containerId,typeFilter){
 /* ── Open doc modal pre-typed ── */
 function openAddDocType(defaultType){
   _editingDocId=null;
-  _st("doc-modal-title","Add a document");_st("doc-submit-btn","Add document");
-  ["doc-number","doc-expiry","doc-country"].forEach(function(id){_setval(id,"");});
+  _st("doc-modal-title","Add a document");
+  var btn=document.getElementById("doc-submit-btn");
+  if(btn){btn.textContent="Add document";btn.disabled=true;}
+  ["doc-number","doc-expiry"].forEach(function(id){_setval(id,"");});
+  if(_pickers["doc-country"])_pickers["doc-country"].setValue("");
   _setval("doc-type",defaultType||"");
-  _showErr("doc-modal-error","");
+  _clearDocErrors();
   document.getElementById("doc-modal").classList.add("open");
 }
 
@@ -2296,6 +2372,14 @@ async function meInit(){
   if(!await _auth())return;
   _initTabFromHash();
   _initAccessibility();
+  // Country pickers
+  if(typeof initCountryPicker==="function"){
+    _pickers["doc-country"]=initCountryPicker("doc-country-search","doc-country");
+    _pickers["psp-country"]=initCountryPicker("psp-country-search","psp-country");
+    _pickers["dl-country"]=initCountryPicker("dl-country-search","dl-country");
+    _pickers["edit-nationality"]=initCountryPicker("edit-nationality-search","edit-nationality");
+  }
+  _initDocModal();
   await meRefresh();
 }
 meInit();
