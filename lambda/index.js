@@ -75,7 +75,7 @@ function validateUpId(id){
 }
 /* ─────────────────────────────────────────────────────────────────────────── */
 const ORIGINS=["https://www.uniprofile.net","https://main.d3dngzji06baij.amplifyapp.com","http://localhost:3000","http://localhost:5173"];
-const cors=(o)=>{const a=ORIGINS.includes(o)?o:ORIGINS[0];return{"Content-Type":"application/json","Access-Control-Allow-Origin":a,"Access-Control-Allow-Headers":"Content-Type,Authorization,x-uniprofile-key","Access-Control-Allow-Methods":"GET,POST,PUT,DELETE,OPTIONS","Access-Control-Allow-Credentials":"true"};};
+const cors=(o)=>{const a=ORIGINS.includes(o)?o:ORIGINS[0];return{"Content-Type":"application/json","Access-Control-Allow-Origin":a,"Access-Control-Allow-Headers":"Content-Type,Authorization,x-uniprofile-key","Access-Control-Allow-Methods":"GET,POST,PUT,PATCH,DELETE,OPTIONS","Access-Control-Allow-Credentials":"true"};};
 const go=(e)=>(e.headers&&(e.headers.origin||e.headers.Origin))||"";
 const ok=(b,e,s=200)=>({statusCode:s,headers:cors(go(e)),body:JSON.stringify(b)});
 const err=(m,e,s=400)=>({statusCode:s,headers:cors(go(e)),body:JSON.stringify({error:m})});
