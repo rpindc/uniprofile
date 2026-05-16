@@ -18,6 +18,7 @@ frontend:
       - people.html
       - groups.html
       - trips.html
+      - trip.html
       - privacy.html
       - icons.html
       - components/**/*
