@@ -722,7 +722,7 @@ exports.handler=async function(event){
       if(_searchRL[myUuid].length>=30)return{statusCode:429,headers:cors(go(event)),body:JSON.stringify({error:"Too many requests"})};
       _searchRL[myUuid].push(now);
       // Log for abuse detection
-      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata,ip,user_agent) VALUES(:u,'people_search',:m,:ip,:ua)",
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata,ip,user_agent) VALUES(:u,'people_search',:m::jsonb,:ip,:ua)",
         [uuidParam("u",myUuid),strParam("m",JSON.stringify({q})),strParam("ip",(event.requestContext&&event.requestContext.identity&&event.requestContext.identity.sourceIp)||null),strParam("ua",(event.headers&&(event.headers["User-Agent"]||event.headers["user-agent"]))||null)]);
       const isUpId=/^UP-[A-Z0-9]{4}-[A-Z0-9]{4}$/i.test(q.trim());
       let rows=[];
@@ -744,7 +744,7 @@ exports.handler=async function(event){
       const rows=await sql("INSERT INTO people_named_only(owner_uuid,display_name,relationship,notes,avatar_color) VALUES(:u,:dn,:rel,:notes,:color) RETURNING id,display_name,relationship,notes,avatar_color,created_at",
         [uuidParam("u",myUuid),strParam("dn",dn),strParam("rel",(relationship||"").slice(0,40)||null),strParam("notes",(notes||"").slice(0,2000)||null),strParam("color",color)]);
       const row=rows[0];
-      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'person_added_named_only',:m)",
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'person_added_named_only',:m::jsonb)",
         [uuidParam("u",myUuid),strParam("m",JSON.stringify({named_only_id:row.id,display_name:row.display_name}))]);
       return{statusCode:201,headers:cors(go(event)),body:JSON.stringify(row)};
     }
@@ -772,7 +772,7 @@ exports.handler=async function(event){
       const rows=await sql("DELETE FROM people_named_only WHERE id=:id AND owner_uuid=:u RETURNING display_name",
         [uuidParam("id",noId),uuidParam("u",myUuid)]);
       if(!rows||!rows.length)return err("Not found",event,404);
-      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'person_removed_named_only',:m)",
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'person_removed_named_only',:m::jsonb)",
         [uuidParam("u",myUuid),strParam("m",JSON.stringify({named_only_id:noId,display_name:rows[0].display_name}))]);
       return ok({success:true},event);
     }
@@ -802,7 +802,7 @@ exports.handler=async function(event){
       }
       await sql("INSERT INTO traveler_groups(id,owner_uuid,name,type,destination,trip_id,members,flights,hotel,notes) VALUES(:id,:u,:name,'trip',:dest,:tid,:members::jsonb,'[]'::jsonb,NULL,'[]'::jsonb)",
         [strParam("id",groupId),uuidParam("u",myUuid),strParam("name",groupName),strParam("dest",trip.destination_iata||null),uuidParam("tid",tripId),strParam("members",JSON.stringify(members))]);
-      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_created',:m)",
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_created',:m::jsonb)",
         [uuidParam("u",myUuid),strParam("m",JSON.stringify({trip_group_id:groupId,trip_id:tripId}))]);
       return{statusCode:201,headers:cors(go(event)),body:JSON.stringify({id:groupId,name:groupName,members,trip_id:tripId})};
     }
@@ -895,7 +895,7 @@ exports.handler=async function(event){
       }
       members.push({id:memberId,kind,named_only_id:namedId,linked_uuid:linkedId,display_name:memberName,role:'member',avatar_color:color});
       await sql("UPDATE traveler_groups SET members=:m::jsonb,updated_at=NOW() WHERE id=:id",[strParam("m",JSON.stringify(members)),strParam("id",groupId)]);
-      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_member_added',:m2)",
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_member_added',:m2::jsonb)",
         [uuidParam("u",myUuid),strParam("m2",JSON.stringify({trip_group_id:groupId,member_kind:kind,member_id:memberId}))]);
       return{statusCode:201,headers:cors(go(event)),body:JSON.stringify({id:memberId,kind,named_only_id:namedId,linked_uuid:linkedId,display_name:memberName,avatar_color:color})};
     }
@@ -913,7 +913,7 @@ exports.handler=async function(event){
       const updated=members.filter(function(m){return m.id!==memberId;});
       if(updated.length===before)return err("Member not found",event,404);
       await sql("UPDATE traveler_groups SET members=:m::jsonb,updated_at=NOW() WHERE id=:id",[strParam("m",JSON.stringify(updated)),strParam("id",groupId)]);
-      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_member_removed',:m2)",
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_member_removed',:m2::jsonb)",
         [uuidParam("u",myUuid),strParam("m2",JSON.stringify({trip_group_id:groupId,member_kind:(removed||{}).kind,member_id:memberId}))]);
       return ok({success:true},event);
     }
@@ -939,7 +939,7 @@ exports.handler=async function(event){
       if(!document_type||!document_number||!issuing_country||!date_of_expiry)return err("document_type, document_number, issuing_country, date_of_expiry are required",event,400);
       const rows=await sql("INSERT INTO named_only_documents(named_only_id,document_type,document_number,issuing_country,surname,given_names,date_of_birth,date_of_issue,date_of_expiry,sex,nationality,notes) VALUES(:nid,:dtype,:dnum,:country,:sur,:given,:dob,:doi,:doe,:sex,:nat,:notes) RETURNING id,document_type,document_number,issuing_country,date_of_expiry,created_at",
         [uuidParam("nid",namedId),strParam("dtype",document_type),strParam("dnum",document_number),strParam("country",issuing_country.slice(0,3)),strParam("sur",surname||null),strParam("given",given_names||null),dateParam("dob",date_of_birth||null),dateParam("doi",date_of_issue||null),dateParam("doe",date_of_expiry),strParam("sex",sex||null),strParam("nat",nationality||null),strParam("notes",notes||null)]);
-      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'named_only_document_added',:m)",
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'named_only_document_added',:m::jsonb)",
         [uuidParam("u",myUuid),strParam("m",JSON.stringify({named_only_id:namedId,document_type}))]);
       return{statusCode:201,headers:cors(go(event)),body:JSON.stringify(rows[0])};
     }
@@ -989,7 +989,7 @@ exports.handler=async function(event){
       const scopes=Array.isArray(requested_scopes)&&requested_scopes.length?requested_scopes:["passport"];
       const rows=await sql("INSERT INTO trip_group_consents(trip_group_id,requester_uuid,target_uuid,status,requested_scopes,message) VALUES(:gid,:u,:tgt,'pending',:scopes::jsonb,:msg) RETURNING id",
         [strParam("gid",groupId),uuidParam("u",myUuid),uuidParam("tgt",target_uuid),strParam("scopes",JSON.stringify(scopes)),strParam("msg",message||null)]);
-      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_consent_requested',:m)",
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_consent_requested',:m::jsonb)",
         [uuidParam("u",myUuid),strParam("m",JSON.stringify({trip_group_id:groupId,target_uuid,scopes}))]);
       return{statusCode:201,headers:cors(go(event)),body:JSON.stringify({id:rows[0].id,status:'pending'})};
     }
@@ -1003,7 +1003,7 @@ exports.handler=async function(event){
       const rows=await sql("UPDATE trip_group_consents SET status='withdrawn',responded_at=NOW() WHERE id=:cid AND trip_group_id=:gid AND requester_uuid=:u AND status='pending' RETURNING id",
         [uuidParam("cid",consentId),strParam("gid",groupId),uuidParam("u",myUuid)]);
       if(!rows||!rows.length)return err("Consent not found or already resolved",event,404);
-      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_consent_withdrawn',:m)",
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_consent_withdrawn',:m::jsonb)",
         [uuidParam("u",myUuid),strParam("m",JSON.stringify({trip_group_id:groupId,consent_id:consentId}))]);
       return ok({success:true},event);
     }
