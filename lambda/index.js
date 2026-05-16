@@ -821,7 +821,7 @@ exports.handler=async function(event){
     if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+$/)&&!path.includes('/members')&&!path.includes('/consents')&&!path.includes('/readiness')&&!path.includes('/archive')){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
-      const groupId=path.split('/').filter(Boolean)[2];
+      const groupId=path.split('/').filter(Boolean)[3];
       const g=await validateTripGroupId(groupId,myUuid);
       const [groupRows,consents]=await Promise.all([
         sql("SELECT tg.*,tg.trip_id::text AS trip_id_str,t.trip_name,t.departure_date,t.return_date,t.destination_iata FROM traveler_groups tg LEFT JOIN trips t ON t.id=tg.trip_id WHERE tg.id=:id",[strParam("id",groupId)]),
@@ -835,7 +835,7 @@ exports.handler=async function(event){
     if(method==="PATCH"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+$/)&&!path.includes('/members')&&!path.includes('/consents')&&!path.includes('/readiness')&&!path.includes('/archive')){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
-      const groupId=path.split('/').filter(Boolean)[2];
+      const groupId=path.split('/').filter(Boolean)[3];
       await validateTripGroupId(groupId,myUuid);
       const {name,notes}=body;
       if(name){await sql("UPDATE traveler_groups SET name=:name,updated_at=NOW() WHERE id=:id AND owner_uuid=:u",[strParam("name",name.slice(0,120)),strParam("id",groupId),uuidParam("u",myUuid)]);}
@@ -845,7 +845,7 @@ exports.handler=async function(event){
     if(method==="DELETE"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+$/)&&!path.includes('/members')&&!path.includes('/consents')){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
-      const groupId=path.split('/').filter(Boolean)[2];
+      const groupId=path.split('/').filter(Boolean)[3];
       await validateTripGroupId(groupId,myUuid);
       await sql("DELETE FROM trip_group_consents WHERE trip_group_id=:id",[strParam("id",groupId)]);
       await sql("DELETE FROM traveler_groups WHERE id=:id AND owner_uuid=:u",[strParam("id",groupId),uuidParam("u",myUuid)]);
@@ -855,7 +855,7 @@ exports.handler=async function(event){
     if(method==="POST"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/archive$/)){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
-      const groupId=path.split('/').filter(Boolean)[2];
+      const groupId=path.split('/').filter(Boolean)[3];
       await validateTripGroupId(groupId,myUuid);
       await sql("UPDATE traveler_groups SET archived_at=NOW(),updated_at=NOW() WHERE id=:id AND owner_uuid=:u",[strParam("id",groupId),uuidParam("u",myUuid)]);
       return ok({success:true},event);
@@ -864,7 +864,7 @@ exports.handler=async function(event){
     if(method==="POST"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/members$/)){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
-      const groupId=path.split('/').filter(Boolean)[2];
+      const groupId=path.split('/').filter(Boolean)[3];
       await validateTripGroupId(groupId,myUuid);
       const {kind,named_only_id,linked_uuid,display_name,relationship}=body;
       if(!kind||!['named_only','linked'].includes(kind))return err("kind must be 'named_only' or 'linked'",event,400);
@@ -904,7 +904,7 @@ exports.handler=async function(event){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
       const parts=path.split('/').filter(Boolean);
-      const groupId=parts[2],memberId=parts[4];
+      const groupId=parts[3],memberId=parts[5];
       await validateTripGroupId(groupId,myUuid);
       const groupRows=await sql("SELECT members FROM traveler_groups WHERE id=:id",[strParam("id",groupId)]);
       const members=typeof groupRows[0].members==="string"?JSON.parse(groupRows[0].members):(groupRows[0].members||[]);
@@ -922,7 +922,7 @@ exports.handler=async function(event){
     if(method==="GET"&&path.match(/^\/api\/v1\/named-only\/[^/]+\/documents$/)){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
-      const namedId=path.split('/').filter(Boolean)[2];
+      const namedId=path.split('/').filter(Boolean)[3];
       const own=await sql("SELECT id FROM people_named_only WHERE id=:id AND owner_uuid=:u",[uuidParam("id",namedId),uuidParam("u",myUuid)]);
       if(!own||!own.length)return err("Not found",event,404);
       const docs=await sql("SELECT id,document_type,document_number,issuing_country,surname,given_names,date_of_birth,date_of_issue,date_of_expiry,sex,nationality,notes,created_at FROM named_only_documents WHERE named_only_id=:id ORDER BY created_at DESC",[uuidParam("id",namedId)]);
@@ -932,7 +932,7 @@ exports.handler=async function(event){
     if(method==="POST"&&path.match(/^\/api\/v1\/named-only\/[^/]+\/documents$/)){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
-      const namedId=path.split('/').filter(Boolean)[2];
+      const namedId=path.split('/').filter(Boolean)[3];
       const own=await sql("SELECT id FROM people_named_only WHERE id=:id AND owner_uuid=:u",[uuidParam("id",namedId),uuidParam("u",myUuid)]);
       if(!own||!own.length)return err("Not found",event,404);
       const {document_type,document_number,issuing_country,surname,given_names,date_of_birth,date_of_issue,date_of_expiry,sex,nationality,notes}=body;
@@ -973,7 +973,7 @@ exports.handler=async function(event){
     if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/consents$/)){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
-      const groupId=path.split('/').filter(Boolean)[2];
+      const groupId=path.split('/').filter(Boolean)[3];
       await validateTripGroupId(groupId,myUuid);
       const consents=await sql("SELECT id,target_uuid,status,requested_scopes,granted_scopes,message,requested_at,responded_at FROM trip_group_consents WHERE trip_group_id=:id ORDER BY requested_at DESC",[strParam("id",groupId)]);
       return ok(consents,event);
@@ -982,7 +982,7 @@ exports.handler=async function(event){
     if(method==="POST"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/consents$/)){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
-      const groupId=path.split('/').filter(Boolean)[2];
+      const groupId=path.split('/').filter(Boolean)[3];
       await validateTripGroupId(groupId,myUuid);
       const {target_uuid,requested_scopes,message}=body;
       if(!target_uuid)return err("target_uuid required",event,400);
@@ -998,7 +998,7 @@ exports.handler=async function(event){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
       const parts=path.split('/').filter(Boolean);
-      const groupId=parts[2],consentId=parts[4];
+      const groupId=parts[3],consentId=parts[5];
       await validateTripGroupId(groupId,myUuid);
       const rows=await sql("UPDATE trip_group_consents SET status='withdrawn',responded_at=NOW() WHERE id=:cid AND trip_group_id=:gid AND requester_uuid=:u AND status='pending' RETURNING id",
         [uuidParam("cid",consentId),strParam("gid",groupId),uuidParam("u",myUuid)]);
@@ -1012,7 +1012,7 @@ exports.handler=async function(event){
     if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/readiness$/)){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
-      const groupId=path.split('/').filter(Boolean)[2];
+      const groupId=path.split('/').filter(Boolean)[3];
       await validateTripGroupId(groupId,myUuid);
       const groupRows=await sql("SELECT tg.*,t.destination_iata,t.return_date FROM traveler_groups tg LEFT JOIN trips t ON t.id=tg.trip_id WHERE tg.id=:id",[strParam("id",groupId)]);
       const g=groupRows[0];
