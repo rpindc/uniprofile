@@ -1399,6 +1399,8 @@ function openComingSoon(){document.getElementById("coming-soon-modal").classList
 /* ── Label helpers ── */
 function _docLabel(t){var m={PASSPORT:"Passport",US_GREEN_CARD:"Permanent Resident Card",KTN:"Known Traveler No.",GLOBAL_ENTRY:"Global Entry",ESTA:"ESTA",VISA:"Visa",NEXUS:"NEXUS",SENTRI:"SENTRI",NATIONAL_ID:"National ID",DRIVERS_LICENSE:"Driver's License",BIRTH_CERTIFICATE:"Birth Certificate",MILITARY_ID:"Military ID",OCI_CARD:"OCI Card"};return m[t]||(t||"Document").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();});}
 function _fmt2(s){if(!s)return null;return new Date(s).toLocaleDateString("en-US",{month:"short",year:"numeric"});}
+function _flagHtml(a3){if(!a3||!window.CP)return'';var c=CP.byA3(a3)||(a3.length===2?CP.byA2(a3):null);if(!c)return'';var f=CP.flag(c.a2);return f?'<span style="font-size:1.1em;vertical-align:middle;margin-right:2px">'+f+'</span>':'';}
+function _esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function _mealLabel(c){return{VGML:"Vegan",AVML:"Asian vegetarian",RVML:"Vegetarian",VLML:"Vegetarian lacto",KSML:"Kosher",MOML:"Muslim",HNML:"Hindu",GFML:"Gluten-free",DBML:"Diabetic",LCML:"Low-calorie",LSML:"Low-sodium",BLML:"Bland",LFML:"Low-fat",BBML:"Child"}[c]||c;}
 function _seatLabel(v){return{WINDOW:"Window",AISLE:"Aisle",MIDDLE:"Middle"}[v]||v;}
 function _rowLabel(v){return{FRONT:"front of cabin",MIDDLE:"mid-cabin",BACK:"back of cabin",EXIT_ROW:"exit row",BULKHEAD:"bulkhead"}[v]||v;}
@@ -1474,7 +1476,7 @@ function _renderIdentityCards(p){
     var pillTxt=dr<0?"Expired":dr<=90?"Expiring soon":"Valid";
     _ht("passport-pill",_pill(pillCls,pillTxt));
     pb.className="card-item-body";
-    pb.textContent="Issued by "+(passport.issuing_country||"—")+(passport.expiry_date?". Expires "+_fmt2(passport.expiry_date)+".":".");
+    pb.innerHTML="Issued by "+_flagHtml(passport.issuing_country)+_esc(passport.issuing_country||"—")+(passport.expiry_date?". Expires "+_esc(_fmt2(passport.expiry_date))+".":".");
     if(pbtn)pbtn.textContent="Edit";
   }else{
     _ht("passport-pill",_pill("pill-neutral","Not set"));
@@ -1489,7 +1491,7 @@ function _renderIdentityCards(p){
   if(visaDocs.length){
     _ht("visa-pill",_pill("pill-green",visaDocs.length+" on file"));
     vb.className="card-item-body";
-    vb.textContent=visaDocs.map(function(d){return _docLabel(d.doc_type)+(d.issuing_country?" ("+d.issuing_country+")":'');}).join(", ")+".";
+    vb.innerHTML=visaDocs.map(function(d){return _esc(_docLabel(d.doc_type))+(d.issuing_country?' ('+_flagHtml(d.issuing_country)+_esc(d.issuing_country)+')':"");}).join(", ")+".";
     if(vbtn)vbtn.textContent="Edit";
   }else{
     _ht("visa-pill",_pill("pill-neutral","Not set"));
@@ -1520,7 +1522,7 @@ function _renderIdentityCards(p){
   if(license){
     _ht("drivers-pill",_pill("pill-green","On file"));
     db.className="card-item-body";
-    db.textContent="On file"+(license.issuing_country?" ("+license.issuing_country+")":'')+(license.expiry_date?". Expires "+_fmt2(license.expiry_date):".")+".";
+    db.innerHTML="On file"+(license.issuing_country?' ('+_flagHtml(license.issuing_country)+_esc(license.issuing_country)+')':"")+(license.expiry_date?". Expires "+_esc(_fmt2(license.expiry_date)):".")+".";
     if(dbtn)dbtn.textContent="Edit";
   }else{
     _ht("drivers-pill",_pill("pill-neutral","Not set"));
