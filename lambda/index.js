@@ -16,6 +16,40 @@ const numParam=(n,v)=>({name:n,value:v!=null?{doubleValue:Number(v)}:{isNull:tru
 const dateParam=(n,v)=>(v&&v!==''&&v!=='null')?{name:n,value:{stringValue:String(v)},typeHint:"DATE"}:{name:n,value:{isNull:true}};
 function avatarColorFromName(name){const c=['info','warm','cool','muted'];let h=0,s=(name||'').trim().toLowerCase();for(let i=0;i<s.length;i++)h=((h<<5)-h+s.charCodeAt(i))|0;return c[Math.abs(h)%4];}
 const _searchRL={};
+const RULES=require('./admissibility_rules.json');
+function generateGroupId(){const {randomBytes}=require('crypto');return 'GRP-'+String(randomBytes(3).readUInt32BE(0)%1000000).padStart(6,'0');}
+function generateMemberId(){return 'mbr-'+Date.now()+Math.floor(Math.random()*10000);}
+async function validateTripGroupId(groupId,ownerUuid){
+  const rows=await sql("SELECT id,trip_id,archived_at FROM traveler_groups WHERE id=:id AND owner_uuid=:u",[strParam("id",groupId),uuidParam("u",ownerUuid)]);
+  if(!rows||!rows.length)throw{status:404,message:"Trip Group not found"};
+  return rows[0];
+}
+function evaluateAdmissibility(docs,destinationIata,returnDate){
+  const entry=RULES[destinationIata];
+  if(!entry)return{destination:destinationIata,destination_name:destinationIata,checks:[],overall_status:'n/a',rule_source:'hardcoded_v1',disclaimer:RULES._meta.disclaimer};
+  const passport=docs.find(function(d){return(d.document_type||d.doc_type||'').toUpperCase()==='PASSPORT';});
+  const retDate=returnDate?new Date(returnDate):null;
+  const now=new Date();
+  const checks=[];let hasBlock=false,hasWarning=false;
+  for(const rule of entry.rules){
+    if(rule.type==='informational'){checks.push({id:rule.id,label:rule.label,status:'info',detail:rule.note});continue;}
+    if(!passport){checks.push({id:rule.id,label:rule.label,status:'failed',detail:'No passport on file'});hasBlock=true;continue;}
+    const expiry=new Date(passport.date_of_expiry||passport.expiry_date);
+    if(rule.type==='passport_validity_duration_only'){
+      const checkDate=retDate||now;
+      if(expiry<=checkDate){checks.push({id:rule.id,label:rule.label,status:'failed',detail:'Passport expires '+expiry.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' — before or on return date'});hasBlock=true;}
+      else{checks.push({id:rule.id,label:rule.label,status:'passed',detail:'Valid through '+expiry.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})});}
+    } else if(rule.type==='passport_validity_after_exit'){
+      const threshold=new Date(retDate||now);threshold.setMonth(threshold.getMonth()+(rule.min_months_after_exit||3));
+      if(expiry<threshold){
+        const detail='Passport expires '+expiry.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' — must be valid '+rule.min_months_after_exit+'+ months after return date';
+        if(expiry<=now){checks.push({id:rule.id,label:rule.label,status:'failed',detail});hasBlock=true;}
+        else{checks.push({id:rule.id,label:rule.label,status:'warning',detail});hasWarning=true;}
+      } else{checks.push({id:rule.id,label:rule.label,status:'passed',detail:'Valid through '+expiry.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})});}
+    }
+  }
+  return{destination:destinationIata,destination_name:entry.name,checks,overall_status:hasBlock?'blocked':hasWarning?'action_needed':'ready',rule_source:'hardcoded_v1',disclaimer:RULES._meta.disclaimer};
+}
 /* ── UniProfile ID — spec v1.0 ───────────────────────────────────────────── */
 const UP_ALPHABET='23456789ABCDEFGHJKMNPQRSTVWXYZ'; // 30 chars, no 0/O/1/I/L/U
 const UP_WEIGHTS=[2,3,5,7,11,13,17];
@@ -102,7 +136,7 @@ async function buildProfile(uuid){
     sql("SELECT s.trip_id,s.id,s.segment_type,s.segment_order,s.carrier,s.flight_number,s.origin_iata,s.destination_iata,s.departure_datetime,s.arrival_datetime,s.cabin_class,s.seat_number,s.booking_ref,s.duration_minutes,s.aircraft_type FROM trip_segments s INNER JOIN trips t ON t.id=s.trip_id WHERE t.traveler_uuid=:u ORDER BY s.trip_id,s.segment_order",p),
     sql("SELECT ps.trip_id,ps.passenger_name,ps.ticket_number,ps.seat_number,ps.is_primary FROM trip_passengers ps INNER JOIN trips t ON t.id=ps.trip_id WHERE t.traveler_uuid=:u ORDER BY ps.trip_id,ps.is_primary DESC",p),
     sql("SELECT code,label,category,sort_order,fields_required,fields_optional FROM document_types WHERE is_active=TRUE ORDER BY sort_order",[]),
-    sql("SELECT id,name,type,destination,dep::text,ret::text,members,flights,hotel,notes FROM traveler_groups WHERE owner_uuid=:u ORDER BY updated_at DESC",p),
+    sql("SELECT id,name,type,destination,dep::text,ret::text,members,flights,hotel,notes,trip_id::text,archived_at FROM traveler_groups WHERE owner_uuid=:u ORDER BY updated_at DESC",p),
     sql("SELECT module_name,data FROM traveler_profile_modules WHERE traveler_uuid=:u",p),
   ]);
   const [identity,docs,seat,meal,loyalty,bleisure,meta,payment,tripRows,segmentRows,passengerRows,docTypeRows,groupRows,moduleRows]=R;
@@ -124,14 +158,16 @@ async function buildProfile(uuid){
   segmentRows.forEach(s=>{if(!segsByTrip[s.trip_id])segsByTrip[s.trip_id]=[];segsByTrip[s.trip_id].push(s);});
   const paxByTrip={};
   passengerRows.forEach(p=>{if(!paxByTrip[p.trip_id])paxByTrip[p.trip_id]=[];paxByTrip[p.trip_id].push(p);});
+  const tripGroupMap={};
+  groupRows.forEach(function(g){if(g.trip_id)tripGroupMap[g.trip_id]=g.id;});
   const trips=tripRows.map(t=>{
     const dep=t.departure_date?new Date(t.departure_date):null;
     const ret=t.return_date?new Date(t.return_date):null;
     const daysUntil=dep?Math.floor((dep-now)/86400000):null;
     const status=!dep?"unknown":daysUntil>0?"upcoming":ret&&now<=ret?"in-progress":"completed";
-    return Object.assign({},t,{days_until:daysUntil,status,segments:segsByTrip[t.id]||[],passengers:paxByTrip[t.id]||[]});
+    return Object.assign({},t,{days_until:daysUntil,status,segments:segsByTrip[t.id]||[],passengers:paxByTrip[t.id]||[],trip_group_id:tripGroupMap[t.id]||null});
   });
-  const groups=groupRows.map(g=>({id:g.id,name:g.name,type:g.type,destination:g.destination,dep:g.dep,ret:g.ret,members:typeof g.members==="string"?JSON.parse(g.members):(g.members||[]),flights:typeof g.flights==="string"?JSON.parse(g.flights):(g.flights||[]),hotel:g.hotel?(typeof g.hotel==="string"?JSON.parse(g.hotel):g.hotel):null,notes:typeof g.notes==="string"?JSON.parse(g.notes):(g.notes||[])}));
+  const groups=groupRows.filter(function(g){return!g.trip_id;}).map(g=>({id:g.id,name:g.name,type:g.type,destination:g.destination,dep:g.dep,ret:g.ret,members:typeof g.members==="string"?JSON.parse(g.members):(g.members||[]),flights:typeof g.flights==="string"?JSON.parse(g.flights):(g.flights||[]),hotel:g.hotel?(typeof g.hotel==="string"?JSON.parse(g.hotel):g.hotel):null,notes:typeof g.notes==="string"?JSON.parse(g.notes):(g.notes||[])}));
   const profileModules={};
   moduleRows.forEach(r=>{try{profileModules[r.module_name]=typeof r.data==="string"?JSON.parse(r.data):r.data;}catch(e){profileModules[r.module_name]={};} });
   const _milestones=[
@@ -200,15 +236,9 @@ async function updateModule(uuid,module,data){
         throw {status:400,message:"action must be confirm or reject"};
       }
       break;
-    case "groups":{
-      const groups=Array.isArray(data.groups)?data.groups:[];
-      await sql("DELETE FROM traveler_groups WHERE owner_uuid=:u",[uuidParam("u",uuid)]);
-      for(const g of groups){
-        if(!g.id)continue;
-        await sql("INSERT INTO traveler_groups (id,owner_uuid,name,type,destination,dep,ret,members,flights,hotel,notes,updated_at) VALUES (:id,:u,:name,:type,:dest,:dep,:ret,:members::jsonb,:flights::jsonb,:hotel::jsonb,:notes::jsonb,NOW())",[strParam("id",g.id),uuidParam("u",uuid),strParam("name",g.name||""),strParam("type",g.type||"other"),strParam("dest",g.destination),dateParam("dep",g.dep),dateParam("ret",g.ret),strParam("members",JSON.stringify(g.members||[])),strParam("flights",JSON.stringify(g.flights||[])),strParam("hotel",g.hotel?JSON.stringify(g.hotel):null),strParam("notes",JSON.stringify(g.notes||[]))]);
-      }
+    case "groups":
+      // Bulk-replace path retired — groups are now managed via individual Trip Group endpoints
       break;
-    }
     case "trip_memory":{
       if(!data.trip_id)throw{status:400,message:"trip_id required"};
       const existing=await sql("SELECT notes FROM trips WHERE id=:tid AND traveler_uuid=:u",[uuidParam("tid",data.trip_id),uuidParam("u",uuid)]);
@@ -745,6 +775,278 @@ exports.handler=async function(event){
       await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'person_removed_named_only',:m)",
         [uuidParam("u",myUuid),strParam("m",JSON.stringify({named_only_id:noId,display_name:rows[0].display_name}))]);
       return ok({success:true},event);
+    }
+    // ── Trip Group Routes ─────────────────────────────────────────────────
+    // POST /api/v1/trips/{trip_uuid}/group — create Trip Group from a trip
+    if(method==="POST"&&path.match(/^\/api\/v1\/trips\/[^/]+\/group$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const tripId=parts[3];
+      const tripRows=await sql("SELECT id,trip_name,destination_iata,return_date FROM trips WHERE id=:tid AND traveler_uuid=:u",[uuidParam("tid",tripId),uuidParam("u",myUuid)]);
+      if(!tripRows||!tripRows.length)return err("Trip not found",event,404);
+      const trip=tripRows[0];
+      const existing=await sql("SELECT id FROM traveler_groups WHERE trip_id=:tid AND owner_uuid=:u",[uuidParam("tid",tripId),uuidParam("u",myUuid)]);
+      if(existing&&existing.length)return err("Trip Group already exists for this trip",event,409);
+      const groupId=generateGroupId();
+      const groupName=(body.name||(trip.trip_name||trip.destination_iata||'Trip')+' group').slice(0,120);
+      const selfMember={id:generateMemberId(),kind:'self',linked_uuid:myUuid,named_only_id:null,display_name:'You',role:'organizer',avatar_color:avatarColorFromName(myUuid)};
+      // Parse passengers from trip as named-only stubs
+      const passengerRows=await sql("SELECT passenger_name FROM trip_passengers WHERE trip_id=:tid AND is_primary=FALSE",[uuidParam("tid",tripId)]);
+      const members=[selfMember];
+      for(const pax of (passengerRows||[])){
+        if(!pax.passenger_name)continue;
+        const namedRows=await sql("INSERT INTO people_named_only(owner_uuid,display_name,avatar_color) VALUES(:u,:dn,:color) RETURNING id",
+          [uuidParam("u",myUuid),strParam("dn",pax.passenger_name.slice(0,120)),strParam("color",avatarColorFromName(pax.passenger_name))]);
+        if(namedRows&&namedRows[0])members.push({id:generateMemberId(),kind:'named_only',named_only_id:namedRows[0].id,linked_uuid:null,display_name:pax.passenger_name,role:'member',avatar_color:avatarColorFromName(pax.passenger_name)});
+      }
+      await sql("INSERT INTO traveler_groups(id,owner_uuid,name,type,destination,trip_id,members,flights,hotel,notes) VALUES(:id,:u,:name,'trip',:dest,:tid,:members::jsonb,'[]'::jsonb,NULL,'[]'::jsonb)",
+        [strParam("id",groupId),uuidParam("u",myUuid),strParam("name",groupName),strParam("dest",trip.destination_iata||null),uuidParam("tid",tripId),strParam("members",JSON.stringify(members))]);
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_created',:m)",
+        [uuidParam("u",myUuid),strParam("m",JSON.stringify({trip_group_id:groupId,trip_id:tripId}))]);
+      return{statusCode:201,headers:cors(go(event)),body:JSON.stringify({id:groupId,name:groupName,members,trip_id:tripId})};
+    }
+    // GET /api/v1/trip-groups — list all Trip Groups for the user
+    if(method==="GET"&&path==="/api/v1/trip-groups"){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const p=[uuidParam("u",myUuid)];
+      const rows=await sql("SELECT tg.id,tg.name,tg.destination,tg.trip_id::text,tg.archived_at,tg.created_at,tg.updated_at,tg.members,t.trip_name,t.departure_date,t.return_date,t.destination_iata FROM traveler_groups tg LEFT JOIN trips t ON t.id=tg.trip_id WHERE tg.owner_uuid=:u AND tg.trip_id IS NOT NULL ORDER BY tg.updated_at DESC",p);
+      return ok(rows.map(function(r){
+        const members=typeof r.members==="string"?JSON.parse(r.members):(r.members||[]);
+        return{id:r.id,name:r.name,destination:r.destination_iata||r.destination,destination_name:(RULES[r.destination_iata||'']||{}).name||r.destination,trip_id:r.trip_id,trip_name:r.trip_name,departure_date:r.departure_date,return_date:r.return_date,member_count:members.length,archived_at:r.archived_at,created_at:r.created_at,updated_at:r.updated_at};
+      }),event);
+    }
+    // GET /api/v1/trip-groups/{group_id}
+    if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+$/)&&!path.includes('/members')&&!path.includes('/consents')&&!path.includes('/readiness')&&!path.includes('/archive')){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[2];
+      const g=await validateTripGroupId(groupId,myUuid);
+      const [groupRows,consents]=await Promise.all([
+        sql("SELECT tg.*,tg.trip_id::text AS trip_id_str,t.trip_name,t.departure_date,t.return_date,t.destination_iata FROM traveler_groups tg LEFT JOIN trips t ON t.id=tg.trip_id WHERE tg.id=:id",[strParam("id",groupId)]),
+        sql("SELECT id,target_uuid,status,requested_scopes,granted_scopes,requested_at,responded_at FROM trip_group_consents WHERE trip_group_id=:id",[strParam("id",groupId)]),
+      ]);
+      const row=groupRows[0];
+      const members=typeof row.members==="string"?JSON.parse(row.members):(row.members||[]);
+      return ok({id:row.id,name:row.name,destination:row.destination_iata||row.destination,destination_name:(RULES[row.destination_iata||'']||{}).name||row.destination,trip_id:row.trip_id_str,trip_name:row.trip_name,departure_date:row.departure_date,return_date:row.return_date,archived_at:row.archived_at,members,consents},event);
+    }
+    // PATCH /api/v1/trip-groups/{group_id}
+    if(method==="PATCH"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+$/)&&!path.includes('/members')&&!path.includes('/consents')&&!path.includes('/readiness')&&!path.includes('/archive')){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[2];
+      await validateTripGroupId(groupId,myUuid);
+      const {name,notes}=body;
+      if(name){await sql("UPDATE traveler_groups SET name=:name,updated_at=NOW() WHERE id=:id AND owner_uuid=:u",[strParam("name",name.slice(0,120)),strParam("id",groupId),uuidParam("u",myUuid)]);}
+      return ok({success:true},event);
+    }
+    // DELETE /api/v1/trip-groups/{group_id}
+    if(method==="DELETE"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+$/)&&!path.includes('/members')&&!path.includes('/consents')){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[2];
+      await validateTripGroupId(groupId,myUuid);
+      await sql("DELETE FROM trip_group_consents WHERE trip_group_id=:id",[strParam("id",groupId)]);
+      await sql("DELETE FROM traveler_groups WHERE id=:id AND owner_uuid=:u",[strParam("id",groupId),uuidParam("u",myUuid)]);
+      return ok({success:true},event);
+    }
+    // POST /api/v1/trip-groups/{group_id}/archive
+    if(method==="POST"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/archive$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[2];
+      await validateTripGroupId(groupId,myUuid);
+      await sql("UPDATE traveler_groups SET archived_at=NOW(),updated_at=NOW() WHERE id=:id AND owner_uuid=:u",[strParam("id",groupId),uuidParam("u",myUuid)]);
+      return ok({success:true},event);
+    }
+    // POST /api/v1/trip-groups/{group_id}/members
+    if(method==="POST"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/members$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[2];
+      await validateTripGroupId(groupId,myUuid);
+      const {kind,named_only_id,linked_uuid,display_name,relationship}=body;
+      if(!kind||!['named_only','linked'].includes(kind))return err("kind must be 'named_only' or 'linked'",event,400);
+      const groupRows=await sql("SELECT members FROM traveler_groups WHERE id=:id",[strParam("id",groupId)]);
+      const members=typeof groupRows[0].members==="string"?JSON.parse(groupRows[0].members):(groupRows[0].members||[]);
+      let memberId=generateMemberId(),namedId=named_only_id||null,linkedId=linked_uuid||null,memberName=display_name||'',color='muted';
+      if(kind==='named_only'){
+        if(!namedId){
+          if(!display_name)return err("display_name required for new named-only member",event,400);
+          color=avatarColorFromName(display_name);
+          const nr=await sql("INSERT INTO people_named_only(owner_uuid,display_name,relationship,avatar_color) VALUES(:u,:dn,:rel,:color) RETURNING id",
+            [uuidParam("u",myUuid),strParam("dn",display_name.slice(0,120)),strParam("rel",(relationship||null)),strParam("color",color)]);
+          namedId=nr[0].id;
+        } else {
+          const nr=await sql("SELECT display_name,avatar_color FROM people_named_only WHERE id=:id AND owner_uuid=:u",[uuidParam("id",namedId),uuidParam("u",myUuid)]);
+          if(!nr||!nr.length)return err("Named-only person not found",event,404);
+          memberName=nr[0].display_name;color=nr[0].avatar_color;
+        }
+      } else {
+        if(!linkedId)return err("linked_uuid required",event,400);
+        const lr=await sql("SELECT CASE WHEN fl.requester_uuid=:u THEN i2.legal_first ELSE i1.legal_first END AS first, CASE WHEN fl.requester_uuid=:u THEN i2.legal_last ELSE i1.legal_last END AS last FROM family_links fl LEFT JOIN traveler_identity i1 ON i1.traveler_uuid=fl.requester_uuid LEFT JOIN traveler_identity i2 ON i2.traveler_uuid=fl.target_uuid WHERE (fl.requester_uuid=:u OR fl.target_uuid=:u) AND fl.status='accepted' AND (fl.requester_uuid=:lnk OR fl.target_uuid=:lnk)",
+          [uuidParam("u",myUuid),uuidParam("lnk",linkedId)]);
+        memberName=lr[0]?[lr[0].first,lr[0].last].filter(Boolean).join(' ')||'Linked person':'Linked person';
+        color=avatarColorFromName(memberName);
+        // Auto-create pending consent row
+        await sql("INSERT INTO trip_group_consents(trip_group_id,requester_uuid,target_uuid,status,requested_scopes) VALUES(:gid,:u,:tgt,'pending','[\"passport\"]'::jsonb)",
+          [strParam("gid",groupId),uuidParam("u",myUuid),uuidParam("tgt",linkedId)]);
+      }
+      members.push({id:memberId,kind,named_only_id:namedId,linked_uuid:linkedId,display_name:memberName,role:'member',avatar_color:color});
+      await sql("UPDATE traveler_groups SET members=:m::jsonb,updated_at=NOW() WHERE id=:id",[strParam("m",JSON.stringify(members)),strParam("id",groupId)]);
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_member_added',:m2)",
+        [uuidParam("u",myUuid),strParam("m2",JSON.stringify({trip_group_id:groupId,member_kind:kind,member_id:memberId}))]);
+      return{statusCode:201,headers:cors(go(event)),body:JSON.stringify({id:memberId,kind,named_only_id:namedId,linked_uuid:linkedId,display_name:memberName,avatar_color:color})};
+    }
+    // DELETE /api/v1/trip-groups/{group_id}/members/{member_id}
+    if(method==="DELETE"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/members\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const groupId=parts[2],memberId=parts[4];
+      await validateTripGroupId(groupId,myUuid);
+      const groupRows=await sql("SELECT members FROM traveler_groups WHERE id=:id",[strParam("id",groupId)]);
+      const members=typeof groupRows[0].members==="string"?JSON.parse(groupRows[0].members):(groupRows[0].members||[]);
+      const before=members.length;
+      const removed=members.find(function(m){return m.id===memberId;});
+      const updated=members.filter(function(m){return m.id!==memberId;});
+      if(updated.length===before)return err("Member not found",event,404);
+      await sql("UPDATE traveler_groups SET members=:m::jsonb,updated_at=NOW() WHERE id=:id",[strParam("m",JSON.stringify(updated)),strParam("id",groupId)]);
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_member_removed',:m2)",
+        [uuidParam("u",myUuid),strParam("m2",JSON.stringify({trip_group_id:groupId,member_kind:(removed||{}).kind,member_id:memberId}))]);
+      return ok({success:true},event);
+    }
+    // ── Named-only Document Routes ─────────────────────────────────────────
+    // GET /api/v1/named-only/{id}/documents
+    if(method==="GET"&&path.match(/^\/api\/v1\/named-only\/[^/]+\/documents$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const namedId=path.split('/').filter(Boolean)[2];
+      const own=await sql("SELECT id FROM people_named_only WHERE id=:id AND owner_uuid=:u",[uuidParam("id",namedId),uuidParam("u",myUuid)]);
+      if(!own||!own.length)return err("Not found",event,404);
+      const docs=await sql("SELECT id,document_type,document_number,issuing_country,surname,given_names,date_of_birth,date_of_issue,date_of_expiry,sex,nationality,notes,created_at FROM named_only_documents WHERE named_only_id=:id ORDER BY created_at DESC",[uuidParam("id",namedId)]);
+      return ok(docs,event);
+    }
+    // POST /api/v1/named-only/{id}/documents
+    if(method==="POST"&&path.match(/^\/api\/v1\/named-only\/[^/]+\/documents$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const namedId=path.split('/').filter(Boolean)[2];
+      const own=await sql("SELECT id FROM people_named_only WHERE id=:id AND owner_uuid=:u",[uuidParam("id",namedId),uuidParam("u",myUuid)]);
+      if(!own||!own.length)return err("Not found",event,404);
+      const {document_type,document_number,issuing_country,surname,given_names,date_of_birth,date_of_issue,date_of_expiry,sex,nationality,notes}=body;
+      if(!document_type||!document_number||!issuing_country||!date_of_expiry)return err("document_type, document_number, issuing_country, date_of_expiry are required",event,400);
+      const rows=await sql("INSERT INTO named_only_documents(named_only_id,document_type,document_number,issuing_country,surname,given_names,date_of_birth,date_of_issue,date_of_expiry,sex,nationality,notes) VALUES(:nid,:dtype,:dnum,:country,:sur,:given,:dob,:doi,:doe,:sex,:nat,:notes) RETURNING id,document_type,document_number,issuing_country,date_of_expiry,created_at",
+        [uuidParam("nid",namedId),strParam("dtype",document_type),strParam("dnum",document_number),strParam("country",issuing_country.slice(0,3)),strParam("sur",surname||null),strParam("given",given_names||null),dateParam("dob",date_of_birth||null),dateParam("doi",date_of_issue||null),dateParam("doe",date_of_expiry),strParam("sex",sex||null),strParam("nat",nationality||null),strParam("notes",notes||null)]);
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'named_only_document_added',:m)",
+        [uuidParam("u",myUuid),strParam("m",JSON.stringify({named_only_id:namedId,document_type}))]);
+      return{statusCode:201,headers:cors(go(event)),body:JSON.stringify(rows[0])};
+    }
+    // PATCH /api/v1/named-only/{id}/documents/{doc_id}
+    if(method==="PATCH"&&path.match(/^\/api\/v1\/named-only\/[^/]+\/documents\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const namedId=parts[2],docId=parts[4];
+      const own=await sql("SELECT id FROM people_named_only WHERE id=:id AND owner_uuid=:u",[uuidParam("id",namedId),uuidParam("u",myUuid)]);
+      if(!own||!own.length)return err("Not found",event,404);
+      const {document_number,issuing_country,surname,given_names,date_of_birth,date_of_issue,date_of_expiry,sex,nationality,notes}=body;
+      const rows=await sql("UPDATE named_only_documents SET document_number=COALESCE(:dnum,document_number),issuing_country=COALESCE(:country,issuing_country),surname=:sur,given_names=:given,date_of_birth=:dob,date_of_issue=:doi,date_of_expiry=COALESCE(:doe,date_of_expiry),sex=:sex,nationality=:nat,notes=:notes,updated_at=NOW() WHERE id=:docid AND named_only_id=:nid RETURNING id",
+        [strParam("dnum",document_number||null),strParam("country",issuing_country?issuing_country.slice(0,3):null),strParam("sur",surname||null),strParam("given",given_names||null),dateParam("dob",date_of_birth||null),dateParam("doi",date_of_issue||null),dateParam("doe",date_of_expiry||null),strParam("sex",sex||null),strParam("nat",nationality||null),strParam("notes",notes||null),uuidParam("docid",docId),uuidParam("nid",namedId)]);
+      if(!rows||!rows.length)return err("Document not found",event,404);
+      return ok({success:true},event);
+    }
+    // DELETE /api/v1/named-only/{id}/documents/{doc_id}
+    if(method==="DELETE"&&path.match(/^\/api\/v1\/named-only\/[^/]+\/documents\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const namedId=parts[2],docId=parts[4];
+      const own=await sql("SELECT id FROM people_named_only WHERE id=:id AND owner_uuid=:u",[uuidParam("id",namedId),uuidParam("u",myUuid)]);
+      if(!own||!own.length)return err("Not found",event,404);
+      await sql("DELETE FROM named_only_documents WHERE id=:docid AND named_only_id=:nid",[uuidParam("docid",docId),uuidParam("nid",namedId)]);
+      return ok({success:true},event);
+    }
+    // ── Trip Group Consent Routes ──────────────────────────────────────────
+    // GET /api/v1/trip-groups/{group_id}/consents
+    if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/consents$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[2];
+      await validateTripGroupId(groupId,myUuid);
+      const consents=await sql("SELECT id,target_uuid,status,requested_scopes,granted_scopes,message,requested_at,responded_at FROM trip_group_consents WHERE trip_group_id=:id ORDER BY requested_at DESC",[strParam("id",groupId)]);
+      return ok(consents,event);
+    }
+    // POST /api/v1/trip-groups/{group_id}/consents
+    if(method==="POST"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/consents$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[2];
+      await validateTripGroupId(groupId,myUuid);
+      const {target_uuid,requested_scopes,message}=body;
+      if(!target_uuid)return err("target_uuid required",event,400);
+      const scopes=Array.isArray(requested_scopes)&&requested_scopes.length?requested_scopes:["passport"];
+      const rows=await sql("INSERT INTO trip_group_consents(trip_group_id,requester_uuid,target_uuid,status,requested_scopes,message) VALUES(:gid,:u,:tgt,'pending',:scopes::jsonb,:msg) RETURNING id",
+        [strParam("gid",groupId),uuidParam("u",myUuid),uuidParam("tgt",target_uuid),strParam("scopes",JSON.stringify(scopes)),strParam("msg",message||null)]);
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_consent_requested',:m)",
+        [uuidParam("u",myUuid),strParam("m",JSON.stringify({trip_group_id:groupId,target_uuid,scopes}))]);
+      return{statusCode:201,headers:cors(go(event)),body:JSON.stringify({id:rows[0].id,status:'pending'})};
+    }
+    // DELETE /api/v1/trip-groups/{group_id}/consents/{consent_id} — withdraw
+    if(method==="DELETE"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/consents\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const groupId=parts[2],consentId=parts[4];
+      await validateTripGroupId(groupId,myUuid);
+      const rows=await sql("UPDATE trip_group_consents SET status='withdrawn',responded_at=NOW() WHERE id=:cid AND trip_group_id=:gid AND requester_uuid=:u AND status='pending' RETURNING id",
+        [uuidParam("cid",consentId),strParam("gid",groupId),uuidParam("u",myUuid)]);
+      if(!rows||!rows.length)return err("Consent not found or already resolved",event,404);
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_consent_withdrawn',:m)",
+        [uuidParam("u",myUuid),strParam("m",JSON.stringify({trip_group_id:groupId,consent_id:consentId}))]);
+      return ok({success:true},event);
+    }
+    // ── Readiness Route ────────────────────────────────────────────────────
+    // GET /api/v1/trip-groups/{group_id}/readiness
+    if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/readiness$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[2];
+      await validateTripGroupId(groupId,myUuid);
+      const groupRows=await sql("SELECT tg.*,t.destination_iata,t.return_date FROM traveler_groups tg LEFT JOIN trips t ON t.id=tg.trip_id WHERE tg.id=:id",[strParam("id",groupId)]);
+      const g=groupRows[0];
+      const destIata=(g.destination_iata||g.destination||'').trim().toUpperCase().slice(0,3);
+      const returnDate=g.return_date||null;
+      const members=typeof g.members==="string"?JSON.parse(g.members):(g.members||[]);
+      // Fetch docs for self
+      const selfDocs=await sql("SELECT doc_type AS document_type,expiry_date AS date_of_expiry FROM travel_documents WHERE traveler_uuid=:u AND doc_type='PASSPORT'",[uuidParam("u",myUuid)]);
+      // Fetch named-only docs
+      const namedIds=members.filter(function(m){return m.kind==='named_only'&&m.named_only_id;}).map(function(m){return m.named_only_id;});
+      const namedDocs=namedIds.length?await sql("SELECT named_only_id::text,document_type,date_of_expiry FROM named_only_documents WHERE named_only_id=ANY(ARRAY["+namedIds.map(function(_,i){return':id'+i;}).join(',')+"]::uuid[])",namedIds.map(function(id,i){return uuidParam('id'+i,id);})):[];
+      const namedDocMap={};
+      namedDocs.forEach(function(d){if(!namedDocMap[d.named_only_id])namedDocMap[d.named_only_id]=[];namedDocMap[d.named_only_id].push(d);});
+      const consents=await sql("SELECT target_uuid::text,status FROM trip_group_consents WHERE trip_group_id=:id",[strParam("id",groupId)]);
+      const consentMap={};consents.forEach(function(c){consentMap[c.target_uuid]=c.status;});
+      const memberResults=members.map(function(m){
+        let docs=[],displayName=m.display_name||'Member';
+        if(m.kind==='self')docs=selfDocs;
+        else if(m.kind==='named_only')docs=namedDocMap[m.named_only_id]||[];
+        else if(m.kind==='linked'){
+          const cStatus=consentMap[m.linked_uuid];
+          if(cStatus!=='approved'){
+            return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,checks:[{id:'consent_pending',label:'Data sharing',status:cStatus==='pending'?'pending':'failed',detail:cStatus==='pending'?'Sharing request sent — waiting for approval':'No sharing request sent'}],overall_status:'action_needed'};
+          }
+        }
+        const admissibility=evaluateAdmissibility(docs,destIata,returnDate);
+        const passportCheck={id:'passport_present',label:'Passport',status:docs.length?'passed':'failed',detail:docs.length?'On file':'Not added'};
+        return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,checks:[passportCheck,...admissibility.checks],overall_status:docs.length?admissibility.overall_status:'action_needed'};
+      });
+      const total=memberResults.length;
+      const ready=memberResults.filter(function(m){return m.overall_status==='ready';}).length;
+      const action=memberResults.filter(function(m){return m.overall_status==='action_needed';}).length;
+      const blocked=memberResults.filter(function(m){return m.overall_status==='blocked';}).length;
+      return ok({trip_group_id:groupId,destination:destIata,destination_name:(RULES[destIata]||{}).name||destIata,return_date:returnDate,members:memberResults,summary:{total,ready,action_needed:action,blocked},rule_source:'hardcoded_v1',disclaimer:RULES._meta.disclaimer},event);
     }
     // ── Family Profile Routes ──────────────────────────────────────────────
     // GET /api/v1/family/{uuid}
