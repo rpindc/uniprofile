@@ -524,13 +524,19 @@ async function buildFamilyProfile(myUuid) {
     "LEFT JOIN travelers t ON t.uuid=fi.target_uuid " +
     "LEFT JOIN traveler_identity i ON i.traveler_uuid=fi.target_uuid " +
     "WHERE fi.requester_uuid=:u AND fi.status='pending'", p);
-  const [myInsurance, myTours, namedOnly] = await Promise.all([
+  const [myInsurance, myTours, namedOnly, groupCountRows] = await Promise.all([
     sql("SELECT id,provider,policy_number,coverage_summary,valid_from,valid_until,emergency_phone FROM traveler_insurance WHERE traveler_uuid=:u ORDER BY created_at DESC", p),
     sql("SELECT id,operator,tour_name,tour_date,duration,reference,meeting_point FROM traveler_tours WHERE traveler_uuid=:u ORDER BY tour_date DESC", p),
     sql("SELECT id,display_name,relationship,notes,avatar_color,created_at FROM people_named_only WHERE owner_uuid=:u ORDER BY created_at DESC", p),
+    sql("SELECT m->>'upid' AS member_uuid, m->>'email' AS member_email, COUNT(DISTINCT tg.id) AS group_count FROM traveler_groups tg CROSS JOIN LATERAL jsonb_array_elements(tg.members) AS m WHERE tg.owner_uuid=:u GROUP BY m->>'upid', m->>'email'", p),
   ]);
+  const gcByUuid = {}, gcByEmail = {};
+  groupCountRows.forEach(function(row) {
+    if (row.member_uuid) gcByUuid[row.member_uuid] = Number(row.group_count) || 0;
+    if (row.member_email) gcByEmail[row.member_email.toLowerCase()] = Number(row.group_count) || 0;
+  });
   return {
-    linked: linked,
+    linked: linked.map(function(l) { return Object.assign({}, l, {group_count: gcByUuid[l.uuid] || gcByEmail[(l.email||'').toLowerCase()] || 0}); }),
     my_insurance: myInsurance,
     my_tours: myTours,
     received: received.map(r => ({
@@ -546,6 +552,7 @@ async function buildFamilyProfile(myUuid) {
       to_email: s.target_email || s.to_email,
       to_name: [s.legal_first, s.legal_last].filter(Boolean).join(" ") || s.to_email || s.target_email,
       sent_at: s.created_at,
+      group_count: gcByEmail[((s.target_email||s.to_email)||'').toLowerCase()] || 0,
     })),
     named_only: namedOnly,
   };

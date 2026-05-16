@@ -477,6 +477,8 @@ function _personCard(p){
   var sub2="";
   if(p._type==="linked"&&p.member_email)sub2=' · <span style="color:var(--ink-faint)">'+_esc(p.member_email)+'</span>';
   else if(p._type==="invite"&&p.to_email)sub2=' · <span style="color:var(--ink-faint)">'+_esc(p.to_email)+'</span>';
+  var groupStr="";
+  if(p.group_count&&p.group_count>0)groupStr=' · '+p.group_count+(p.group_count===1?' group':' groups');
   var dateStr="";
   if(p.created_at||p.sent_at){
     var d=new Date(p.created_at||p.sent_at);
@@ -488,7 +490,7 @@ function _personCard(p){
     +'<div class="avatar avatar-44 av-'+color+'">'+ini+'</div>'
     +'<div class="person-card-body">'
     +'<div class="person-card-name">'+name+'</div>'
-    +'<div class="person-card-sub">'+rel+(p.display_name||"")+sub2+dateStr+'</div>'
+    +'<div class="person-card-sub">'+rel+(p.display_name||"")+sub2+groupStr+dateStr+'</div>'
     +'</div>'
     +'<div class="person-card-right">'
     +badge
@@ -573,11 +575,12 @@ async function peopleRefresh(){
       people.push({
         id:m.id,
         _type:"linked",
-        display_name:[m.member_first,m.member_last].filter(Boolean).join(" ")||m.member_email||"Traveler",
-        member_email:m.member_email,
-        avatar_color:_avColor([m.member_first,m.member_last].filter(Boolean).join(" ")||m.member_email||""),
-        created_at:m.created_at,
+        display_name:m.name||m.email||"Traveler",
+        member_email:m.email,
+        avatar_color:_avColor(m.name||m.email||""),
+        created_at:m.linked_since,
         relationship:null,
+        group_count:m.group_count||0,
       });
     });
     (fr.sent||[]).forEach(function(s){
@@ -589,6 +592,7 @@ async function peopleRefresh(){
         avatar_color:_avColor(s.to_name||s.to_email||""),
         created_at:s.sent_at,
         relationship:null,
+        group_count:s.group_count||0,
       });
     });
     (fr.named_only||[]).forEach(function(n){
