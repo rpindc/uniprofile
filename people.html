@@ -149,7 +149,37 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .confirm-actions{display:flex;gap:8px;justify-content:flex-end}
 /* Relationship confirm sub-form in find tab */
 .rel-confirm{margin-top:12px;padding:12px;background:var(--paper-warm);border-radius:8px;border:0.5px solid var(--rule)}
-@media(max-width:767px){
+/* Person card — clickable */
+.person-card{cursor:pointer}
+/* Detail panel */
+.detail-overlay{position:fixed;inset:0;z-index:500;pointer-events:none}
+.detail-overlay.open{pointer-events:auto}
+.detail-scrim{position:absolute;inset:0;background:transparent;transition:background 220ms ease;cursor:pointer}
+.detail-overlay.open .detail-scrim{background:rgba(0,0,0,0.25)}
+.detail-panel{position:absolute;top:0;right:0;bottom:0;width:420px;background:#fff;display:flex;flex-direction:column;box-shadow:-4px 0 32px rgba(0,0,0,0.10);transform:translateX(100%);transition:transform 220ms ease}
+.detail-overlay.open .detail-panel{transform:translateX(0)}
+.detail-head{display:flex;align-items:center;padding:14px 20px;border-bottom:0.5px solid var(--rule);flex-shrink:0}
+.detail-close{background:none;border:none;cursor:pointer;color:var(--ink-mute);font-size:13px;font-family:var(--sans);font-weight:500;padding:6px 8px;border-radius:4px;transition:color 120ms,background 120ms;display:flex;align-items:center;gap:6px}
+.detail-close:hover{color:var(--ink);background:var(--paper-warm)}
+.detail-body{flex:1;overflow-y:auto;padding:24px 24px 40px}
+.detail-hero{display:flex;align-items:flex-start;gap:16px;margin-bottom:14px}
+.detail-avatar{width:52px;height:52px;font-size:18px;font-family:var(--sans);font-weight:500;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.detail-hero-info{flex:1;min-width:0;padding-top:3px}
+.detail-name{font-size:17px;font-weight:500;color:var(--ink);line-height:1.25;margin-bottom:3px}
+.detail-sub{font-size:13px;color:var(--ink-soft);margin-bottom:2px}
+.detail-meta{font-size:12px;color:var(--ink-mute);line-height:1.5}
+.detail-badge-row{margin-bottom:14px}
+.detail-actions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.detail-divider{border:none;border-top:0.5px solid var(--rule);margin:2px 0 20px}
+.detail-section-label{font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:12px}
+.doc-item{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:0.5px solid var(--rule)}
+.doc-item:last-of-type{border-bottom:none}
+.doc-item-type{font-size:13px;font-weight:500;color:var(--ink)}
+.doc-item-meta{font-size:12px;color:var(--ink-soft);margin-top:2px}
+.doc-item-expiry{font-size:12px;color:var(--ink-mute);margin-top:2px}
+.doc-item-acts{display:flex;gap:10px;flex-shrink:0;padding-top:2px}
+.doc-form{background:var(--paper-warm);border:0.5px solid var(--rule);border-radius:8px;padding:14px;margin-top:10px}
+@media(max-width:767px){.detail-panel{width:100%;top:auto;transform:translateY(100%)}.detail-overlay.open .detail-panel{transform:translateY(0)}}
   .starter-row{grid-template-columns:1fr}
   .main{padding:20px 16px}
   .page-header{flex-direction:column;gap:12px}
@@ -404,6 +434,20 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   </div>
 </div>
 
+<!-- ── Person detail panel ── -->
+<div class="detail-overlay" id="detail-overlay">
+  <div class="detail-scrim" onclick="closeDetail()"></div>
+  <div class="detail-panel" role="dialog" aria-modal="true" aria-label="Person details">
+    <div class="detail-head">
+      <button class="detail-close" onclick="closeDetail()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Back
+      </button>
+    </div>
+    <div class="detail-body" id="detail-body"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="/components/mobile-drawer.js"></script>
@@ -486,7 +530,7 @@ function _personCard(p){
   }
   var canEdit=(p._type==="named_only");
   var editBtn=canEdit?'<button class="kebab-item" onclick="openEditModal(\''+_esc(p.id)+'\')">Edit</button>':"";
-  return '<div class="person-card" data-id="'+_esc(p.id)+'" data-type="'+_esc(p._type)+'">'
+  return '<div class="person-card" data-id="'+_esc(p.id)+'" data-type="'+_esc(p._type)+'" onclick="if(!event.target.closest(\'.kebab-wrap\'))openDetailById(\''+_esc(p.id)+'\')">'
     +'<div class="avatar avatar-44 av-'+color+'">'+ini+'</div>'
     +'<div class="person-card-body">'
     +'<div class="person-card-name">'+name+'</div>'
@@ -787,9 +831,12 @@ async function saveEdit(){
   var btn=document.getElementById("edit-save-btn");btn.disabled=true;btn.textContent="Saving…";
   try{
     await _req("PATCH","/api/v1/people/named-only/"+_editingId,{display_name:name.trim(),relationship:rel||null,notes:notes||null});
+    var editedId=_editingId;
+    var wasDetailOpen=_detailPerson&&_detailPerson.id===editedId;
     closeEditModal();
     showToast("Saved.");
     await peopleRefresh();
+    if(wasDetailOpen){var upd=_allPeople.find(function(x){return x.id===editedId;});if(upd){_detailPerson=upd;renderDetail();}}
   }catch(e){
     errEl.textContent="Failed: "+(e.message||"Please try again.");errEl.style.display="block";
     btn.disabled=false;btn.textContent="Save";
@@ -817,15 +864,181 @@ async function confirmRemove(){
       await _req("DELETE","/api/v1/family/"+_uid+"/invite/"+_removingId,null);
     }else{
       // linked — use existing family endpoint pattern
-      await _req("DELETE","/api/v1/family/"+_uid+"/link/"+_removingId,null);
+      await _req("DELETE","/api/v1/family/"+_uid+"/"+_removingId,null);
     }
     closeRemoveConfirm();
+    closeDetail();
     showToast("Removed.");
     await peopleRefresh();
   }catch(e){
     showToast("Failed to remove: "+(e.message||"Please try again."));
     btn.disabled=false;btn.textContent="Remove";
   }
+}
+
+/* ── Person detail panel ── */
+var _detailPerson=null,_detailDocs=[],_addDocOpen=false,_editDocId=null;
+
+function openDetailById(id){
+  var p=_allPeople.find(function(x){return x.id===id;});
+  if(p)openDetail(p);
+}
+
+async function openDetail(p){
+  _detailPerson=p;_detailDocs=[];_addDocOpen=false;_editDocId=null;
+  document.getElementById('detail-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  renderDetail();
+  if(p._type==='named_only'){
+    try{_detailDocs=await _req('GET','/api/v1/named-only/'+p.id+'/documents');}catch(e){}
+    renderDetail();
+  }
+}
+
+function closeDetail(){
+  document.getElementById('detail-overlay').classList.remove('open');
+  document.body.style.overflow='';
+  _detailPerson=null;
+}
+
+function renderDetail(){
+  if(!_detailPerson)return;
+  var p=_detailPerson;
+  var color=p.avatar_color||_avColor(p.display_name||'');
+  var ini=_ini(p.display_name||'');
+  var name=_esc(p.display_name||'');
+  var html='<div class="detail-hero">'
+    +'<div class="detail-avatar av-'+color+'">'+ini+'</div>'
+    +'<div class="detail-hero-info"><div class="detail-name">'+name+'</div>';
+  if(p._type==='linked'){
+    if(p.member_email)html+='<div class="detail-sub">'+_esc(p.member_email)+'</div>';
+    var meta=[];
+    if(p.created_at)meta.push('Linked '+new Date(p.created_at).toLocaleDateString('en-US',{month:'short',year:'numeric'}));
+    if(p.group_count)meta.push(p.group_count+(p.group_count===1?' group':' groups'));
+    if(meta.length)html+='<div class="detail-meta">'+_esc(meta.join(' · '))+'</div>';
+    html+='</div></div><div class="detail-badge-row">'+_badge('linked')+'</div>';
+    html+='<div class="detail-actions"><button class="btn btn-secondary btn-sm" style="color:var(--red)" onclick="openRemoveConfirm(\''+_esc(p.id)+'\',\'linked\',\''+name+'\')">Remove from people</button></div>';
+  }else if(p._type==='invite'){
+    if(p.to_email)html+='<div class="detail-sub">'+_esc(p.to_email)+'</div>';
+    if(p.created_at)html+='<div class="detail-meta">Invite sent '+_esc(new Date(p.created_at).toLocaleDateString('en-US',{month:'short',year:'numeric'}))+'</div>';
+    html+='</div></div><div class="detail-badge-row">'+_badge('invite')+'</div>';
+    html+='<div class="detail-actions"><button class="btn btn-secondary btn-sm" style="color:var(--red)" onclick="openRemoveConfirm(\''+_esc(p.id)+'\',\'invite\',\''+name+'\')">Cancel invite</button></div>';
+  }else{
+    if(p.relationship)html+='<div class="detail-sub" style="text-transform:capitalize">'+_esc(p.relationship)+'</div>';
+    if(p.notes)html+='<div class="detail-meta">'+_esc(p.notes)+'</div>';
+    html+='</div></div><div class="detail-badge-row">'+_badge('named_only')+'</div>';
+    html+='<div class="detail-actions">'
+      +'<button class="btn btn-secondary btn-sm" onclick="openEditModal(\''+_esc(p.id)+'\')">Edit info</button>'
+      +'<button class="btn btn-secondary btn-sm" style="color:var(--red)" onclick="openRemoveConfirm(\''+_esc(p.id)+'\',\'named_only\',\''+name+'\')">Remove</button>'
+      +'</div>';
+    html+='<hr class="detail-divider"><div class="detail-section-label">Travel Documents</div>'+_renderDocList();
+  }
+  document.getElementById('detail-body').innerHTML=html;
+}
+
+function _docTypeOpts(sel){
+  return ['PASSPORT','VISA','ID_CARD','TRAVEL_PERMIT'].map(function(t){
+    var l={PASSPORT:'Passport',VISA:'Visa',ID_CARD:'ID Card',TRAVEL_PERMIT:'Travel Permit'}[t];
+    return '<option value="'+t+'"'+(sel===t?' selected':'')+'>'+l+'</option>';
+  }).join('');
+}
+
+function _renderDocList(){
+  var html='';
+  _detailDocs.forEach(function(doc){
+    if(_editDocId===doc.id){html+=_docEditForm(doc);return;}
+    var tl={PASSPORT:'Passport',VISA:'Visa',ID_CARD:'ID Card',TRAVEL_PERMIT:'Travel Permit'}[doc.document_type]||doc.document_type||'Document';
+    var meta=[doc.issuing_country,doc.document_number].filter(Boolean).join(' · ');
+    var expiry=doc.date_of_expiry?new Date(doc.date_of_expiry).toLocaleDateString('en-US',{month:'short',year:'numeric'}):'—';
+    html+='<div class="doc-item">'
+      +'<div><div class="doc-item-type">'+_esc(tl)+'</div>'
+      +(meta?'<div class="doc-item-meta">'+_esc(meta)+'</div>':'')
+      +'<div class="doc-item-expiry">Expires '+_esc(expiry)+'</div></div>'
+      +'<div class="doc-item-acts">'
+      +'<button class="link" onclick="startEditDoc(\''+_esc(doc.id)+'\')">Edit</button>'
+      +'<button class="link" style="color:var(--red)" onclick="deleteDoc(\''+_esc(doc.id)+'\')">Remove</button>'
+      +'</div></div>';
+  });
+  if(!_detailDocs.length&&!_addDocOpen)html+='<div style="font-size:13px;color:var(--ink-mute);padding:10px 0 8px;">No documents on file.</div>';
+  if(!_addDocOpen&&_editDocId===null)html+='<button class="btn btn-secondary btn-sm" style="margin-top:8px;" onclick="showAddDocForm()">+ Add document</button>';
+  if(_addDocOpen)html+=_docAddForm();
+  return html;
+}
+
+function _docAddForm(){
+  return '<div class="doc-form">'
+    +'<div class="form-field"><label class="form-label">Document type</label><select class="form-input" id="doc-add-type">'+_docTypeOpts('PASSPORT')+'</select></div>'
+    +'<div class="form-field"><label class="form-label">Document number</label><input class="form-input" type="text" id="doc-add-num" placeholder="e.g. P12345678" /></div>'
+    +'<div class="form-field"><label class="form-label">Issuing country <span style="font-weight:400;text-transform:none;letter-spacing:0">(3-letter code)</span></label><input class="form-input" type="text" id="doc-add-country" placeholder="e.g. USA" maxlength="3" /></div>'
+    +'<div class="form-field"><label class="form-label">Expiry date</label><input class="form-input" type="date" id="doc-add-expiry" /></div>'
+    +'<div id="doc-add-err" class="form-error"></div>'
+    +'<div class="form-actions"><button class="btn btn-primary btn-sm" id="doc-add-btn" onclick="submitAddDoc()">Add document</button><button class="btn btn-secondary btn-sm" onclick="hideAddDocForm()">Cancel</button></div>'
+    +'</div>';
+}
+
+function _docEditForm(doc){
+  var expVal=doc.date_of_expiry?String(doc.date_of_expiry).slice(0,10):'';
+  return '<div class="doc-form">'
+    +'<div class="form-field"><label class="form-label">Document type</label><select class="form-input" id="doc-edit-type">'+_docTypeOpts(doc.document_type)+'</select></div>'
+    +'<div class="form-field"><label class="form-label">Document number</label><input class="form-input" type="text" id="doc-edit-num" value="'+_esc(doc.document_number||'')+'" /></div>'
+    +'<div class="form-field"><label class="form-label">Issuing country</label><input class="form-input" type="text" id="doc-edit-country" value="'+_esc(doc.issuing_country||'')+'" maxlength="3" /></div>'
+    +'<div class="form-field"><label class="form-label">Expiry date</label><input class="form-input" type="date" id="doc-edit-expiry" value="'+_esc(expVal)+'" /></div>'
+    +'<div id="doc-edit-err" class="form-error"></div>'
+    +'<div class="form-actions"><button class="btn btn-primary btn-sm" id="doc-edit-btn" onclick="submitEditDoc(\''+_esc(doc.id)+'\')">Save</button><button class="btn btn-secondary btn-sm" onclick="cancelEditDoc()">Cancel</button></div>'
+    +'</div>';
+}
+
+function showAddDocForm(){_addDocOpen=true;_editDocId=null;renderDetail();}
+function hideAddDocForm(){_addDocOpen=false;renderDetail();}
+function startEditDoc(id){_editDocId=id;_addDocOpen=false;renderDetail();}
+function cancelEditDoc(){_editDocId=null;renderDetail();}
+
+async function submitAddDoc(){
+  var type=(document.getElementById('doc-add-type')||{}).value||'PASSPORT';
+  var num=((document.getElementById('doc-add-num')||{}).value||'').trim();
+  var country=((document.getElementById('doc-add-country')||{}).value||'').trim().toUpperCase();
+  var expiry=(document.getElementById('doc-add-expiry')||{}).value||'';
+  var errEl=document.getElementById('doc-add-err');errEl.style.display='none';
+  if(!num){errEl.textContent='Document number is required.';errEl.style.display='block';return;}
+  if(!country){errEl.textContent='Issuing country is required.';errEl.style.display='block';return;}
+  if(!expiry){errEl.textContent='Expiry date is required.';errEl.style.display='block';return;}
+  var btn=document.getElementById('doc-add-btn');btn.disabled=true;btn.textContent='Adding…';
+  try{
+    await _req('POST','/api/v1/named-only/'+_detailPerson.id+'/documents',{document_type:type,document_number:num,issuing_country:country,date_of_expiry:expiry});
+    _detailDocs=await _req('GET','/api/v1/named-only/'+_detailPerson.id+'/documents');
+    _addDocOpen=false;renderDetail();showToast('Document added.');
+  }catch(e){
+    errEl.textContent='Failed: '+(e.message||'Please try again.');errEl.style.display='block';
+    btn.disabled=false;btn.textContent='Add document';
+  }
+}
+
+async function submitEditDoc(docId){
+  var type=(document.getElementById('doc-edit-type')||{}).value||'PASSPORT';
+  var num=((document.getElementById('doc-edit-num')||{}).value||'').trim();
+  var country=((document.getElementById('doc-edit-country')||{}).value||'').trim().toUpperCase();
+  var expiry=(document.getElementById('doc-edit-expiry')||{}).value||'';
+  var errEl=document.getElementById('doc-edit-err');errEl.style.display='none';
+  if(!num){errEl.textContent='Document number is required.';errEl.style.display='block';return;}
+  if(!country){errEl.textContent='Issuing country is required.';errEl.style.display='block';return;}
+  if(!expiry){errEl.textContent='Expiry date is required.';errEl.style.display='block';return;}
+  var btn=document.getElementById('doc-edit-btn');btn.disabled=true;btn.textContent='Saving…';
+  try{
+    await _req('PATCH','/api/v1/named-only/'+_detailPerson.id+'/documents/'+docId,{document_number:num,issuing_country:country,date_of_expiry:expiry});
+    _detailDocs=await _req('GET','/api/v1/named-only/'+_detailPerson.id+'/documents');
+    _editDocId=null;renderDetail();showToast('Document saved.');
+  }catch(e){
+    errEl.textContent='Failed: '+(e.message||'Please try again.');errEl.style.display='block';
+    btn.disabled=false;btn.textContent='Save';
+  }
+}
+
+async function deleteDoc(docId){
+  try{
+    await _req('DELETE','/api/v1/named-only/'+_detailPerson.id+'/documents/'+docId);
+    _detailDocs=_detailDocs.filter(function(d){return d.id!==docId;});
+    renderDetail();showToast('Document removed.');
+  }catch(e){showToast('Failed to remove document.');}
 }
 
 /* ── Init ── */

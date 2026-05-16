@@ -948,7 +948,7 @@ exports.handler=async function(event){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
       const parts=path.split('/').filter(Boolean);
-      const namedId=parts[2],docId=parts[4];
+      const namedId=parts[3],docId=parts[5];
       const own=await sql("SELECT id FROM people_named_only WHERE id=:id AND owner_uuid=:u",[uuidParam("id",namedId),uuidParam("u",myUuid)]);
       if(!own||!own.length)return err("Not found",event,404);
       const {document_number,issuing_country,surname,given_names,date_of_birth,date_of_issue,date_of_expiry,sex,nationality,notes}=body;
@@ -962,7 +962,7 @@ exports.handler=async function(event){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
       const parts=path.split('/').filter(Boolean);
-      const namedId=parts[2],docId=parts[4];
+      const namedId=parts[3],docId=parts[5];
       const own=await sql("SELECT id FROM people_named_only WHERE id=:id AND owner_uuid=:u",[uuidParam("id",namedId),uuidParam("u",myUuid)]);
       if(!own||!own.length)return err("Not found",event,404);
       await sql("DELETE FROM named_only_documents WHERE id=:docid AND named_only_id=:nid",[uuidParam("docid",docId),uuidParam("nid",namedId)]);
