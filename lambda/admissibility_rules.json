@@ -1,0 +1,607 @@
+{
+  "_meta": {
+    "version": "hardcoded_v1",
+    "last_updated": "2026-05-16",
+    "disclaimer": "Rules based on common entry requirements. Verify with your destination's official sources before travel.",
+    "note": "Validity rules use months-after-return-date unless otherwise noted. nationality_dependent rules apply a safe-default minimum and should be confirmed per nationality."
+  },
+  "USA": {
+    "name": "United States",
+    "iata": "USA",
+    "rules": [
+      {
+        "id": "passport_validity_duration",
+        "label": "Passport validity",
+        "type": "passport_validity_duration_only",
+        "detail": "Passport must be valid for the full duration of stay.",
+        "applies_to": "all"
+      },
+      {
+        "id": "esta_or_visa",
+        "label": "ESTA / Visa",
+        "type": "informational",
+        "note": "Visa Waiver Program nationals require ESTA approval before travel. All others require a US visa. ESTA is linked to your passport — apply at esta.cbp.dhs.gov."
+      }
+    ]
+  },
+  "GBR": {
+    "name": "United Kingdom",
+    "iata": "GBR",
+    "rules": [
+      {
+        "id": "passport_validity_duration",
+        "label": "Passport validity",
+        "type": "passport_validity_duration_only",
+        "detail": "Passport must be valid for the full duration of your stay. No minimum beyond that for most nationalities.",
+        "applies_to": "all"
+      },
+      {
+        "id": "eta_or_visa",
+        "label": "ETA / Visa",
+        "type": "informational",
+        "note": "From 2024, many nationalities require a UK Electronic Travel Authorisation (ETA) before arrival. Check gov.uk/electronic-travel-authorisation. Visa-required nationals need a UK visa."
+      }
+    ]
+  },
+  "FRA": {
+    "name": "France",
+    "iata": "FRA",
+    "rules": [
+      {
+        "id": "passport_validity_3mo",
+        "label": "3-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 3,
+        "detail": "Passport must be valid for at least 3 months after your intended departure from the Schengen area.",
+        "applies_to": "all"
+      },
+      {
+        "id": "schengen_entry",
+        "label": "Schengen entry",
+        "type": "informational",
+        "note": "France is a Schengen member. Visa-waiver nationals may stay up to 90 days in any 180-day period across Schengen. ETIAS required from 2025 for visa-waiver nationalities."
+      }
+    ]
+  },
+  "ITA": {
+    "name": "Italy",
+    "iata": "ITA",
+    "rules": [
+      {
+        "id": "passport_validity_3mo",
+        "label": "3-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 3,
+        "detail": "Passport must be valid for at least 3 months after your intended departure from the Schengen area.",
+        "applies_to": "all"
+      },
+      {
+        "id": "schengen_entry",
+        "label": "Schengen entry",
+        "type": "informational",
+        "note": "Italy is a Schengen member. Visa-waiver nationals may stay up to 90 days in any 180-day period. ETIAS required from 2025 for visa-waiver nationalities."
+      }
+    ]
+  },
+  "ESP": {
+    "name": "Spain",
+    "iata": "ESP",
+    "rules": [
+      {
+        "id": "passport_validity_3mo",
+        "label": "3-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 3,
+        "detail": "Passport must be valid for at least 3 months after your intended departure from the Schengen area.",
+        "applies_to": "all"
+      },
+      {
+        "id": "schengen_entry",
+        "label": "Schengen entry",
+        "type": "informational",
+        "note": "Spain is a Schengen member. Visa-waiver nationals may stay up to 90 days in any 180-day period. ETIAS required from 2025 for visa-waiver nationalities."
+      }
+    ]
+  },
+  "DEU": {
+    "name": "Germany",
+    "iata": "DEU",
+    "rules": [
+      {
+        "id": "passport_validity_3mo",
+        "label": "3-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 3,
+        "detail": "Passport must be valid for at least 3 months after your intended departure from the Schengen area.",
+        "applies_to": "all"
+      },
+      {
+        "id": "schengen_entry",
+        "label": "Schengen entry",
+        "type": "informational",
+        "note": "Germany is a Schengen member. Visa-waiver nationals may stay up to 90 days in any 180-day period. ETIAS required from 2025 for visa-waiver nationalities."
+      }
+    ]
+  },
+  "JPN": {
+    "name": "Japan",
+    "iata": "JPN",
+    "rules": [
+      {
+        "id": "passport_validity_duration",
+        "label": "Passport validity",
+        "type": "passport_validity_duration_only",
+        "detail": "Passport must be valid for the full duration of stay. No additional minimum beyond stay length.",
+        "applies_to": "all"
+      },
+      {
+        "id": "visa_or_waiver",
+        "label": "Visa / waiver",
+        "type": "informational",
+        "note": "Many nationalities enter visa-free for up to 90 days. Others require a Japanese visa. Check mofa.go.jp for your nationality."
+      }
+    ]
+  },
+  "IND": {
+    "name": "India",
+    "iata": "IND",
+    "rules": [
+      {
+        "id": "passport_validity_6mo",
+        "label": "6-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 6,
+        "detail": "Passport must be valid for at least 6 months beyond your intended departure from India.",
+        "applies_to": "all"
+      },
+      {
+        "id": "e_visa",
+        "label": "e-Visa / Visa",
+        "type": "informational",
+        "note": "Most nationalities can apply for an Indian e-Visa online before travel (indianvisaonline.gov.in). Some nationalities require a traditional visa from an Indian embassy."
+      }
+    ]
+  },
+  "AUS": {
+    "name": "Australia",
+    "iata": "AUS",
+    "rules": [
+      {
+        "id": "passport_validity_duration",
+        "label": "Passport validity",
+        "type": "passport_validity_duration_only",
+        "detail": "Passport must be valid for the full duration of stay.",
+        "applies_to": "all"
+      },
+      {
+        "id": "eta_or_evisa",
+        "label": "ETA / eVisitor / Visa",
+        "type": "informational",
+        "note": "Many nationalities require an ETA (Electronic Travel Authority) or eVisitor visa applied for before travel at immi.homeaffairs.gov.au. Others require a full visa."
+      }
+    ]
+  },
+  "CAN": {
+    "name": "Canada",
+    "iata": "CAN",
+    "rules": [
+      {
+        "id": "passport_validity_duration",
+        "label": "Passport validity",
+        "type": "passport_validity_duration_only",
+        "detail": "Passport must be valid for the full duration of stay.",
+        "applies_to": "all"
+      },
+      {
+        "id": "eta_or_visa",
+        "label": "eTA / Visa",
+        "type": "informational",
+        "note": "Visa-waiver nationals flying to Canada require an Electronic Travel Authorization (eTA) linked to their passport. Apply at canada.ca/eTA. Others need a Canadian visa."
+      }
+    ]
+  },
+  "MEX": {
+    "name": "Mexico",
+    "iata": "MEX",
+    "rules": [
+      {
+        "id": "passport_validity_6mo",
+        "label": "6-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 6,
+        "detail": "Passport should be valid for at least 6 months beyond your intended stay.",
+        "applies_to": "all"
+      },
+      {
+        "id": "visa_or_waiver",
+        "label": "Visa / waiver",
+        "type": "informational",
+        "note": "Many nationalities enter Mexico visa-free. Others require a Mexican visa. Check gob.mx for requirements by nationality."
+      }
+    ]
+  },
+  "BRA": {
+    "name": "Brazil",
+    "iata": "BRA",
+    "rules": [
+      {
+        "id": "passport_validity_6mo",
+        "label": "6-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 6,
+        "detail": "Passport must be valid for at least 6 months beyond your date of entry into Brazil.",
+        "applies_to": "all"
+      },
+      {
+        "id": "e_visa",
+        "label": "e-Visa / Visa",
+        "type": "informational",
+        "note": "Brazil reinstated visa requirements for US, Canadian, and Australian nationals in 2025. Most can use the online e-visa at gov.br/mre. Check requirements for your nationality."
+      }
+    ]
+  },
+  "ARE": {
+    "name": "United Arab Emirates",
+    "iata": "ARE",
+    "rules": [
+      {
+        "id": "passport_validity_6mo",
+        "label": "6-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 6,
+        "detail": "Passport must be valid for at least 6 months from the date of entry.",
+        "applies_to": "all"
+      },
+      {
+        "id": "visa_or_waiver",
+        "label": "Visa on arrival / waiver",
+        "type": "informational",
+        "note": "Many nationalities receive a free 30-day visa on arrival in the UAE. Others can obtain a visa in advance. Check uaevisa.ae for your nationality."
+      }
+    ]
+  },
+  "SGP": {
+    "name": "Singapore",
+    "iata": "SGP",
+    "rules": [
+      {
+        "id": "passport_validity_6mo",
+        "label": "6-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 6,
+        "detail": "Passport must be valid for at least 6 months beyond the date of entry.",
+        "applies_to": "all"
+      },
+      {
+        "id": "visa_or_waiver",
+        "label": "Visa / waiver",
+        "type": "informational",
+        "note": "Most nationalities enter Singapore visa-free for 30–90 days. Check ica.gov.sg for your nationality's requirements."
+      }
+    ]
+  },
+  "THA": {
+    "name": "Thailand",
+    "iata": "THA",
+    "rules": [
+      {
+        "id": "passport_validity_6mo",
+        "label": "6-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 6,
+        "detail": "Passport must be valid for at least 6 months beyond the date of entry.",
+        "applies_to": "all"
+      },
+      {
+        "id": "visa_or_waiver",
+        "label": "Visa / waiver",
+        "type": "informational",
+        "note": "Many nationalities receive visa-exempt entry for 30 days (extendable). Thailand also offers e-Visa for other nationalities at thaievisa.go.th."
+      }
+    ]
+  },
+  "IDN": {
+    "name": "Indonesia",
+    "iata": "IDN",
+    "rules": [
+      {
+        "id": "passport_validity_6mo",
+        "label": "6-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 6,
+        "detail": "Passport must be valid for at least 6 months from the date of arrival.",
+        "applies_to": "all"
+      },
+      {
+        "id": "voa_or_visa",
+        "label": "Visa on arrival / e-VOA",
+        "type": "informational",
+        "note": "Most nationalities can obtain a Visa on Arrival (VoA) at major Indonesian airports, or apply for an e-VOA in advance at molina.imigrasi.go.id."
+      }
+    ]
+  },
+  "VNM": {
+    "name": "Vietnam",
+    "iata": "VNM",
+    "rules": [
+      {
+        "id": "passport_validity_6mo",
+        "label": "6-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 6,
+        "detail": "Passport must be valid for at least 6 months from the date of entry.",
+        "applies_to": "all"
+      },
+      {
+        "id": "e_visa",
+        "label": "e-Visa / Visa-free",
+        "type": "informational",
+        "note": "Many nationalities are visa-exempt for up to 45 days. Others can apply for a Vietnamese e-Visa at evisa.xuatnhapcanh.gov.vn. Check requirements for your nationality."
+      }
+    ]
+  },
+  "CHN": {
+    "name": "China",
+    "iata": "CHN",
+    "rules": [
+      {
+        "id": "passport_validity_6mo",
+        "label": "6-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 6,
+        "detail": "Passport must be valid for at least 6 months from the date of entry.",
+        "applies_to": "all"
+      },
+      {
+        "id": "visa_or_transit",
+        "label": "Visa",
+        "type": "informational",
+        "note": "Most nationalities require a Chinese visa in advance. China introduced 15-day visa-free access for select nationalities in 2024. Check visaforchina.cn for your nationality."
+      }
+    ]
+  },
+  "KOR": {
+    "name": "South Korea",
+    "iata": "KOR",
+    "rules": [
+      {
+        "id": "passport_validity_duration",
+        "label": "Passport validity",
+        "type": "passport_validity_duration_only",
+        "detail": "Passport must be valid for the full duration of stay.",
+        "applies_to": "all"
+      },
+      {
+        "id": "k_eta_or_visa",
+        "label": "K-ETA / Visa",
+        "type": "informational",
+        "note": "Many nationalities enter visa-free for up to 90 days but may need a K-ETA (Korean Electronic Travel Authorization) applied at k-eta.go.kr. Others require a Korean visa."
+      }
+    ]
+  },
+  "ZAF": {
+    "name": "South Africa",
+    "iata": "ZAF",
+    "rules": [
+      {
+        "id": "passport_validity_30days",
+        "label": "30-day validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 1,
+        "detail": "Passport must be valid for at least 30 days beyond your intended departure from South Africa. Two blank pages required.",
+        "applies_to": "all"
+      },
+      {
+        "id": "blank_pages",
+        "label": "Blank passport pages",
+        "type": "informational",
+        "note": "South Africa requires at least two consecutive blank pages in your passport for entry stamps."
+      },
+      {
+        "id": "visa_or_waiver",
+        "label": "Visa / waiver",
+        "type": "informational",
+        "note": "Many nationalities enter visa-free for up to 30–90 days. Check dha.gov.za for your nationality's requirements."
+      }
+    ]
+  },
+  "EGY": {
+    "name": "Egypt",
+    "iata": "EGY",
+    "rules": [
+      {
+        "id": "passport_validity_6mo",
+        "label": "6-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 6,
+        "detail": "Passport must be valid for at least 6 months from the date of entry.",
+        "applies_to": "all"
+      },
+      {
+        "id": "voa_or_e_visa",
+        "label": "Visa on arrival / e-Visa",
+        "type": "informational",
+        "note": "Most nationalities can obtain a single-entry visa on arrival at Egyptian airports, or apply online at visa2egypt.gov.eg."
+      }
+    ]
+  },
+  "TUR": {
+    "name": "Turkey",
+    "iata": "TUR",
+    "rules": [
+      {
+        "id": "passport_validity_3mo",
+        "label": "3-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 3,
+        "detail": "Passport must be valid for at least 3 months beyond your intended departure from Turkey.",
+        "applies_to": "all"
+      },
+      {
+        "id": "e_visa",
+        "label": "e-Visa / Visa-free",
+        "type": "informational",
+        "note": "Many nationalities can obtain a Turkish e-Visa at evisa.gov.tr before travel. Some nationalities enter visa-free. Check requirements for your passport."
+      }
+    ]
+  },
+  "GRC": {
+    "name": "Greece",
+    "iata": "GRC",
+    "rules": [
+      {
+        "id": "passport_validity_3mo",
+        "label": "3-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 3,
+        "detail": "Passport must be valid for at least 3 months after your intended departure from the Schengen area.",
+        "applies_to": "all"
+      },
+      {
+        "id": "schengen_entry",
+        "label": "Schengen entry",
+        "type": "informational",
+        "note": "Greece is a Schengen member. Visa-waiver nationals may stay up to 90 days in any 180-day period. ETIAS required from 2025 for visa-waiver nationalities."
+      }
+    ]
+  },
+  "NLD": {
+    "name": "Netherlands",
+    "iata": "NLD",
+    "rules": [
+      {
+        "id": "passport_validity_3mo",
+        "label": "3-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 3,
+        "detail": "Passport must be valid for at least 3 months after your intended departure from the Schengen area.",
+        "applies_to": "all"
+      },
+      {
+        "id": "schengen_entry",
+        "label": "Schengen entry",
+        "type": "informational",
+        "note": "Netherlands is a Schengen member. Visa-waiver nationals may stay up to 90 days in any 180-day period. ETIAS required from 2025 for visa-waiver nationalities."
+      }
+    ]
+  },
+  "BEL": {
+    "name": "Belgium",
+    "iata": "BEL",
+    "rules": [
+      {
+        "id": "passport_validity_3mo",
+        "label": "3-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 3,
+        "detail": "Passport must be valid for at least 3 months after your intended departure from the Schengen area.",
+        "applies_to": "all"
+      },
+      {
+        "id": "schengen_entry",
+        "label": "Schengen entry",
+        "type": "informational",
+        "note": "Belgium is a Schengen member. Visa-waiver nationals may stay up to 90 days in any 180-day period. ETIAS required from 2025 for visa-waiver nationalities."
+      }
+    ]
+  },
+  "CHE": {
+    "name": "Switzerland",
+    "iata": "CHE",
+    "rules": [
+      {
+        "id": "passport_validity_3mo",
+        "label": "3-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 3,
+        "detail": "Passport must be valid for at least 3 months after your intended departure from the Schengen area.",
+        "applies_to": "all"
+      },
+      {
+        "id": "schengen_entry",
+        "label": "Schengen entry",
+        "type": "informational",
+        "note": "Switzerland is part of the Schengen area. Visa-waiver nationals may stay up to 90 days in any 180-day period. ETIAS required from 2025 for visa-waiver nationalities."
+      }
+    ]
+  },
+  "AUT": {
+    "name": "Austria",
+    "iata": "AUT",
+    "rules": [
+      {
+        "id": "passport_validity_3mo",
+        "label": "3-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 3,
+        "detail": "Passport must be valid for at least 3 months after your intended departure from the Schengen area.",
+        "applies_to": "all"
+      },
+      {
+        "id": "schengen_entry",
+        "label": "Schengen entry",
+        "type": "informational",
+        "note": "Austria is a Schengen member. Visa-waiver nationals may stay up to 90 days in any 180-day period. ETIAS required from 2025 for visa-waiver nationalities."
+      }
+    ]
+  },
+  "PRT": {
+    "name": "Portugal",
+    "iata": "PRT",
+    "rules": [
+      {
+        "id": "passport_validity_3mo",
+        "label": "3-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 3,
+        "detail": "Passport must be valid for at least 3 months after your intended departure from the Schengen area.",
+        "applies_to": "all"
+      },
+      {
+        "id": "schengen_entry",
+        "label": "Schengen entry",
+        "type": "informational",
+        "note": "Portugal is a Schengen member. Visa-waiver nationals may stay up to 90 days in any 180-day period. ETIAS required from 2025 for visa-waiver nationalities."
+      }
+    ]
+  },
+  "IRL": {
+    "name": "Ireland",
+    "iata": "IRL",
+    "rules": [
+      {
+        "id": "passport_validity_duration",
+        "label": "Passport validity",
+        "type": "passport_validity_duration_only",
+        "detail": "Passport must be valid for the full duration of stay. Ireland recommends at least 6 months validity as a practical guideline.",
+        "applies_to": "all"
+      },
+      {
+        "id": "visa_or_waiver",
+        "label": "Visa / waiver",
+        "type": "informational",
+        "note": "Ireland is NOT part of the Schengen area. Many nationalities enter visa-free. Others require an Irish visa. Check irishimmigration.ie for your nationality. ETIAS does NOT apply."
+      }
+    ]
+  },
+  "NZL": {
+    "name": "New Zealand",
+    "iata": "NZL",
+    "rules": [
+      {
+        "id": "passport_validity_3mo",
+        "label": "3-month validity rule",
+        "type": "passport_validity_after_exit",
+        "min_months_after_exit": 3,
+        "detail": "Passport must be valid for at least 3 months beyond your planned departure from New Zealand.",
+        "applies_to": "all"
+      },
+      {
+        "id": "nzeta_or_visa",
+        "label": "NZeTA / Visa",
+        "type": "informational",
+        "note": "Most visa-waiver nationalities need an NZeTA (New Zealand Electronic Travel Authority) and pay the International Visitor Conservation and Tourism Levy before travel. Apply at immigration.govt.nz."
+      }
+    ]
+  }
+}
