@@ -245,7 +245,16 @@ function _evtLabel(type){
     trip_deleted:"Trip deleted",
     context_switched:"Context switched",
     login:"Sign in",
-    logout:"Sign out"
+    logout:"Sign out",
+    people_search:"People searched",
+    person_added_named_only:"Person added",
+    person_removed_named_only:"Person removed",
+    named_only_document_added:"Document added to person",
+    trip_group_created:"Trip group created",
+    trip_group_member_added:"Member added to trip group",
+    trip_group_member_removed:"Member removed from trip group",
+    trip_group_consent_requested:"Trip group consent requested",
+    trip_group_consent_withdrawn:"Trip group consent withdrawn"
   };
   return m[type]||(type||"Event").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();});
 }
