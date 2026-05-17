@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Groups — UniProfile</title>
+<title>Trip Group Invite — UniProfile</title>
 <meta name="robots" content="noindex,nofollow" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,13 +14,13 @@
 :root{--ink:#1a1a1a;--ink-soft:#4a4a48;--ink-mute:#8a8a86;--ink-faint:#b8b8b3;--paper:#faf8f4;--paper-warm:#f3efe7;--paper-cream:#f9f7f2;--rule:rgba(26,26,26,0.08);--rule-strong:rgba(26,26,26,0.18);--green:#2d6a4f;--green-soft:#e8efe9;--amber:#ba7517;--amber-soft:#f9f1e3;--red:#c44d4d;--red-soft:#f4e8e8;--serif:'Fraunces',Georgia,serif;--sans:'Inter Tight',-apple-system,sans-serif;--mono:'JetBrains Mono','SF Mono',Menlo,monospace}
 *{box-sizing:border-box;margin:0;padding:0}html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;font-size:14px;font-weight:400}
-.h1{font-family:var(--serif);font-weight:300;font-size:clamp(36px,5vw,52px);line-height:1.1;letter-spacing:-0.02em;color:var(--ink)}
+.h1{font-family:var(--serif);font-weight:300;font-size:clamp(32px,4.5vw,48px);line-height:1.1;letter-spacing:-0.02em;color:var(--ink)}
 .h1 em{font-style:italic;font-weight:300}
+.h2{font-family:var(--serif);font-weight:400;font-size:22px;line-height:1.2;letter-spacing:-0.01em;color:var(--ink)}
 .h3{font-family:var(--serif);font-weight:400;font-size:18px;line-height:1.25;letter-spacing:-0.005em;color:var(--ink)}
-.lede{font-family:var(--serif);font-weight:300;font-size:17px;line-height:1.5;letter-spacing:-0.005em;color:var(--ink-soft)}
+.lede{font-family:var(--serif);font-weight:300;font-size:16px;line-height:1.5;letter-spacing:-0.005em;color:var(--ink-soft)}
 .eyebrow{font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-mute)}
 .caption{font-size:12px;line-height:1.5;color:var(--ink-mute)}
-.id{font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:0.04em;color:var(--ink)}
 .shell{display:flex;min-height:100vh}
 .sidebar{width:240px;background:#fff;border-right:0.5px solid var(--rule);padding:28px 0;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
 .sidebar-wordmark-block{padding:0 24px 24px;border-bottom:0.5px solid rgba(26,26,26,0.06)}
@@ -40,45 +40,26 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-weight:300;color:var(--ink-soft);flex-shrink:0;border:2px solid #fff}
 .avatar-sm{width:30px;height:30px;font-size:12px}
 .avatar-1{background:linear-gradient(135deg,#d8d3c8,#c4bfb3)}
-.main{flex:1;padding:36px 48px;min-width:0;max-width:880px}
-.page-header{margin-bottom:32px;display:flex;align-items:flex-start;justify-content:space-between;gap:24px}
-.page-header-text .eyebrow{margin-bottom:12px}
-.page-header-text .h1{margin-bottom:8px}
-.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:100px;font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.02em}
-.pill-green{background:var(--green-soft);color:var(--green)}
-.pill-amber{background:var(--amber-soft);color:var(--amber)}
-.pill-neutral{background:var(--paper-warm);color:var(--ink-soft)}
-.pill-red{background:var(--red-soft);color:var(--red)}
-.pill-dot{width:6px;height:6px;border-radius:50%}
-.dot-green{background:var(--green)}
-.dot-amber{background:var(--amber)}
+.main{flex:1;padding:36px 48px;min-width:0;max-width:640px}
+.icon{width:16px;height:16px;flex-shrink:0;display:inline-block;vertical-align:middle}
 .btn{font-family:var(--sans);font-size:13px;font-weight:500;padding:10px 18px;border-radius:4px;cursor:pointer;letter-spacing:-0.005em;transition:background 160ms ease,border-color 160ms ease;display:inline-flex;align-items:center;gap:8px;text-decoration:none;border:0.5px solid transparent;background:none}
 .btn-primary{color:#fff;background:var(--ink);border-color:var(--ink)}
 .btn-primary:hover{opacity:0.88}
+.btn-primary:disabled{opacity:0.45;cursor:default}
 .btn-secondary{color:var(--ink);background:transparent;border-color:var(--rule-strong)}
 .btn-secondary:hover{background:rgba(26,26,26,0.03)}
 .btn-sm{font-size:12px;padding:6px 12px}
-.icon{width:16px;height:16px;flex-shrink:0;display:inline-block;vertical-align:middle}
-.filter-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px}
-.filter-btn{font-family:var(--sans);font-size:12px;font-weight:500;padding:6px 14px;border-radius:100px;cursor:pointer;border:0.5px solid var(--rule-strong);background:transparent;color:var(--ink-soft);transition:all 120ms ease;white-space:nowrap}
-.filter-btn:hover{color:var(--ink);border-color:var(--rule-strong)}
-.filter-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
-/* Group card */
-.group-card{background:#fff;border:0.5px solid var(--rule);border-radius:12px;padding:20px 24px;margin-bottom:12px;transition:border-color 120ms ease;display:flex;align-items:flex-start;gap:16px}
-.group-card:hover{border-color:var(--rule-strong)}
-.group-card.archived{opacity:0.65}
-.group-card-date{flex-shrink:0;text-align:center;width:52px;padding:7px 0;border-radius:8px;background:var(--paper-cream)}
-.group-card-date-month{font-family:var(--sans);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
-.group-card-date-day{font-family:var(--serif);font-size:22px;font-weight:300;color:var(--ink);line-height:1.1}
-.group-card-main{flex:1;min-width:0}
-.group-card-eyebrow{font-family:var(--mono);font-size:11px;color:var(--ink-mute);letter-spacing:0.06em;margin-bottom:4px}
-.group-card-name{font-family:var(--serif);font-size:19px;font-weight:400;letter-spacing:-0.005em;color:var(--ink);margin-bottom:4px}
-.group-card-meta{font-size:12px;color:var(--ink-mute);line-height:1.5}
-.group-card-action{flex-shrink:0;padding-top:2px}
-.pill-sky{background:#e0f2fe;color:#0369a1}
-.toast{position:fixed;bottom:26px;right:26px;background:var(--ink);color:#fff;padding:10px 17px;border-radius:8px;font-size:13px;z-index:2000;opacity:0;transform:translateY(6px);transition:opacity 200ms ease,transform 200ms ease;pointer-events:none}
-.toast.show{opacity:1;transform:translateY(0)}
-@media(max-width:767px){.main{padding:24px 20px}.group-card{flex-wrap:wrap}.group-card-action{width:100%}}
+/* Invite card */
+.invite-card{background:#fff;border:0.5px solid var(--rule);border-radius:16px;padding:36px;margin-top:28px}
+.invite-icon{width:64px;height:64px;border-radius:50%;background:var(--paper-warm);display:flex;align-items:center;justify-content:center;margin-bottom:24px}
+.invite-meta-row{display:flex;flex-direction:column;gap:6px;margin:24px 0;padding:20px;background:var(--paper-cream);border-radius:10px}
+.invite-meta-item{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-soft)}
+.invite-meta-label{font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute);min-width:88px}
+.invite-actions{display:flex;gap:10px;margin-top:28px;flex-wrap:wrap}
+.state-icon{font-size:48px;margin-bottom:20px}
+.form-error{color:var(--red);font-size:12px;margin-top:8px;display:none}
+.form-error.show{display:block}
+@media(max-width:767px){.main{padding:24px 20px}.invite-card{padding:24px}.invite-actions{flex-direction:column}.invite-actions .btn{width:100%;justify-content:center}}
 </style>
 </head>
 <body>
@@ -108,7 +89,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     <a href="/people.html" class="mob-nav-item" data-page="people"><svg class="icon" aria-hidden="true"><use href="#i-people"/></svg>People</a>
     <a href="/trips.html" class="mob-nav-item" data-page="trips"><svg class="icon" aria-hidden="true"><use href="#i-trips"/></svg>Trips</a>
     <a href="/privacy.html" class="mob-nav-item" data-page="privacy"><svg class="icon" aria-hidden="true"><use href="#i-privacy"/></svg>Privacy</a>
-    <a href="/groups.html" class="mob-nav-item" data-page="groups"><svg class="icon" aria-hidden="true"><use href="#i-groups"/></svg>Groups</a>
+    <a href="/groups.html" class="mob-nav-item active" data-page="groups"><svg class="icon" aria-hidden="true"><use href="#i-groups"/></svg>Groups</a>
   </div>
   <div class="mob-drawer-footer">
     <button class="mob-nav-item mob-signout" id="mob-signout-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><polyline points="16 17 21 12 16 7" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>Sign out</button>
@@ -149,30 +130,16 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   </aside>
 
   <main class="main">
-
-    <div class="page-header">
-      <div class="page-header-text">
-        <div class="eyebrow">Trip coordination</div>
-        <h1 class="h1">Groups, by <em>trip</em>.</h1>
-        <p class="lede" id="groups-lede">Loading…</p>
+    <div style="margin-bottom:24px">
+      <a href="/groups.html" style="font-size:12px;color:var(--ink-mute);text-decoration:none;font-family:var(--sans)">← All groups</a>
+    </div>
+    <div id="invite-wrap">
+      <div class="invite-card" style="display:flex;align-items:center;justify-content:center;min-height:240px">
+        <div class="caption" style="color:var(--ink-mute)">Loading invite…</div>
       </div>
     </div>
-
-    <div class="filter-bar">
-      <button class="filter-btn active" onclick="applyFilter('all',this)">All</button>
-      <button class="filter-btn" onclick="applyFilter('upcoming',this)">Upcoming</button>
-      <button class="filter-btn" onclick="applyFilter('active',this)">Active now</button>
-      <button class="filter-btn" onclick="applyFilter('past',this)">Past</button>
-      <button class="filter-btn" onclick="applyFilter('joined',this)">Joined</button>
-      <button class="filter-btn" onclick="applyFilter('archived',this)">Archived</button>
-    </div>
-
-    <div id="groups-list"></div>
-
   </main>
 </div>
-
-<div class="toast" id="toast"></div>
 
 <script src="/components/mobile-drawer.js"></script>
 <script>
@@ -180,22 +147,20 @@ var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
 var _tok=null,_uid=null;
-var _allGroups=[],_curFilter="all";
+var _invite=null,_consentId=null;
 
-function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent(window.location.origin+window.location.pathname);}
+function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent(window.location.origin+"/trip-group-invite.html");}
 function _ph(){var p=new URLSearchParams(window.location.hash.slice(1));return p.get("id_token")||p.get("access_token");}
 async function _req(method,ep,body){
   var o={method:method,headers:{Authorization:"Bearer "+_tok}};
   if(body){o.headers["Content-Type"]="application/json";o.body=JSON.stringify(body);}
   var r=await fetch(_API+ep,o);
   if(r.status===401){localStorage.removeItem("up_token");location.href=_loginUrl();throw new Error("unauth");}
-  if(!r.ok)throw new Error("HTTP "+r.status);
+  if(!r.ok){var err=new Error("HTTP "+r.status);err.status=r.status;try{var j=await r.json();err.serverMessage=j.message||"";}catch(e2){}throw err;}
   return r.json();
 }
 function _st(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
-function _ht(id,v){var e=document.getElementById(id);if(e)e.innerHTML=v;}
 function escHtml(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
-function showToast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},3000);}
 function _dn(p){if(!p)return"Traveler";if(p.display_name&&p.display_name.trim())return p.display_name.trim();if(p.identity&&p.identity.legal_first)return p.identity.legal_first;return p.uniprofile_number||p.email||"Traveler";}
 function _ini(p){var s=_dn(p).trim();return s.length>=2?s.slice(0,2).toUpperCase():s.toUpperCase();}
 function _sidebarUpdate(p){
@@ -206,45 +171,11 @@ function _sidebarUpdate(p){
 }
 async function _auth(){
   var h=_ph();
-  if(h){_tok=h;localStorage.setItem("up_token",_tok);history.replaceState(null,"",window.location.pathname);}
+  if(h){_tok=h;localStorage.setItem("up_token",_tok);history.replaceState(null,"",window.location.pathname+window.location.search);}
   else _tok=localStorage.getItem("up_token");
   if(!_tok){location.href=_loginUrl();return false;}
   return true;
 }
-
-/* ── Filtering ── */
-function applyFilter(filter,btn){
-  _curFilter=filter;
-  document.querySelectorAll(".filter-btn").forEach(function(b){b.classList.remove("active");});
-  if(btn)btn.classList.add("active");
-  renderGroups();
-}
-function _filtered(){
-  var today=new Date();today.setHours(0,0,0,0);
-  if(_curFilter==="archived")return _allGroups.filter(function(g){return g.archived_at;});
-  if(_curFilter==="joined")return _allGroups.filter(function(g){return g.role==="member"&&!g.archived_at;});
-  var active=_allGroups.filter(function(g){return!g.archived_at;});
-  if(_curFilter==="upcoming")return active.filter(function(g){return g.departure_date&&new Date(g.departure_date+"T00:00:00")>=today;});
-  if(_curFilter==="active"){
-    return active.filter(function(g){
-      var dep=g.departure_date?new Date(g.departure_date+"T00:00:00"):null;
-      var ret=g.return_date?new Date(g.return_date+"T00:00:00"):null;
-      return dep&&dep<today&&ret&&ret>=today;
-    });
-  }
-  if(_curFilter==="past"){
-    return active.filter(function(g){
-      var dep=g.departure_date?new Date(g.departure_date+"T00:00:00"):null;
-      var ret=g.return_date?new Date(g.return_date+"T00:00:00"):null;
-      if(!dep)return true;
-      if(ret)return ret<today;
-      return dep<today;
-    });
-  }
-  return _allGroups;
-}
-
-/* ── Date helpers ── */
 function _fmtRange(dep,ret){
   if(!dep)return"";
   var d=new Date(dep+"T00:00:00"),opts={month:"short",day:"numeric"};
@@ -254,96 +185,173 @@ function _fmtRange(dep,ret){
   return s+", "+yr;
 }
 
-/* ── Group card ── */
-function _groupCard(g){
-  var dep=g.departure_date?new Date(g.departure_date+"T00:00:00"):null;
-  var month=dep?dep.toLocaleDateString("en-US",{month:"short"}):"—";
-  var day=dep?dep.getDate():"?";
-  var dest=g.destination||"";
-  var destName=g.destination_name||dest;
-  var eyebrow=[dest?dest.toUpperCase():"",g.trip_name?escHtml(g.trip_name):""].filter(Boolean).join(" · ");
-  var metaParts=[];
-  var range=_fmtRange(g.departure_date,g.return_date);
-  if(range)metaParts.push(range);
-  metaParts.push((g.member_count||0)+" member"+(g.member_count===1?"":"s"));
-  var today=new Date();today.setHours(0,0,0,0);
-  var depDate=dep;
-  var retDate=g.return_date?new Date(g.return_date+"T00:00:00"):null;
-  var roleBadge=g.role==="member"?'<span class="pill pill-sky" style="font-size:10px;margin-left:8px">Joined</span>':"";
-  var statusBadge="";
-  if(g.archived_at){
-    statusBadge='<span class="pill pill-neutral" style="font-size:10px;margin-left:8px">Archived</span>';
-  }else if(depDate&&depDate<=today&&retDate&&retDate>=today){
-    statusBadge='<span class="pill pill-green" style="font-size:10px;margin-left:8px">Active now</span>';
-  }else if(depDate&&depDate>today){
-    var diff=Math.round((depDate-today)/86400000);
-    if(diff<=14)statusBadge='<span class="pill pill-amber" style="font-size:10px;margin-left:8px">'+diff+'d away</span>';
-  }
+/* ── State rendering ── */
+function renderState(state,extra){
+  var wrap=document.getElementById("invite-wrap");
+  if(!wrap)return;
 
-  var tripLink=g.role==="member"?"/trip.html?group_id="+g.id:(g.trip_id?"/trip.html?id="+g.trip_id:"#");
-  var hasLink=g.role==="member"||g.trip_id;
-  return'<div class="group-card'+(g.archived_at?" archived":"")+'">'
-    +'<div class="group-card-date"><div class="group-card-date-month">'+escHtml(month)+'</div><div class="group-card-date-day">'+day+'</div></div>'
-    +'<div class="group-card-main">'
-    +(eyebrow?'<div class="group-card-eyebrow">'+eyebrow+'</div>':"")
-    +'<div class="group-card-name">'+escHtml(g.name||"Group")+roleBadge+statusBadge+'</div>'
-    +'<div class="group-card-meta">'+escHtml(metaParts.join(" · "))+'</div>'
-    +'</div>'
-    +(hasLink?'<div class="group-card-action"><a href="'+escHtml(tripLink)+'" class="btn btn-secondary btn-sm">View →</a></div>':"")
-    +'</div>';
+  if(state==="pending"){
+    var inv=_invite;
+    var groupLink=inv.trip_group_id?"/trip.html?group_id="+inv.trip_group_id:"";
+    var range=_fmtRange(inv.departure_date,inv.return_date);
+    var destStr=[inv.destination_name||inv.destination,range].filter(Boolean).join(" · ");
+    var html='<div class="invite-card">';
+    html+='<div class="eyebrow" style="margin-bottom:12px">Trip group invite</div>';
+    html+='<div class="invite-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><circle cx="16" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><path d="M2 20C2 17 4.7 15 8 15" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M10 18C10 15.5 12.5 14 16 14C19.5 14 22 15.5 22 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg></div>';
+    html+='<h1 class="h2" style="margin-bottom:8px">You\'ve been invited</h1>';
+    html+='<p class="lede"><strong>'+escHtml(inv.organizer_name||"Someone")+'</strong> has invited you to join their trip group.</p>';
+    html+='<div class="invite-meta-row">';
+    html+='<div class="invite-meta-item"><span class="invite-meta-label">Group</span><span style="font-weight:500">'+escHtml(inv.group_name||"Trip Group")+'</span></div>';
+    if(destStr)html+='<div class="invite-meta-item"><span class="invite-meta-label">Destination</span><span>'+escHtml(destStr)+'</span></div>';
+    html+='<div class="invite-meta-item"><span class="invite-meta-label">Organized by</span><span>'+escHtml(inv.organizer_name||"—")+'</span></div>';
+    html+='</div>';
+    html+='<p style="font-size:13px;color:var(--ink-soft);line-height:1.6">By accepting, you agree to share your travel readiness information (passport validity, visa status) with the group organizer for this trip.</p>';
+    html+='<div id="invite-err" class="form-error"></div>';
+    html+='<div class="invite-actions">';
+    html+='<button class="btn btn-primary" id="accept-btn" onclick="acceptInvite()">Accept invite</button>';
+    html+='<button class="btn btn-secondary" id="decline-btn" onclick="declineInvite()">Decline</button>';
+    html+='</div>';
+    html+='</div>';
+    wrap.innerHTML=html;
+
+  }else if(state==="accepted"){
+    var groupId=(_invite&&_invite.trip_group_id)||"";
+    wrap.innerHTML='<div class="invite-card" style="text-align:center;padding:48px 36px">'
+      +'<div class="state-icon" style="color:var(--green)">✓</div>'
+      +'<h2 class="h2" style="margin-bottom:12px">You\'re in!</h2>'
+      +'<p class="lede" style="margin-bottom:28px">You\'ve joined the group. Your travel readiness will now be visible to the organizer.</p>'
+      +(groupId?'<a href="/trip.html?group_id='+escHtml(groupId)+'" class="btn btn-primary">View group →</a>':'<a href="/groups.html" class="btn btn-primary">Go to Groups →</a>')
+      +'</div>';
+
+  }else if(state==="declined"){
+    wrap.innerHTML='<div class="invite-card" style="text-align:center;padding:48px 36px">'
+      +'<div class="state-icon" style="color:var(--ink-mute)">✗</div>'
+      +'<h2 class="h2" style="margin-bottom:12px">Invite declined</h2>'
+      +'<p class="lede" style="margin-bottom:28px">You\'ve declined this trip group invite. The organizer will be notified.</p>'
+      +'<a href="/groups.html" class="btn btn-secondary">Go to Groups</a>'
+      +'</div>';
+
+  }else if(state==="already_accepted"){
+    var groupId=(_invite&&_invite.trip_group_id)||"";
+    wrap.innerHTML='<div class="invite-card" style="text-align:center;padding:48px 36px">'
+      +'<div class="state-icon" style="color:var(--green)">✓</div>'
+      +'<h2 class="h2" style="margin-bottom:12px">Already joined</h2>'
+      +'<p class="lede" style="margin-bottom:28px">You\'ve already accepted this invite and are part of the group.</p>'
+      +(groupId?'<a href="/trip.html?group_id='+escHtml(groupId)+'" class="btn btn-primary">View group →</a>':'<a href="/groups.html" class="btn btn-primary">Go to Groups →</a>')
+      +'</div>';
+
+  }else if(state==="already_declined"){
+    wrap.innerHTML='<div class="invite-card" style="text-align:center;padding:48px 36px">'
+      +'<div class="state-icon" style="color:var(--ink-mute)">✗</div>'
+      +'<h2 class="h2" style="margin-bottom:12px">Invite previously declined</h2>'
+      +'<p class="lede" style="margin-bottom:28px">You already declined this invite. Contact the organizer if you\'d like to join.</p>'
+      +'<a href="/groups.html" class="btn btn-secondary">Go to Groups</a>'
+      +'</div>';
+
+  }else if(state==="wrong_account"){
+    wrap.innerHTML='<div class="invite-card" style="text-align:center;padding:48px 36px">'
+      +'<div style="font-size:40px;margin-bottom:20px">⚠</div>'
+      +'<h2 class="h2" style="margin-bottom:12px">Wrong account</h2>'
+      +'<p class="lede" style="margin-bottom:12px">'+(extra?escHtml(extra):"This invite was sent to a different email address.")+'</p>'
+      +'<p style="font-size:13px;color:var(--ink-mute);margin-bottom:28px">Sign in with the account that received the invite email to continue.</p>'
+      +'<button class="btn btn-secondary" onclick="localStorage.removeItem(\'up_token\');window.location.reload()">Sign in with a different account</button>'
+      +'</div>';
+
+  }else{
+    wrap.innerHTML='<div class="invite-card" style="text-align:center;padding:48px 36px">'
+      +'<div style="font-size:40px;margin-bottom:20px" aria-hidden="true">🔍</div>'
+      +'<h2 class="h2" style="margin-bottom:12px">Invite not found</h2>'
+      +'<p class="lede" style="margin-bottom:28px">'+(extra||"This invite link is invalid or has expired.")+'</p>'
+      +'<a href="/groups.html" class="btn btn-secondary">Go to Groups</a>'
+      +'</div>';
+  }
 }
 
-/* ── Render ── */
-function renderGroups(){
-  var list=_filtered();
-  if(!list.length){
-    var msgs={
-      all:"No trip groups yet. Create one from a trip's detail page.",
-      upcoming:"No upcoming trip groups.",
-      active:"No groups for trips happening right now.",
-      past:"No past trip groups.",
-      joined:"No joined groups yet. Accept an invite to appear here.",
-      archived:"No archived groups.",
-    };
-    _ht("groups-list","<div style='padding:32px 0;color:var(--ink-mute);font-size:13px'>"+(msgs[_curFilter]||"No groups found.")+"</div>");
-    return;
+/* ── Accept / Decline ── */
+async function acceptInvite(){
+  if(!_consentId)return;
+  var ab=document.getElementById("accept-btn");
+  var db=document.getElementById("decline-btn");
+  var er=document.getElementById("invite-err");
+  if(ab)ab.disabled=true;if(ab)ab.textContent="Joining…";
+  if(db)db.disabled=true;
+  if(er)er.style.display="none";
+  try{
+    await _req("POST","/api/v1/trip-groups/invite/"+_consentId+"/accept",{});
+    renderState("accepted");
+  }catch(e){
+    if(ab){ab.disabled=false;ab.textContent="Accept invite";}
+    if(db)db.disabled=false;
+    if(er){er.textContent="Failed to accept invite. Please try again.";er.style.display="block";}
   }
-  var today=new Date();today.setHours(0,0,0,0);
-  var sorted=list.slice().sort(function(a,b){
-    if(_curFilter==="past"||_curFilter==="archived"){
-      return new Date(b.departure_date||"1970-01-01")-new Date(a.departure_date||"1970-01-01");
-    }
-    return new Date(a.departure_date||"9999-12-31")-new Date(b.departure_date||"9999-12-31");
-  });
-  _ht("groups-list",sorted.map(_groupCard).join(""));
 }
 
-function updateLede(){
-  var total=_allGroups.filter(function(g){return!g.archived_at;}).length;
-  var organizing=_allGroups.filter(function(g){return!g.archived_at&&g.role!=="member";}).length;
-  var joined=_allGroups.filter(function(g){return!g.archived_at&&g.role==="member";}).length;
-  var parts=[];
-  if(organizing)parts.push(organizing+" organizing");
-  if(joined)parts.push(joined+" joined");
-  _st("groups-lede",total+" group"+(total===1?"":"s")+(parts.length?" ("+parts.join(", ")+")")+".");
+async function declineInvite(){
+  if(!_consentId)return;
+  if(!confirm("Decline this trip group invite? The organizer will be notified."))return;
+  var ab=document.getElementById("accept-btn");
+  var db=document.getElementById("decline-btn");
+  var er=document.getElementById("invite-err");
+  if(ab)ab.disabled=true;
+  if(db){db.disabled=true;db.textContent="Declining…";}
+  if(er)er.style.display="none";
+  try{
+    await _req("POST","/api/v1/trip-groups/invite/"+_consentId+"/decline",{});
+    renderState("declined");
+  }catch(e){
+    if(ab)ab.disabled=false;
+    if(db){db.disabled=false;db.textContent="Decline";}
+    if(er){er.textContent="Failed to decline invite. Please try again.";er.style.display="block";}
+  }
 }
 
 /* ── Init ── */
-async function groupsInit(){
+async function inviteInit(){
+  /* Preserve ?c= across Cognito auth redirect using localStorage */
+  var params=new URLSearchParams(window.location.search);
+  var urlCid=params.get("c");
+  if(urlCid){
+    _consentId=urlCid;
+    localStorage.setItem("up_invite_cid",urlCid);
+  }else{
+    _consentId=localStorage.getItem("up_invite_cid")||null;
+  }
+  if(!_consentId){renderState("error","No invite ID found in this link.");return;}
+
   if(!await _auth())return;
+  /* Clear stored ID once auth succeeded and we have a live session */
+  if(!urlCid)localStorage.removeItem("up_invite_cid");
+
   try{
     var p=await _req("GET","/api/v1/me");
     _uid=p.uuid;
     _sidebarUpdate(p);
-    _allGroups=await _req("GET","/api/v1/trip-groups");
-    updateLede();
-    renderGroups();
+  }catch(e){/* sidebar non-critical */}
+
+  try{
+    _invite=await _req("GET","/api/v1/trip-groups/invite/"+_consentId);
+    document.title=(_invite.group_name||"Trip Group")+" Invite — UniProfile";
+    var status=(_invite.status||"").toLowerCase();
+    if(status==="pending"){
+      renderState("pending");
+    }else if(status==="approved"){
+      renderState("already_accepted");
+    }else if(status==="declined"){
+      renderState("already_declined");
+    }else{
+      renderState("error","This invite is no longer active.");
+    }
   }catch(e){
-    console.error(e);
-    _ht("groups-list","<div style='padding:32px 0;color:var(--red);font-size:13px'>Failed to load groups.</div>");
+    if(e.status===403){
+      renderState("wrong_account",e.serverMessage||"");
+    }else if(e.status===404){
+      renderState("error","This invite link is invalid or has expired.");
+    }else{
+      renderState("error","Failed to load invite. Please try again.");
+    }
   }
 }
-groupsInit();
+inviteInit();
 </script>
 </body>
 </html>

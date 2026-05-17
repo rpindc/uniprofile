@@ -1,5 +1,5 @@
 const { RDSDataClient, ExecuteStatementCommand } = require("@aws-sdk/client-rds-data");
-const { CognitoIdentityProviderClient, AdminGetUserCommand } = require("@aws-sdk/client-cognito-identity-provider");
+const { CognitoIdentityProviderClient, AdminGetUserCommand, AdminInitiateAuthCommand } = require("@aws-sdk/client-cognito-identity-provider");
 const { CognitoJwtVerifier } = require("aws-jwt-verify");
 const rds = new RDSDataClient({ region: process.env.AWS_REGION || "us-east-1" });
 const cognito = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION || "us-east-1" });
@@ -23,6 +23,61 @@ async function validateTripGroupId(groupId,ownerUuid){
   const rows=await sql("SELECT id,trip_id,archived_at FROM traveler_groups WHERE id=:id AND owner_uuid=:u",[strParam("id",groupId),uuidParam("u",ownerUuid)]);
   if(!rows||!rows.length)throw{status:404,message:"Trip Group not found"};
   return rows[0];
+}
+async function validateTripGroupAccess(groupId,callerUuid){
+  const owned=await sql("SELECT id,trip_id,archived_at,members,owner_uuid FROM traveler_groups WHERE id=:id AND owner_uuid=:u",[strParam("id",groupId),uuidParam("u",callerUuid)]);
+  if(owned.length)return{row:owned[0],role:'organizer'};
+  const joined=await sql("SELECT tg.id,tg.trip_id,tg.archived_at,tg.members,tg.owner_uuid FROM traveler_groups tg JOIN trip_group_consents c ON c.trip_group_id=tg.id WHERE tg.id=:id AND c.target_uuid=:u AND c.status='approved'",[strParam("id",groupId),uuidParam("u",callerUuid)]);
+  if(joined.length)return{row:joined[0],role:'member'};
+  throw{status:404,message:"Trip Group not found"};
+}
+async function writeAuditLog(groupId,actorUuid,action,targetUuid,payload){
+  try{
+    const{randomBytes}=require('crypto');
+    const b=randomBytes(16);b[6]=(b[6]&0x0f)|0x40;b[8]=(b[8]&0x3f)|0x80;
+    const id=b.toString('hex').replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/,'$1-$2-$3-$4-$5');
+    const tgtParam=targetUuid?uuidParam("tgt",targetUuid):{name:"tgt",value:{isNull:true}};
+    await sql("INSERT INTO trip_group_audit_log(id,trip_group_id,actor_uuid,action,target_uuid,payload) VALUES(:id::uuid,:gid,:actor::uuid,:action,:tgt::uuid,:payload::jsonb)",
+      [strParam("id",id),strParam("gid",groupId),strParam("actor",actorUuid),strParam("action",action),tgtParam,strParam("payload",JSON.stringify(payload||{}))]);
+  }catch(e){console.warn("audit log write failed:",e.message);}
+}
+async function writeNotification(recipientUuid,groupId,kind,payload){
+  try{
+    const{randomBytes}=require('crypto');
+    const b=randomBytes(16);b[6]=(b[6]&0x0f)|0x40;b[8]=(b[8]&0x3f)|0x80;
+    const id=b.toString('hex').replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/,'$1-$2-$3-$4-$5');
+    await sql("INSERT INTO trip_group_notifications(id,recipient_uuid,trip_group_id,kind,payload) VALUES(:id::uuid,:u::uuid,:gid,:kind,:payload::jsonb)",
+      [strParam("id",id),strParam("u",recipientUuid),strParam("gid",groupId),strParam("kind",kind),strParam("payload",JSON.stringify(payload||{}))]);
+  }catch(e){console.warn("notification write failed:",e.message);}
+}
+async function getTravelerDisplayName(uuid){
+  try{
+    const rows=await sql("SELECT i.legal_first,i.legal_last,t.email FROM travelers t LEFT JOIN traveler_identity i ON i.traveler_uuid=t.uuid WHERE t.uuid=:u",[uuidParam("u",uuid)]);
+    if(!rows.length)return"A UniProfile member";
+    const r=rows[0];
+    return[r.legal_first,r.legal_last].filter(Boolean).join(' ')||r.email||"A UniProfile member";
+  }catch(e){return"A UniProfile member";}
+}
+async function sendGroupInviteEmail(targetEmail,organizerName,groupName,destination,consentId){
+  const inviteUrl="https://www.uniprofile.net/trip-group-invite.html?c="+consentId;
+  const destDisplay=destination?(RULES[destination]||{}).name||destination:'';
+  const bodyHtml=[
+    '<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px 24px;background:#F7F6F3">',
+    '<div style="background:#fff;border:1px solid #E5E4E0;border-radius:12px;padding:32px">',
+    '<div style="font-family:Georgia,serif;font-size:28px;font-weight:700;color:#111;margin-bottom:4px">UniProfile</div>',
+    '<div style="font-size:11px;color:#9CA3AF;letter-spacing:2px;text-transform:uppercase;margin-bottom:28px">Travel Identity Platform</div>',
+    '<p style="font-size:15px;color:#111827;margin:0 0 8px"><strong>'+organizerName+'</strong> added you to a trip group.</p>',
+    '<p style="font-size:14px;color:#374151;margin:0 0 20px"><strong>'+groupName+(destDisplay?' &middot; '+destDisplay:'')+'</strong></p>',
+    '<p style="font-size:13px;color:#6B7280;margin:0 0 24px">They\'d like to share travel documents for this trip. You can review and accept or decline.</p>',
+    '<a href="'+inviteUrl+'" style="display:inline-block;background:#B45309;color:#fff;font-size:14px;font-weight:600;padding:14px 28px;border-radius:8px;text-decoration:none;letter-spacing:0.3px">View Invitation</a>',
+    '<p style="font-size:11px;color:#9CA3AF;margin:24px 0 0">You must be signed in to UniProfile to respond to this invitation.</p>',
+    '</div></div>'
+  ].join('');
+  await sesClient.send(new SendEmailCommand({
+    FromEmailAddress:'invites@uniprofile.net',
+    Destination:{ToAddresses:[targetEmail]},
+    Content:{Simple:{Subject:{Data:organizerName+' added you to a trip group on UniProfile',Charset:'UTF-8'},Body:{Html:{Data:bodyHtml,Charset:'UTF-8'},Text:{Data:organizerName+' added you to "'+groupName+'" on UniProfile. View the invitation at '+inviteUrl,Charset:'UTF-8'}}}},
+  }));
 }
 function evaluateAdmissibility(docs,destinationIata,returnDate){
   const entry=RULES[destinationIata];
@@ -806,30 +861,41 @@ exports.handler=async function(event){
         [uuidParam("u",myUuid),strParam("m",JSON.stringify({trip_group_id:groupId,trip_id:tripId}))]);
       return{statusCode:201,headers:cors(go(event)),body:JSON.stringify({id:groupId,name:groupName,members,trip_id:tripId})};
     }
-    // GET /api/v1/trip-groups — list all Trip Groups for the user
+    // GET /api/v1/trip-groups — list all Trip Groups for the user (owned + joined)
     if(method==="GET"&&path==="/api/v1/trip-groups"){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
       const p=[uuidParam("u",myUuid)];
-      const rows=await sql("SELECT tg.id,tg.name,tg.destination,tg.trip_id::text,tg.archived_at,tg.created_at,tg.updated_at,tg.members,t.trip_name,t.departure_date,t.return_date,t.destination_iata FROM traveler_groups tg LEFT JOIN trips t ON t.id=tg.trip_id WHERE tg.owner_uuid=:u AND tg.trip_id IS NOT NULL ORDER BY tg.updated_at DESC",p);
-      return ok(rows.map(function(r){
+      const [ownedRows,joinedRows]=await Promise.all([
+        sql("SELECT tg.id,tg.name,tg.destination,tg.trip_id::text,tg.archived_at,tg.created_at,tg.updated_at,tg.members,t.trip_name,t.departure_date,t.return_date,t.destination_iata FROM traveler_groups tg LEFT JOIN trips t ON t.id=tg.trip_id WHERE tg.owner_uuid=:u AND tg.trip_id IS NOT NULL ORDER BY tg.updated_at DESC",p),
+        sql("SELECT tg.id,tg.name,tg.destination,tg.trip_id::text,tg.archived_at,tg.created_at,tg.updated_at,tg.members,t.trip_name,t.departure_date,t.return_date,t.destination_iata FROM traveler_groups tg LEFT JOIN trips t ON t.id=tg.trip_id JOIN trip_group_consents c ON c.trip_group_id=tg.id WHERE c.target_uuid=:u AND c.status='approved' AND tg.trip_id IS NOT NULL ORDER BY tg.updated_at DESC",p),
+      ]);
+      const mapRow=function(r,role){
         const members=typeof r.members==="string"?JSON.parse(r.members):(r.members||[]);
-        return{id:r.id,name:r.name,destination:r.destination_iata||r.destination,destination_name:(RULES[r.destination_iata||'']||{}).name||r.destination,trip_id:r.trip_id,trip_name:r.trip_name,departure_date:r.departure_date,return_date:r.return_date,member_count:members.length,archived_at:r.archived_at,created_at:r.created_at,updated_at:r.updated_at};
-      }),event);
+        return{id:r.id,name:r.name,destination:r.destination_iata||r.destination,destination_name:(RULES[r.destination_iata||'']||{}).name||r.destination,trip_id:r.trip_id,trip_name:r.trip_name,departure_date:r.departure_date,return_date:r.return_date,member_count:members.length,archived_at:r.archived_at,created_at:r.created_at,updated_at:r.updated_at,role};
+      };
+      const owned=ownedRows.map(function(r){return mapRow(r,'organizer');});
+      const ownedIds=new Set(owned.map(function(r){return r.id;}));
+      const joined=joinedRows.filter(function(r){return!ownedIds.has(r.id);}).map(function(r){return mapRow(r,'member');});
+      const all=owned.concat(joined).sort(function(a,b){return new Date(b.updated_at)-new Date(a.updated_at);});
+      return ok(all,event);
     }
     // GET /api/v1/trip-groups/{group_id}
-    if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+$/)&&!path.includes('/members')&&!path.includes('/consents')&&!path.includes('/readiness')&&!path.includes('/archive')){
+    if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+$/)&&!path.includes('/members')&&!path.includes('/consents')&&!path.includes('/readiness')&&!path.includes('/archive')&&!path.includes('/workspace')&&!path.includes('/audit-log')&&!path.includes('/leave')){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
       const groupId=path.split('/').filter(Boolean)[3];
-      const g=await validateTripGroupId(groupId,myUuid);
+      const {role}=await validateTripGroupAccess(groupId,myUuid);
       const [groupRows,consents]=await Promise.all([
-        sql("SELECT tg.*,tg.trip_id::text AS trip_id_str,t.trip_name,t.departure_date,t.return_date,t.destination_iata FROM traveler_groups tg LEFT JOIN trips t ON t.id=tg.trip_id WHERE tg.id=:id",[strParam("id",groupId)]),
-        sql("SELECT id,target_uuid,status,requested_scopes,granted_scopes,requested_at,responded_at FROM trip_group_consents WHERE trip_group_id=:id",[strParam("id",groupId)]),
+        sql("SELECT tg.*,tg.trip_id::text AS trip_id_str,t.trip_name,t.departure_date,t.return_date,t.destination_iata,u.email AS owner_email,i.legal_first AS owner_first,i.legal_last AS owner_last FROM traveler_groups tg LEFT JOIN trips t ON t.id=tg.trip_id LEFT JOIN travelers u ON u.uuid=tg.owner_uuid LEFT JOIN traveler_identity i ON i.traveler_uuid=tg.owner_uuid WHERE tg.id=:id",[strParam("id",groupId)]),
+        role==='organizer'?sql("SELECT id,target_uuid,status,requested_scopes,granted_scopes,requested_at,responded_at FROM trip_group_consents WHERE trip_group_id=:id",[strParam("id",groupId)]):Promise.resolve([]),
       ]);
       const row=groupRows[0];
       const members=typeof row.members==="string"?JSON.parse(row.members):(row.members||[]);
-      return ok({id:row.id,name:row.name,destination:row.destination_iata||row.destination,destination_name:(RULES[row.destination_iata||'']||{}).name||row.destination,trip_id:row.trip_id_str,trip_name:row.trip_name,departure_date:row.departure_date,return_date:row.return_date,archived_at:row.archived_at,members,consents},event);
+      const resp={id:row.id,name:row.name,destination:row.destination_iata||row.destination,destination_name:(RULES[row.destination_iata||'']||{}).name||row.destination,trip_id:row.trip_id_str,trip_name:row.trip_name,departure_date:row.departure_date,return_date:row.return_date,archived_at:row.archived_at,members,role};
+      if(role==='organizer')resp.consents=consents;
+      if(role==='member')resp.organizer_name=[row.owner_first,row.owner_last].filter(Boolean).join(' ')||row.owner_email||null;
+      return ok(resp,event);
     }
     // PATCH /api/v1/trip-groups/{group_id}
     if(method==="PATCH"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+$/)&&!path.includes('/members')&&!path.includes('/consents')&&!path.includes('/readiness')&&!path.includes('/archive')){
@@ -890,13 +956,27 @@ exports.handler=async function(event){
         memberName=lr[0]?[lr[0].first,lr[0].last].filter(Boolean).join(' ')||'Linked person':'Linked person';
         color=avatarColorFromName(memberName);
         // Auto-create pending consent row
-        await sql("INSERT INTO trip_group_consents(trip_group_id,requester_uuid,target_uuid,status,requested_scopes) VALUES(:gid,:u,:tgt,'pending','[\"passport\"]'::jsonb)",
+        const consentRows=await sql("INSERT INTO trip_group_consents(trip_group_id,requester_uuid,target_uuid,status,requested_scopes) VALUES(:gid,:u,:tgt,'pending','[\"passport\"]'::jsonb) RETURNING id",
           [strParam("gid",groupId),uuidParam("u",myUuid),uuidParam("tgt",linkedId)]);
+        const consentId=consentRows[0]&&consentRows[0].id;
+        // Audit + notification + email (non-blocking)
+        const [orgName,grpDetail,targetEmailRows]=await Promise.all([
+          getTravelerDisplayName(myUuid),
+          sql("SELECT name,t.destination_iata FROM traveler_groups tg LEFT JOIN trips t ON t.id=tg.trip_id WHERE tg.id=:id",[strParam("id",groupId)]),
+          sql("SELECT email FROM travelers WHERE uuid=:u",[uuidParam("u",linkedId)]),
+        ]);
+        const grpName=(grpDetail[0]&&grpDetail[0].name)||groupId;
+        const destIata=((grpDetail[0]&&grpDetail[0].destination_iata)||'').trim().toUpperCase().slice(0,3);
+        writeAuditLog(groupId,myUuid,'member_added',linkedId,{kind:'linked',member_id:memberId});
+        writeNotification(linkedId,groupId,'group_invite',{organizer_name:orgName,group_name:grpName,consent_id:consentId});
+        const targetEmail=targetEmailRows[0]&&targetEmailRows[0].email;
+        if(targetEmail)sendGroupInviteEmail(targetEmail,orgName,grpName,destIata,consentId).catch(function(e){console.warn("group invite email failed:",e.message);});
       }
       members.push({id:memberId,kind,named_only_id:namedId,linked_uuid:linkedId,display_name:memberName,role:'member',avatar_color:color});
       await sql("UPDATE traveler_groups SET members=:m::jsonb,updated_at=NOW() WHERE id=:id",[strParam("m",JSON.stringify(members)),strParam("id",groupId)]);
       await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_member_added',:m2::jsonb)",
         [uuidParam("u",myUuid),strParam("m2",JSON.stringify({trip_group_id:groupId,member_kind:kind,member_id:memberId}))]);
+      if(kind==='named_only')writeAuditLog(groupId,myUuid,'member_added',null,{kind:'named_only',member_id:memberId,display_name:memberName});
       return{statusCode:201,headers:cors(go(event)),body:JSON.stringify({id:memberId,kind,named_only_id:namedId,linked_uuid:linkedId,display_name:memberName,avatar_color:color})};
     }
     // DELETE /api/v1/trip-groups/{group_id}/members/{member_id}
@@ -1013,29 +1093,43 @@ exports.handler=async function(event){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
       const groupId=path.split('/').filter(Boolean)[3];
-      await validateTripGroupId(groupId,myUuid);
+      const {role}=await validateTripGroupAccess(groupId,myUuid);
       const groupRows=await sql("SELECT tg.*,t.destination_iata,t.return_date FROM traveler_groups tg LEFT JOIN trips t ON t.id=tg.trip_id WHERE tg.id=:id",[strParam("id",groupId)]);
       const g=groupRows[0];
       const destIata=(g.destination_iata||g.destination||'').trim().toUpperCase().slice(0,3);
       const returnDate=g.return_date||null;
       const members=typeof g.members==="string"?JSON.parse(g.members):(g.members||[]);
-      // Fetch docs for self
+      // Fetch docs for self (organizer's own docs, or member's own docs)
       const selfDocs=await sql("SELECT doc_type AS document_type,expiry_date AS date_of_expiry FROM travel_documents WHERE traveler_uuid=:u AND doc_type='PASSPORT'",[uuidParam("u",myUuid)]);
-      // Fetch named-only docs
-      const namedIds=members.filter(function(m){return m.kind==='named_only'&&m.named_only_id;}).map(function(m){return m.named_only_id;});
+      // Named-only docs — only organizer can access these
+      const namedIds=role==='organizer'?members.filter(function(m){return m.kind==='named_only'&&m.named_only_id;}).map(function(m){return m.named_only_id;}):[];
       const namedDocs=namedIds.length?await sql("SELECT named_only_id::text,document_type,date_of_expiry FROM named_only_documents WHERE named_only_id=ANY(ARRAY["+namedIds.map(function(_,i){return':id'+i;}).join(',')+"]::uuid[])",namedIds.map(function(id,i){return uuidParam('id'+i,id);})):[];
       const namedDocMap={};
       namedDocs.forEach(function(d){if(!namedDocMap[d.named_only_id])namedDocMap[d.named_only_id]=[];namedDocMap[d.named_only_id].push(d);});
       const consents=await sql("SELECT target_uuid::text,status FROM trip_group_consents WHERE trip_group_id=:id",[strParam("id",groupId)]);
       const consentMap={};consents.forEach(function(c){consentMap[c.target_uuid]=c.status;});
       const memberResults=members.map(function(m){
+        const isSelf=(m.kind==='self'&&role==='organizer')||(m.kind==='linked'&&m.linked_uuid===myUuid);
         let docs=[],displayName=m.display_name||'Member';
         if(m.kind==='self')docs=selfDocs;
-        else if(m.kind==='named_only')docs=namedDocMap[m.named_only_id]||[];
+        else if(m.kind==='named_only'){
+          if(role==='organizer')docs=namedDocMap[m.named_only_id]||[];
+          else return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,joined:true};
+        }
         else if(m.kind==='linked'){
           const cStatus=consentMap[m.linked_uuid];
-          if(cStatus!=='approved'){
-            return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,checks:[{id:'consent_pending',label:'Data sharing',status:cStatus==='pending'?'pending':'failed',detail:cStatus==='pending'?'Sharing request sent — waiting for approval':'No sharing request sent'}],overall_status:'action_needed'};
+          if(m.linked_uuid===myUuid){
+            // This is the calling member — show their own data
+            docs=selfDocs;
+          } else if(role==='organizer'){
+            if(cStatus!=='approved'){
+              return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,checks:[{id:'consent_pending',label:'Data sharing',status:cStatus==='pending'?'pending':'failed',detail:cStatus==='pending'?'Sharing request sent — waiting for approval':'No sharing request sent'}],overall_status:'action_needed'};
+            }
+            // approved linked member — organizer can't see their actual docs (tier 2 restriction)
+            return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,checks:[{id:'consent_approved',label:'Data sharing',status:'passed',detail:'Member approved data sharing'}],overall_status:'ready',consent_status:'approved'};
+          } else {
+            // Joined member viewing another member — stub only
+            return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,joined:cStatus==='approved'};
           }
         }
         const admissibility=evaluateAdmissibility(docs,destIata,returnDate);
@@ -1046,7 +1140,22 @@ exports.handler=async function(event){
       const ready=memberResults.filter(function(m){return m.overall_status==='ready';}).length;
       const action=memberResults.filter(function(m){return m.overall_status==='action_needed';}).length;
       const blocked=memberResults.filter(function(m){return m.overall_status==='blocked';}).length;
-      return ok({trip_group_id:groupId,destination:destIata,destination_name:(RULES[destIata]||{}).name||destIata,return_date:returnDate,members:memberResults,summary:{total,ready,action_needed:action,blocked},rule_source:'hardcoded_v1',disclaimer:RULES._meta.disclaimer},event);
+      const resp={trip_group_id:groupId,destination:destIata,destination_name:(RULES[destIata]||{}).name||destIata,return_date:returnDate,role};
+      if(role==='organizer'){
+        resp.members=memberResults;
+        resp.summary={total,ready,action_needed:action,blocked};
+        resp.rule_source='hardcoded_v1';
+        resp.disclaimer=RULES._meta.disclaimer;
+      } else {
+        // Member view — own full data + aggregate summary + stub list
+        const ownFull=memberResults.find(function(m){return m.kind==='linked'&&m.checks;});
+        resp.my_readiness=ownFull||null;
+        resp.members=memberResults;
+        resp.aggregate_summary={total,ready,action_needed:action,blocked};
+        resp.rule_source='hardcoded_v1';
+        resp.disclaimer=RULES._meta.disclaimer;
+      }
+      return ok(resp,event);
     }
     // ── Family Profile Routes ──────────────────────────────────────────────
     // GET /api/v1/family/{uuid}
@@ -1822,6 +1931,265 @@ exports.handler=async function(event){
       return ok({events},event);
     }
     // ── End Auth Security ─────────────────────────────────────────────────────
+
+    // ── Notifications ─────────────────────────────────────────────────────────
+    // GET /api/v1/notifications
+    if(method==="GET"&&path==="/api/v1/notifications"){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const rows=await sql(
+        "SELECT id,trip_group_id,kind,payload,read_at,snooze_until,created_at FROM trip_group_notifications WHERE recipient_uuid=:u AND read_at IS NULL AND (snooze_until IS NULL OR snooze_until<=NOW()) ORDER BY created_at DESC LIMIT 50",
+        [uuidParam("u",myUuid)]);
+      return ok(rows,event);
+    }
+    // PATCH /api/v1/notifications/{id}
+    if(method==="PATCH"&&path.match(/^\/api\/v1\/notifications\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const notifId=path.split('/').filter(Boolean)[3];
+      const {action}=body;
+      if(!action||!['read','snooze'].includes(action))return err("action must be 'read' or 'snooze'",event,400);
+      const rows=await sql("SELECT id,kind,trip_group_id,payload FROM trip_group_notifications WHERE id=:id::uuid AND recipient_uuid=:u",[strParam("id",notifId),uuidParam("u",myUuid)]);
+      if(!rows.length)return err("Notification not found",event,404);
+      if(action==='read'){
+        await sql("UPDATE trip_group_notifications SET read_at=NOW() WHERE id=:id::uuid AND recipient_uuid=:u",[strParam("id",notifId),uuidParam("u",myUuid)]);
+      }else{
+        await sql("UPDATE trip_group_notifications SET snooze_until=NOW()+INTERVAL '7 days' WHERE id=:id::uuid AND recipient_uuid=:u",[strParam("id",notifId),uuidParam("u",myUuid)]);
+      }
+      return ok({success:true},event);
+    }
+    // ── Trip Group Invite (invitee-facing) ────────────────────────────────────
+    // GET /api/v1/trip-groups/invite/{consent_id}
+    if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/invite\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const consentId=path.split('/').filter(Boolean)[4];
+      const rows=await sql(
+        "SELECT c.id,c.trip_group_id,c.requester_uuid,c.target_uuid,c.status,c.requested_scopes,c.requested_at,tg.name AS group_name,tg.destination,t.trip_name,t.departure_date,t.return_date,t.destination_iata FROM trip_group_consents c JOIN traveler_groups tg ON tg.id=c.trip_group_id LEFT JOIN trips t ON t.id=tg.trip_id WHERE c.id=:cid::uuid",
+        [strParam("cid",consentId)]);
+      if(!rows.length)return err("Invitation not found",event,404);
+      const consent=rows[0];
+      // Wrong account check
+      if(consent.target_uuid!==myUuid)return err("This invitation isn't for your account. Please sign in with the account that received this invite.",event,403);
+      const destIata=(consent.destination_iata||consent.destination||'').trim().toUpperCase().slice(0,3);
+      const orgName=await getTravelerDisplayName(consent.requester_uuid);
+      return ok({consent_id:consent.id,status:consent.status,group_id:consent.trip_group_id,group_name:consent.group_name,trip_name:consent.trip_name,destination:destIata,destination_name:(RULES[destIata]||{}).name||destIata,departure_date:consent.departure_date,return_date:consent.return_date,organizer_name:orgName,requested_scopes:typeof consent.requested_scopes==="string"?JSON.parse(consent.requested_scopes):(consent.requested_scopes||[]),requested_at:consent.requested_at},event);
+    }
+    // POST /api/v1/trip-groups/invite/{consent_id}/accept
+    if(method==="POST"&&path.match(/^\/api\/v1\/trip-groups\/invite\/[^/]+\/accept$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const consentId=path.split('/').filter(Boolean)[4];
+      const rows=await sql("SELECT id,trip_group_id,requester_uuid,target_uuid,status FROM trip_group_consents WHERE id=:cid::uuid",[strParam("cid",consentId)]);
+      if(!rows.length)return err("Invitation not found",event,404);
+      const consent=rows[0];
+      if(consent.target_uuid!==myUuid)return err("This invitation isn't for your account.",event,403);
+      if(consent.status!=='pending')return err("Invitation is no longer pending (status: "+consent.status+")",event,409);
+      await sql("UPDATE trip_group_consents SET status='approved',granted_scopes=requested_scopes,responded_at=NOW() WHERE id=:cid::uuid",[strParam("cid",consentId)]);
+      // Mark related notification read
+      await sql("UPDATE trip_group_notifications SET read_at=NOW() WHERE recipient_uuid=:u AND trip_group_id=:gid AND kind='group_invite' AND read_at IS NULL",[uuidParam("u",myUuid),strParam("gid",consent.trip_group_id)]);
+      writeAuditLog(consent.trip_group_id,myUuid,'consent_approved',consent.requester_uuid,{consent_id:consentId});
+      writeNotification(consent.requester_uuid,consent.trip_group_id,'sharing_approved',{member_uuid:myUuid});
+      return ok({success:true,group_id:consent.trip_group_id},event);
+    }
+    // POST /api/v1/trip-groups/invite/{consent_id}/decline
+    if(method==="POST"&&path.match(/^\/api\/v1\/trip-groups\/invite\/[^/]+\/decline$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const consentId=path.split('/').filter(Boolean)[4];
+      const rows=await sql("SELECT id,trip_group_id,requester_uuid,target_uuid,status FROM trip_group_consents WHERE id=:cid::uuid",[strParam("cid",consentId)]);
+      if(!rows.length)return err("Invitation not found",event,404);
+      const consent=rows[0];
+      if(consent.target_uuid!==myUuid)return err("This invitation isn't for your account.",event,403);
+      if(consent.status!=='pending')return err("Invitation is no longer pending (status: "+consent.status+")",event,409);
+      await sql("UPDATE trip_group_consents SET status='declined',revoked_by='member',responded_at=NOW() WHERE id=:cid::uuid",[strParam("cid",consentId)]);
+      await sql("UPDATE trip_group_notifications SET read_at=NOW() WHERE recipient_uuid=:u AND trip_group_id=:gid AND kind='group_invite' AND read_at IS NULL",[uuidParam("u",myUuid),strParam("gid",consent.trip_group_id)]);
+      writeAuditLog(consent.trip_group_id,myUuid,'consent_declined',consent.requester_uuid,{consent_id:consentId});
+      writeNotification(consent.requester_uuid,consent.trip_group_id,'sharing_declined',{member_uuid:myUuid});
+      return ok({success:true},event);
+    }
+    // ── Leave Group ───────────────────────────────────────────────────────────
+    // POST /api/v1/trip-groups/{group_id}/leave
+    if(method==="POST"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/leave$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      // Must be a joined member, not organizer
+      const consentRows=await sql("SELECT id FROM trip_group_consents WHERE trip_group_id=:gid AND target_uuid=:u AND status='approved'",[strParam("gid",groupId),uuidParam("u",myUuid)]);
+      if(!consentRows.length)return err("You are not a member of this group",event,403);
+      await sql("UPDATE trip_group_consents SET status='declined',revoked_by='member',responded_at=NOW() WHERE trip_group_id=:gid AND target_uuid=:u AND status='approved'",[strParam("gid",groupId),uuidParam("u",myUuid)]);
+      // Get organizer uuid to notify
+      const grpRows=await sql("SELECT owner_uuid FROM traveler_groups WHERE id=:id",[strParam("id",groupId)]);
+      if(grpRows.length){
+        writeAuditLog(groupId,myUuid,'member_left',grpRows[0].owner_uuid,{});
+        writeNotification(grpRows[0].owner_uuid,groupId,'member_left',{member_uuid:myUuid});
+      }
+      return ok({success:true},event);
+    }
+    // ── Workspace ─────────────────────────────────────────────────────────────
+    // GET /api/v1/trip-groups/{group_id}/workspace
+    if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/workspace$/)&&!path.includes('/accommodations')&&!path.includes('/references')){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      await validateTripGroupAccess(groupId,myUuid);
+      const rows=await sql("SELECT trip_notes,accommodations,reference_numbers,updated_at,updated_by FROM trip_group_workspace WHERE trip_group_id=:id",[strParam("id",groupId)]);
+      if(!rows.length)return ok({trip_group_id:groupId,trip_notes:null,accommodations:[],reference_numbers:[],updated_at:null},event);
+      const ws=rows[0];
+      return ok({trip_group_id:groupId,trip_notes:ws.trip_notes,accommodations:typeof ws.accommodations==="string"?JSON.parse(ws.accommodations):(ws.accommodations||[]),reference_numbers:typeof ws.reference_numbers==="string"?JSON.parse(ws.reference_numbers):(ws.reference_numbers||[]),updated_at:ws.updated_at},event);
+    }
+    // PATCH /api/v1/trip-groups/{group_id}/workspace/notes
+    if(method==="PATCH"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/workspace\/notes$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      const {role}=await validateTripGroupAccess(groupId,myUuid);
+      if(role!=='organizer')return err("Only the organizer can edit workspace notes",event,403);
+      const {trip_notes}=body;
+      await sql("INSERT INTO trip_group_workspace(trip_group_id,trip_notes,accommodations,reference_numbers,updated_at,updated_by) VALUES(:id,:notes,'[]'::jsonb,'[]'::jsonb,NOW(),:u::uuid) ON CONFLICT(trip_group_id) DO UPDATE SET trip_notes=:notes,updated_at=NOW(),updated_by=:u::uuid",
+        [strParam("id",groupId),strParam("notes",trip_notes||null),strParam("u",myUuid)]);
+      writeAuditLog(groupId,myUuid,'workspace_notes_updated',null,{});
+      return ok({success:true},event);
+    }
+    // POST /api/v1/trip-groups/{group_id}/workspace/accommodations
+    if(method==="POST"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/workspace\/accommodations$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      const {role}=await validateTripGroupAccess(groupId,myUuid);
+      if(role!=='organizer')return err("Only the organizer can add accommodations",event,403);
+      const {name,address,check_in,check_out,confirmation_number,notes}=body;
+      if(!name)return err("name required",event,400);
+      const {randomBytes}=require('crypto');
+      const itemId='acc-'+randomBytes(6).toString('hex');
+      const newItem={id:itemId,name,address:address||null,check_in:check_in||null,check_out:check_out||null,confirmation_number:confirmation_number||null,notes:notes||null};
+      const ws=await sql("SELECT accommodations FROM trip_group_workspace WHERE trip_group_id=:id",[strParam("id",groupId)]);
+      const items=ws.length?(typeof ws[0].accommodations==="string"?JSON.parse(ws[0].accommodations):(ws[0].accommodations||[])):[];
+      items.push(newItem);
+      await sql("INSERT INTO trip_group_workspace(trip_group_id,trip_notes,accommodations,reference_numbers,updated_at,updated_by) VALUES(:id,NULL,:acc::jsonb,'[]'::jsonb,NOW(),:u::uuid) ON CONFLICT(trip_group_id) DO UPDATE SET accommodations=:acc::jsonb,updated_at=NOW(),updated_by=:u::uuid",
+        [strParam("id",groupId),strParam("acc",JSON.stringify(items)),strParam("u",myUuid)]);
+      return{statusCode:201,headers:cors(go(event)),body:JSON.stringify(newItem)};
+    }
+    // PATCH /api/v1/trip-groups/{group_id}/workspace/accommodations/{item_id}
+    if(method==="PATCH"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/workspace\/accommodations\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const groupId=parts[3],itemId=parts[6];
+      const {role}=await validateTripGroupAccess(groupId,myUuid);
+      if(role!=='organizer')return err("Only the organizer can edit accommodations",event,403);
+      const ws=await sql("SELECT accommodations FROM trip_group_workspace WHERE trip_group_id=:id",[strParam("id",groupId)]);
+      const items=ws.length?(typeof ws[0].accommodations==="string"?JSON.parse(ws[0].accommodations):(ws[0].accommodations||[])):[];
+      const idx=items.findIndex(function(i){return i.id===itemId;});
+      if(idx===-1)return err("Accommodation not found",event,404);
+      Object.assign(items[idx],body,{id:itemId});
+      await sql("UPDATE trip_group_workspace SET accommodations=:acc::jsonb,updated_at=NOW(),updated_by=:u::uuid WHERE trip_group_id=:id",
+        [strParam("acc",JSON.stringify(items)),strParam("u",myUuid),strParam("id",groupId)]);
+      return ok({success:true},event);
+    }
+    // DELETE /api/v1/trip-groups/{group_id}/workspace/accommodations/{item_id}
+    if(method==="DELETE"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/workspace\/accommodations\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const groupId=parts[3],itemId=parts[6];
+      const {role}=await validateTripGroupAccess(groupId,myUuid);
+      if(role!=='organizer')return err("Only the organizer can delete accommodations",event,403);
+      const ws=await sql("SELECT accommodations FROM trip_group_workspace WHERE trip_group_id=:id",[strParam("id",groupId)]);
+      const items=ws.length?(typeof ws[0].accommodations==="string"?JSON.parse(ws[0].accommodations):(ws[0].accommodations||[])):[];
+      const updated=items.filter(function(i){return i.id!==itemId;});
+      if(updated.length===items.length)return err("Accommodation not found",event,404);
+      await sql("UPDATE trip_group_workspace SET accommodations=:acc::jsonb,updated_at=NOW(),updated_by=:u::uuid WHERE trip_group_id=:id",
+        [strParam("acc",JSON.stringify(updated)),strParam("u",myUuid),strParam("id",groupId)]);
+      return ok({success:true},event);
+    }
+    // POST /api/v1/trip-groups/{group_id}/workspace/references
+    if(method==="POST"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/workspace\/references$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      const {role}=await validateTripGroupAccess(groupId,myUuid);
+      if(role!=='organizer')return err("Only the organizer can add references",event,403);
+      const {label,value,notes}=body;
+      if(!label||!value)return err("label and value required",event,400);
+      const {randomBytes}=require('crypto');
+      const itemId='ref-'+randomBytes(6).toString('hex');
+      const newItem={id:itemId,label,value,notes:notes||null};
+      const ws=await sql("SELECT reference_numbers FROM trip_group_workspace WHERE trip_group_id=:id",[strParam("id",groupId)]);
+      const items=ws.length?(typeof ws[0].reference_numbers==="string"?JSON.parse(ws[0].reference_numbers):(ws[0].reference_numbers||[])):[];
+      items.push(newItem);
+      await sql("INSERT INTO trip_group_workspace(trip_group_id,trip_notes,accommodations,reference_numbers,updated_at,updated_by) VALUES(:id,NULL,'[]'::jsonb,:refs::jsonb,NOW(),:u::uuid) ON CONFLICT(trip_group_id) DO UPDATE SET reference_numbers=:refs::jsonb,updated_at=NOW(),updated_by=:u::uuid",
+        [strParam("id",groupId),strParam("refs",JSON.stringify(items)),strParam("u",myUuid)]);
+      return{statusCode:201,headers:cors(go(event)),body:JSON.stringify(newItem)};
+    }
+    // PATCH /api/v1/trip-groups/{group_id}/workspace/references/{item_id}
+    if(method==="PATCH"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/workspace\/references\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const groupId=parts[3],itemId=parts[6];
+      const {role}=await validateTripGroupAccess(groupId,myUuid);
+      if(role!=='organizer')return err("Only the organizer can edit references",event,403);
+      const ws=await sql("SELECT reference_numbers FROM trip_group_workspace WHERE trip_group_id=:id",[strParam("id",groupId)]);
+      const items=ws.length?(typeof ws[0].reference_numbers==="string"?JSON.parse(ws[0].reference_numbers):(ws[0].reference_numbers||[])):[];
+      const idx=items.findIndex(function(i){return i.id===itemId;});
+      if(idx===-1)return err("Reference not found",event,404);
+      Object.assign(items[idx],body,{id:itemId});
+      await sql("UPDATE trip_group_workspace SET reference_numbers=:refs::jsonb,updated_at=NOW(),updated_by=:u::uuid WHERE trip_group_id=:id",
+        [strParam("refs",JSON.stringify(items)),strParam("u",myUuid),strParam("id",groupId)]);
+      return ok({success:true},event);
+    }
+    // DELETE /api/v1/trip-groups/{group_id}/workspace/references/{item_id}
+    if(method==="DELETE"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/workspace\/references\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const groupId=parts[3],itemId=parts[6];
+      const {role}=await validateTripGroupAccess(groupId,myUuid);
+      if(role!=='organizer')return err("Only the organizer can delete references",event,403);
+      const ws=await sql("SELECT reference_numbers FROM trip_group_workspace WHERE trip_group_id=:id",[strParam("id",groupId)]);
+      const items=ws.length?(typeof ws[0].reference_numbers==="string"?JSON.parse(ws[0].reference_numbers):(ws[0].reference_numbers||[])):[];
+      const updated=items.filter(function(i){return i.id!==itemId;});
+      if(updated.length===items.length)return err("Reference not found",event,404);
+      await sql("UPDATE trip_group_workspace SET reference_numbers=:refs::jsonb,updated_at=NOW(),updated_by=:u::uuid WHERE trip_group_id=:id",
+        [strParam("refs",JSON.stringify(updated)),strParam("u",myUuid),strParam("id",groupId)]);
+      return ok({success:true},event);
+    }
+    // ── Audit Log ─────────────────────────────────────────────────────────────
+    // GET /api/v1/trip-groups/{group_id}/audit-log
+    if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/audit-log$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      await validateTripGroupId(groupId,myUuid);
+      const rows=await sql("SELECT id,actor_uuid,action,target_uuid,payload,created_at FROM trip_group_audit_log WHERE trip_group_id=:id ORDER BY created_at DESC LIMIT 100",[strParam("id",groupId)]);
+      return ok(rows,event);
+    }
+    // ── Re-auth ───────────────────────────────────────────────────────────────
+    // POST /api/v1/auth/verify-password
+    if(method==="POST"&&path==="/api/v1/auth/verify-password"){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const {password}=body;
+      if(!password)return err("password required",event,400);
+      const userRows=await sql("SELECT email FROM travelers WHERE uuid=:u",[uuidParam("u",myUuid)]);
+      if(!userRows.length)return err("User not found",event,404);
+      const email=userRows[0].email;
+      try{
+        await cognito.send(new AdminInitiateAuthCommand({
+          UserPoolId:process.env.COGNITO_USER_POOL_ID,
+          ClientId:process.env.COGNITO_CLIENT_ID,
+          AuthFlow:"ADMIN_USER_PASSWORD_AUTH",
+          AuthParameters:{USERNAME:email,PASSWORD:password},
+        }));
+        return ok({verified:true},event);
+      }catch(e){
+        if(e.name==="NotAuthorizedException"||e.name==="UserNotFoundException")return err("Incorrect password",event,401);
+        console.error("verify-password error:",e.message);
+        return err("Password verification failed",event,500);
+      }
+    }
+    // ── End Gate 3 ────────────────────────────────────────────────────────────
 
     return err("Not found",event,404);
   }catch(e){

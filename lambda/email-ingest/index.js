@@ -67,9 +67,9 @@ function parseMime(raw) {
   const subject    = decodeEncodedWords(subjectRaw);
   const ct         = headers["content-type"] || "text/plain";
 
-  // Extract UniProfile number from To: header — e.g. UP-123456@trips.uniprofile.net
-  const upMatch  = toHeader.match(/UP-(\d{6})@/i);
-  const upNumber = upMatch ? "UP-" + upMatch[1] : null;
+  // Extract UniProfile number from To: header — e.g. UP-HRM4-GBEH@trips.uniprofile.net
+  const upMatch  = toHeader.match(/\b(UP-[A-Z0-9]{4}-[A-Z0-9]{4})\b/i);
+  const upNumber = upMatch ? upMatch[1].toUpperCase() : null;
 
   // Extract plain email from From: header — handles "Name <email>" and bare email
   const fromMatch = fromHeader.match(/<([^>]+)>/) || fromHeader.match(/([^\s]+@[^\s]+)/);
@@ -77,7 +77,14 @@ function parseMime(raw) {
 
   const text = extractText(ct, bodyBlock, 10000);
   const pdfBuffers = extractPdfAttachments(ct, bodyBlock);
-  return { upNumber, fromEmail, subject, text, pdfBuffers };
+
+  // Security verdicts added by SES before S3 write — present on all real inbound emails
+  const virusVerdict = headers["x-ses-virus-verdict"] || null;
+  const authResults  = headers["authentication-results"] || "";
+  const spfResult    = (authResults.match(/\bspf=(\S+)/i)  || [])[1] || null;
+  const dkimResult   = (authResults.match(/\bdkim=(\S+)/i) || [])[1] || null;
+
+  return { upNumber, fromEmail, subject, text, pdfBuffers, virusVerdict, spfResult, dkimResult };
 }
 
 function decodeEncodedWords(str) {
@@ -391,8 +398,20 @@ exports.handler = async function(event) {
       const obj = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
       const rawEmail = await obj.Body.transformToString();
 
-      const { upNumber, fromEmail, subject, text, pdfBuffers } = parseMime(rawEmail);
+      const { upNumber, fromEmail, subject, text, pdfBuffers, virusVerdict, spfResult, dkimResult } = parseMime(rawEmail);
       console.log("To UP:", upNumber || "(none)", "| Subject:", subject.slice(0, 80));
+      console.log("Virus:", virusVerdict || "(no header)", "| SPF:", spfResult || "(no header)", "| DKIM:", dkimResult || "(no header)");
+
+      // Fail if verdicts are present and not PASS; fail-open if headers are absent
+      if (virusVerdict && virusVerdict.trim().toUpperCase() !== "PASS") {
+        console.log("Virus verdict failed:", virusVerdict, "— skipping"); continue;
+      }
+      if (spfResult && spfResult.toLowerCase() !== "pass") {
+        console.log("SPF failed:", spfResult, "— skipping"); continue;
+      }
+      if (dkimResult && dkimResult.toLowerCase() !== "pass") {
+        console.log("DKIM failed:", dkimResult, "— skipping"); continue;
+      }
 
       // Extract text from any PDF attachments and append to body
       let fullText = text;
@@ -411,20 +430,32 @@ exports.handler = async function(event) {
         }
       }
 
-      if (!upNumber) { console.log("No UP number in To: header — skipping"); continue; }
-
-      // Identify traveler by UniProfile number — fetch email + name for verification
-      const rows = await sql(
-        "SELECT t.uuid, t.email, ti.legal_first, ti.legal_last " +
-        "FROM travelers t LEFT JOIN traveler_identity ti ON ti.traveler_uuid=t.uuid " +
-        "WHERE t.uniprofile_number=:n",
-        [strParam("n", upNumber)]
-      );
-      if (!rows.length) {
-        console.log("No traveler found for:", upNumber, "— ignoring email");
+      // Identify traveler by UP number, or fall back to From: email
+      let rows;
+      if (upNumber) {
+        rows = await sql(
+          "SELECT t.uuid, t.uniprofile_number, t.email, ti.legal_first, ti.legal_last " +
+          "FROM travelers t LEFT JOIN traveler_identity ti ON ti.traveler_uuid=t.uuid " +
+          "WHERE t.uniprofile_number=:n",
+          [strParam("n", upNumber)]
+        );
+        if (!rows.length) { console.log("No traveler for UP:", upNumber); continue; }
+      } else if (fromEmail) {
+        console.log("No UP number — falling back to From: email lookup:", fromEmail);
+        rows = await sql(
+          "SELECT t.uuid, t.uniprofile_number, t.email, ti.legal_first, ti.legal_last " +
+          "FROM travelers t LEFT JOIN traveler_identity ti ON ti.traveler_uuid=t.uuid " +
+          "WHERE LOWER(t.email)=LOWER(:e)",
+          [strParam("e", fromEmail)]
+        );
+        if (!rows.length) { console.log("No traveler found for email:", fromEmail); continue; }
+        console.log("Traveler found by email:", rows[0].uniprofile_number);
+      } else {
+        console.log("No UP number and no From: email — skipping");
         continue;
       }
       const travelerUuid    = rows[0].uuid;
+      const travelerUpNum   = rows[0].uniprofile_number || upNumber;
       const travelerEmail   = rows[0].email   || null;
       const travelerFirst   = (rows[0].legal_first || "").toLowerCase().trim();
       const travelerLast    = (rows[0].legal_last  || "").toLowerCase().trim();
@@ -541,13 +572,13 @@ exports.handler = async function(event) {
       // Confirmed trips → reply to sender
       const confirmed = addedTrips.filter(t => !t.needsVerification);
       if (fromEmail && confirmed.length) {
-        await sendConfirmation(fromEmail, upNumber, confirmed, subject);
+        await sendConfirmation(fromEmail, travelerUpNum, confirmed, subject);
       }
 
       // Pending trips → send verification request to the registered email
       const pending = addedTrips.filter(t => t.needsVerification);
       if (travelerEmail && pending.length) {
-        await sendVerificationRequest(travelerEmail, upNumber, pending, subject);
+        await sendVerificationRequest(travelerEmail, travelerUpNum, pending, subject);
       }
 
     } catch (e) {

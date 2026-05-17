@@ -95,7 +95,28 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .readiness-table tbody tr:last-child td{border-bottom:none}
 .member-row{display:flex;align-items:center;gap:8px}
 .status-icon{font-size:15px;cursor:default}
-@media(max-width:767px){.main{padding:24px 20px}.readiness-table th,.readiness-table td{padding:8px 10px}}
+/* Workspace */
+.ws-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.ws-notes-display{background:#fff;border:0.5px solid var(--rule);border-radius:8px;padding:14px 16px;font-size:13px;line-height:1.7;white-space:pre-wrap;min-height:52px;color:var(--ink-soft)}
+.ws-notes-display.empty{color:var(--ink-faint);font-style:italic}
+.ws-notes-textarea{width:100%;min-height:110px;resize:vertical;border:0.5px solid var(--rule-strong);border-radius:8px;padding:12px;font-size:13px;font-family:var(--sans);line-height:1.7;color:var(--ink);background:#fff;outline:none}
+.ws-notes-textarea:focus{border-color:var(--ink)}
+.ws-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--rule)}
+.ws-item:last-child{border-bottom:none}
+.ws-item-main{flex:1;min-width:0}
+.ws-item-actions{display:flex;gap:4px;flex-shrink:0;padding-top:2px}
+/* Audit log */
+.audit-entry{padding:10px 0;border-bottom:0.5px solid var(--rule);font-size:13px;line-height:1.5}
+.audit-entry:last-child{border-bottom:none}
+.audit-entry-meta{font-size:11px;color:var(--ink-mute);margin-top:2px}
+/* Readiness summary card */
+.readiness-card{background:var(--green-soft);border-radius:10px;padding:16px 20px;margin-bottom:20px;display:flex;gap:24px;flex-wrap:wrap;align-items:center}
+.readiness-card-stat{text-align:center;min-width:52px}
+.readiness-card-num{font-family:var(--serif);font-size:28px;font-weight:300;color:var(--green);line-height:1}
+.readiness-card-num.amber{color:var(--amber)}
+.readiness-card-label{font-size:11px;color:var(--green);margin-top:2px;font-weight:500}
+.readiness-card-label.amber{color:var(--amber)}
+@media(max-width:767px){.main{padding:24px 20px}.readiness-table th,.readiness-table td{padding:8px 10px}.readiness-card{gap:16px}}
 </style>
 </head>
 <body>
@@ -168,7 +189,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   <main class="main">
 
     <div style="margin-bottom:24px">
-      <a href="/trips.html" style="font-size:12px;color:var(--ink-mute);text-decoration:none;font-family:var(--sans)">← All trips</a>
+      <a href="/trips.html" id="breadcrumb-link" style="font-size:12px;color:var(--ink-mute);text-decoration:none;font-family:var(--sans)">← All trips</a>
     </div>
 
     <div id="trip-header" style="display:none;margin-bottom:28px">
@@ -223,6 +244,107 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   </div>
 </div>
 
+<!-- ── Re-auth Modal ── -->
+<div class="modal-overlay" id="reauth-modal" onclick="if(event.target===this)closeReAuth()">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <h2 class="h3">Confirm your identity</h2>
+      <button class="modal-close" onclick="closeReAuth()">&#x2715;</button>
+    </div>
+    <p style="font-size:13px;color:var(--ink-soft);margin-bottom:18px" id="reauth-desc">This action requires you to re-enter your password.</p>
+    <div class="form-field">
+      <label class="form-label">Password</label>
+      <input class="form-input" id="reauth-password" type="password" placeholder="Your UniProfile password" onkeydown="if(event.key==='Enter')submitReAuth()"/>
+    </div>
+    <div id="reauth-error" class="form-error"></div>
+    <div class="form-actions">
+      <button class="btn btn-primary btn-sm" id="reauth-submit-btn" onclick="submitReAuth()">Confirm</button>
+      <button class="btn btn-secondary btn-sm" onclick="closeReAuth()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Audit Log Modal ── -->
+<div class="modal-overlay" id="audit-modal" onclick="if(event.target===this)closeAuditLog()">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <h2 class="h3">Group activity</h2>
+      <button class="modal-close" onclick="closeAuditLog()">&#x2715;</button>
+    </div>
+    <div id="audit-content" style="min-height:80px">
+      <div class="caption" style="color:var(--ink-mute)">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Accommodation Modal ── -->
+<div class="modal-overlay" id="accom-modal" onclick="if(event.target===this)closeAccomModal()">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h2 class="h3" id="accom-modal-title">Add accommodation</h2>
+      <button class="modal-close" onclick="closeAccomModal()">&#x2715;</button>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Name *</label>
+      <input class="form-input" id="accom-name" maxlength="120" placeholder="e.g. Marriott Tamarindo"/>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Address</label>
+      <input class="form-input" id="accom-address" maxlength="200" placeholder="Street address"/>
+    </div>
+    <div style="display:flex;gap:10px">
+      <div class="form-field" style="flex:1">
+        <label class="form-label">Check-in</label>
+        <input class="form-input" id="accom-checkin" type="date"/>
+      </div>
+      <div class="form-field" style="flex:1">
+        <label class="form-label">Check-out</label>
+        <input class="form-input" id="accom-checkout" type="date"/>
+      </div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Confirmation number</label>
+      <input class="form-input" id="accom-conf" maxlength="60" placeholder="e.g. ABC123456"/>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Notes</label>
+      <input class="form-input" id="accom-notes" maxlength="300" placeholder="Optional notes"/>
+    </div>
+    <div id="accom-error" class="form-error"></div>
+    <div class="form-actions">
+      <button class="btn btn-primary btn-sm" onclick="submitAccomModal()">Save</button>
+      <button class="btn btn-secondary btn-sm" onclick="closeAccomModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Reference Modal ── -->
+<div class="modal-overlay" id="ref-modal" onclick="if(event.target===this)closeRefModal()">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <h2 class="h3" id="ref-modal-title">Add reference</h2>
+      <button class="modal-close" onclick="closeRefModal()">&#x2715;</button>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Label *</label>
+      <input class="form-input" id="ref-label" maxlength="80" placeholder="e.g. Hotel front desk"/>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Number / value *</label>
+      <input class="form-input" id="ref-value" maxlength="120" placeholder="e.g. +506-2654-1234"/>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Notes</label>
+      <input class="form-input" id="ref-notes" maxlength="200" placeholder="Optional notes"/>
+    </div>
+    <div id="ref-error" class="form-error"></div>
+    <div class="form-actions">
+      <button class="btn btn-primary btn-sm" onclick="submitRefModal()">Save</button>
+      <button class="btn btn-secondary btn-sm" onclick="closeRefModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="/components/mobile-drawer.js"></script>
@@ -231,7 +353,10 @@ var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
 var _tok=null,_uid=null;
-var _trip=null,_group=null,_readiness=null,_familyProfile=null;
+var _trip=null,_group=null,_readiness=null,_familyProfile=null,_workspace=null;
+var _reAuthCallback=null;
+var _accomEditId=null,_refEditId=null;
+var _role='organizer';
 
 function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent(window.location.origin+window.location.pathname);}
 function _ph(){var p=new URLSearchParams(window.location.hash.slice(1));return p.get("id_token")||p.get("access_token");}
@@ -276,6 +401,7 @@ function _fmtRange(dep,ret){
   if(ret)s+=" – "+new Date(ret+"T00:00:00").toLocaleDateString("en-US",opts);
   return s+", "+yr;
 }
+function _fmtTs(ts){if(!ts)return"—";var d=new Date(ts);return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})+" at "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});}
 function _nightCount(dep,ret){
   if(!dep||!ret)return 0;
   return Math.max(0,Math.round((new Date(ret+"T00:00:00")-new Date(dep+"T00:00:00"))/86400000));
@@ -314,13 +440,19 @@ function renderGroupSection(){
   var html='';
 
   /* Section header row */
-  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">';
+  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">';
   html+='<div class="section-label">Trip Group</div>';
   if(_group){
-    html+='<div style="display:flex;gap:6px">';
-    html+='<button class="btn btn-secondary btn-sm" onclick="openAddMember()">Add member</button>';
-    html+='<button class="btn btn-secondary btn-sm" onclick="openRename()">Rename</button>';
-    if(!_group.archived_at)html+='<button class="btn btn-secondary btn-sm" style="color:var(--ink-mute)" onclick="archiveGroup()">Archive</button>';
+    html+='<div style="display:flex;gap:6px;flex-wrap:wrap">';
+    if(_role==='organizer'){
+      html+='<button class="btn btn-secondary btn-sm" onclick="openAddMember()">Add member</button>';
+      html+='<button class="btn btn-secondary btn-sm" onclick="openRename()">Rename</button>';
+      html+='<button class="btn btn-secondary btn-sm" onclick="openAuditLog()" style="color:var(--ink-mute)">Activity</button>';
+      if(!_group.archived_at)html+='<button class="btn btn-secondary btn-sm" style="color:var(--ink-mute)" onclick="archiveGroup()">Archive</button>';
+      html+='<button class="btn btn-danger btn-sm" onclick="deleteGroup()">Delete</button>';
+    }else{
+      html+='<button class="btn btn-danger btn-sm" onclick="leaveGroup()">Leave group</button>';
+    }
     html+='</div>';
   }
   html+='</div>';
@@ -334,32 +466,42 @@ function renderGroupSection(){
     html+='</div>';
   }else{
     /* Group name + meta */
-    html+='<div style="margin-bottom:22px">';
+    html+='<div style="margin-bottom:20px">';
     html+='<div class="h2" style="margin-bottom:4px">'+escHtml(_group.name)+'</div>';
     var gmeta=[];
     if(_group.destination_name)gmeta.push(escHtml(_group.destination_name));
     if(_group.departure_date||_group.return_date)gmeta.push(escHtml(_fmtRange(_group.departure_date,_group.return_date)));
     if(gmeta.length)html+='<div class="caption" style="margin-bottom:8px">'+gmeta.join(" · ")+'</div>';
+    if(_role==='member'&&_group.organizer_name)html+='<div class="caption" style="margin-bottom:8px">Organized by <span style="color:var(--ink-soft);font-weight:500">'+escHtml(_group.organizer_name)+'</span></div>';
     if(_group.archived_at)html+='<span class="pill pill-neutral" style="font-size:10px">Archived '+escHtml(_fmtShort(_group.archived_at.slice(0,10)))+'</span>';
     html+='</div>';
+
+    /* Aggregate readiness summary card */
+    if(_readiness&&(_readiness.summary||_readiness.aggregate_summary)){
+      var s=_readiness.summary||_readiness.aggregate_summary;
+      var allReady=s.ready===s.total&&s.total>0;
+      html+='<div class="readiness-card'+(allReady?'':' ').replace('readiness-card ','readiness-card'+(s.action_needed>0||s.blocked>0?' ':''))+'"'
+        +(s.action_needed>0||s.blocked>0?' style="background:var(--amber-soft)"':'')+'>';
+      html+='<div class="readiness-card-stat"><div class="readiness-card-num'+(s.action_needed>0||s.blocked>0?' amber':'')+'">'+s.total+'</div><div class="readiness-card-label'+(s.action_needed>0||s.blocked>0?' amber':'')+'">traveler'+(s.total===1?'':'s')+'</div></div>';
+      if(s.ready>0)html+='<div class="readiness-card-stat"><div class="readiness-card-num">'+s.ready+'</div><div class="readiness-card-label">ready</div></div>';
+      if(s.action_needed>0)html+='<div class="readiness-card-stat"><div class="readiness-card-num amber">'+s.action_needed+'</div><div class="readiness-card-label amber">need attention</div></div>';
+      if(s.blocked>0)html+='<div class="readiness-card-stat"><div class="readiness-card-num" style="color:var(--red)">'+s.blocked+'</div><div class="readiness-card-label" style="color:var(--red)">blocked</div></div>';
+      html+='</div>';
+    }
 
     /* Member list */
     html+=renderMemberList(_group.members||[]);
 
     /* Readiness matrix */
     if(_readiness&&_readiness.members&&_readiness.members.length){
-      html+='<div style="margin-top:32px">';
+      html+='<div style="margin-top:28px">';
       html+='<div style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:12px">Readiness — '+escHtml(_readiness.destination_name||_readiness.destination||"")+'</div>';
-      /* Summary pills */
-      var s=_readiness.summary||{};
-      html+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px">';
-      if(s.ready>0)html+='<span class="pill pill-green"><span class="pill-dot dot-green"></span>'+s.ready+(s.ready===1?" ready":" ready")+'</span>';
-      if(s.action_needed>0)html+='<span class="pill pill-amber"><span class="pill-dot dot-amber"></span>'+s.action_needed+' action needed</span>';
-      if(s.blocked>0)html+='<span class="pill pill-red"><span class="pill-dot dot-red"></span>'+s.blocked+' blocked</span>';
-      html+='</div>';
       html+=renderReadinessMatrix(_readiness);
       html+='</div>';
     }
+
+    /* Workspace section */
+    html+=renderWorkspaceSection();
   }
 
   _ht("group-section",html);
@@ -388,8 +530,8 @@ function renderMemberList(members){
     html+='<div class="caption">'+escHtml(kindLabel)+' · '+escHtml(roleLabel)+'</div>';
     html+='</div>';
     if(badge)html+='<div>'+badge+'</div>';
-    if(m.kind!=="self"){
-      html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px;color:var(--ink-mute)" onclick="removeMember(\''+escHtml(m.id)+'\')">Remove</button>';
+    if(m.kind!=="self"&&_role==='organizer'){
+      html+='<button class="btn btn-danger btn-sm" style="padding:4px 9px;font-size:11px" onclick="removeMember(\''+escHtml(m.id)+'\',\''+escHtml(m.display_name||"this member")+'\')">Remove</button>';
     }
     html+='</div>';
   });
@@ -402,7 +544,6 @@ function renderReadinessMatrix(readiness){
   var members=readiness.members||[];
   if(!members.length)return'';
 
-  /* Collect all unique check IDs in order of first appearance */
   var colIds=[],colLabels={};
   members.forEach(function(m){
     (m.checks||[]).forEach(function(c){
@@ -410,7 +551,6 @@ function renderReadinessMatrix(readiness){
     });
   });
 
-  /* Build per-member check lookup */
   var checkMap={};
   members.forEach(function(m){
     checkMap[m.member_id]={};
@@ -461,7 +601,313 @@ function renderReadinessMatrix(readiness){
   return html;
 }
 
+/* ── Workspace section ── */
+function renderWorkspaceSection(){
+  if(!_group)return'';
+  var html='<hr style="border:none;border-top:0.5px solid var(--rule);margin:32px 0"/>';
+  html+='<div style="margin-bottom:8px"><span class="section-label">Trip workspace</span></div>';
+
+  /* Notes */
+  var notes=(_workspace&&_workspace.trip_notes)||"";
+  html+='<div style="margin-bottom:28px">';
+  html+='<div class="ws-section-header">';
+  html+='<div style="font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute)">Trip notes</div>';
+  if(_role==='organizer')html+='<button class="btn btn-secondary btn-sm" onclick="openEditNotes()">Edit</button>';
+  html+='</div>';
+  html+='<div id="ws-notes-display"><div class="ws-notes-display'+(notes?'':' empty')+'">'+( notes?escHtml(notes):'No notes yet.')+'</div></div>';
+  html+='<div id="ws-notes-editor" style="display:none">';
+  html+='<textarea class="ws-notes-textarea" id="ws-notes-ta" maxlength="5000" placeholder="Add trip notes visible to all members…" oninput="document.getElementById(\'ws-notes-count\').textContent=this.value.length+\'/5000\'">'+escHtml(notes)+'</textarea>';
+  html+='<div style="display:flex;gap:8px;margin-top:8px;align-items:center">';
+  html+='<button class="btn btn-primary btn-sm" onclick="saveNotes()">Save</button>';
+  html+='<button class="btn btn-secondary btn-sm" onclick="cancelEditNotes()">Cancel</button>';
+  html+='<span id="ws-notes-count" style="font-size:11px;color:var(--ink-mute);margin-left:auto">'+notes.length+'/5000</span>';
+  html+='</div></div>';
+  html+='</div>';
+
+  /* Accommodations */
+  var accoms=(_workspace&&_workspace.accommodations)||[];
+  var sortedAccoms=accoms.slice().sort(function(a,b){return(a.check_in||"9")>(b.check_in||"9")?1:(a.check_in||"9")<(b.check_in||"9")?-1:0;});
+  html+='<div style="margin-bottom:28px">';
+  html+='<div class="ws-section-header">';
+  html+='<div style="font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute)">Where we\'re staying</div>';
+  if(_role==='organizer')html+='<button class="btn btn-secondary btn-sm" onclick="openAccomModal(null)">Add</button>';
+  html+='</div>';
+  if(!sortedAccoms.length){
+    html+='<div class="caption" style="color:var(--ink-faint);font-style:italic;padding:6px 0">No accommodations added yet.</div>';
+  }else{
+    html+='<div>';
+    sortedAccoms.forEach(function(a){
+      var meta=[];
+      if(a.address)meta.push(escHtml(a.address));
+      if(a.check_in||a.check_out)meta.push('Check-in '+escHtml(a.check_in||'—')+' · Check-out '+escHtml(a.check_out||'—'));
+      if(a.confirmation_number)meta.push('Conf: '+escHtml(a.confirmation_number));
+      if(a.notes)meta.push(escHtml(a.notes));
+      html+='<div class="ws-item">';
+      html+='<div class="ws-item-main"><div style="font-size:13px;font-weight:500">'+escHtml(a.name)+'</div>';
+      if(meta.length)html+='<div class="caption" style="margin-top:3px">'+meta.join(' · ')+'</div>';
+      html+='</div>';
+      if(_role==='organizer'){
+        html+='<div class="ws-item-actions">';
+        html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px" onclick="openAccomModal(\''+escHtml(a.id)+'\')">Edit</button>';
+        html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px;color:var(--red)" onclick="deleteAccom(\''+escHtml(a.id)+'\')">Remove</button>';
+        html+='</div>';
+      }
+      html+='</div>';
+    });
+    html+='</div>';
+  }
+  html+='</div>';
+
+  /* References */
+  var refs=(_workspace&&_workspace.reference_numbers)||[];
+  html+='<div style="margin-bottom:16px">';
+  html+='<div class="ws-section-header">';
+  html+='<div style="font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute)">Quick reference</div>';
+  if(_role==='organizer')html+='<button class="btn btn-secondary btn-sm" onclick="openRefModal(null)">Add</button>';
+  html+='</div>';
+  if(!refs.length){
+    html+='<div class="caption" style="color:var(--ink-faint);font-style:italic;padding:6px 0">No reference numbers added yet.</div>';
+  }else{
+    html+='<div>';
+    refs.forEach(function(r){
+      html+='<div class="ws-item">';
+      html+='<div class="ws-item-main"><div style="font-size:13px;font-weight:500">'+escHtml(r.label)+'</div>';
+      html+='<div class="caption">'+escHtml(r.value)+'</div>';
+      if(r.notes)html+='<div class="caption" style="font-style:italic">'+escHtml(r.notes)+'</div>';
+      html+='</div>';
+      if(_role==='organizer'){
+        html+='<div class="ws-item-actions">';
+        html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px" onclick="openRefModal(\''+escHtml(r.id)+'\')">Edit</button>';
+        html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px;color:var(--red)" onclick="deleteRef(\''+escHtml(r.id)+'\')">Remove</button>';
+        html+='</div>';
+      }
+      html+='</div>';
+    });
+    html+='</div>';
+  }
+  html+='</div>';
+
+  return html;
+}
+
+/* ── Notes editing ── */
+function openEditNotes(){
+  var d=document.getElementById("ws-notes-display");
+  var e=document.getElementById("ws-notes-editor");
+  if(d)d.style.display="none";
+  if(e){e.style.display="";document.getElementById("ws-notes-ta").focus();}
+}
+function cancelEditNotes(){
+  var d=document.getElementById("ws-notes-display");
+  var e=document.getElementById("ws-notes-editor");
+  if(e)e.style.display="none";
+  if(d)d.style.display="";
+  // Reset textarea to saved value
+  var ta=document.getElementById("ws-notes-ta");
+  if(ta)ta.value=(_workspace&&_workspace.trip_notes)||"";
+}
+async function saveNotes(){
+  if(!_group)return;
+  var ta=document.getElementById("ws-notes-ta");
+  var notes=ta?ta.value:"";
+  try{
+    await _req("PATCH","/api/v1/trip-groups/"+_group.id+"/workspace/notes",{trip_notes:notes||null});
+    if(!_workspace)_workspace={trip_notes:notes,accommodations:[],reference_numbers:[]};
+    else _workspace.trip_notes=notes;
+    // Update display in place
+    var d=document.getElementById("ws-notes-display");
+    if(d)d.innerHTML='<div class="ws-notes-display'+(notes?'':' empty')+'">'+( notes?escHtml(notes):'No notes yet.')+'</div>';
+    cancelEditNotes();
+    showToast("Notes saved.");
+  }catch(e){showToast("Failed to save notes.");}
+}
+
+/* ── Accommodation modal ── */
+function openAccomModal(accomId){
+  _accomEditId=accomId||null;
+  var item=null;
+  if(accomId&&_workspace){item=(_workspace.accommodations||[]).find(function(a){return a.id===accomId;});}
+  document.getElementById("accom-modal-title").textContent=item?"Edit accommodation":"Add accommodation";
+  document.getElementById("accom-name").value=item?item.name||"":"";
+  document.getElementById("accom-address").value=item?item.address||"":"";
+  document.getElementById("accom-checkin").value=item?item.check_in||"":"";
+  document.getElementById("accom-checkout").value=item?item.check_out||"":"";
+  document.getElementById("accom-conf").value=item?item.confirmation_number||"":"";
+  document.getElementById("accom-notes").value=item?item.notes||"":"";
+  document.getElementById("accom-error").style.display="none";
+  document.getElementById("accom-modal").classList.add("open");
+  setTimeout(function(){document.getElementById("accom-name").focus();},160);
+}
+function closeAccomModal(){document.getElementById("accom-modal").classList.remove("open");_accomEditId=null;}
+async function submitAccomModal(){
+  if(!_group)return;
+  var name=document.getElementById("accom-name").value.trim();
+  if(!name){document.getElementById("accom-error").textContent="Name is required.";document.getElementById("accom-error").style.display="block";return;}
+  var payload={
+    name:name,
+    address:document.getElementById("accom-address").value.trim()||null,
+    check_in:document.getElementById("accom-checkin").value||null,
+    check_out:document.getElementById("accom-checkout").value||null,
+    confirmation_number:document.getElementById("accom-conf").value.trim()||null,
+    notes:document.getElementById("accom-notes").value.trim()||null,
+  };
+  document.getElementById("accom-error").style.display="none";
+  try{
+    if(_accomEditId){
+      await _req("PATCH","/api/v1/trip-groups/"+_group.id+"/workspace/accommodations/"+_accomEditId,payload);
+      if(_workspace){var idx=(_workspace.accommodations||[]).findIndex(function(a){return a.id===_accomEditId;});if(idx>-1)Object.assign(_workspace.accommodations[idx],payload);}
+    }else{
+      var newItem=await _req("POST","/api/v1/trip-groups/"+_group.id+"/workspace/accommodations",payload);
+      if(!_workspace)_workspace={trip_notes:null,accommodations:[newItem],reference_numbers:[]};
+      else{if(!_workspace.accommodations)_workspace.accommodations=[];_workspace.accommodations.push(newItem);}
+    }
+    closeAccomModal();
+    showToast(_accomEditId?"Accommodation updated.":"Accommodation added.");
+    renderGroupSection();
+  }catch(e){document.getElementById("accom-error").textContent="Failed to save. Please try again.";document.getElementById("accom-error").style.display="block";}
+}
+async function deleteAccom(id){
+  if(!_group||!confirm("Remove this accommodation?"))return;
+  try{
+    await _req("DELETE","/api/v1/trip-groups/"+_group.id+"/workspace/accommodations/"+id);
+    if(_workspace)_workspace.accommodations=(_workspace.accommodations||[]).filter(function(a){return a.id!==id;});
+    showToast("Accommodation removed.");
+    renderGroupSection();
+  }catch(e){showToast("Failed to remove accommodation.");}
+}
+
+/* ── Reference modal ── */
+function openRefModal(refId){
+  _refEditId=refId||null;
+  var item=null;
+  if(refId&&_workspace){item=(_workspace.reference_numbers||[]).find(function(r){return r.id===refId;});}
+  document.getElementById("ref-modal-title").textContent=item?"Edit reference":"Add reference";
+  document.getElementById("ref-label").value=item?item.label||"":"";
+  document.getElementById("ref-value").value=item?item.value||"":"";
+  document.getElementById("ref-notes").value=item?item.notes||"":"";
+  document.getElementById("ref-error").style.display="none";
+  document.getElementById("ref-modal").classList.add("open");
+  setTimeout(function(){document.getElementById("ref-label").focus();},160);
+}
+function closeRefModal(){document.getElementById("ref-modal").classList.remove("open");_refEditId=null;}
+async function submitRefModal(){
+  if(!_group)return;
+  var label=document.getElementById("ref-label").value.trim();
+  var value=document.getElementById("ref-value").value.trim();
+  if(!label||!value){document.getElementById("ref-error").textContent="Label and value are required.";document.getElementById("ref-error").style.display="block";return;}
+  var payload={label:label,value:value,notes:document.getElementById("ref-notes").value.trim()||null};
+  document.getElementById("ref-error").style.display="none";
+  try{
+    if(_refEditId){
+      await _req("PATCH","/api/v1/trip-groups/"+_group.id+"/workspace/references/"+_refEditId,payload);
+      if(_workspace){var idx=(_workspace.reference_numbers||[]).findIndex(function(r){return r.id===_refEditId;});if(idx>-1)Object.assign(_workspace.reference_numbers[idx],payload);}
+    }else{
+      var newRef=await _req("POST","/api/v1/trip-groups/"+_group.id+"/workspace/references",payload);
+      if(!_workspace)_workspace={trip_notes:null,accommodations:[],reference_numbers:[newRef]};
+      else{if(!_workspace.reference_numbers)_workspace.reference_numbers=[];_workspace.reference_numbers.push(newRef);}
+    }
+    closeRefModal();
+    showToast(_refEditId?"Reference updated.":"Reference added.");
+    renderGroupSection();
+  }catch(e){document.getElementById("ref-error").textContent="Failed to save. Please try again.";document.getElementById("ref-error").style.display="block";}
+}
+async function deleteRef(id){
+  if(!_group||!confirm("Remove this reference?"))return;
+  try{
+    await _req("DELETE","/api/v1/trip-groups/"+_group.id+"/workspace/references/"+id);
+    if(_workspace)_workspace.reference_numbers=(_workspace.reference_numbers||[]).filter(function(r){return r.id!==id;});
+    showToast("Reference removed.");
+    renderGroupSection();
+  }catch(e){showToast("Failed to remove reference.");}
+}
+
+/* ── Audit log ── */
+async function openAuditLog(){
+  if(!_group)return;
+  document.getElementById("audit-modal").classList.add("open");
+  _ht("audit-content","<div class='caption' style='color:var(--ink-mute)'>Loading…</div>");
+  try{
+    var rows=await _req("GET","/api/v1/trip-groups/"+_group.id+"/audit-log");
+    if(!rows||!rows.length){
+      _ht("audit-content","<div class='caption' style='color:var(--ink-mute);padding:8px 0'>No activity recorded yet.</div>");
+      return;
+    }
+    var labelMap={
+      member_added:"added a member",member_removed:"removed a member",member_left:"left the group",
+      consent_approved:"approved data sharing",consent_declined:"declined data sharing",
+      consent_requested:"requested data sharing",consent_revoked:"revoked data sharing",
+      workspace_notes_updated:"updated trip notes",
+      workspace_accommodation_added:"added an accommodation",workspace_accommodation_edited:"edited an accommodation",workspace_accommodation_removed:"removed an accommodation",
+      workspace_reference_added:"added a reference",workspace_reference_edited:"edited a reference",workspace_reference_removed:"removed a reference",
+      group_renamed:"renamed the group",group_archived:"archived the group",group_deleted:"deleted the group",
+    };
+    var h='<div>';
+    rows.forEach(function(r){
+      var who=r.actor_uuid===_uid?"You":"A member";
+      var what=labelMap[r.action]||r.action;
+      h+='<div class="audit-entry">';
+      h+='<div style="font-weight:500">'+escHtml(who)+' '+escHtml(what)+'</div>';
+      h+='<div class="audit-entry-meta">'+escHtml(_fmtTs(r.created_at))+'</div>';
+      h+='</div>';
+    });
+    h+='</div>';
+    _ht("audit-content",h);
+  }catch(e){_ht("audit-content","<div class='caption' style='color:var(--red)'>Failed to load activity.</div>");}
+}
+function closeAuditLog(){document.getElementById("audit-modal").classList.remove("open");}
+
+/* ── Re-auth ── */
+function openReAuth(cb,desc){
+  _reAuthCallback=cb;
+  document.getElementById("reauth-password").value="";
+  document.getElementById("reauth-error").style.display="none";
+  document.getElementById("reauth-desc").textContent=desc||"This action requires you to re-enter your password.";
+  document.getElementById("reauth-submit-btn").textContent="Confirm";
+  document.getElementById("reauth-submit-btn").disabled=false;
+  document.getElementById("reauth-modal").classList.add("open");
+  setTimeout(function(){document.getElementById("reauth-password").focus();},160);
+}
+function closeReAuth(){document.getElementById("reauth-modal").classList.remove("open");_reAuthCallback=null;}
+async function submitReAuth(){
+  var pw=document.getElementById("reauth-password").value;
+  if(!pw)return;
+  var errEl=document.getElementById("reauth-error");
+  var btn=document.getElementById("reauth-submit-btn");
+  errEl.style.display="none";
+  btn.disabled=true;btn.textContent="Verifying…";
+  try{
+    var res=await fetch(_API+"/api/v1/auth/verify-password",{
+      method:"POST",
+      headers:{Authorization:"Bearer "+_tok,"Content-Type":"application/json"},
+      body:JSON.stringify({password:pw}),
+    });
+    if(res.status===401){
+      errEl.textContent="Incorrect password. Please try again.";
+      errEl.style.display="block";
+      btn.disabled=false;btn.textContent="Confirm";
+      return;
+    }
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    closeReAuth();
+    if(_reAuthCallback)await _reAuthCallback();
+  }catch(e){
+    errEl.textContent="Verification failed. Please try again.";
+    errEl.style.display="block";
+    btn.disabled=false;btn.textContent="Confirm";
+  }
+}
+
 /* ── Actions ── */
+async function leaveGroup(){
+  if(!_group)return;
+  if(!confirm("Leave \""+_group.name+"\"? The organizer will be notified."))return;
+  try{
+    await _req("POST","/api/v1/trip-groups/"+_group.id+"/leave",{});
+    showToast("You have left the group.");
+    setTimeout(function(){window.location.href="/groups.html";},1200);
+  }catch(e){showToast("Failed to leave group.");}
+}
+
 async function createGroup(){
   if(!_trip)return;
   try{
@@ -484,14 +930,28 @@ async function archiveGroup(){
   }catch(e){showToast("Failed to archive group.");}
 }
 
-async function removeMember(memberId){
+async function deleteGroup(){
   if(!_group)return;
-  if(!confirm("Remove this member from the group?"))return;
-  try{
-    await _req("DELETE","/api/v1/trip-groups/"+_group.id+"/members/"+memberId);
-    showToast("Member removed.");
-    window.location.reload();
-  }catch(e){showToast("Failed to remove member.");}
+  openReAuth(async function(){
+    if(!confirm("Permanently delete \""+_group.name+"\"? This cannot be undone."))return;
+    try{
+      await _req("DELETE","/api/v1/trip-groups/"+_group.id);
+      showToast("Group deleted.");
+      setTimeout(function(){window.location.href="/trips.html";},1000);
+    }catch(e){showToast("Failed to delete group.");}
+  },"Deleting a group is permanent. Please confirm your password to continue.");
+}
+
+async function removeMember(memberId,memberName){
+  if(!_group)return;
+  openReAuth(async function(){
+    if(!confirm("Remove "+memberName+" from the group? They will be notified."))return;
+    try{
+      await _req("DELETE","/api/v1/trip-groups/"+_group.id+"/members/"+memberId);
+      showToast("Member removed.");
+      window.location.reload();
+    }catch(e){showToast("Failed to remove member.");}
+  },"Removing a member requires re-authentication.");
 }
 
 /* ── Rename modal ── */
@@ -547,12 +1007,13 @@ function renderAmPanels(){
   var currentNamedIds=new Set((_group.members||[]).map(function(m){return m.named_only_id;}).filter(Boolean));
   var currentLinkedUuids=new Set((_group.members||[]).map(function(m){return m.linked_uuid;}).filter(Boolean));
 
-  /* Named-only tab */
+  /* Named-only tab — includes named-only people AND pending invites */
   var named=(_familyProfile.named_only||[]).filter(function(n){return!currentNamedIds.has(n.id);});
-  if(!named.length){
-    _ht("am-named-panel","<div class='caption' style='padding:14px 0;color:var(--ink-mute)'>No named-only people to add. <a href='/people.html' style='color:var(--ink-soft)'>Add them on the People page.</a></div>");
+  var pendingInvites=(_familyProfile.sent||[]);
+  var h="<div>";
+  if(!named.length&&!pendingInvites.length){
+    h='<div class="caption" style="padding:14px 0;color:var(--ink-mute)">No named-only people to add. <a href="/people.html" style="color:var(--ink-soft)">Add them on the People page.</a></div>';
   }else{
-    var h="<div>";
     named.forEach(function(n){
       var av="av-"+(n.avatar_color||"muted");
       h+='<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--rule)">';
@@ -563,9 +1024,19 @@ function renderAmPanels(){
       h+='<button class="btn btn-secondary btn-sm" onclick="addNamedMember(\''+escHtml(n.id)+'\')">Add</button>';
       h+='</div>';
     });
+    pendingInvites.forEach(function(inv){
+      var displayName=inv.to_name||inv.to_email||"Invited person";
+      h+='<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--rule)">';
+      h+='<div class="avatar avatar-sm av-muted">'+escHtml(displayName.slice(0,2).toUpperCase())+'</div>';
+      h+='<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500">'+escHtml(displayName)+'</div>';
+      h+='<div class="caption"><span style="background:var(--amber-soft);color:var(--amber);font-size:10px;font-weight:600;padding:2px 7px;border-radius:100px;letter-spacing:0.04em">Pending invite</span></div>';
+      h+='</div>';
+      h+='<button class="btn btn-secondary btn-sm" onclick="addMemberFromInvite(\''+escHtml(displayName.replace(/'/g,"\\'"))+'\')">Add</button>';
+      h+='</div>';
+    });
     h+='</div>';
-    _ht("am-named-panel",h);
   }
+  _ht("am-named-panel",h);
 
   /* Linked tab */
   var linked=(_familyProfile.linked||[]).filter(function(l){return!currentLinkedUuids.has(l.uuid);});
@@ -599,6 +1070,19 @@ async function addNamedMember(namedOnlyId){
     errEl.style.display="block";
   }
 }
+async function addMemberFromInvite(displayName){
+  var errEl=document.getElementById("am-error");
+  errEl.style.display="none";
+  try{
+    await _req("POST","/api/v1/trip-groups/"+_group.id+"/members",{kind:"named_only",display_name:displayName});
+    closeAddMember();
+    showToast("Member added.");
+    window.location.reload();
+  }catch(e){
+    errEl.textContent="Failed to add member.";
+    errEl.style.display="block";
+  }
+}
 async function addLinkedMember(linkedUuid){
   var errEl=document.getElementById("am-error");
   errEl.style.display="none";
@@ -618,6 +1102,36 @@ async function tripInit(){
   if(!await _auth())return;
   var params=new URLSearchParams(window.location.search);
   var tripId=params.get("id");
+  var groupId=params.get("group_id");
+
+  /* Member view — joined group, no owned trip */
+  if(groupId){
+    _role='member';
+    var bl=document.getElementById("breadcrumb-link");
+    if(bl){bl.href="/groups.html";bl.textContent="← All groups";}
+    try{
+      var p=await _req("GET","/api/v1/me");
+      _uid=p.uuid;_sidebarUpdate(p);
+      var results=await Promise.all([
+        _req("GET","/api/v1/trip-groups/"+groupId),
+        _req("GET","/api/v1/trip-groups/"+groupId+"/readiness"),
+        _req("GET","/api/v1/trip-groups/"+groupId+"/workspace"),
+      ]);
+      _group=results[0];_readiness=results[1];_workspace=results[2];
+      document.title=(_group.name||"Group")+" — UniProfile";
+      _show("trip-header");_show("trip-divider");
+      _st("trip-eyebrow","Trip Group");
+      _ht("trip-title",escHtml(_group.name||"Group"));
+      _st("trip-lede","Organized by "+escHtml(_group.organizer_name||"your group organizer"));
+      renderGroupSection();
+    }catch(e){
+      console.error(e);
+      _ht("group-section","<div class='caption' style='color:var(--red);padding:20px 0'>Failed to load group.</div>");
+    }
+    return;
+  }
+
+  /* Organizer view — owned trip */
   if(!tripId){_ht("group-section","<div class='caption' style='color:var(--ink-mute);padding:20px 0'>No trip specified.</div>");return;}
   try{
     var p=await _req("GET","/api/v1/me");
@@ -637,9 +1151,11 @@ async function tripInit(){
         var results=await Promise.all([
           _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id),
           _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id+"/readiness"),
+          _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id+"/workspace"),
         ]);
         _group=results[0];
         _readiness=results[1];
+        _workspace=results[2];
       }catch(e){
         console.error("Failed to load group data:",e);
       }

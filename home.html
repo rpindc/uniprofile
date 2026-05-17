@@ -102,6 +102,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 /* Alert card */
 .alert-card{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;margin-bottom:10px;border-radius:10px;border:0.5px solid rgba(186,117,23,0.35);background:#fff}
 .alert-card.red{border-color:rgba(196,77,77,0.35)}
+.alert-card.invite{border-color:rgba(3,105,161,0.3);background:linear-gradient(to bottom right,#fff,#f0f8ff)}
 
 @media(max-width:767px){.stats-row{grid-template-columns:1fr 1fr}}
 </style>
@@ -207,6 +208,18 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
         <div class="progress-bar" style="margin-top:6px"><div class="progress-fill" id="stat-progress" style="width:0%"></div></div>
       </div>
     </div>
+
+    <!-- Notifications (group invites + system) -->
+    <section class="section" id="section-notifications" style="display:none">
+      <div class="section-header">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="pill-dot dot-amber" style="flex-shrink:0"></span>
+          <h2 class="section-label">Notifications</h2>
+        </div>
+        <span class="caption" id="notif-count"></span>
+      </div>
+      <div id="home-notifications"></div>
+    </section>
 
     <!-- Alerts -->
     <section class="section" id="section-alerts">
@@ -558,6 +571,67 @@ function renderInsight(p){
   section.style.display="";
 }
 
+/* ── Notifications ── */
+function escHtml(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function _fmtTs(ts){if(!ts)return"";var d=new Date(ts);return d.toLocaleDateString("en-US",{month:"short",day:"numeric"})+" at "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});}
+
+function notifText(n){
+  var p=n.payload||{};
+  switch(n.kind){
+    case 'group_invite_received':return escHtml(p.organizer_name||'Someone')+' invited you to join <strong>'+escHtml(p.group_name||'a group')+'</strong>'+(p.destination?' — '+escHtml(p.destination_name||p.destination):'');
+    case 'member_added_to_group':return 'You were added to <strong>'+escHtml(p.group_name||'a group')+'</strong>';
+    case 'member_removed_from_group':return 'You were removed from <strong>'+escHtml(p.group_name||'a group')+'</strong>';
+    case 'member_accepted_invite':return escHtml(p.member_name||'A member')+' joined <strong>'+escHtml(p.group_name||'a group')+'</strong>';
+    case 'member_declined_invite':return escHtml(p.member_name||'A member')+' declined your invite to <strong>'+escHtml(p.group_name||'a group')+'</strong>';
+    case 'member_left':return escHtml(p.member_name||'A member')+' left <strong>'+escHtml(p.group_name||'a group')+'</strong>';
+    default:return escHtml(n.kind.replace(/_/g,' '));
+  }
+}
+
+async function dismissNotif(id){
+  try{
+    await _req("PATCH","/api/v1/notifications/"+id,{action:'read'});
+    var el=document.getElementById("notif-"+id);
+    if(el)el.remove();
+    var wrap=document.getElementById("home-notifications");
+    if(wrap&&!wrap.children.length)document.getElementById("section-notifications").style.display="none";
+  }catch(e){}
+}
+
+async function renderNotifications(){
+  try{
+    var notifs=await _req("GET","/api/v1/notifications");
+    if(!notifs||!notifs.length)return;
+    var section=document.getElementById("section-notifications");
+    var wrap=document.getElementById("home-notifications");
+    var count=document.getElementById("notif-count");
+    if(count)count.textContent=notifs.length+" item"+(notifs.length===1?"":"s");
+    if(section)section.style.display="";
+    var html="";
+    notifs.forEach(function(n){
+      var p=n.payload||{};
+      var isInvite=n.kind==='group_invite_received';
+      html+='<div class="alert-card'+(isInvite?' invite':'')+'" id="notif-'+escHtml(n.id)+'">';
+      html+='<div class="icon-bg '+(isInvite?'icon-bg-neutral':'icon-bg-neutral')+'" style="width:32px;height:32px;flex-shrink:0;background:'+(isInvite?'#dbeafe':' var(--paper-warm)')+';color:'+(isInvite?'#1e40af':'var(--ink-mute)')+';">';
+      html+='<svg style="width:15px;height:15px" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><circle cx="16" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><path d="M2 20C2 17 4.7 15 8 15" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M10 18C10 15.5 12.5 14 16 14C19.5 14 22 15.5 22 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>';
+      html+='</div>';
+      html+='<div style="flex:1;min-width:0">';
+      html+='<div style="font-size:13px;line-height:1.5;color:var(--ink);margin-bottom:4px">'+notifText(n)+'</div>';
+      html+='<div class="caption">'+escHtml(_fmtTs(n.created_at))+'</div>';
+      if(isInvite&&p.consent_id){
+        html+='<div style="display:flex;gap:8px;margin-top:10px">';
+        html+='<a href="/trip-group-invite.html?c='+escHtml(p.consent_id)+'" class="btn btn-primary btn-sm">View invite →</a>';
+        html+='<button class="btn btn-secondary btn-sm" onclick="dismissNotif(\''+escHtml(n.id)+'\')">Dismiss</button>';
+        html+='</div>';
+      }else{
+        html+='<div style="margin-top:8px"><button class="btn btn-secondary btn-sm" onclick="dismissNotif(\''+escHtml(n.id)+'\')">Dismiss</button></div>';
+      }
+      html+='</div></div>';
+    });
+    if(wrap)wrap.innerHTML=html;
+  }catch(e){/* notifications are non-critical, fail silently */}
+}
+
 /* ── Init ── */
 async function homeInit(){
   if(!await _auth())return;
@@ -587,6 +661,7 @@ async function homeInit(){
     renderNextTrip(prof);
     renderHealth(prof);
     renderInsight(prof);
+    renderNotifications();
   }catch(e){console.error(e);}
 }
 homeInit();

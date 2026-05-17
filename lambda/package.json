@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.0.0",
     "@aws-sdk/client-rds-data": "^3.0.0",
     "@aws-sdk/client-sesv2": "^3.0.0",
     "@aws-sdk/client-secrets-manager": "^3.0.0",
