@@ -777,8 +777,7 @@ exports.handler=async function(event){
       if(_searchRL[myUuid].length>=30)return{statusCode:429,headers:cors(go(event)),body:JSON.stringify({error:"Too many requests"})};
       _searchRL[myUuid].push(now);
       // Log for abuse detection
-      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata,ip,user_agent) VALUES(:u,'people_search',:m::jsonb,:ip,:ua)",
-        [uuidParam("u",myUuid),strParam("m",JSON.stringify({q})),strParam("ip",(event.requestContext&&event.requestContext.identity&&event.requestContext.identity.sourceIp)||null),strParam("ua",(event.headers&&(event.headers["User-Agent"]||event.headers["user-agent"]))||null)]);
+      await logSecEvent(myUuid,'people_search',{q},event);
       const isUpId=/^UP-[A-Z0-9]{4}-[A-Z0-9]{4}$/i.test(q.trim());
       let rows=[];
       if(isUpId){
