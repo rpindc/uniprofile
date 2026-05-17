@@ -59,6 +59,15 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .state-icon{font-size:48px;margin-bottom:20px}
 .form-error{color:var(--red);font-size:12px;margin-top:8px;display:none}
 .form-error.show{display:block}
+.scope-section{margin:24px 0;border:0.5px solid var(--rule);border-radius:10px;overflow:hidden}
+.scope-section-label{font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-mute);padding:12px 16px 10px;border-bottom:0.5px solid var(--rule);background:var(--paper-cream)}
+.scope-row{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-bottom:0.5px solid var(--rule);cursor:pointer}
+.scope-row:last-child{border-bottom:none}
+.scope-row:hover{background:var(--paper-cream)}
+.scope-check{width:15px;height:15px;flex-shrink:0;margin-top:2px;accent-color:var(--ink);cursor:pointer}
+.scope-info{flex:1;min-width:0}
+.scope-name{font-size:13px;font-weight:500;color:var(--ink);line-height:1.3}
+.scope-desc{font-size:12px;color:var(--ink-mute);margin-top:2px;line-height:1.4}
 @media(max-width:767px){.main{padding:24px 20px}.invite-card{padding:24px}.invite-actions{flex-direction:column}.invite-actions .btn{width:100%;justify-content:center}}
 </style>
 </head>
@@ -205,12 +214,29 @@ function renderState(state,extra){
     if(destStr)html+='<div class="invite-meta-item"><span class="invite-meta-label">Destination</span><span>'+escHtml(destStr)+'</span></div>';
     html+='<div class="invite-meta-item"><span class="invite-meta-label">Organized by</span><span>'+escHtml(inv.organizer_name||"—")+'</span></div>';
     html+='</div>';
-    html+='<p style="font-size:13px;color:var(--ink-soft);line-height:1.6">By accepting, you agree to share your travel readiness information (passport validity, visa status) with the group organizer for this trip.</p>';
+    /* Scope rows — fall back to all three if API returns null/[] */
+    var SCOPE_META={
+      passport_details:{label:"Passport details",desc:"Validity and nationality — used to check entry requirements for your destination"},
+      dietary_preference:{label:"Dietary preference",desc:"Meal category (e.g., vegetarian) — shared for in-flight meal coordination"},
+      seat_preference:{label:"Seat preference",desc:"Seat position and cabin class — shared for booking coordination"},
+    };
+    var scopes=(inv.requested_scopes&&inv.requested_scopes.length)?inv.requested_scopes:Object.keys(SCOPE_META);
+    html+='<div class="scope-section">';
+    html+='<div class="scope-section-label">What you\'re sharing</div>';
+    scopes.forEach(function(s){
+      var meta=SCOPE_META[s]||{label:s.replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();}),desc:""};
+      html+='<label class="scope-row"><input class="scope-check" type="checkbox" id="scope-'+escHtml(s)+'" value="'+escHtml(s)+'" checked>';
+      html+='<div class="scope-info"><div class="scope-name">'+escHtml(meta.label)+'</div>';
+      if(meta.desc)html+='<div class="scope-desc">'+escHtml(meta.desc)+'</div>';
+      html+='</div></label>';
+    });
+    html+='</div>';
     html+='<div id="invite-err" class="form-error"></div>';
     html+='<div class="invite-actions">';
-    html+='<button class="btn btn-primary" id="accept-btn" onclick="acceptInvite()">Accept invite</button>';
+    html+='<button class="btn btn-primary" id="accept-btn" onclick="acceptInviteSelected()">Join with selected</button>';
     html+='<button class="btn btn-secondary" id="decline-btn" onclick="declineInvite()">Decline</button>';
     html+='</div>';
+    html+='<div style="margin-top:14px;text-align:center"><a href="#" onclick="acceptInviteAll(event)" style="font-size:12px;color:var(--ink-mute);text-decoration:underline;text-underline-offset:2px;text-decoration-thickness:0.5px">Quick join — approve all</a></div>';
     html+='</div>';
     wrap.innerHTML=html;
 
@@ -268,22 +294,41 @@ function renderState(state,extra){
 }
 
 /* ── Accept / Decline ── */
-async function acceptInvite(){
+async function _doAccept(grantedScopes){
   if(!_consentId)return;
   var ab=document.getElementById("accept-btn");
   var db=document.getElementById("decline-btn");
   var er=document.getElementById("invite-err");
-  if(ab)ab.disabled=true;if(ab)ab.textContent="Joining…";
+  if(ab){ab.disabled=true;ab.textContent="Joining…";}
   if(db)db.disabled=true;
   if(er)er.style.display="none";
   try{
-    await _req("POST","/api/v1/trip-groups/invite/"+_consentId+"/accept",{});
+    await _req("POST","/api/v1/trip-groups/invite/"+_consentId+"/accept",{granted_scopes:grantedScopes});
     renderState("accepted");
   }catch(e){
-    if(ab){ab.disabled=false;ab.textContent="Accept invite";}
+    if(ab){ab.disabled=false;ab.textContent="Join with selected";}
     if(db)db.disabled=false;
     if(er){er.textContent="Failed to accept invite. Please try again.";er.style.display="block";}
   }
+}
+
+function acceptInviteSelected(){
+  var boxes=document.querySelectorAll(".scope-check:checked");
+  var scopes=Array.prototype.map.call(boxes,function(b){return b.value;});
+  if(!scopes.length){
+    var er=document.getElementById("invite-err");
+    if(er){er.textContent="Select at least one item to share, or use Decline to opt out entirely.";er.style.display="block";}
+    return;
+  }
+  _doAccept(scopes);
+}
+
+function acceptInviteAll(e){
+  if(e)e.preventDefault();
+  var boxes=document.querySelectorAll(".scope-check");
+  boxes.forEach(function(b){b.checked=true;});
+  var allScopes=Array.prototype.map.call(boxes,function(b){return b.value;});
+  _doAccept(allScopes);
 }
 
 async function declineInvite(){
