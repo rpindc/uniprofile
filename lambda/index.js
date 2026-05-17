@@ -781,9 +781,9 @@ exports.handler=async function(event){
       const isUpId=/^UP-[A-Z0-9]{4}-[A-Z0-9]{4}$/i.test(q.trim());
       let rows=[];
       if(isUpId){
-        rows=await sql("SELECT t.uuid,p.up_id,i.legal_first,i.legal_last,EXTRACT(YEAR FROM t.created_at)::int AS joined_year FROM travelers t LEFT JOIN traveler_identity i ON i.traveler_uuid=t.uuid LEFT JOIN traveler_profiles p ON p.traveler_uuid=t.uuid WHERE UPPER(p.up_id)=UPPER(:q) AND t.uuid<>:u LIMIT 10",[strParam("q",q.trim()),uuidParam("u",myUuid)]);
+        rows=await sql("SELECT t.uuid,t.uniprofile_number AS up_id,i.legal_first,i.legal_last,EXTRACT(YEAR FROM t.created_at)::int AS joined_year FROM travelers t LEFT JOIN traveler_identity i ON i.traveler_uuid=t.uuid WHERE UPPER(t.uniprofile_number)=UPPER(:q) AND t.uuid<>:u LIMIT 10",[strParam("q",q.trim()),uuidParam("u",myUuid)]);
       } else {
-        rows=await sql("SELECT t.uuid,p.up_id,i.legal_first,i.legal_last,EXTRACT(YEAR FROM t.created_at)::int AS joined_year FROM travelers t LEFT JOIN traveler_identity i ON i.traveler_uuid=t.uuid LEFT JOIN traveler_profiles p ON p.traveler_uuid=t.uuid WHERE (LOWER(i.legal_first)||' '||LOWER(i.legal_last) LIKE :q OR LOWER(i.legal_first) LIKE :q2 OR LOWER(i.legal_last) LIKE :q2) AND t.uuid<>:u LIMIT 15",[strParam("q",'%'+q.toLowerCase()+'%'),strParam("q2",q.toLowerCase()+'%'),uuidParam("u",myUuid)]);
+        rows=await sql("SELECT t.uuid,t.uniprofile_number AS up_id,i.legal_first,i.legal_last,EXTRACT(YEAR FROM t.created_at)::int AS joined_year FROM travelers t LEFT JOIN traveler_identity i ON i.traveler_uuid=t.uuid WHERE (LOWER(i.legal_first)||' '||LOWER(i.legal_last) LIKE :q OR LOWER(i.legal_first) LIKE :q2 OR LOWER(i.legal_last) LIKE :q2) AND t.uuid<>:u LIMIT 15",[strParam("q",'%'+q.toLowerCase()+'%'),strParam("q2",q.toLowerCase()+'%'),uuidParam("u",myUuid)]);
       }
       return ok(rows.map(r=>({up_id:r.up_id||null,display_name:[r.legal_first,r.legal_last].filter(Boolean).join(" ")||"UniProfile User",joined_year:r.joined_year||null,member_uuid:r.uuid})),event);
     }
