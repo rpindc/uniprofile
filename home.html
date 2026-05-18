@@ -579,7 +579,7 @@ function _fmtTs(ts){if(!ts)return"";var d=new Date(ts);return d.toLocaleDateStri
 function notifText(n){
   var p=n.payload||{};
   switch(n.kind){
-    case 'group_invite_received':return escHtml(p.organizer_name||'Someone')+' invited you to join <strong>'+escHtml(p.group_name||'a group')+'</strong>'+(p.destination?' — '+escHtml(p.destination_name||p.destination):'');
+    case 'group_invite':return escHtml(p.organizer_name||'Someone')+' invited you to join <strong>'+escHtml(p.group_name||'a group')+'</strong>'+(p.destination?' — '+escHtml(p.destination_name||p.destination):'');
     case 'member_added_to_group':return 'You were added to <strong>'+escHtml(p.group_name||'a group')+'</strong>';
     case 'member_removed_from_group':return 'You were removed from <strong>'+escHtml(p.group_name||'a group')+'</strong>';
     case 'member_accepted_invite':return escHtml(p.member_name||'A member')+' joined <strong>'+escHtml(p.group_name||'a group')+'</strong>';
@@ -611,7 +611,7 @@ async function renderNotifications(){
     var html="";
     notifs.forEach(function(n){
       var p=n.payload||{};
-      var isInvite=n.kind==='group_invite_received';
+      var isInvite=n.kind==='group_invite';
       html+='<div class="alert-card'+(isInvite?' invite':'')+'" id="notif-'+escHtml(n.id)+'">';
       html+='<div class="icon-bg '+(isInvite?'icon-bg-neutral':'icon-bg-neutral')+'" style="width:32px;height:32px;flex-shrink:0;background:'+(isInvite?'#dbeafe':' var(--paper-warm)')+';color:'+(isInvite?'#1e40af':'var(--ink-mute)')+';">';
       html+='<svg style="width:15px;height:15px" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><circle cx="16" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><path d="M2 20C2 17 4.7 15 8 15" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M10 18C10 15.5 12.5 14 16 14C19.5 14 22 15.5 22 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>';
