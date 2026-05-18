@@ -1169,12 +1169,25 @@ exports.handler=async function(event){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
       if(myUuid!==uuid)return err("Access denied",event,403);
-      const {email:inviteEmail,message:inviteMsg}=body;
-      if(!inviteEmail)return err("Email required",event,400);
-      if(inviteEmail.toLowerCase()===token.email.toLowerCase())return err("Cannot invite yourself",event,400);
-      // Check if target already has an account
-      const targetRows=await sql("SELECT uuid FROM travelers WHERE email=:e",[strParam("e",inviteEmail)]);
-      const targetUuid=targetRows[0]&&targetRows[0].uuid||null;
+      const {email:inviteEmail,message:inviteMsg,target_uuid:directTargetUuid}=body;
+      let targetUuid=null;
+      let resolvedEmail=null;
+      if(directTargetUuid){
+        // UUID-direct path: Find-on-UniProfile search flow
+        if(directTargetUuid===myUuid)return err("Cannot invite yourself",event,400);
+        const targetRows=await sql("SELECT uuid,email FROM travelers WHERE uuid=:t",[uuidParam("t",directTargetUuid)]);
+        if(!targetRows.length)return err("Target account not found",event,404);
+        targetUuid=directTargetUuid;
+        resolvedEmail=targetRows[0].email||null;
+      } else if(inviteEmail){
+        // Email path: manual email invite flow
+        if(inviteEmail.toLowerCase()===token.email.toLowerCase())return err("Cannot invite yourself",event,400);
+        const targetRows=await sql("SELECT uuid FROM travelers WHERE email=:e",[strParam("e",inviteEmail)]);
+        targetUuid=targetRows[0]&&targetRows[0].uuid||null;
+        resolvedEmail=inviteEmail;
+      } else {
+        return err("Email or target_uuid required",event,400);
+      }
       // Check for existing pending/accepted link
       if(targetUuid){
         const existing=await sql(
@@ -1185,12 +1198,12 @@ exports.handler=async function(event){
       }
       const invite=await sql(
         "INSERT INTO family_invites (requester_uuid,target_uuid,target_email,message,status) VALUES (:r,:t,:e,:msg,'pending') RETURNING id,created_at",
-        [uuidParam("r",myUuid),targetUuid?uuidParam("t",targetUuid):{name:"t",value:{isNull:true}},strParam("e",inviteEmail),strParam("msg",inviteMsg||null)]);
-      // Get inviter name for email
+        [uuidParam("r",myUuid),targetUuid?uuidParam("t",targetUuid):{name:"t",value:{isNull:true}},strParam("e",resolvedEmail||null),strParam("msg",inviteMsg||null)]);
+      // Get inviter name for email notification
       const inviterRows=await sql("SELECT legal_first,legal_last,email FROM travelers t LEFT JOIN traveler_identity i ON i.traveler_uuid=t.uuid WHERE t.uuid=:u",[uuidParam("u",myUuid)]);
       const inviter=inviterRows[0]||{};
       const inviterName=[inviter.legal_first,inviter.legal_last].filter(Boolean).join(" ")||inviter.email||"A UniProfile member";
-      sendInviteEmail(inviteEmail,inviterName,inviteMsg||"",invite[0].id).catch(e=>console.error("SES send failed:",e.message));
+      if(resolvedEmail)sendInviteEmail(resolvedEmail,inviterName,inviteMsg||"",invite[0].id).catch(e=>console.error("SES send failed:",e.message));
       return ok({success:true,invite_id:invite[0].id,sent_at:invite[0].created_at},event,201);
     }
     // POST /api/v1/family/{uuid}/respond
