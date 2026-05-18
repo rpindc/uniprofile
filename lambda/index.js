@@ -892,7 +892,7 @@ exports.handler=async function(event){
       const row=groupRows[0];
       const members=typeof row.members==="string"?JSON.parse(row.members):(row.members||[]);
       const resp={id:row.id,name:row.name,destination:row.destination_iata||row.destination,destination_name:(RULES[row.destination_iata||'']||{}).name||row.destination,trip_id:row.trip_id_str,trip_name:row.trip_name,departure_date:row.departure_date,return_date:row.return_date,archived_at:row.archived_at,members,role};
-      if(role==='organizer')resp.consents=consents;
+      if(role==='organizer')resp.consents=consents.map(function(c){try{return Object.assign({},c,{requested_scopes:typeof c.requested_scopes==='string'?JSON.parse(c.requested_scopes):(c.requested_scopes||[]),granted_scopes:typeof c.granted_scopes==='string'?JSON.parse(c.granted_scopes):(c.granted_scopes||null)});}catch(e){return c;}});
       if(role==='member')resp.organizer_name=[row.owner_first,row.owner_last].filter(Boolean).join(' ')||row.owner_email||null;
       return ok(resp,event);
     }
@@ -955,7 +955,7 @@ exports.handler=async function(event){
         memberName=lr[0]?[lr[0].first,lr[0].last].filter(Boolean).join(' ')||'Linked person':'Linked person';
         color=avatarColorFromName(memberName);
         // Auto-create pending consent row
-        const consentRows=await sql("INSERT INTO trip_group_consents(trip_group_id,requester_uuid,target_uuid,status,requested_scopes) VALUES(:gid,:u,:tgt,'pending','[\"passport\"]'::jsonb) RETURNING id",
+        const consentRows=await sql("INSERT INTO trip_group_consents(trip_group_id,requester_uuid,target_uuid,status,requested_scopes) VALUES(:gid,:u,:tgt,'pending','[\"passport_details\",\"dietary_preference\",\"seat_preference\"]'::jsonb) RETURNING id",
           [strParam("gid",groupId),uuidParam("u",myUuid),uuidParam("tgt",linkedId)]);
         const consentId=consentRows[0]&&consentRows[0].id;
         // Audit + notification + email (non-blocking)
@@ -1055,7 +1055,7 @@ exports.handler=async function(event){
       const groupId=path.split('/').filter(Boolean)[3];
       await validateTripGroupId(groupId,myUuid);
       const consents=await sql("SELECT id,target_uuid,status,requested_scopes,granted_scopes,message,requested_at,responded_at FROM trip_group_consents WHERE trip_group_id=:id ORDER BY requested_at DESC",[strParam("id",groupId)]);
-      return ok(consents,event);
+      return ok(consents.map(function(c){try{return Object.assign({},c,{requested_scopes:typeof c.requested_scopes==='string'?JSON.parse(c.requested_scopes):(c.requested_scopes||[]),granted_scopes:typeof c.granted_scopes==='string'?JSON.parse(c.granted_scopes):(c.granted_scopes||null)});}catch(e){return c;}}),event);
     }
     // POST /api/v1/trip-groups/{group_id}/consents
     if(method==="POST"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/consents$/)){
@@ -1952,7 +1952,7 @@ exports.handler=async function(event){
       const rows=await sql(
         "SELECT id,trip_group_id,kind,payload,read_at,snooze_until,created_at FROM trip_group_notifications WHERE recipient_uuid=:u AND read_at IS NULL AND (snooze_until IS NULL OR snooze_until<=NOW()) ORDER BY created_at DESC LIMIT 50",
         [uuidParam("u",myUuid)]);
-      return ok(rows,event);
+      return ok(rows.map(function(r){try{return Object.assign({},r,{payload:typeof r.payload==='string'?JSON.parse(r.payload):(r.payload||{})});}catch(e){return r;}}),event);
     }
     // PATCH /api/v1/notifications/{id}
     if(method==="PATCH"&&path.match(/^\/api\/v1\/notifications\/[^/]+$/)){
@@ -1997,7 +1997,9 @@ exports.handler=async function(event){
       const consent=rows[0];
       if(consent.target_uuid!==myUuid)return err("This invitation isn't for your account.",event,403);
       if(consent.status!=='pending')return err("Invitation is no longer pending (status: "+consent.status+")",event,409);
-      await sql("UPDATE trip_group_consents SET status='approved',granted_scopes=requested_scopes,responded_at=NOW() WHERE id=:cid::uuid",[strParam("cid",consentId)]);
+      const rawGranted=body&&body.granted_scopes;
+      const grantedJson=(Array.isArray(rawGranted)&&rawGranted.length)?JSON.stringify(rawGranted):null;
+      await sql(grantedJson?"UPDATE trip_group_consents SET status='approved',granted_scopes=:gs::jsonb,responded_at=NOW() WHERE id=:cid::uuid":"UPDATE trip_group_consents SET status='approved',granted_scopes=requested_scopes,responded_at=NOW() WHERE id=:cid::uuid",grantedJson?[strParam("gs",grantedJson),strParam("cid",consentId)]:[strParam("cid",consentId)]);
       // Mark related notification read
       await sql("UPDATE trip_group_notifications SET read_at=NOW() WHERE recipient_uuid=:u AND trip_group_id=:gid AND kind='group_invite' AND read_at IS NULL",[uuidParam("u",myUuid),strParam("gid",consent.trip_group_id)]);
       writeAuditLog(consent.trip_group_id,myUuid,'consent_approved',consent.requester_uuid,{consent_id:consentId});
