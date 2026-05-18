@@ -219,6 +219,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
         <span class="caption" id="notif-count"></span>
       </div>
       <div id="home-notifications"></div>
+      <div id="family-notifications"></div>
     </section>
 
     <!-- Alerts -->
@@ -632,6 +633,58 @@ async function renderNotifications(){
   }catch(e){/* notifications are non-critical, fail silently */}
 }
 
+async function renderFamilyNotifs(){
+  try{
+    if(!_uid)return;
+    var fr=await _req("GET","/api/v1/family/"+_uid);
+    var received=fr.received||[];
+    if(!received.length)return;
+    var section=document.getElementById("section-notifications");
+    var wrap=document.getElementById("family-notifications");
+    var html="";
+    received.forEach(function(r){
+      var fromName=escHtml(r.from_name||r.from_email||"Someone");
+      html+='<div class="alert-card invite" id="family-notif-'+escHtml(r.id)+'">';
+      html+='<div class="icon-bg" style="width:32px;height:32px;flex-shrink:0;background:#dbeafe;color:#1e40af;">';
+      html+='<svg style="width:15px;height:15px" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.25"/><path d="M4 20C4 17 7.6 15 12 15C16.4 15 20 17 20 20" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>';
+      html+='</div>';
+      html+='<div style="flex:1;min-width:0">';
+      html+='<div style="font-size:13px;line-height:1.5;color:var(--ink);margin-bottom:4px"><strong>'+fromName+'</strong> wants to connect with you on UniProfile</div>';
+      if(r.message)html+='<div style="font-size:12px;color:var(--ink-mute);margin-bottom:4px;font-style:italic">'+escHtml(r.message)+'</div>';
+      html+='<div class="caption">'+escHtml(_fmtTs(r.sent_at))+'</div>';
+      html+='<div style="display:flex;gap:8px;margin-top:10px">';
+      html+='<button class="btn btn-primary btn-sm" onclick="acceptFamilyInvite(\''+escHtml(r.id)+'\')">Accept</button>';
+      html+='<button class="btn btn-secondary btn-sm" onclick="declineFamilyInvite(\''+escHtml(r.id)+'\')">Decline</button>';
+      html+='</div></div></div>';
+    });
+    if(wrap)wrap.innerHTML=html;
+    if(section)section.style.display="";
+  }catch(e){/* non-critical */}
+}
+
+async function acceptFamilyInvite(inviteId){
+  try{
+    await _req("POST","/api/v1/family/"+_uid+"/respond",{invite_id:inviteId,action:"accept"});
+    var el=document.getElementById("family-notif-"+inviteId);
+    if(el)el.remove();
+    var wrap=document.getElementById("family-notifications");
+    var hn=document.getElementById("home-notifications");
+    if(wrap&&!wrap.children.length&&hn&&!hn.children.length)document.getElementById("section-notifications").style.display="none";
+    showToast("Connected!");
+  }catch(e){showToast("Failed to accept. Please try again.");}
+}
+
+async function declineFamilyInvite(inviteId){
+  try{
+    await _req("POST","/api/v1/family/"+_uid+"/respond",{invite_id:inviteId,action:"decline"});
+    var el=document.getElementById("family-notif-"+inviteId);
+    if(el)el.remove();
+    var wrap=document.getElementById("family-notifications");
+    var hn=document.getElementById("home-notifications");
+    if(wrap&&!wrap.children.length&&hn&&!hn.children.length)document.getElementById("section-notifications").style.display="none";
+  }catch(e){showToast("Failed to decline. Please try again.");}
+}
+
 /* ── Init ── */
 async function homeInit(){
   if(!await _auth())return;
@@ -662,6 +715,7 @@ async function homeInit(){
     renderHealth(prof);
     renderInsight(prof);
     renderNotifications();
+    renderFamilyNotifs();
   }catch(e){console.error(e);}
 }
 homeInit();

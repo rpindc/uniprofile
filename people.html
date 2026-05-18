@@ -66,6 +66,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .pill-ready{background:#DDE9CC;color:#2D4A1A}
 .pill-amber{background:#FAEEDA;color:#6B4711}
 .pill-neutral{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.pill-sky{background:#e0f2fe;color:#0369a1}
 .pill-dot{width:6px;height:6px;border-radius:50%}
 .btn{font-family:var(--sans);font-size:13px;font-weight:500;padding:10px 18px;border-radius:4px;cursor:pointer;letter-spacing:-0.005em;transition:background 160ms ease,border-color 160ms ease;display:inline-flex;align-items:center;gap:8px;text-decoration:none;border:0.5px solid transparent;background:none}
 .btn-primary{color:#fff;background:var(--ink);border-color:var(--ink)}
@@ -509,6 +510,7 @@ function _ini(name){var s=(name||"").trim();return s.length>=2?s.slice(0,2).toUp
 function _badge(type){
   if(type==="linked")return '<span class="pill pill-ready">On UniProfile</span>';
   if(type==="invite")return '<span class="pill pill-amber">Invite pending</span>';
+  if(type==="received_invite")return '<span class="pill pill-sky">Invite received</span>';
   return '<span class="pill pill-neutral">Named-only</span>';
 }
 
@@ -560,11 +562,12 @@ document.addEventListener("click",function(e){
 });
 
 /* ── Filter pills ── */
-function _buildPills(all,linked,invites,named){
+function _buildPills(all,linked,invites,received,named){
   var pills=[
     {key:"all",label:"All",count:all},
     {key:"linked",label:"On UniProfile",count:linked},
     {key:"invite",label:"Invite pending",count:invites},
+    {key:"received_invite",label:"Invite received",count:received},
     {key:"named_only",label:"Named-only",count:named},
   ];
   return pills.map(function(pill){
@@ -592,8 +595,9 @@ function renderList(){
   });
   var linked=_allPeople.filter(function(p){return p._type==="linked";}).length;
   var invites=_allPeople.filter(function(p){return p._type==="invite";}).length;
+  var received=_allPeople.filter(function(p){return p._type==="received_invite";}).length;
   var named=_allPeople.filter(function(p){return p._type==="named_only";}).length;
-  _ht("filter-pills",_buildPills(_allPeople.length,linked,invites,named));
+  _ht("filter-pills",_buildPills(_allPeople.length,linked,invites,received,named));
   if(!filtered.length){
     _ht("people-list","<div style='padding:28px 0;color:var(--ink-mute);font-size:13px;'>No people match your filter.</div>");
   }else{
@@ -637,6 +641,18 @@ async function peopleRefresh(){
         created_at:s.sent_at,
         relationship:null,
         group_count:s.group_count||0,
+      });
+    });
+    (fr.received||[]).forEach(function(r){
+      people.push({
+        id:r.id,
+        _type:"received_invite",
+        display_name:r.from_name||r.from_email||"UniProfile Member",
+        from_email:r.from_email,
+        from_uuid:r.from_uuid,
+        message:r.message,
+        avatar_color:_avColor(r.from_name||r.from_email||""),
+        created_at:r.sent_at,
       });
     });
     (fr.named_only||[]).forEach(function(n){
@@ -860,8 +876,9 @@ async function confirmRemove(){
     if(_removingType==="named_only"){
       await _req("DELETE","/api/v1/people/named-only/"+_removingId,null);
     }else if(_removingType==="invite"){
-      // family invite — use existing family endpoint pattern
       await _req("DELETE","/api/v1/family/"+_uid+"/invite/"+_removingId,null);
+    }else if(_removingType==="received_invite"){
+      await _req("POST","/api/v1/family/"+_uid+"/respond",{invite_id:_removingId,action:"decline"});
     }else{
       // linked — use existing family endpoint pattern
       await _req("DELETE","/api/v1/family/"+_uid+"/"+_removingId,null);
@@ -873,6 +890,23 @@ async function confirmRemove(){
   }catch(e){
     showToast("Failed to remove: "+(e.message||"Please try again."));
     btn.disabled=false;btn.textContent="Remove";
+  }
+}
+
+async function respondInvite(inviteId,action){
+  var aBtn=document.getElementById("respond-accept-btn");
+  var dBtn=document.getElementById("respond-decline-btn");
+  if(aBtn)aBtn.disabled=true;
+  if(dBtn)dBtn.disabled=true;
+  try{
+    await _req("POST","/api/v1/family/"+_uid+"/respond",{invite_id:inviteId,action:action});
+    closeDetail();
+    showToast(action==="accept"?"Connected — added to your people.":"Invite declined.");
+    await peopleRefresh();
+  }catch(e){
+    if(aBtn)aBtn.disabled=false;
+    if(dBtn)dBtn.disabled=false;
+    showToast("Failed: "+(e.message||"Please try again."));
   }
 }
 
@@ -923,6 +957,15 @@ function renderDetail(){
     if(p.created_at)html+='<div class="detail-meta">Invite sent '+_esc(new Date(p.created_at).toLocaleDateString('en-US',{month:'short',year:'numeric'}))+'</div>';
     html+='</div></div><div class="detail-badge-row">'+_badge('invite')+'</div>';
     html+='<div class="detail-actions"><button class="btn btn-secondary btn-sm" style="color:var(--red)" onclick="openRemoveConfirm(\''+_esc(p.id)+'\',\'invite\',\''+name+'\')">Cancel invite</button></div>';
+  }else if(p._type==='received_invite'){
+    if(p.from_email)html+='<div class="detail-sub">'+_esc(p.from_email)+'</div>';
+    if(p.message)html+='<div class="detail-meta" style="white-space:pre-wrap">'+_esc(p.message)+'</div>';
+    if(p.created_at)html+='<div class="detail-meta">Received '+_esc(new Date(p.created_at).toLocaleDateString('en-US',{month:'short',year:'numeric'}))+'</div>';
+    html+='</div></div><div class="detail-badge-row">'+_badge('received_invite')+'</div>';
+    html+='<div class="detail-actions">'
+      +'<button class="btn btn-primary btn-sm" id="respond-accept-btn" onclick="respondInvite(\''+_esc(p.id)+'\',\'accept\')">Accept</button>'
+      +'<button class="btn btn-secondary btn-sm" id="respond-decline-btn" onclick="respondInvite(\''+_esc(p.id)+'\',\'decline\')">Decline</button>'
+      +'</div>';
   }else{
     if(p.relationship)html+='<div class="detail-sub" style="text-transform:capitalize">'+_esc(p.relationship)+'</div>';
     if(p.notes)html+='<div class="detail-meta">'+_esc(p.notes)+'</div>';
