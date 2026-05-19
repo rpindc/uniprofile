@@ -325,7 +325,7 @@ function updateLede(){
   var parts=[];
   if(organizing)parts.push(organizing+" organizing");
   if(joined)parts.push(joined+" joined");
-  _st("groups-lede",total+" group"+(total===1?"":"s")+(parts.length?" ("+parts.join(", ")+")")+".");
+  _st("groups-lede",total+" group"+(total===1?"":"s")+(parts.length?" ("+parts.join(", ")+")":"")+".");
 }
 
 /* ── Init ── */
