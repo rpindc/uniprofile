@@ -277,6 +277,39 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   </div>
 </div>
 
+<!-- ── Document Upload Modal ── -->
+<div class="modal-overlay" id="doc-modal" onclick="if(event.target===this)closeDocModal()">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <h2 class="h3">Add document</h2>
+      <button class="modal-close" onclick="closeDocModal()">&#x2715;</button>
+    </div>
+    <div class="form-field">
+      <label class="form-label">File *</label>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+        <span class="btn btn-secondary btn-sm" style="flex-shrink:0;pointer-events:none">Choose file</span>
+        <span id="doc-filename-display" style="font-size:12px;color:var(--ink-mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">No file chosen</span>
+        <input type="file" id="doc-file" accept=".pdf,.jpg,.jpeg,.png,.heic,.webp,application/pdf,image/jpeg,image/png,image/heic,image/webp" style="display:none" onchange="_docFileChosen()"/>
+      </label>
+      <div class="caption" style="margin-top:4px;color:var(--ink-faint)">PDF, JPEG, PNG, HEIC, WebP · max 10 MB</div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Label</label>
+      <input class="form-input" id="doc-label" maxlength="200" placeholder="e.g. Hotel confirmation (defaults to filename)"/>
+    </div>
+    <div id="doc-progress-wrap" style="display:none;margin-bottom:12px">
+      <div style="height:4px;background:var(--rule);border-radius:2px;overflow:hidden">
+        <div id="doc-progress-bar" style="height:100%;background:var(--ink);width:0%;transition:width 200ms ease"></div>
+      </div>
+    </div>
+    <div id="doc-error" class="form-error"></div>
+    <div class="form-actions">
+      <button class="btn btn-primary btn-sm" id="doc-submit-btn" onclick="submitDocModal()">Upload</button>
+      <button class="btn btn-secondary btn-sm" onclick="closeDocModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Itinerary Modal ── -->
 <div class="modal-overlay" id="itin-modal" onclick="if(event.target===this)closeItineraryModal()">
   <div class="modal" style="max-width:460px">
@@ -390,7 +423,7 @@ var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
 var _tok=null,_uid=null;
-var _trip=null,_group=null,_readiness=null,_familyProfile=null,_workspace=null,_itinerary=null;
+var _trip=null,_group=null,_readiness=null,_familyProfile=null,_workspace=null,_itinerary=null,_documents=null;
 var _reAuthCallback=null;
 var _accomEditId=null,_refEditId=null,_itineraryEditId=null;
 var _role='organizer';
@@ -689,6 +722,40 @@ function renderItinerarySection(){
   return html;
 }
 
+/* ── Documents section ── */
+function _fmtBytes(b){b=Number(b||0);if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(0)+'KB';return(b/1048576).toFixed(1)+'MB';}
+function renderDocumentsSection(){
+  var docs=_documents||[];
+  var html='<div style="margin-bottom:28px">';
+  html+='<div class="ws-section-header">';
+  html+='<div style="font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute)">Trip documents</div>';
+  html+='<button class="btn btn-secondary btn-sm" onclick="openDocModal()">Add</button>';
+  html+='</div>';
+  if(!docs.length){
+    html+='<div class="caption" style="color:var(--ink-faint);font-style:italic;padding:6px 0">No documents yet.</div>';
+  }else{
+    html+='<div>';
+    docs.forEach(function(d){
+      var ext=d.filename?d.filename.split('.').pop().toLowerCase():'';
+      var canDelete=(_uid===d.uploaded_by||_role==='organizer');
+      html+='<div class="ws-item" style="cursor:pointer" onclick="openDocument(\''+escHtml(d.id)+'\')">';
+      html+='<div class="ws-item-main">';
+      html+='<div style="font-size:13px;font-weight:500">'+escHtml(d.label||d.filename)+(ext?'<span style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);margin-left:6px">.'+escHtml(ext)+'</span>':'')+'</div>';
+      html+='<div class="caption" style="margin-top:2px">'+escHtml(_fmtBytes(d.file_size_bytes))+' · Added '+escHtml(_fmtTs(d.uploaded_at))+' by '+escHtml(d.uploader_name)+'</div>';
+      html+='</div>';
+      if(canDelete){
+        html+='<div class="ws-item-actions" onclick="event.stopPropagation()">';
+        html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px;color:var(--red)" onclick="deleteDocument(\''+escHtml(d.id)+'\')">Remove</button>';
+        html+='</div>';
+      }
+      html+='</div>';
+    });
+    html+='</div>';
+  }
+  html+='</div>';
+  return html;
+}
+
 /* ── Workspace section ── */
 function renderWorkspaceSection(){
   if(!_group)return'';
@@ -731,6 +798,9 @@ function renderWorkspaceSection(){
     html+='</div>';
   }
   html+='</div>';
+
+  /* Documents */
+  html+=renderDocumentsSection();
 
   /* References */
   var refs=(_workspace&&_workspace.reference_numbers)||[];
@@ -811,6 +881,87 @@ async function saveNotes(){
     cancelEditNotes();
     showToast("Notes saved.");
   }catch(e){showToast("Failed to save notes.");}
+}
+
+/* ── Documents ── */
+async function openDocument(id){
+  if(!_group)return;
+  try{
+    var res=await _req("GET","/api/v1/trip-groups/"+_group.id+"/documents/"+id+"/download-url");
+    window.open(res.download_url,"_blank","noopener");
+  }catch(e){showToast("Failed to open document.");}
+}
+function openDocModal(){
+  document.getElementById("doc-filename-display").textContent="No file chosen";
+  document.getElementById("doc-label").value="";
+  document.getElementById("doc-file").value="";
+  document.getElementById("doc-error").style.display="none";
+  document.getElementById("doc-progress-wrap").style.display="none";
+  document.getElementById("doc-progress-bar").style.width="0%";
+  document.getElementById("doc-submit-btn").disabled=false;
+  document.getElementById("doc-submit-btn").textContent="Upload";
+  document.getElementById("doc-modal").classList.add("open");
+}
+function closeDocModal(){document.getElementById("doc-modal").classList.remove("open");}
+function _docFileChosen(){
+  var f=document.getElementById("doc-file").files[0];
+  document.getElementById("doc-filename-display").textContent=f?f.name:"No file chosen";
+  if(f&&!document.getElementById("doc-label").value)document.getElementById("doc-label").value=f.name;
+}
+async function submitDocModal(){
+  if(!_group)return;
+  var fileEl=document.getElementById("doc-file");
+  var file=fileEl.files[0];
+  if(!file){document.getElementById("doc-error").textContent="Please choose a file.";document.getElementById("doc-error").style.display="block";return;}
+  var ALLOWED=['application/pdf','image/jpeg','image/png','image/heic','image/webp'];
+  if(!ALLOWED.includes(file.type)&&!['pdf','jpg','jpeg','png','heic','webp'].includes(file.name.split('.').pop().toLowerCase())){
+    document.getElementById("doc-error").textContent="File type not allowed. Use PDF, JPEG, PNG, HEIC, or WebP.";document.getElementById("doc-error").style.display="block";return;
+  }
+  if(file.size>10485760){document.getElementById("doc-error").textContent="File exceeds 10 MB limit.";document.getElementById("doc-error").style.display="block";return;}
+  var label=document.getElementById("doc-label").value.trim()||file.name;
+  document.getElementById("doc-error").style.display="none";
+  document.getElementById("doc-submit-btn").disabled=true;
+  document.getElementById("doc-submit-btn").textContent="Uploading…";
+  document.getElementById("doc-progress-wrap").style.display="block";
+  document.getElementById("doc-progress-bar").style.width="0%";
+  try{
+    var mimeType=file.type||'application/octet-stream';
+    var urlRes=await _req("POST","/api/v1/trip-groups/"+_group.id+"/documents/upload-url",{filename:file.name,mime_type:mimeType,file_size_bytes:file.size});
+    if(urlRes.near_limit)showToast("Approaching 20-document limit for this group.");
+    await new Promise(function(resolve,reject){
+      var xhr=new XMLHttpRequest();
+      xhr.open("PUT",urlRes.upload_url,true);
+      xhr.setRequestHeader("Content-Type",mimeType);
+      xhr.upload.onprogress=function(e){if(e.lengthComputable)document.getElementById("doc-progress-bar").style.width=Math.round(e.loaded/e.total*100)+"%";};
+      xhr.onload=function(){if(xhr.status>=200&&xhr.status<300)resolve();else reject(new Error("S3 upload failed: "+xhr.status));};
+      xhr.onerror=function(){reject(new Error("Upload error"));};
+      xhr.send(file);
+    });
+    document.getElementById("doc-progress-bar").style.width="100%";
+    document.getElementById("doc-submit-btn").textContent="Saving…";
+    var newDoc=await _req("POST","/api/v1/trip-groups/"+_group.id+"/documents",{label,filename:file.name,s3_key:urlRes.s3_key,mime_type:mimeType,file_size_bytes:file.size,doc_id:urlRes.doc_id});
+    newDoc.uploader_name="You";
+    if(!_documents)_documents=[];
+    _documents.push(newDoc);
+    closeDocModal();
+    showToast("Document uploaded.");
+    renderGroupSection();
+  }catch(e){
+    document.getElementById("doc-error").textContent=e.message||"Upload failed. Please try again.";
+    document.getElementById("doc-error").style.display="block";
+    document.getElementById("doc-submit-btn").disabled=false;
+    document.getElementById("doc-submit-btn").textContent="Upload";
+    document.getElementById("doc-progress-wrap").style.display="none";
+  }
+}
+async function deleteDocument(id){
+  if(!_group||!confirm("Remove this document?"))return;
+  try{
+    await _req("DELETE","/api/v1/trip-groups/"+_group.id+"/documents/"+id);
+    if(_documents)_documents=_documents.filter(function(d){return d.id!==id;});
+    showToast("Document removed.");
+    renderGroupSection();
+  }catch(e){showToast("Failed to remove document.");}
 }
 
 /* ── Itinerary modal ── */
@@ -984,6 +1135,7 @@ async function openAuditLog(){
       workspace_accommodation_added:"added an accommodation",workspace_accommodation_edited:"edited an accommodation",workspace_accommodation_removed:"removed an accommodation",
       workspace_reference_added:"added a reference",workspace_reference_edited:"edited a reference",workspace_reference_removed:"removed a reference",
       itinerary_added:"added an itinerary item",itinerary_edited:"edited an itinerary item",itinerary_removed:"removed an itinerary item",
+      document_added:"uploaded a document",document_removed:"removed a document",
       group_renamed:"renamed the group",group_archived:"archived the group",group_deleted:"deleted the group",
     };
     var h='<div>';
@@ -1262,8 +1414,9 @@ async function tripInit(){
         _req("GET","/api/v1/trip-groups/"+groupId+"/readiness"),
         _req("GET","/api/v1/trip-groups/"+groupId+"/workspace"),
         _req("GET","/api/v1/trip-groups/"+groupId+"/itinerary"),
+        _req("GET","/api/v1/trip-groups/"+groupId+"/documents"),
       ]);
-      _group=results[0];_readiness=results[1];_workspace=results[2];_itinerary=results[3]||[];
+      _group=results[0];_readiness=results[1];_workspace=results[2];_itinerary=results[3]||[];_documents=results[4]||[];
       document.title=(_group.name||"Group")+" — UniProfile";
       _show("trip-header");_show("trip-divider");
       _st("trip-eyebrow","Trip Group");
@@ -1299,11 +1452,13 @@ async function tripInit(){
           _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id+"/readiness"),
           _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id+"/workspace"),
           _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id+"/itinerary"),
+          _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id+"/documents"),
         ]);
         _group=results[0];
         _readiness=results[1];
         _workspace=results[2];
         _itinerary=results[3]||[];
+        _documents=results[4]||[];
       }catch(e){
         console.error("Failed to load group data:",e);
       }

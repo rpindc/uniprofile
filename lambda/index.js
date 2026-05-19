@@ -1,8 +1,12 @@
 const { RDSDataClient, ExecuteStatementCommand } = require("@aws-sdk/client-rds-data");
 const { CognitoIdentityProviderClient, AdminGetUserCommand, AdminInitiateAuthCommand } = require("@aws-sdk/client-cognito-identity-provider");
+const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { CognitoJwtVerifier } = require("aws-jwt-verify");
 const rds = new RDSDataClient({ region: process.env.AWS_REGION || "us-east-1" });
 const cognito = new CognitoIdentityProviderClient({ region: process.env.AWS_REGION || "us-east-1" });
+const s3 = new S3Client({ region: process.env.AWS_REGION || "us-east-1" });
+const DOCS_BUCKET = process.env.TRIP_DOCS_BUCKET || "uniprofile-trip-documents";
 const DB = { resourceArn: process.env.AURORA_CLUSTER_ARN, secretArn: process.env.AURORA_SECRET_ARN, database: process.env.DB_NAME || "uniprofile" };
 const verifier = CognitoJwtVerifier.create({ userPoolId: process.env.COGNITO_USER_POOL_ID, tokenUse: "id", clientId: process.env.COGNITO_CLIENT_ID });
 async function sql(query, params = []) {
@@ -2243,6 +2247,86 @@ exports.handler=async function(event){
       if(item.created_by!==myUuid&&role!=='organizer')return err("Only the creator or organizer can remove this item",event,403);
       await sql("DELETE FROM trip_itinerary_items WHERE id=:iid::uuid",[strParam("iid",itemId)]);
       writeAuditLog(groupId,myUuid,'itinerary_removed',null,{item_id:itemId,title:item.title});
+      return ok({success:true},event);
+    }
+    // ── Trip Documents ────────────────────────────────────────────────────────
+    // POST /api/v1/trip-groups/{group_id}/documents/upload-url
+    if(method==="POST"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/documents\/upload-url$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      await validateTripGroupAccess(groupId,myUuid);
+      const {filename,mime_type,file_size_bytes}=body||{};
+      if(!filename||!mime_type||!file_size_bytes)return err("filename, mime_type, and file_size_bytes are required",event,400);
+      const ALLOWED_MIME=['application/pdf','image/jpeg','image/png','image/heic','image/webp'];
+      if(!ALLOWED_MIME.includes(mime_type))return err("File type not allowed. Accepted: PDF, JPEG, PNG, HEIC, WebP",event,400);
+      if(file_size_bytes>10485760)return err("File exceeds 10 MB limit",event,400);
+      const countRows=await sql("SELECT COUNT(*)::int AS c FROM trip_documents WHERE trip_group_id=:gid",[strParam("gid",groupId)]);
+      const docCount=Number((countRows[0]&&countRows[0].c)||0);
+      const {randomBytes}=require('crypto');
+      const b=randomBytes(16);b[6]=(b[6]&0x0f)|0x40;b[8]=(b[8]&0x3f)|0x80;
+      const docId=b.toString('hex').replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/,'$1-$2-$3-$4-$5');
+      const safeName=filename.replace(/[^a-zA-Z0-9._-]/g,'_');
+      const s3Key=`trip-documents/${groupId}/${docId}-${safeName}`;
+      const uploadUrl=await getSignedUrl(s3,new PutObjectCommand({Bucket:DOCS_BUCKET,Key:s3Key,ContentType:mime_type,ContentLength:file_size_bytes}),{expiresIn:900});
+      return ok({upload_url:uploadUrl,s3_key:s3Key,doc_id:docId,expires_at:new Date(Date.now()+900000).toISOString(),near_limit:docCount>=18},event);
+    }
+    // POST /api/v1/trip-groups/{group_id}/documents (finalize after S3 upload)
+    if(method==="POST"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/documents$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      const {row}=await validateTripGroupAccess(groupId,myUuid);
+      const {label,filename,s3_key,mime_type,file_size_bytes,doc_id}=body||{};
+      if(!filename||!s3_key||!mime_type||!file_size_bytes)return err("filename, s3_key, mime_type, and file_size_bytes are required",event,400);
+      const finalLabel=(label&&label.trim())||filename;
+      await sql("INSERT INTO trip_documents(id,trip_group_id,label,filename,s3_key,mime_type,file_size_bytes,uploaded_by) VALUES(:id::uuid,:gid,:label,:filename,:s3key,:mime,:size::int,:u::uuid)",
+        [strParam("id",doc_id),strParam("gid",groupId),strParam("label",finalLabel),strParam("filename",filename),strParam("s3key",s3_key),strParam("mime",mime_type),{name:"size",value:{longValue:Number(file_size_bytes)}},strParam("u",myUuid)]);
+      writeAuditLog(groupId,myUuid,'document_added',null,{doc_id,filename,label:finalLabel});
+      const actorName=await getTravelerDisplayName(myUuid);
+      const notifPayload={actor_name:actorName,filename,label:finalLabel,group_id:groupId};
+      const otherMembers=await sql("SELECT target_uuid FROM trip_group_consents WHERE trip_group_id=:gid AND status='approved' AND target_uuid<>:u::uuid",[strParam("gid",groupId),uuidParam("u",myUuid)]);
+      for(const m of otherMembers)writeNotification(m.target_uuid,groupId,'document_added',notifPayload);
+      if(row.owner_uuid&&row.owner_uuid!==myUuid)writeNotification(row.owner_uuid,groupId,'document_added',notifPayload);
+      const inserted=await sql("SELECT id,label,filename,mime_type,file_size_bytes,uploaded_by,uploaded_at FROM trip_documents WHERE id=:id::uuid",[strParam("id",doc_id)]);
+      return ok(inserted[0]||{id:doc_id,label:finalLabel,filename,mime_type,file_size_bytes,uploaded_by:myUuid},event);
+    }
+    // GET /api/v1/trip-groups/{group_id}/documents
+    if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/documents$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      await validateTripGroupAccess(groupId,myUuid);
+      const rows=await sql("SELECT d.id,d.label,d.filename,d.mime_type,d.file_size_bytes,d.uploaded_by,d.uploaded_at,i.legal_first,i.legal_last FROM trip_documents d LEFT JOIN travelers t ON t.uuid=d.uploaded_by LEFT JOIN traveler_identity i ON i.traveler_uuid=t.uuid WHERE d.trip_group_id=:gid ORDER BY d.uploaded_at ASC",[strParam("gid",groupId)]);
+      return ok(rows.map(function(r){return{id:r.id,label:r.label,filename:r.filename,mime_type:r.mime_type,file_size_bytes:r.file_size_bytes,uploaded_by:r.uploaded_by,uploader_name:([r.legal_first,r.legal_last].filter(Boolean).join(' ')||'A member'),uploaded_at:r.uploaded_at};}),event);
+    }
+    // GET /api/v1/trip-groups/{group_id}/documents/{doc_id}/download-url
+    if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/documents\/[^/]+\/download-url$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const groupId=parts[3],docId=parts[5];
+      await validateTripGroupAccess(groupId,myUuid);
+      const docs=await sql("SELECT id,filename,s3_key FROM trip_documents WHERE id=:id::uuid AND trip_group_id=:gid",[strParam("id",docId),strParam("gid",groupId)]);
+      if(!docs.length)return err("Document not found",event,404);
+      const doc=docs[0];
+      const downloadUrl=await getSignedUrl(s3,new GetObjectCommand({Bucket:DOCS_BUCKET,Key:doc.s3_key,ResponseContentDisposition:`attachment; filename="${doc.filename}"`}),{expiresIn:900});
+      return ok({download_url:downloadUrl,expires_in:900},event);
+    }
+    // DELETE /api/v1/trip-groups/{group_id}/documents/{doc_id}
+    if(method==="DELETE"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/documents\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const groupId=parts[3],docId=parts[5];
+      const {role}=await validateTripGroupAccess(groupId,myUuid);
+      const docs=await sql("SELECT id,filename,s3_key,uploaded_by FROM trip_documents WHERE id=:id::uuid AND trip_group_id=:gid",[strParam("id",docId),strParam("gid",groupId)]);
+      if(!docs.length)return err("Document not found",event,404);
+      const doc=docs[0];
+      if(doc.uploaded_by!==myUuid&&role!=='organizer')return err("Only the uploader or organizer can delete this document",event,403);
+      await sql("DELETE FROM trip_documents WHERE id=:id::uuid",[strParam("id",docId)]);
+      try{await s3.send(new DeleteObjectCommand({Bucket:DOCS_BUCKET,Key:doc.s3_key}));}catch(e){console.warn("S3 delete failed:",e.message);}
+      writeAuditLog(groupId,myUuid,'document_removed',null,{doc_id:docId,filename:doc.filename});
       return ok({success:true},event);
     }
     // ── Audit Log ─────────────────────────────────────────────────────────────
