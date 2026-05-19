@@ -907,7 +907,7 @@ exports.handler=async function(event){
       const groupId=path.split('/').filter(Boolean)[3];
       await validateTripGroupId(groupId,myUuid);
       const {name,notes}=body;
-      if(name){await sql("UPDATE traveler_groups SET name=:name,updated_at=NOW() WHERE id=:id AND owner_uuid=:u",[strParam("name",name.slice(0,120)),strParam("id",groupId),uuidParam("u",myUuid)]);}
+      if(name){await sql("UPDATE traveler_groups SET name=:name,updated_at=NOW() WHERE id=:id AND owner_uuid=:u",[strParam("name",name.slice(0,120)),strParam("id",groupId),uuidParam("u",myUuid)]);writeAuditLog(groupId,myUuid,'group_renamed',null,{name:name.slice(0,120)});}
       return ok({success:true},event);
     }
     // DELETE /api/v1/trip-groups/{group_id}
@@ -916,6 +916,7 @@ exports.handler=async function(event){
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
       const groupId=path.split('/').filter(Boolean)[3];
       await validateTripGroupId(groupId,myUuid);
+      writeAuditLog(groupId,myUuid,'group_deleted',null,{});
       await sql("DELETE FROM trip_group_consents WHERE trip_group_id=:id",[strParam("id",groupId)]);
       await sql("DELETE FROM traveler_groups WHERE id=:id AND owner_uuid=:u",[strParam("id",groupId),uuidParam("u",myUuid)]);
       return ok({success:true},event);
@@ -927,6 +928,7 @@ exports.handler=async function(event){
       const groupId=path.split('/').filter(Boolean)[3];
       await validateTripGroupId(groupId,myUuid);
       await sql("UPDATE traveler_groups SET archived_at=NOW(),updated_at=NOW() WHERE id=:id AND owner_uuid=:u",[strParam("id",groupId),uuidParam("u",myUuid)]);
+      writeAuditLog(groupId,myUuid,'group_archived',null,{});
       return ok({success:true},event);
     }
     // POST /api/v1/trip-groups/{group_id}/members
@@ -998,6 +1000,7 @@ exports.handler=async function(event){
       await sql("UPDATE traveler_groups SET members=:m::jsonb,updated_at=NOW() WHERE id=:id",[strParam("m",JSON.stringify(updated)),strParam("id",groupId)]);
       await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_member_removed',:m2::jsonb)",
         [uuidParam("u",myUuid),strParam("m2",JSON.stringify({trip_group_id:groupId,member_kind:(removed||{}).kind,member_id:memberId}))]);
+      writeAuditLog(groupId,myUuid,'member_removed',(removed&&removed.linked_uuid)||null,{member_id:memberId,display_name:(removed&&removed.display_name)||null});
       return ok({success:true},event);
     }
     // ── Named-only Document Routes ─────────────────────────────────────────
@@ -1074,6 +1077,7 @@ exports.handler=async function(event){
         [strParam("gid",groupId),uuidParam("u",myUuid),uuidParam("tgt",target_uuid),strParam("scopes",JSON.stringify(scopes)),strParam("msg",message||null)]);
       await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_consent_requested',:m::jsonb)",
         [uuidParam("u",myUuid),strParam("m",JSON.stringify({trip_group_id:groupId,target_uuid,scopes}))]);
+      writeAuditLog(groupId,myUuid,'consent_requested',target_uuid,{scopes});
       return{statusCode:201,headers:cors(go(event)),body:JSON.stringify({id:rows[0].id,status:'pending'})};
     }
     // DELETE /api/v1/trip-groups/{group_id}/consents/{consent_id} — withdraw
@@ -2086,6 +2090,7 @@ exports.handler=async function(event){
       items.push(newItem);
       await sql("INSERT INTO trip_group_workspace(trip_group_id,trip_notes,accommodations,reference_numbers,updated_at,updated_by) VALUES(:id,NULL,:acc::jsonb,'[]'::jsonb,NOW(),:u::uuid) ON CONFLICT(trip_group_id) DO UPDATE SET accommodations=:acc::jsonb,updated_at=NOW(),updated_by=:u::uuid",
         [strParam("id",groupId),strParam("acc",JSON.stringify(items)),strParam("u",myUuid)]);
+      writeAuditLog(groupId,myUuid,'workspace_accommodation_added',null,{name:newItem.name,id:newItem.id});
       return{statusCode:201,headers:cors(go(event)),body:JSON.stringify(newItem)};
     }
     // PATCH /api/v1/trip-groups/{group_id}/workspace/accommodations/{item_id}
@@ -2103,6 +2108,7 @@ exports.handler=async function(event){
       Object.assign(items[idx],body,{id:itemId});
       await sql("UPDATE trip_group_workspace SET accommodations=:acc::jsonb,updated_at=NOW(),updated_by=:u::uuid WHERE trip_group_id=:id",
         [strParam("acc",JSON.stringify(items)),strParam("u",myUuid),strParam("id",groupId)]);
+      writeAuditLog(groupId,myUuid,'workspace_accommodation_edited',null,{id:itemId});
       return ok({success:true},event);
     }
     // DELETE /api/v1/trip-groups/{group_id}/workspace/accommodations/{item_id}
@@ -2119,6 +2125,7 @@ exports.handler=async function(event){
       if(updated.length===items.length)return err("Accommodation not found",event,404);
       await sql("UPDATE trip_group_workspace SET accommodations=:acc::jsonb,updated_at=NOW(),updated_by=:u::uuid WHERE trip_group_id=:id",
         [strParam("acc",JSON.stringify(updated)),strParam("u",myUuid),strParam("id",groupId)]);
+      writeAuditLog(groupId,myUuid,'workspace_accommodation_removed',null,{id:itemId});
       return ok({success:true},event);
     }
     // POST /api/v1/trip-groups/{group_id}/workspace/references
@@ -2138,6 +2145,7 @@ exports.handler=async function(event){
       items.push(newItem);
       await sql("INSERT INTO trip_group_workspace(trip_group_id,trip_notes,accommodations,reference_numbers,updated_at,updated_by) VALUES(:id,NULL,'[]'::jsonb,:refs::jsonb,NOW(),:u::uuid) ON CONFLICT(trip_group_id) DO UPDATE SET reference_numbers=:refs::jsonb,updated_at=NOW(),updated_by=:u::uuid",
         [strParam("id",groupId),strParam("refs",JSON.stringify(items)),strParam("u",myUuid)]);
+      writeAuditLog(groupId,myUuid,'workspace_reference_added',null,{label,id:itemId});
       return{statusCode:201,headers:cors(go(event)),body:JSON.stringify(newItem)};
     }
     // PATCH /api/v1/trip-groups/{group_id}/workspace/references/{item_id}
@@ -2155,6 +2163,7 @@ exports.handler=async function(event){
       Object.assign(items[idx],body,{id:itemId});
       await sql("UPDATE trip_group_workspace SET reference_numbers=:refs::jsonb,updated_at=NOW(),updated_by=:u::uuid WHERE trip_group_id=:id",
         [strParam("refs",JSON.stringify(items)),strParam("u",myUuid),strParam("id",groupId)]);
+      writeAuditLog(groupId,myUuid,'workspace_reference_edited',null,{id:itemId});
       return ok({success:true},event);
     }
     // DELETE /api/v1/trip-groups/{group_id}/workspace/references/{item_id}
@@ -2171,6 +2180,7 @@ exports.handler=async function(event){
       if(updated.length===items.length)return err("Reference not found",event,404);
       await sql("UPDATE trip_group_workspace SET reference_numbers=:refs::jsonb,updated_at=NOW(),updated_by=:u::uuid WHERE trip_group_id=:id",
         [strParam("refs",JSON.stringify(updated)),strParam("u",myUuid),strParam("id",groupId)]);
+      writeAuditLog(groupId,myUuid,'workspace_reference_removed',null,{id:itemId});
       return ok({success:true},event);
     }
     // ── Itinerary ─────────────────────────────────────────────────────────────
