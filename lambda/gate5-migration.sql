@@ -1,0 +1,4 @@
+-- UniProfile Gate 5: Emergency contacts migration
+-- trip_group_emergency_contacts already exists in prod with owner_uuid column.
+-- No schema changes needed for Gate 5 — table was pre-created.
+-- Schema: id, trip_group_id, owner_uuid, contact_name, relationship_label, phone, created_at, updated_at

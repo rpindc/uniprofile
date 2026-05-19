@@ -373,6 +373,10 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       </div>
     </div>
     <div class="form-field">
+      <label class="form-label">Phone</label>
+      <input class="form-input" id="accom-phone" maxlength="40" placeholder="e.g. +1 506 555 0100"/>
+    </div>
+    <div class="form-field">
       <label class="form-label">Confirmation number</label>
       <input class="form-input" id="accom-conf" maxlength="60" placeholder="e.g. ABC123456"/>
     </div>
@@ -415,6 +419,33 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   </div>
 </div>
 
+<!-- ── Emergency Contact Modal ── -->
+<div class="modal-overlay" id="contact-modal" onclick="if(event.target===this)closeContactModal()">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <h2 class="h3" id="contact-modal-title">Add emergency contact</h2>
+      <button class="modal-close" onclick="closeContactModal()">&#x2715;</button>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Name *</label>
+      <input class="form-input" id="contact-name" maxlength="120" placeholder="e.g. Maria Gomez"/>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Relationship</label>
+      <input class="form-input" id="contact-rel" maxlength="60" placeholder="e.g. Sister, Hotel manager"/>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Phone *</label>
+      <input class="form-input" id="contact-phone" maxlength="40" placeholder="e.g. +1 506 555 0100"/>
+    </div>
+    <div id="contact-error" class="form-error"></div>
+    <div class="form-actions">
+      <button class="btn btn-primary btn-sm" onclick="submitContactModal()">Save</button>
+      <button class="btn btn-secondary btn-sm" onclick="closeContactModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="/components/mobile-drawer.js"></script>
@@ -423,7 +454,7 @@ var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
 var _tok=null,_uid=null;
-var _trip=null,_group=null,_readiness=null,_familyProfile=null,_workspace=null,_itinerary=null,_documents=null;
+var _trip=null,_group=null,_readiness=null,_familyProfile=null,_workspace=null,_itinerary=null,_documents=null,_contacts=null;
 var _reAuthCallback=null;
 var _accomEditId=null,_refEditId=null,_itineraryEditId=null;
 var _role='organizer';
@@ -471,7 +502,10 @@ function _fmtRange(dep,ret){
   if(ret)s+=" – "+new Date(ret+"T00:00:00").toLocaleDateString("en-US",opts);
   return s+", "+yr;
 }
-function _fmtTs(ts){if(!ts)return"—";var d=new Date(ts);return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})+" at "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});}
+function formatLocal(iso){if(!iso)return"—";var s=iso.replace(' ','T').replace(/\+00(:00)?$/,'Z').replace(/(\.\d+)\+00(:00)?$/,'$1Z');var d=new Date(s);if(isNaN(d))return String(iso);var now=new Date();var ms=now-d;var hr=ms/3600000;if(hr<1&&hr>=0)return Math.max(1,Math.round(ms/60000))+'m ago';if(hr<24&&hr>=0)return Math.round(hr)+'h ago';if(hr<48&&hr>=0)return'Yesterday at '+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})+" at "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});}
+function _countdown(dep,ret){if(!dep)return'';var today=new Date();today.setHours(0,0,0,0);var d=new Date(dep+'T00:00:00');var r=ret?new Date(ret+'T00:00:00'):null;var diff=Math.round((d-today)/86400000);if(diff>0)return diff+' day'+(diff===1?'':'s')+' away';if(diff===0)return'Trip starts today';if(r&&today>r){var past=Math.round((today-r)/86400000);return'Ended '+past+' day'+(past===1?'':'s')+' ago';}var day=Math.abs(diff)+1;return'Day '+day;}
+function _renderNotes(text){if(!text)return'<span style="color:var(--ink-faint);font-style:italic">No notes yet.</span>';var lines=escHtml(text).split('\n');var out=[],inList=false;lines.forEach(function(l){var line=l.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');if(/^- /.test(line)){if(!inList){out.push('<ul style="margin:4px 0 4px 16px;padding:0">');inList=true;}out.push('<li style="font-size:13px;line-height:1.7">'+line.slice(2)+'</li>');}else{if(inList){out.push('</ul>');inList=false;}out.push(line===''?'<div style="height:4px"></div>':'<div style="font-size:13px;line-height:1.7">'+line+'</div>');}});if(inList)out.push('</ul>');return out.join('');}
+function _refIcon(label){var l=(label||'').toLowerCase();if(/hotel|inn|resort|lodge|motel|hostel/.test(l))return'🏨 ';if(/embassy|consulate|visa|passport/.test(l))return'🛂 ';if(/car|rental|rent|hire|hertz|avis|enterprise/.test(l))return'🚗 ';if(/tour|activity|excursion|museum|ticket|boat|dive/.test(l))return'🎫 ';return'📞 ';}
 function _nightCount(dep,ret){
   if(!dep||!ret)return 0;
   return Math.max(0,Math.round((new Date(ret+"T00:00:00")-new Date(dep+"T00:00:00"))/86400000));
@@ -498,6 +532,8 @@ function renderTripHeader(t){
   if(nights>0)parts.push(nights+" night"+(nights===1?"":"s"));
   if(t.trip_context)parts.push(_ctxLabel(t.trip_context));
   if(t.trip_locator)parts.push("PNR "+t.trip_locator.toUpperCase());
+  var cd=_countdown(t.departure_date,t.return_date);
+  if(cd)parts.push(cd);
 
   var detHtml='<div class="card"><div style="font-size:13px;color:var(--ink-soft);line-height:1.8">'+escHtml(parts.join(" · "))+'</div>';
   if(t.notes)detHtml+='<div class="caption" style="margin-top:10px;font-style:italic">'+escHtml(t.notes)+'</div>';
@@ -741,11 +777,44 @@ function renderDocumentsSection(){
       html+='<div class="ws-item" style="cursor:pointer" onclick="openDocument(\''+escHtml(d.id)+'\')">';
       html+='<div class="ws-item-main">';
       html+='<div style="font-size:13px;font-weight:500">'+escHtml(d.label||d.filename)+(ext?'<span style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);margin-left:6px">.'+escHtml(ext)+'</span>':'')+'</div>';
-      html+='<div class="caption" style="margin-top:2px">'+escHtml(_fmtBytes(d.file_size_bytes))+' · Added '+escHtml(_fmtTs(d.uploaded_at))+' by '+escHtml(d.uploader_name)+'</div>';
+      html+='<div class="caption" style="margin-top:2px">'+escHtml(_fmtBytes(d.file_size_bytes))+' · Added '+escHtml(formatLocal(d.uploaded_at))+' by '+escHtml(d.uploader_name)+'</div>';
       html+='</div>';
       if(canDelete){
         html+='<div class="ws-item-actions" onclick="event.stopPropagation()">';
         html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px;color:var(--red)" onclick="deleteDocument(\''+escHtml(d.id)+'\')">Remove</button>';
+        html+='</div>';
+      }
+      html+='</div>';
+    });
+    html+='</div>';
+  }
+  html+='</div>';
+  return html;
+}
+
+/* ── Emergency contacts section ── */
+function renderEmergencyContactsSection(){
+  var contacts=_contacts||[];
+  var html='<div style="margin-bottom:28px">';
+  html+='<div class="ws-section-header">';
+  html+='<div style="font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute)">Emergency contacts</div>';
+  html+='<button class="btn btn-secondary btn-sm" onclick="openContactModal(null)">Add</button>';
+  html+='</div>';
+  if(!contacts.length){
+    html+='<div class="caption" style="color:var(--ink-faint);font-style:italic;padding:6px 0">No emergency contacts added yet.</div>';
+  }else{
+    html+='<div>';
+    contacts.forEach(function(c){
+      var canEdit=(_uid===c.created_by||_role==='organizer');
+      html+='<div class="ws-item">';
+      html+='<div class="ws-item-main">';
+      html+='<div style="font-size:13px;font-weight:500">'+escHtml(c.contact_name)+(c.relationship_label?'<span style="font-weight:400;color:var(--ink-mute);margin-left:6px">'+escHtml(c.relationship_label)+'</span>':'')+'</div>';
+      html+='<div class="caption" style="margin-top:2px"><a href="tel:'+escHtml(c.phone)+'" style="color:var(--ink-mute)">'+escHtml(c.phone)+'</a></div>';
+      html+='</div>';
+      if(canEdit){
+        html+='<div class="ws-item-actions">';
+        html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px" onclick="openContactModal(\''+escHtml(c.id)+'\')">Edit</button>';
+        html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px;color:var(--red)" onclick="deleteContact(\''+escHtml(c.id)+'\')">Remove</button>';
         html+='</div>';
       }
       html+='</div>';
@@ -779,7 +848,8 @@ function renderWorkspaceSection(){
     html+='<div>';
     sortedAccoms.forEach(function(a){
       var meta=[];
-      if(a.address)meta.push(escHtml(a.address));
+      if(a.address)meta.push('<a href="https://maps.google.com/?q='+encodeURIComponent(a.address)+'" target="_blank" rel="noopener" style="color:var(--ink-mute);text-decoration:underline">'+escHtml(a.address)+'</a>');
+      if(a.phone)meta.push('<a href="tel:'+escHtml(a.phone)+'" style="color:var(--ink-mute)">'+escHtml(a.phone)+'</a>');
       if(a.check_in||a.check_out)meta.push('Check-in '+escHtml(a.check_in||'—')+' · Check-out '+escHtml(a.check_out||'—'));
       if(a.confirmation_number)meta.push('Conf: '+escHtml(a.confirmation_number));
       if(a.notes)meta.push(escHtml(a.notes));
@@ -815,7 +885,7 @@ function renderWorkspaceSection(){
     html+='<div>';
     refs.forEach(function(r){
       html+='<div class="ws-item">';
-      html+='<div class="ws-item-main"><div style="font-size:13px;font-weight:500">'+escHtml(r.label)+'</div>';
+      html+='<div class="ws-item-main"><div style="font-size:13px;font-weight:500">'+_refIcon(r.label)+escHtml(r.label)+'</div>';
       html+='<div class="caption">'+escHtml(r.value)+'</div>';
       if(r.notes)html+='<div class="caption" style="font-style:italic">'+escHtml(r.notes)+'</div>';
       html+='</div>';
@@ -831,6 +901,9 @@ function renderWorkspaceSection(){
   }
   html+='</div>';
 
+  /* Emergency contacts */
+  html+=renderEmergencyContactsSection();
+
   /* Notes */
   var notes=(_workspace&&_workspace.trip_notes)||"";
   html+='<div style="margin-bottom:16px">';
@@ -838,7 +911,7 @@ function renderWorkspaceSection(){
   html+='<div style="font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute)">Trip notes</div>';
   if(_role==='organizer')html+='<button class="btn btn-secondary btn-sm" onclick="openEditNotes()">Edit</button>';
   html+='</div>';
-  html+='<div id="ws-notes-display"><div class="ws-notes-display'+(notes?'':' empty')+'" style="white-space:pre-wrap">'+( notes?escHtml(notes):'No notes yet.')+'</div></div>';
+  html+='<div id="ws-notes-display"><div class="ws-notes-display'+(notes?'':' empty')+'">'+_renderNotes(notes)+'</div></div>';
   html+='<div id="ws-notes-editor" style="display:none">';
   html+='<textarea class="ws-notes-textarea" id="ws-notes-ta" maxlength="5000" placeholder="Add trip notes visible to all members…" oninput="document.getElementById(\'ws-notes-count\').textContent=this.value.length+\'/5000\'">'+escHtml(notes)+'</textarea>';
   html+='<div style="display:flex;gap:8px;margin-top:8px;align-items:center">';
@@ -1025,6 +1098,7 @@ function openAccomModal(accomId){
   document.getElementById("accom-modal-title").textContent=item?"Edit accommodation":"Add accommodation";
   document.getElementById("accom-name").value=item?item.name||"":"";
   document.getElementById("accom-address").value=item?item.address||"":"";
+  document.getElementById("accom-phone").value=item?item.phone||"":"";
   document.getElementById("accom-checkin").value=item?item.check_in||"":"";
   document.getElementById("accom-checkout").value=item?item.check_out||"":"";
   document.getElementById("accom-conf").value=item?item.confirmation_number||"":"";
@@ -1041,6 +1115,7 @@ async function submitAccomModal(){
   var payload={
     name:name,
     address:document.getElementById("accom-address").value.trim()||null,
+    phone:document.getElementById("accom-phone").value.trim()||null,
     check_in:document.getElementById("accom-checkin").value||null,
     check_out:document.getElementById("accom-checkout").value||null,
     confirmation_number:document.getElementById("accom-conf").value.trim()||null,
@@ -1069,6 +1144,51 @@ async function deleteAccom(id){
     showToast("Accommodation removed.");
     renderGroupSection();
   }catch(e){showToast("Failed to remove accommodation.");}
+}
+
+/* ── Emergency contact modal ── */
+var _contactEditId=null;
+function openContactModal(contactId){
+  _contactEditId=contactId||null;
+  var item=contactId?(_contacts||[]).find(function(c){return c.id===contactId;}):null;
+  document.getElementById("contact-modal-title").textContent=item?"Edit emergency contact":"Add emergency contact";
+  document.getElementById("contact-name").value=item?item.contact_name||"":"";
+  document.getElementById("contact-rel").value=item?item.relationship_label||"":"";
+  document.getElementById("contact-phone").value=item?item.phone||"":"";
+  document.getElementById("contact-error").style.display="none";
+  document.getElementById("contact-modal").classList.add("open");
+  setTimeout(function(){document.getElementById("contact-name").focus();},160);
+}
+function closeContactModal(){document.getElementById("contact-modal").classList.remove("open");_contactEditId=null;}
+async function submitContactModal(){
+  if(!_group)return;
+  var name=document.getElementById("contact-name").value.trim();
+  var phone=document.getElementById("contact-phone").value.trim();
+  if(!name||!phone){var e=document.getElementById("contact-error");e.textContent="Name and phone are required.";e.style.display="block";return;}
+  var payload={contact_name:name,relationship_label:document.getElementById("contact-rel").value.trim()||null,phone:phone};
+  document.getElementById("contact-error").style.display="none";
+  try{
+    if(_contactEditId){
+      var updated=await _req("PATCH","/api/v1/trip-groups/"+_group.id+"/emergency-contacts/"+_contactEditId,payload);
+      if(_contacts){var idx=_contacts.findIndex(function(c){return c.id===_contactEditId;});if(idx>-1)Object.assign(_contacts[idx],payload);}
+    }else{
+      var newC=await _req("POST","/api/v1/trip-groups/"+_group.id+"/emergency-contacts",payload);
+      if(!_contacts)_contacts=[];
+      _contacts.push(newC);
+    }
+    closeContactModal();
+    showToast(_contactEditId?"Contact updated.":"Emergency contact added.");
+    renderGroupSection();
+  }catch(e){var el=document.getElementById("contact-error");el.textContent="Failed to save. Please try again.";el.style.display="block";}
+}
+async function deleteContact(id){
+  if(!_group||!confirm("Remove this emergency contact?"))return;
+  try{
+    await _req("DELETE","/api/v1/trip-groups/"+_group.id+"/emergency-contacts/"+id);
+    if(_contacts)_contacts=_contacts.filter(function(c){return c.id!==id;});
+    showToast("Contact removed.");
+    renderGroupSection();
+  }catch(e){showToast("Failed to remove contact.");}
 }
 
 /* ── Reference modal ── */
@@ -1136,15 +1256,16 @@ async function openAuditLog(){
       workspace_reference_added:"added a reference",workspace_reference_edited:"edited a reference",workspace_reference_removed:"removed a reference",
       itinerary_added:"added an itinerary item",itinerary_edited:"edited an itinerary item",itinerary_removed:"removed an itinerary item",
       document_added:"uploaded a document",document_removed:"removed a document",
+      emergency_contact_added:"added an emergency contact",emergency_contact_removed:"removed an emergency contact",
       group_renamed:"renamed the group",group_archived:"archived the group",group_deleted:"deleted the group",
     };
     var h='<div>';
     rows.forEach(function(r){
-      var who=r.actor_uuid===_uid?"You":"A member";
+      var who=r.actor_uuid===_uid?"You":escHtml(r.actor_name||"A member");
       var what=labelMap[r.action]||r.action;
       h+='<div class="audit-entry">';
-      h+='<div style="font-weight:500">'+escHtml(who)+' '+escHtml(what)+'</div>';
-      h+='<div class="audit-entry-meta">'+escHtml(_fmtTs(r.created_at))+'</div>';
+      h+='<div style="font-weight:500">'+who+' '+escHtml(what)+'</div>';
+      h+='<div class="audit-entry-meta">'+escHtml(formatLocal(r.created_at))+'</div>';
       h+='</div>';
     });
     h+='</div>';
@@ -1415,8 +1536,9 @@ async function tripInit(){
         _req("GET","/api/v1/trip-groups/"+groupId+"/workspace"),
         _req("GET","/api/v1/trip-groups/"+groupId+"/itinerary"),
         _req("GET","/api/v1/trip-groups/"+groupId+"/documents"),
+        _req("GET","/api/v1/trip-groups/"+groupId+"/emergency-contacts"),
       ]);
-      _group=results[0];_readiness=results[1];_workspace=results[2];_itinerary=results[3]||[];_documents=results[4]||[];
+      _group=results[0];_readiness=results[1];_workspace=results[2];_itinerary=results[3]||[];_documents=results[4]||[];_contacts=results[5]||[];
       document.title=(_group.name||"Group")+" — UniProfile";
       _show("trip-header");_show("trip-divider");
       _st("trip-eyebrow","Trip Group");
@@ -1453,12 +1575,14 @@ async function tripInit(){
           _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id+"/workspace"),
           _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id+"/itinerary"),
           _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id+"/documents"),
+          _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id+"/emergency-contacts"),
         ]);
         _group=results[0];
         _readiness=results[1];
         _workspace=results[2];
         _itinerary=results[3]||[];
         _documents=results[4]||[];
+        _contacts=results[5]||[];
       }catch(e){
         console.error("Failed to load group data:",e);
       }

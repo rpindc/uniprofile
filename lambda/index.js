@@ -2329,6 +2329,62 @@ exports.handler=async function(event){
       writeAuditLog(groupId,myUuid,'document_removed',null,{doc_id:docId,filename:doc.filename});
       return ok({success:true},event);
     }
+    // ── Emergency Contacts ────────────────────────────────────────────────────
+    // GET /api/v1/trip-groups/{group_id}/emergency-contacts
+    if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/emergency-contacts$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      await validateTripGroupAccess(groupId,myUuid);
+      const rows=await sql("SELECT id,contact_name,relationship_label,phone,owner_uuid,created_at FROM trip_group_emergency_contacts WHERE trip_group_id=:gid ORDER BY created_at ASC",[strParam("gid",groupId)]);
+      return ok(rows.map(function(r){return{...r,created_by:r.owner_uuid};}),event);
+    }
+    // POST /api/v1/trip-groups/{group_id}/emergency-contacts
+    if(method==="POST"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/emergency-contacts$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      await validateTripGroupAccess(groupId,myUuid);
+      const {contact_name,relationship_label,phone}=body;
+      if(!contact_name||!phone)return err("contact_name and phone are required",event,400);
+      const id=require('crypto').randomUUID();
+      const inserted=await sql("INSERT INTO trip_group_emergency_contacts(id,trip_group_id,contact_name,relationship_label,phone,owner_uuid) VALUES(:id::uuid,:gid,:name,:rel,:phone,:u::uuid) RETURNING id,contact_name,relationship_label,phone,owner_uuid,created_at",
+        [strParam("id",id),strParam("gid",groupId),strParam("name",contact_name),strParam("rel",relationship_label||null),strParam("phone",phone),strParam("u",myUuid)]);
+      writeAuditLog(groupId,myUuid,'emergency_contact_added',null,{contact_id:id,contact_name});
+      const row=inserted[0];
+      return ok({...row,created_by:row.owner_uuid},event);
+    }
+    // PATCH /api/v1/trip-groups/{group_id}/emergency-contacts/{contact_id}
+    if(method==="PATCH"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/emergency-contacts\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const groupId=parts[3],contactId=parts[5];
+      const {role}=await validateTripGroupAccess(groupId,myUuid);
+      const existing=await sql("SELECT id,owner_uuid FROM trip_group_emergency_contacts WHERE id=:id::uuid AND trip_group_id=:gid",[strParam("id",contactId),strParam("gid",groupId)]);
+      if(!existing.length)return err("Contact not found",event,404);
+      if(existing[0].owner_uuid!==myUuid&&role!=='organizer')return err("Only the contact owner or organizer can edit this",event,403);
+      const {contact_name,relationship_label,phone}=body;
+      if(!contact_name||!phone)return err("contact_name and phone are required",event,400);
+      const updated=await sql("UPDATE trip_group_emergency_contacts SET contact_name=:name,relationship_label=:rel,phone=:phone,updated_at=NOW() WHERE id=:id::uuid RETURNING id,contact_name,relationship_label,phone,owner_uuid,created_at",
+        [strParam("name",contact_name),strParam("rel",relationship_label||null),strParam("phone",phone),strParam("id",contactId)]);
+      const row=updated[0];
+      return ok({...row,created_by:row.owner_uuid},event);
+    }
+    // DELETE /api/v1/trip-groups/{group_id}/emergency-contacts/{contact_id}
+    if(method==="DELETE"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/emergency-contacts\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const groupId=parts[3],contactId=parts[5];
+      const {role}=await validateTripGroupAccess(groupId,myUuid);
+      const existing=await sql("SELECT id,contact_name,owner_uuid FROM trip_group_emergency_contacts WHERE id=:id::uuid AND trip_group_id=:gid",[strParam("id",contactId),strParam("gid",groupId)]);
+      if(!existing.length)return err("Contact not found",event,404);
+      if(existing[0].owner_uuid!==myUuid&&role!=='organizer')return err("Only the contact owner or organizer can delete this",event,403);
+      await sql("DELETE FROM trip_group_emergency_contacts WHERE id=:id::uuid",[strParam("id",contactId)]);
+      writeAuditLog(groupId,myUuid,'emergency_contact_removed',null,{contact_id:contactId,contact_name:existing[0].contact_name});
+      return ok({success:true},event);
+    }
     // ── Audit Log ─────────────────────────────────────────────────────────────
     // GET /api/v1/trip-groups/{group_id}/audit-log
     if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/audit-log$/)){
@@ -2336,7 +2392,7 @@ exports.handler=async function(event){
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
       const groupId=path.split('/').filter(Boolean)[3];
       await validateTripGroupId(groupId,myUuid);
-      const rows=await sql("SELECT id,actor_uuid,action,target_uuid,payload,created_at FROM trip_group_audit_log WHERE trip_group_id=:id ORDER BY created_at DESC LIMIT 100",[strParam("id",groupId)]);
+      const rows=await sql("SELECT l.id,l.actor_uuid,l.action,l.target_uuid,l.payload,l.created_at,COALESCE(NULLIF(TRIM(i.legal_first||' '||i.legal_last),''),t.display_name,t.email) AS actor_name FROM trip_group_audit_log l LEFT JOIN travelers t ON t.uuid=l.actor_uuid LEFT JOIN traveler_identity i ON i.traveler_uuid=l.actor_uuid WHERE l.trip_group_id=:id ORDER BY l.created_at DESC LIMIT 100",[strParam("id",groupId)]);
       return ok(rows,event);
     }
     // ── Re-auth ───────────────────────────────────────────────────────────────

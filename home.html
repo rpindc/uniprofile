@@ -574,7 +574,7 @@ function renderInsight(p){
 
 /* ── Notifications ── */
 function escHtml(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
-function _fmtTs(ts){if(!ts)return"";var d=new Date(ts);return d.toLocaleDateString("en-US",{month:"short",day:"numeric"})+" at "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});}
+function _fmtTs(ts){if(!ts)return"";var s=ts.replace(' ','T').replace(/\+00(:00)?$/,'Z').replace(/(\.\d+)\+00(:00)?$/,'$1Z');var d=new Date(s);if(isNaN(d))return String(ts);var now=new Date();var ms=now-d;var hr=ms/3600000;if(hr<1&&hr>=0)return Math.max(1,Math.round(ms/60000))+'m ago';if(hr<24&&hr>=0)return Math.round(hr)+'h ago';if(hr<48&&hr>=0)return'Yesterday';return d.toLocaleDateString("en-US",{month:"short",day:"numeric"})+" at "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});}
 
 function notifText(n){
   var p=n.payload||{};
