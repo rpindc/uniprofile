@@ -277,6 +277,43 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   </div>
 </div>
 
+<!-- ── Itinerary Modal ── -->
+<div class="modal-overlay" id="itin-modal" onclick="if(event.target===this)closeItineraryModal()">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-header">
+      <h2 class="h3" id="itin-modal-title">Add itinerary item</h2>
+      <button class="modal-close" onclick="closeItineraryModal()">&#x2715;</button>
+    </div>
+    <div style="display:flex;gap:10px">
+      <div class="form-field" style="flex:1">
+        <label class="form-label">Date *</label>
+        <input class="form-input" id="itin-date" type="date"/>
+      </div>
+      <div class="form-field" style="flex:1">
+        <label class="form-label">Time</label>
+        <input class="form-input" id="itin-time" maxlength="40" placeholder="e.g. 9:30 PM, Late, All day"/>
+      </div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Title *</label>
+      <input class="form-input" id="itin-title" maxlength="200" placeholder="e.g. Arrive LIR"/>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Location</label>
+      <input class="form-input" id="itin-location" maxlength="200" placeholder="Optional location"/>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Notes</label>
+      <input class="form-input" id="itin-notes" maxlength="500" placeholder="Optional notes"/>
+    </div>
+    <div id="itin-error" class="form-error"></div>
+    <div class="form-actions">
+      <button class="btn btn-primary btn-sm" onclick="submitItineraryModal()">Save</button>
+      <button class="btn btn-secondary btn-sm" onclick="closeItineraryModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Accommodation Modal ── -->
 <div class="modal-overlay" id="accom-modal" onclick="if(event.target===this)closeAccomModal()">
   <div class="modal" style="max-width:480px">
@@ -353,9 +390,9 @@ var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
 var _tok=null,_uid=null;
-var _trip=null,_group=null,_readiness=null,_familyProfile=null,_workspace=null;
+var _trip=null,_group=null,_readiness=null,_familyProfile=null,_workspace=null,_itinerary=null;
 var _reAuthCallback=null;
-var _accomEditId=null,_refEditId=null;
+var _accomEditId=null,_refEditId=null,_itineraryEditId=null;
 var _role='organizer';
 
 function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent(window.location.origin+window.location.pathname);}
@@ -601,28 +638,65 @@ function renderReadinessMatrix(readiness){
   return html;
 }
 
+/* ── Itinerary section ── */
+function renderItinerarySection(){
+  var items=_itinerary||[];
+  var html='<div style="margin-bottom:28px">';
+  html+='<div class="ws-section-header">';
+  html+='<div style="font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute)">Itinerary</div>';
+  html+='<button class="btn btn-secondary btn-sm" onclick="openItineraryModal(null)">Add</button>';
+  html+='</div>';
+  if(!items.length){
+    html+='<div class="caption" style="color:var(--ink-faint);font-style:italic;padding:6px 0">No itinerary yet.</div>';
+  }else{
+    var days={};
+    items.forEach(function(it){
+      var d=it.day_date?it.day_date.split('T')[0]:it.day_date;
+      if(!days[d])days[d]=[];
+      days[d].push(it);
+    });
+    var dayKeys=Object.keys(days).sort();
+    html+='<div>';
+    dayKeys.forEach(function(d){
+      var dt=new Date(d+'T12:00:00');
+      var dayLabel=dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      var weekday=dt.toLocaleDateString('en-US',{weekday:'short'});
+      html+='<div style="margin-bottom:16px">';
+      html+='<div style="font-size:13px;font-weight:500;color:var(--ink-soft);margin-bottom:8px;padding-bottom:4px;border-bottom:0.5px solid var(--rule)">'+escHtml(dayLabel)+' — '+escHtml(weekday)+'</div>';
+      days[d].forEach(function(it){
+        html+='<div class="ws-item" style="align-items:flex-start;padding:6px 0">';
+        html+='<div class="ws-item-main" style="display:flex;gap:10px">';
+        html+='<div style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:var(--ink-mute);min-width:56px;padding-top:1px;flex-shrink:0">'+escHtml(it.time_label||'')+'</div>';
+        html+='<div style="flex:1">';
+        html+='<div style="font-size:13px;font-weight:500">'+escHtml(it.title)+'</div>';
+        if(it.location)html+='<div class="caption" style="margin-top:2px">'+escHtml(it.location)+'</div>';
+        if(it.notes)html+='<div class="caption" style="margin-top:2px;font-style:italic">'+escHtml(it.notes)+'</div>';
+        html+='</div>';
+        html+='</div>';
+        if(_uid===it.created_by||_role==='organizer'){
+          html+='<div class="ws-item-actions">';
+          html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px" onclick="openItineraryModal(\''+escHtml(it.id)+'\')">Edit</button>';
+          html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px;color:var(--red)" onclick="deleteItinerary(\''+escHtml(it.id)+'\')">Remove</button>';
+          html+='</div>';
+        }
+        html+='</div>';
+      });
+      html+='</div>';
+    });
+    html+='</div>';
+  }
+  html+='</div>';
+  return html;
+}
+
 /* ── Workspace section ── */
 function renderWorkspaceSection(){
   if(!_group)return'';
   var html='<hr style="border:none;border-top:0.5px solid var(--rule);margin:32px 0"/>';
   html+='<div style="margin-bottom:8px"><span class="section-label">Trip workspace</span></div>';
 
-  /* Notes */
-  var notes=(_workspace&&_workspace.trip_notes)||"";
-  html+='<div style="margin-bottom:28px">';
-  html+='<div class="ws-section-header">';
-  html+='<div style="font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute)">Trip notes</div>';
-  if(_role==='organizer')html+='<button class="btn btn-secondary btn-sm" onclick="openEditNotes()">Edit</button>';
-  html+='</div>';
-  html+='<div id="ws-notes-display"><div class="ws-notes-display'+(notes?'':' empty')+'">'+( notes?escHtml(notes):'No notes yet.')+'</div></div>';
-  html+='<div id="ws-notes-editor" style="display:none">';
-  html+='<textarea class="ws-notes-textarea" id="ws-notes-ta" maxlength="5000" placeholder="Add trip notes visible to all members…" oninput="document.getElementById(\'ws-notes-count\').textContent=this.value.length+\'/5000\'">'+escHtml(notes)+'</textarea>';
-  html+='<div style="display:flex;gap:8px;margin-top:8px;align-items:center">';
-  html+='<button class="btn btn-primary btn-sm" onclick="saveNotes()">Save</button>';
-  html+='<button class="btn btn-secondary btn-sm" onclick="cancelEditNotes()">Cancel</button>';
-  html+='<span id="ws-notes-count" style="font-size:11px;color:var(--ink-mute);margin-left:auto">'+notes.length+'/5000</span>';
-  html+='</div></div>';
-  html+='</div>';
+  /* Itinerary */
+  html+=renderItinerarySection();
 
   /* Accommodations */
   var accoms=(_workspace&&_workspace.accommodations)||[];
@@ -660,7 +734,7 @@ function renderWorkspaceSection(){
 
   /* References */
   var refs=(_workspace&&_workspace.reference_numbers)||[];
-  html+='<div style="margin-bottom:16px">';
+  html+='<div style="margin-bottom:28px">';
   html+='<div class="ws-section-header">';
   html+='<div style="font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute)">Quick reference</div>';
   if(_role==='organizer')html+='<button class="btn btn-secondary btn-sm" onclick="openRefModal(null)">Add</button>';
@@ -685,6 +759,23 @@ function renderWorkspaceSection(){
     });
     html+='</div>';
   }
+  html+='</div>';
+
+  /* Notes */
+  var notes=(_workspace&&_workspace.trip_notes)||"";
+  html+='<div style="margin-bottom:16px">';
+  html+='<div class="ws-section-header">';
+  html+='<div style="font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute)">Trip notes</div>';
+  if(_role==='organizer')html+='<button class="btn btn-secondary btn-sm" onclick="openEditNotes()">Edit</button>';
+  html+='</div>';
+  html+='<div id="ws-notes-display"><div class="ws-notes-display'+(notes?'':' empty')+'" style="white-space:pre-wrap">'+( notes?escHtml(notes):'No notes yet.')+'</div></div>';
+  html+='<div id="ws-notes-editor" style="display:none">';
+  html+='<textarea class="ws-notes-textarea" id="ws-notes-ta" maxlength="5000" placeholder="Add trip notes visible to all members…" oninput="document.getElementById(\'ws-notes-count\').textContent=this.value.length+\'/5000\'">'+escHtml(notes)+'</textarea>';
+  html+='<div style="display:flex;gap:8px;margin-top:8px;align-items:center">';
+  html+='<button class="btn btn-primary btn-sm" onclick="saveNotes()">Save</button>';
+  html+='<button class="btn btn-secondary btn-sm" onclick="cancelEditNotes()">Cancel</button>';
+  html+='<span id="ws-notes-count" style="font-size:11px;color:var(--ink-mute);margin-left:auto">'+notes.length+'/5000</span>';
+  html+='</div></div>';
   html+='</div>';
 
   return html;
@@ -720,6 +811,59 @@ async function saveNotes(){
     cancelEditNotes();
     showToast("Notes saved.");
   }catch(e){showToast("Failed to save notes.");}
+}
+
+/* ── Itinerary modal ── */
+function openItineraryModal(itemId){
+  _itineraryEditId=itemId||null;
+  var item=null;
+  if(itemId&&_itinerary){item=_itinerary.find(function(i){return i.id===itemId;});}
+  document.getElementById("itin-modal-title").textContent=item?"Edit itinerary item":"Add itinerary item";
+  document.getElementById("itin-date").value=item?(item.day_date?item.day_date.split('T')[0]:''):'';
+  document.getElementById("itin-time").value=item?item.time_label||'':'';
+  document.getElementById("itin-title").value=item?item.title||'':'';
+  document.getElementById("itin-location").value=item?item.location||'':'';
+  document.getElementById("itin-notes").value=item?item.notes||'':'';
+  document.getElementById("itin-error").style.display="none";
+  document.getElementById("itin-modal").classList.add("open");
+  setTimeout(function(){document.getElementById("itin-date").focus();},160);
+}
+function closeItineraryModal(){document.getElementById("itin-modal").classList.remove("open");_itineraryEditId=null;}
+async function submitItineraryModal(){
+  if(!_group)return;
+  var day_date=document.getElementById("itin-date").value;
+  var title=document.getElementById("itin-title").value.trim();
+  if(!day_date||!title){document.getElementById("itin-error").textContent="Date and title are required.";document.getElementById("itin-error").style.display="block";return;}
+  var payload={
+    day_date:day_date,
+    time_label:document.getElementById("itin-time").value.trim()||null,
+    title:title,
+    location:document.getElementById("itin-location").value.trim()||null,
+    notes:document.getElementById("itin-notes").value.trim()||null,
+  };
+  document.getElementById("itin-error").style.display="none";
+  try{
+    if(_itineraryEditId){
+      await _req("PATCH","/api/v1/trip-groups/"+_group.id+"/itinerary/"+_itineraryEditId,payload);
+      if(_itinerary){var idx=_itinerary.findIndex(function(i){return i.id===_itineraryEditId;});if(idx>-1)Object.assign(_itinerary[idx],payload);}
+    }else{
+      var newItem=await _req("POST","/api/v1/trip-groups/"+_group.id+"/itinerary",payload);
+      if(!_itinerary)_itinerary=[];
+      _itinerary.push(newItem);
+    }
+    closeItineraryModal();
+    showToast(_itineraryEditId?"Itinerary item updated.":"Itinerary item added.");
+    renderGroupSection();
+  }catch(e){document.getElementById("itin-error").textContent="Failed to save. Please try again.";document.getElementById("itin-error").style.display="block";}
+}
+async function deleteItinerary(id){
+  if(!_group||!confirm("Remove this itinerary item?"))return;
+  try{
+    await _req("DELETE","/api/v1/trip-groups/"+_group.id+"/itinerary/"+id);
+    if(_itinerary)_itinerary=_itinerary.filter(function(i){return i.id!==id;});
+    showToast("Itinerary item removed.");
+    renderGroupSection();
+  }catch(e){showToast("Failed to remove itinerary item.");}
 }
 
 /* ── Accommodation modal ── */
@@ -839,6 +983,7 @@ async function openAuditLog(){
       workspace_notes_updated:"updated trip notes",
       workspace_accommodation_added:"added an accommodation",workspace_accommodation_edited:"edited an accommodation",workspace_accommodation_removed:"removed an accommodation",
       workspace_reference_added:"added a reference",workspace_reference_edited:"edited a reference",workspace_reference_removed:"removed a reference",
+      itinerary_added:"added an itinerary item",itinerary_edited:"edited an itinerary item",itinerary_removed:"removed an itinerary item",
       group_renamed:"renamed the group",group_archived:"archived the group",group_deleted:"deleted the group",
     };
     var h='<div>';
@@ -1116,8 +1261,9 @@ async function tripInit(){
         _req("GET","/api/v1/trip-groups/"+groupId),
         _req("GET","/api/v1/trip-groups/"+groupId+"/readiness"),
         _req("GET","/api/v1/trip-groups/"+groupId+"/workspace"),
+        _req("GET","/api/v1/trip-groups/"+groupId+"/itinerary"),
       ]);
-      _group=results[0];_readiness=results[1];_workspace=results[2];
+      _group=results[0];_readiness=results[1];_workspace=results[2];_itinerary=results[3]||[];
       document.title=(_group.name||"Group")+" — UniProfile";
       _show("trip-header");_show("trip-divider");
       _st("trip-eyebrow","Trip Group");
@@ -1152,10 +1298,12 @@ async function tripInit(){
           _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id),
           _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id+"/readiness"),
           _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id+"/workspace"),
+          _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id+"/itinerary"),
         ]);
         _group=results[0];
         _readiness=results[1];
         _workspace=results[2];
+        _itinerary=results[3]||[];
       }catch(e){
         console.error("Failed to load group data:",e);
       }

@@ -2169,6 +2169,82 @@ exports.handler=async function(event){
         [strParam("refs",JSON.stringify(updated)),strParam("u",myUuid),strParam("id",groupId)]);
       return ok({success:true},event);
     }
+    // ── Itinerary ─────────────────────────────────────────────────────────────
+    // GET /api/v1/trip-groups/{group_id}/itinerary
+    if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/itinerary$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      await validateTripGroupAccess(groupId,myUuid);
+      const rows=await sql("SELECT id,day_date,time_label,title,location,notes,sort_order,created_by,created_at,updated_at FROM trip_itinerary_items WHERE trip_group_id=:gid ORDER BY day_date ASC,sort_order ASC,created_at ASC",[strParam("gid",groupId)]);
+      return ok(rows,event);
+    }
+    // POST /api/v1/trip-groups/{group_id}/itinerary
+    if(method==="POST"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/itinerary$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      const {row}=await validateTripGroupAccess(groupId,myUuid);
+      const {day_date,time_label,title,location,notes}=body||{};
+      if(!day_date||!title)return err("day_date and title are required",event,400);
+      const maxRows=await sql("SELECT COALESCE(MAX(sort_order),0) AS m FROM trip_itinerary_items WHERE trip_group_id=:gid AND day_date=:d::date",[strParam("gid",groupId),strParam("d",day_date)]);
+      const nextOrder=((maxRows[0]&&maxRows[0].m)||0)+1;
+      const inserted=await sql("INSERT INTO trip_itinerary_items(trip_group_id,day_date,time_label,title,location,notes,sort_order,created_by) VALUES(:gid,:d::date,:tl,:title,:loc,:notes,:so,:u::uuid) RETURNING id,day_date,time_label,title,location,notes,sort_order,created_by,created_at",
+        [strParam("gid",groupId),strParam("d",day_date),strParam("tl",time_label||null),strParam("title",title),strParam("loc",location||null),strParam("notes",notes||null),{name:"so",value:{longValue:nextOrder}},strParam("u",myUuid)]);
+      const item=inserted[0];
+      writeAuditLog(groupId,myUuid,'itinerary_added',null,{item_id:item.id,title,day_date});
+      const actorName=await getTravelerDisplayName(myUuid);
+      const notifPayload={actor_name:actorName,title,day_date,group_id:groupId};
+      const otherMembers=await sql("SELECT target_uuid FROM trip_group_consents WHERE trip_group_id=:gid AND status='approved' AND target_uuid<>:u::uuid",[strParam("gid",groupId),uuidParam("u",myUuid)]);
+      for(const m of otherMembers)writeNotification(m.target_uuid,groupId,'itinerary_added',notifPayload);
+      if(row.owner_uuid&&row.owner_uuid!==myUuid)writeNotification(row.owner_uuid,groupId,'itinerary_added',notifPayload);
+      return ok(item,event);
+    }
+    // PATCH /api/v1/trip-groups/{group_id}/itinerary/{item_id}/reorder
+    if(method==="PATCH"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/itinerary\/[^/]+\/reorder$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const groupId=parts[3],itemId=parts[5];
+      await validateTripGroupAccess(groupId,myUuid);
+      const {sort_order}=body||{};
+      if(sort_order===undefined||sort_order===null)return err("sort_order is required",event,400);
+      const existing=await sql("SELECT id FROM trip_itinerary_items WHERE id=:iid::uuid AND trip_group_id=:gid",[strParam("iid",itemId),strParam("gid",groupId)]);
+      if(!existing.length)return err("Item not found",event,404);
+      await sql("UPDATE trip_itinerary_items SET sort_order=:so,updated_at=NOW() WHERE id=:iid::uuid",[{name:"so",value:{longValue:sort_order}},strParam("iid",itemId)]);
+      return ok({success:true},event);
+    }
+    // PATCH /api/v1/trip-groups/{group_id}/itinerary/{item_id}
+    if(method==="PATCH"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/itinerary\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const groupId=parts[3],itemId=parts[5];
+      await validateTripGroupAccess(groupId,myUuid);
+      const {day_date,time_label,title,location,notes}=body||{};
+      if(!day_date||!title)return err("day_date and title are required",event,400);
+      const existing=await sql("SELECT id FROM trip_itinerary_items WHERE id=:iid::uuid AND trip_group_id=:gid",[strParam("iid",itemId),strParam("gid",groupId)]);
+      if(!existing.length)return err("Item not found",event,404);
+      await sql("UPDATE trip_itinerary_items SET day_date=:d::date,time_label=:tl,title=:title,location=:loc,notes=:notes,updated_at=NOW(),updated_by=:u::uuid WHERE id=:iid::uuid",
+        [strParam("d",day_date),strParam("tl",time_label||null),strParam("title",title),strParam("loc",location||null),strParam("notes",notes||null),strParam("u",myUuid),strParam("iid",itemId)]);
+      writeAuditLog(groupId,myUuid,'itinerary_edited',null,{item_id:itemId,title});
+      return ok({success:true},event);
+    }
+    // DELETE /api/v1/trip-groups/{group_id}/itinerary/{item_id}
+    if(method==="DELETE"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/itinerary\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const groupId=parts[3],itemId=parts[5];
+      const {role}=await validateTripGroupAccess(groupId,myUuid);
+      const existing=await sql("SELECT id,created_by,title FROM trip_itinerary_items WHERE id=:iid::uuid AND trip_group_id=:gid",[strParam("iid",itemId),strParam("gid",groupId)]);
+      if(!existing.length)return err("Item not found",event,404);
+      const item=existing[0];
+      if(item.created_by!==myUuid&&role!=='organizer')return err("Only the creator or organizer can remove this item",event,403);
+      await sql("DELETE FROM trip_itinerary_items WHERE id=:iid::uuid",[strParam("iid",itemId)]);
+      writeAuditLog(groupId,myUuid,'itinerary_removed',null,{item_id:itemId,title:item.title});
+      return ok({success:true},event);
+    }
     // ── Audit Log ─────────────────────────────────────────────────────────────
     // GET /api/v1/trip-groups/{group_id}/audit-log
     if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/audit-log$/)){
