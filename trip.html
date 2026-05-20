@@ -710,6 +710,7 @@ function renderReadinessMatrix(readiness){
 
 /* ── Itinerary section ── */
 function renderItinerarySection(){
+  console.log('renderItinerarySection reached. items:', (_itinerary||[]).length);
   var items=_itinerary||[];
   var html='<div style="margin-bottom:28px">';
   html+='<div class="ws-section-header">';
@@ -756,12 +757,14 @@ function renderItinerarySection(){
     html+='</div>';
   }
   html+='</div>';
+  console.log('renderItinerarySection returning. html length:', html.length);
   return html;
 }
 
 /* ── Documents section ── */
 function _fmtBytes(b){b=Number(b||0);if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(0)+'KB';return(b/1048576).toFixed(1)+'MB';}
 function renderDocumentsSection(){
+  console.log('renderDocumentsSection reached. docs:', (_documents||[]).length);
   var docs=_documents||[];
   var html='<div style="margin-bottom:28px">';
   html+='<div class="ws-section-header">';
@@ -790,6 +793,7 @@ function renderDocumentsSection(){
     html+='</div>';
   }
   html+='</div>';
+  console.log('renderDocumentsSection returning. html length:', html.length);
   return html;
 }
 
@@ -811,6 +815,7 @@ function _renderContactRow(c){
   return h;
 }
 function renderEmergencyContactsSection(){
+  console.log('renderEmergencyContactsSection reached. contacts:', (_contacts||[]).length);
   var contacts=_contacts||[];
   var mine=contacts.filter(function(c){return c.created_by===_uid;});
   var others=contacts.filter(function(c){return c.created_by!==_uid;});
@@ -839,11 +844,13 @@ function renderEmergencyContactsSection(){
 function renderWorkspaceSection(){
   console.log('renderWorkspaceSection called. _group:',JSON.stringify(_group),'role:',_role,'caller:',new Error().stack);
   if(!_group)return'';
+  try{
   var html='<hr style="border:none;border-top:0.5px solid var(--rule);margin:32px 0"/>';
   html+='<div style="margin-bottom:8px"><span class="section-label">Trip workspace</span></div>';
 
   /* Itinerary */
   html+=renderItinerarySection();
+  console.log('workspace: after itinerary, html length:', html.length);
 
   /* Accommodations */
   var accoms=(_workspace&&_workspace.accommodations)||[];
@@ -882,6 +889,7 @@ function renderWorkspaceSection(){
 
   /* Documents */
   html+=renderDocumentsSection();
+  console.log('workspace: after documents, html length:', html.length);
 
   /* References */
   var refs=(_workspace&&_workspace.reference_numbers)||[];
@@ -914,6 +922,7 @@ function renderWorkspaceSection(){
 
   /* Emergency contacts */
   html+=renderEmergencyContactsSection();
+  console.log('workspace: after emergency contacts, html length:', html.length);
 
   /* Notes */
   var notes=(_workspace&&_workspace.trip_notes)||"";
@@ -932,7 +941,9 @@ function renderWorkspaceSection(){
   html+='</div></div>';
   html+='</div>';
 
+  console.log('renderWorkspaceSection returning. total html length:', html.length);
   return html;
+  }catch(e){console.error('renderWorkspaceSection THREW:',e.message,e.stack);return'';}
 }
 
 /* ── Notes editing ── */
