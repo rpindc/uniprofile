@@ -116,7 +116,33 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .readiness-card-num.amber{color:var(--amber)}
 .readiness-card-label{font-size:11px;color:var(--green);margin-top:2px;font-weight:500}
 .readiness-card-label.amber{color:var(--amber)}
-@media(max-width:767px){.main{padding:24px 20px}.readiness-table th,.readiness-table td{padding:8px 10px}.readiness-card{gap:16px}}
+/* Zone spacing */
+.zone-who{margin-bottom:40px}
+.zone-plan{margin-bottom:40px}
+.zone-logistics{margin-bottom:16px}
+/* Section card header */
+.section-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.section-card-title{display:flex;align-items:center;gap:10px}
+/* Itinerary */
+.ws-itinerary{margin-top:4px}
+.itinerary-day-label{font-family:var(--serif);font-size:16px;font-weight:300;font-style:italic;color:var(--ink-soft);margin-bottom:8px;padding-bottom:6px;border-bottom:0.5px solid var(--rule);line-height:1.3}
+.ws-item-notes{font-size:13px;line-height:1.7;color:var(--ink-soft);margin-top:3px}
+/* Countdown */
+.trip-countdown-text{font-family:var(--sans);font-size:13px;font-weight:500;letter-spacing:-0.01em}
+/* Mobile: itinerary controls stacking + matrix reflow — unified at 599px */
+@media(max-width:599px){
+  .ws-itinerary .ws-item{flex-direction:column;gap:0}
+  .ws-itinerary .ws-item .ws-item-actions{align-self:flex-end;margin-top:8px;padding-top:0}
+  .readiness-wrap{overflow-x:visible!important}
+  .readiness-table,.readiness-table thead,.readiness-table tbody,.readiness-table tr{display:block}
+  .readiness-table thead{display:none!important}
+  .readiness-table tr{background:#fff;border:0.5px solid var(--rule);border-radius:8px;margin-bottom:8px;padding:10px 14px}
+  .readiness-table td{display:flex!important;justify-content:space-between;align-items:center;padding:5px 0;border:none!important;text-align:left}
+  .readiness-table td::before{content:attr(data-label);font-size:11px;color:var(--ink-mute);font-weight:500;letter-spacing:0.06em;text-transform:uppercase;flex-shrink:0;margin-right:12px}
+  .readiness-table td:first-child{display:block!important;margin-bottom:6px;padding-bottom:8px;border-bottom:0.5px solid var(--rule)!important}
+  .readiness-table td:first-child::before{display:none}
+}
+@media(max-width:767px){.main{padding:24px 20px}.readiness-table th,.readiness-table td{padding:8px 10px}.readiness-card{gap:16px}.btn-sm{min-height:44px}}
 </style>
 </head>
 <body>
@@ -129,6 +155,11 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   <symbol id="i-privacy" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M8 11V8C8 5.79 9.79 4 12 4C14.21 4 16 5.79 16 8V11" stroke="currentColor" stroke-width="1.25"/><circle cx="12" cy="15.5" r="1" fill="currentColor"/></symbol>
   <symbol id="i-groups" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><circle cx="16" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><path d="M2 20C2 17 4.7 15 8 15" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M10 18C10 15.5 12.5 14 16 14C19.5 14 22 15.5 22 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-calendar" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M14 2v6h6" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="11" height="18" rx="1" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M14 8h5a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-5" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M7 7h3M7 11h3M7 15h3" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></symbol>
+  <symbol id="i-phone-alert" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.38 2 2 0 0 1 3.62 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.18 6.18l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></symbol>
 </svg>
 
 <header class="mob-header">
@@ -192,15 +223,16 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       <a href="/trips.html" id="breadcrumb-link" style="font-size:12px;color:var(--ink-mute);text-decoration:none;font-family:var(--sans)">← All trips</a>
     </div>
 
-    <div id="trip-header" style="display:none;margin-bottom:28px">
+    <div id="trip-header" style="display:none;margin-bottom:8px">
       <div class="eyebrow" id="trip-eyebrow" style="margin-bottom:10px"></div>
       <h1 class="h1" id="trip-title"></h1>
-      <div class="lede" id="trip-lede" style="margin-top:6px"></div>
+      <div id="trip-meta" style="margin-top:8px;font-size:14px;color:var(--ink-soft)"></div>
+      <div id="trip-organizer" style="margin-top:4px;font-size:13px;color:var(--ink-mute)"></div>
+      <div id="trip-countdown" style="margin-top:10px"></div>
     </div>
+    <div id="trip-actions" style="display:none;margin-top:16px;margin-bottom:32px"></div>
 
-    <div id="trip-details" style="margin-bottom:28px"></div>
-
-    <hr class="divider" id="trip-divider" style="display:none" />
+    <div id="trip-details" style="display:none;margin-bottom:28px"></div>
 
     <div id="group-section">
       <div class="caption" style="color:var(--ink-mute);padding:20px 0">Loading…</div>
@@ -504,6 +536,16 @@ function _fmtRange(dep,ret){
 }
 function formatLocal(iso){if(!iso)return"—";var s=iso.replace(' ','T').replace(/\+00(:00)?$/,'Z').replace(/(\.\d+)\+00(:00)?$/,'$1Z');var d=new Date(s);if(isNaN(d))return String(iso);var now=new Date();var ms=now-d;var hr=ms/3600000;if(hr<1&&hr>=0)return Math.max(1,Math.round(ms/60000))+'m ago';if(hr<24&&hr>=0)return Math.round(hr)+'h ago';if(hr<48&&hr>=0)return'Yesterday at '+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});return d.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})+" at "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});}
 function _countdown(dep,ret){if(!dep)return'';var today=new Date();today.setHours(0,0,0,0);var d=new Date(dep+'T00:00:00');var r=ret?new Date(ret+'T00:00:00'):null;var diff=Math.round((d-today)/86400000);if(diff>1)return diff+' days away';if(diff===1)return'Trip is tomorrow';if(diff===0)return'Trip starts today';if(r&&today>r){var past=Math.round((today-r)/86400000);return'Trip ended '+past+' day'+(past===1?'':'s')+' ago';}return'On day '+(Math.abs(diff)+1)+' of trip';}
+function _countdownHtml(text){
+  if(!text)return'';
+  var color='var(--ink-mute)';
+  var m=text.match(/^(\d+) days? away$/);
+  if(m&&parseInt(m[1])<=7)color='var(--amber)';
+  if(text==='Trip is tomorrow')color='var(--amber)';
+  if(text==='Trip starts today'||/^On day \d/.test(text))color='var(--green)';
+  if(/^Trip ended/.test(text))color='var(--ink-faint)';
+  return'<span class="trip-countdown-text" style="color:'+color+'">'+escHtml(text)+'</span>';
+}
 function _renderNotes(text){if(!text)return'<span style="color:var(--ink-faint);font-style:italic">No notes yet.</span>';var lines=escHtml(text).split('\n');var out=[],inList=false;lines.forEach(function(l){var line=l.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');if(/^- /.test(line)){if(!inList){out.push('<ul style="margin:4px 0 4px 16px;padding:0">');inList=true;}out.push('<li style="font-size:13px;line-height:1.7">'+line.slice(2)+'</li>');}else{if(inList){out.push('</ul>');inList=false;}out.push(line===''?'<div style="height:4px"></div>':'<div style="font-size:13px;line-height:1.7">'+line+'</div>');}});if(inList)out.push('</ul>');return out.join('');}
 function _refIcon(label){var l=(label||'').toLowerCase();if(/hotel|inn|resort|lodge|motel|hostel/.test(l))return'🏨 ';if(/embassy|consulate|visa|passport/.test(l))return'🛂 ';if(/car|rental|rent|hire|hertz|avis|enterprise/.test(l))return'🚗 ';if(/tour|activity|excursion|museum|ticket|boat|dive/.test(l))return'🎫 ';return'📞 ';}
 function _valHtml(v){var s=(v||'').trim();if(/^[+\d][\d\s\-()+.]{5,}$/.test(s))return'<a href="tel:'+escHtml(s)+'" style="color:var(--ink-mute)">'+escHtml(s)+'</a>';return escHtml(s);}
@@ -522,12 +564,15 @@ function renderTripHeader(t){
   var route=(t.origin_iata&&t.destination_iata&&t.origin_iata!==t.destination_iata)?t.origin_iata.toUpperCase()+" → "+t.destination_iata.toUpperCase():"";
 
   _show("trip-header");
-  _show("trip-divider");
   _st("trip-eyebrow",past?"Past trip":"Upcoming trip");
   _ht("trip-title",escHtml(_tripName(t)));
-  var cd=_countdown(t.departure_date,t.return_date);
-  var ledeBase=route||(t.destination_iata?t.destination_iata.toUpperCase():"");
-  _ht("trip-lede",escHtml(ledeBase)+(cd?'<span style="color:var(--ink-mute)'+(ledeBase?';margin-left:8px':'')+'">' +escHtml(cd)+'</span>':''));
+
+  var metaParts=[];
+  if(route)metaParts.push(route);
+  else if(t.destination_iata)metaParts.push(t.destination_iata.toUpperCase());
+  if(t.departure_date||t.return_date)metaParts.push(_fmtRange(t.departure_date,t.return_date));
+  _ht("trip-meta",metaParts.length?'<span>'+metaParts.map(escHtml).join(' · ')+'</span>':'');
+  _ht("trip-countdown",_countdownHtml(_countdown(t.departure_date,t.return_date)));
 
   var parts=[];
   if(t.departure_date||t.return_date)parts.push(_fmtRange(t.departure_date,t.return_date));
@@ -540,56 +585,56 @@ function renderTripHeader(t){
   if(t.notes)detHtml+='<div class="caption" style="margin-top:10px;font-style:italic">'+escHtml(t.notes)+'</div>';
   detHtml+='</div>';
   _ht("trip-details",detHtml);
+  _show("trip-details");
 }
 
 /* ── Render group section ── */
 function renderGroupSection(){
   var html='';
 
-  /* Section header row */
-  html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">';
-  html+='<div class="section-label">Trip Group</div>';
-  if(_group){
-    html+='<div style="display:flex;gap:6px;flex-wrap:wrap">';
-    if(_role==='organizer'){
-      html+='<button class="btn btn-secondary btn-sm" onclick="openAddMember()">Add member</button>';
-      html+='<button class="btn btn-secondary btn-sm" onclick="openRename()">Rename</button>';
-      html+='<button class="btn btn-secondary btn-sm" onclick="openAuditLog()" style="color:var(--ink-mute)">Activity</button>';
-      if(!_group.archived_at)html+='<button class="btn btn-secondary btn-sm" style="color:var(--ink-mute)" onclick="archiveGroup()">Archive</button>';
-      html+='<button class="btn btn-danger btn-sm" onclick="deleteGroup()">Delete</button>';
+  /* Populate action buttons into hero area */
+  var actEl=document.getElementById('trip-actions');
+  if(actEl){
+    if(_group){
+      var aHtml='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+      if(_role==='organizer'){
+        aHtml+='<button class="btn btn-secondary btn-sm" onclick="openAddMember()">Add member</button>';
+        aHtml+='<button class="btn btn-secondary btn-sm" onclick="openRename()">Rename</button>';
+        aHtml+='<button class="btn btn-secondary btn-sm" style="color:var(--ink-mute)" onclick="openAuditLog()">Activity</button>';
+        if(!_group.archived_at)aHtml+='<button class="btn btn-secondary btn-sm" style="color:var(--ink-mute)" onclick="archiveGroup()">Archive</button>';
+        aHtml+='<button class="btn btn-danger btn-sm" onclick="deleteGroup()">Delete</button>';
+      }else{
+        aHtml+='<button class="btn btn-danger btn-sm" onclick="leaveGroup()">Leave group</button>';
+      }
+      aHtml+='</div>';
+      actEl.innerHTML=aHtml;
+      actEl.style.display='';
     }else{
-      html+='<button class="btn btn-danger btn-sm" onclick="leaveGroup()">Leave group</button>';
+      actEl.style.display='none';
     }
-    html+='</div>';
   }
-  html+='</div>';
 
   if(!_group){
-    /* Empty state */
     html+='<div class="card-warm">';
     html+='<div class="h2" style="margin-bottom:10px">No group yet</div>';
     html+='<p style="font-size:14px;color:var(--ink-soft);margin-bottom:20px;line-height:1.6">Create a trip group to coordinate travel readiness with your companions — track passports, share documents, and see who\'s ready at a glance.</p>';
     html+='<button class="btn btn-primary" onclick="createGroup()">Create Trip Group</button>';
     html+='</div>';
   }else{
-    /* Group name + meta */
-    html+='<div style="margin-bottom:20px">';
-    html+='<div class="h2" style="margin-bottom:4px">'+escHtml(_group.name)+'</div>';
-    var gmeta=[];
-    if(_group.destination_name)gmeta.push(escHtml(_group.destination_name));
-    if(_group.departure_date||_group.return_date)gmeta.push(escHtml(_fmtRange(_group.departure_date,_group.return_date)));
-    if(gmeta.length)html+='<div class="caption" style="margin-bottom:8px">'+gmeta.join(" · ")+'</div>';
-    if(_role==='member'&&_group.organizer_name)html+='<div class="caption" style="margin-bottom:8px">Organized by <span style="color:var(--ink-soft);font-weight:500">'+escHtml(_group.organizer_name)+'</span></div>';
+    /* Zone 2 — Who's Going */
+    html+='<div class="card zone-who">';
+    html+='<div class="section-card-head">';
+    html+='<div class="section-card-title"><svg class="icon" style="color:var(--ink-mute)" aria-hidden="true"><use href="#i-people"/></svg><span class="h3">Who\'s going</span></div>';
     if(_group.archived_at)html+='<span class="pill pill-neutral" style="font-size:10px">Archived '+escHtml(_fmtShort(_group.archived_at.slice(0,10)))+'</span>';
     html+='</div>';
 
-    /* Aggregate readiness summary card */
+    /* Readiness summary */
     if(_readiness&&(_readiness.summary||_readiness.aggregate_summary)){
       var s=_readiness.summary||_readiness.aggregate_summary;
-      var allReady=s.ready===s.total&&s.total>0;
-      html+='<div class="readiness-card'+(allReady?'':' ').replace('readiness-card ','readiness-card'+(s.action_needed>0||s.blocked>0?' ':''))+'"'
-        +(s.action_needed>0||s.blocked>0?' style="background:var(--amber-soft)"':'')+'>';
-      html+='<div class="readiness-card-stat"><div class="readiness-card-num'+(s.action_needed>0||s.blocked>0?' amber':'')+'">'+s.total+'</div><div class="readiness-card-label'+(s.action_needed>0||s.blocked>0?' amber':'')+'">traveler'+(s.total===1?'':'s')+'</div></div>';
+      var cardBg=(s.action_needed>0||s.blocked>0)?'var(--amber-soft)':'var(--green-soft)';
+      var isAmber=s.action_needed>0||s.blocked>0;
+      html+='<div class="readiness-card" style="background:'+cardBg+'">';
+      html+='<div class="readiness-card-stat"><div class="readiness-card-num'+(isAmber?' amber':'')+'">'+s.total+'</div><div class="readiness-card-label'+(isAmber?' amber':'')+'">traveler'+(s.total===1?'':'s')+'</div></div>';
       if(s.ready>0)html+='<div class="readiness-card-stat"><div class="readiness-card-num">'+s.ready+'</div><div class="readiness-card-label">ready</div></div>';
       if(s.action_needed>0)html+='<div class="readiness-card-stat"><div class="readiness-card-num amber">'+s.action_needed+'</div><div class="readiness-card-label amber">need attention</div></div>';
       if(s.blocked>0)html+='<div class="readiness-card-stat"><div class="readiness-card-num" style="color:var(--red)">'+s.blocked+'</div><div class="readiness-card-label" style="color:var(--red)">blocked</div></div>';
@@ -601,13 +646,15 @@ function renderGroupSection(){
 
     /* Readiness matrix */
     if(_readiness&&_readiness.members&&_readiness.members.length){
-      html+='<div style="margin-top:28px">';
+      html+='<div style="margin-top:24px">';
       html+='<div style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:12px">Readiness — '+escHtml(_readiness.destination_name||_readiness.destination||"")+'</div>';
       html+=renderReadinessMatrix(_readiness);
       html+='</div>';
     }
 
-    /* Workspace section */
+    html+='</div>'; /* end zone-who */
+
+    /* Zones 3 + 4 — workspace */
     html+=renderWorkspaceSection();
   }
 
@@ -697,9 +744,9 @@ function renderReadinessMatrix(readiness){
     html+='</td>';
     colIds.forEach(function(cid){
       var chk=checkMap[m.member_id]?checkMap[m.member_id][cid]:null;
-      html+='<td>'+statusIcon(chk)+'</td>';
+      html+='<td data-label="'+escHtml(colLabels[cid])+'">'+statusIcon(chk)+'</td>';
     });
-    html+='<td>'+overallCell(m.overall_status)+'</td>';
+    html+='<td data-label="Overall">'+overallCell(m.overall_status)+'</td>';
     html+='</tr>';
   });
 
@@ -711,9 +758,9 @@ function renderReadinessMatrix(readiness){
 /* ── Itinerary section ── */
 function renderItinerarySection(){
   var items=_itinerary||[];
-  var html='<div style="margin-bottom:28px">';
-  html+='<div class="ws-section-header">';
-  html+='<div style="font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute)">Itinerary</div>';
+  var html='<div class="card zone-plan">';
+  html+='<div class="section-card-head">';
+  html+='<div class="section-card-title"><svg class="icon" style="color:var(--ink-mute)" aria-hidden="true"><use href="#i-calendar"/></svg><span class="h3">Itinerary</span></div>';
   html+='<button class="btn btn-secondary btn-sm" onclick="openItineraryModal(null)">Add</button>';
   html+='</div>';
   if(!items.length){
@@ -726,21 +773,21 @@ function renderItinerarySection(){
       days[d].push(it);
     });
     var dayKeys=Object.keys(days).sort();
-    html+='<div>';
+    html+='<div class="ws-itinerary">';
     dayKeys.forEach(function(d){
       var dt=new Date(d+'T12:00:00');
       var dayLabel=dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-      var weekday=dt.toLocaleDateString('en-US',{weekday:'short'});
-      html+='<div style="margin-bottom:16px">';
-      html+='<div style="font-size:13px;font-weight:500;color:var(--ink-soft);margin-bottom:8px;padding-bottom:4px;border-bottom:0.5px solid var(--rule)">'+escHtml(dayLabel)+' — '+escHtml(weekday)+'</div>';
+      var weekday=dt.toLocaleDateString('en-US',{weekday:'long'});
+      html+='<div style="margin-bottom:20px">';
+      html+='<div class="itinerary-day-label">'+escHtml(dayLabel)+' — '+escHtml(weekday)+'</div>';
       days[d].forEach(function(it){
-        html+='<div class="ws-item" style="align-items:flex-start;padding:6px 0">';
-        html+='<div class="ws-item-main" style="display:flex;gap:10px">';
-        html+='<div style="font-family:\'JetBrains Mono\',monospace;font-size:11px;color:var(--ink-mute);min-width:56px;padding-top:1px;flex-shrink:0">'+escHtml(it.time_label||'')+'</div>';
-        html+='<div style="flex:1">';
-        html+='<div style="font-size:13px;font-weight:500">'+escHtml(it.title)+'</div>';
-        if(it.location)html+='<div class="caption" style="margin-top:2px">'+escHtml(it.location)+'</div>';
-        if(it.notes)html+='<div class="caption" style="margin-top:2px;font-style:italic">'+escHtml(it.notes)+'</div>';
+        html+='<div class="ws-item" style="align-items:flex-start;padding:8px 0">';
+        html+='<div class="ws-item-main" style="display:flex;gap:12px">';
+        html+='<div style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);min-width:56px;padding-top:2px;flex-shrink:0">'+escHtml(it.time_label||'')+'</div>';
+        html+='<div style="flex:1;min-width:0">';
+        html+='<div style="font-size:14px;font-weight:500;line-height:1.3">'+escHtml(it.title)+'</div>';
+        if(it.location)html+='<div class="caption" style="margin-top:3px">'+escHtml(it.location)+'</div>';
+        if(it.notes)html+='<div class="ws-item-notes">'+escHtml(it.notes)+'</div>';
         html+='</div>';
         html+='</div>';
         if(_uid===it.created_by||_role==='organizer'){
@@ -763,9 +810,9 @@ function renderItinerarySection(){
 function _fmtBytes(b){b=Number(b||0);if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(0)+'KB';return(b/1048576).toFixed(1)+'MB';}
 function renderDocumentsSection(){
   var docs=_documents||[];
-  var html='<div style="margin-bottom:28px">';
-  html+='<div class="ws-section-header">';
-  html+='<div style="font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute)">Trip documents</div>';
+  var html='<div class="card zone-logistics">';
+  html+='<div class="section-card-head">';
+  html+='<div class="section-card-title"><svg class="icon" style="color:var(--ink-mute)" aria-hidden="true"><use href="#i-file"/></svg><span class="h3">Trip documents</span></div>';
   html+='<button class="btn btn-secondary btn-sm" onclick="openDocModal()">Add</button>';
   html+='</div>';
   if(!docs.length){
@@ -814,9 +861,9 @@ function renderEmergencyContactsSection(){
   var contacts=_contacts||[];
   var mine=contacts.filter(function(c){return c.created_by===_uid;});
   var others=contacts.filter(function(c){return c.created_by!==_uid;});
-  var html='<div style="margin-bottom:28px">';
-  html+='<div class="ws-section-header">';
-  html+='<div style="font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute)">Emergency contacts</div>';
+  var html='<div class="card zone-logistics">';
+  html+='<div class="section-card-head">';
+  html+='<div class="section-card-title"><svg class="icon" style="color:var(--ink-mute)" aria-hidden="true"><use href="#i-phone-alert"/></svg><span class="h3">Emergency contacts</span></div>';
   html+='<button class="btn btn-secondary btn-sm" onclick="openContactModal(null)">Add</button>';
   html+='</div>';
   /* Your contacts subsection */
@@ -838,18 +885,19 @@ function renderEmergencyContactsSection(){
 /* ── Workspace section ── */
 function renderWorkspaceSection(){
   if(!_group)return'';
-  var html='<hr style="border:none;border-top:0.5px solid var(--rule);margin:32px 0"/>';
-  html+='<div style="margin-bottom:8px"><span class="section-label">Trip workspace</span></div>';
+  var html='';
 
-  /* Itinerary */
+  /* Zone 3 — The Plan (Itinerary) */
   html+=renderItinerarySection();
+
+  /* Zone 4 — Logistics */
 
   /* Accommodations */
   var accoms=(_workspace&&_workspace.accommodations)||[];
   var sortedAccoms=accoms.slice().sort(function(a,b){return(a.check_in||"9")>(b.check_in||"9")?1:(a.check_in||"9")<(b.check_in||"9")?-1:0;});
-  html+='<div style="margin-bottom:28px">';
-  html+='<div class="ws-section-header">';
-  html+='<div style="font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute)">Where we\'re staying</div>';
+  html+='<div class="card zone-logistics">';
+  html+='<div class="section-card-head">';
+  html+='<div class="section-card-title"><svg class="icon" style="color:var(--ink-mute)" aria-hidden="true"><use href="#i-building"/></svg><span class="h3">Where we\'re staying</span></div>';
   if(_role==='organizer')html+='<button class="btn btn-secondary btn-sm" onclick="openAccomModal(null)">Add</button>';
   html+='</div>';
   if(!sortedAccoms.length){
@@ -865,7 +913,7 @@ function renderWorkspaceSection(){
       if(a.notes)meta.push(escHtml(a.notes));
       html+='<div class="ws-item">';
       html+='<div class="ws-item-main"><div style="font-size:13px;font-weight:500">'+escHtml(a.name)+'</div>';
-      if(meta.length)html+='<div class="caption" style="margin-top:3px">'+meta.join(' · ')+'</div>';
+      if(meta.length)html+='<div class="caption" style="margin-top:3px;line-height:1.6">'+meta.join(' · ')+'</div>';
       html+='</div>';
       if(_role==='organizer'){
         html+='<div class="ws-item-actions">';
@@ -882,11 +930,11 @@ function renderWorkspaceSection(){
   /* Documents */
   html+=renderDocumentsSection();
 
-  /* References */
+  /* Quick Reference */
   var refs=(_workspace&&_workspace.reference_numbers)||[];
-  html+='<div style="margin-bottom:28px">';
-  html+='<div class="ws-section-header">';
-  html+='<div style="font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute)">Quick reference</div>';
+  html+='<div class="card zone-logistics">';
+  html+='<div class="section-card-head">';
+  html+='<div class="section-card-title"><svg class="icon" style="color:var(--ink-mute)" aria-hidden="true"><use href="#i-bookmark"/></svg><span class="h3">Quick reference</span></div>';
   if(_role==='organizer')html+='<button class="btn btn-secondary btn-sm" onclick="openRefModal(null)">Add</button>';
   html+='</div>';
   if(!refs.length){
@@ -914,11 +962,11 @@ function renderWorkspaceSection(){
   /* Emergency contacts */
   html+=renderEmergencyContactsSection();
 
-  /* Notes */
+  /* Trip notes */
   var notes=(_workspace&&_workspace.trip_notes)||"";
-  html+='<div style="margin-bottom:16px">';
-  html+='<div class="ws-section-header">';
-  html+='<div style="font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute)">Trip notes</div>';
+  html+='<div class="card zone-logistics">';
+  html+='<div class="section-card-head">';
+  html+='<div class="section-card-title"><span class="h3">Trip notes</span></div>';
   if(_role==='organizer')html+='<button class="btn btn-secondary btn-sm" onclick="openEditNotes()">Edit</button>';
   html+='</div>';
   html+='<div id="ws-notes-display"><div class="ws-notes-display'+(notes?'':' empty')+'">'+_renderNotes(notes)+'</div></div>';
@@ -1550,11 +1598,15 @@ async function tripInit(){
       ]);
       _group=results[0];_readiness=results[1];_workspace=results[2];_itinerary=results[3]||[];_documents=results[4]||[];_contacts=results[5]||[];
       document.title=(_group.name||"Group")+" — UniProfile";
-      _show("trip-header");_show("trip-divider");
-      _st("trip-eyebrow","Trip Group");
+      _show("trip-header");
+      _st("trip-eyebrow",_group.destination_name||"Trip Group");
       _ht("trip-title",escHtml(_group.name||"Group"));
-      var _mcd=_countdown(_group.departure_date,_group.return_date);
-      _ht("trip-lede","Organized by "+escHtml(_group.organizer_name||"your group organizer")+(_mcd?'<span style="color:var(--ink-mute);margin-left:8px">'+escHtml(_mcd)+'</span>':''));
+      var _mParts=[];
+      if(_group.destination_name)_mParts.push(escHtml(_group.destination_name));
+      if(_group.departure_date||_group.return_date)_mParts.push(escHtml(_fmtRange(_group.departure_date,_group.return_date)));
+      if(_mParts.length)_ht("trip-meta",'<span>'+_mParts.join(' · ')+'</span>');
+      if(_group.organizer_name)_ht("trip-organizer",'Organized by <span style="color:var(--ink-soft);font-weight:500">'+escHtml(_group.organizer_name)+'</span>');
+      _ht("trip-countdown",_countdownHtml(_countdown(_group.departure_date,_group.return_date)));
       renderGroupSection();
     }catch(e){
       console.error(e);
