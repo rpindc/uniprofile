@@ -609,8 +609,10 @@ function renderGroupSection(){
 
     /* Workspace section */
     html+=renderWorkspaceSection();
+    console.log('renderGroupSection: after workspace concat, html length:', html.length);
   }
 
+  console.log('renderGroupSection: calling _ht with html length:', html.length);
   _ht("group-section",html);
 }
 
