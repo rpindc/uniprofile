@@ -837,6 +837,7 @@ function renderEmergencyContactsSection(){
 
 /* ── Workspace section ── */
 function renderWorkspaceSection(){
+  console.log('renderWorkspaceSection called. _group:',JSON.stringify(_group),'role:',_role,'caller:',new Error().stack);
   if(!_group)return'';
   var html='<hr style="border:none;border-top:0.5px solid var(--rule);margin:32px 0"/>';
   html+='<div style="margin-bottom:8px"><span class="section-label">Trip workspace</span></div>';
