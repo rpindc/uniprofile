@@ -496,6 +496,10 @@ function _kmsThisYear(trips){
 }
 
 /* ── Sparkline ── */
+function _parseDT(s){
+  s=String(s).replace(' ','T').replace(/([+-]\d{2})(?::?(\d{2}))?$/,function(_,h,m){return h+':'+(m||'00');});
+  return new Date(s);
+}
 function _buildSparkline(segments,tripId,isPast){
   if(!segments||!segments.length)return'';
   var flights=segments.filter(function(s){return s.segment_type==='FLIGHT';}).sort(function(a,b){return(a.segment_order||0)-(b.segment_order||0);});
@@ -504,8 +508,8 @@ function _buildSparkline(segments,tripId,isPast){
   flights.forEach(function(s,i){
     var dur=s.duration_minutes||0;
     if(!dur&&s.departure_datetime&&s.arrival_datetime){
-      var dep=new Date(String(s.departure_datetime).replace(' ','T'));
-      var arr=new Date(String(s.arrival_datetime).replace(' ','T'));
+      var dep=_parseDT(s.departure_datetime);
+      var arr=_parseDT(s.arrival_datetime);
       if(arr<dep)arr=new Date(arr.getTime()+86400000);
       dur=Math.max(0,Math.round((arr-dep)/60000));
     }
@@ -514,8 +518,8 @@ function _buildSparkline(segments,tripId,isPast){
       var nx=flights[i+1];
       var lay=0;
       if(s.arrival_datetime&&nx.departure_datetime){
-        var a2=new Date(String(s.arrival_datetime).replace(' ','T'));
-        var d2=new Date(String(nx.departure_datetime).replace(' ','T'));
+        var a2=_parseDT(s.arrival_datetime);
+        var d2=_parseDT(nx.departure_datetime);
         if(d2<a2)d2=new Date(d2.getTime()+86400000);
         lay=Math.max(0,Math.round((d2-a2)/60000));
       }
