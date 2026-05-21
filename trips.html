@@ -168,18 +168,18 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .view-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
 /* Calendar */
 .cal-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.cal-inner{min-width:680px}
-.cal-year-nav{display:flex;align-items:center;gap:10px;margin-bottom:18px}
-.cal-year-label{font-family:var(--serif);font-size:18px;font-weight:400;color:var(--ink)}
-.cal-chevron{background:none;border:0.5px solid var(--rule-strong);border-radius:4px;width:28px;height:28px;cursor:pointer;color:var(--ink-mute);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cal-inner{min-width:0}
 .cal-months-row{display:flex;margin-bottom:8px;border-bottom:0.5px solid var(--rule)}
-.cal-month-cell{font-size:9px;font-weight:500;letter-spacing:0.13em;text-transform:uppercase;color:var(--ink-mute);padding-bottom:6px;overflow:hidden;min-width:0}
+.cal-month-cell{font-size:9px;font-weight:500;letter-spacing:0.13em;text-transform:uppercase;color:var(--ink-mute);padding-bottom:6px;overflow:hidden;min-width:0;flex-shrink:0}
 .cal-trips-area{position:relative}
-.cal-trip-row{position:relative;height:28px;margin-bottom:5px}
-.cal-trip-bar{position:absolute;height:22px;top:3px;border-radius:4px;display:flex;align-items:center;padding:0 7px;font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;text-decoration:none;transition:opacity 120ms;min-width:4px}
+.cal-trip-bar{position:absolute;height:22px;border-radius:4px;display:flex;align-items:center;padding:0 6px;font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;text-decoration:none;transition:opacity 120ms;min-width:4px}
 .cal-trip-bar:hover{opacity:0.78}
+.cal-now-line{position:absolute;top:0;bottom:0;width:1px;background:var(--red);pointer-events:none;z-index:2}
+.cal-now-label{position:absolute;top:2px;left:4px;font-size:9px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--red);white-space:nowrap}
+.cal-jump-btn{background:none;border:0.5px solid var(--rule-strong);border-radius:4px;padding:4px 10px;font-size:11px;font-family:var(--sans);color:var(--ink-mute);cursor:pointer;transition:color 120ms}
+.cal-jump-btn:hover{color:var(--ink)}
 .cal-empty{font-size:13px;color:var(--ink-mute);padding:24px 0}
-.cal-scroll-hint{font-size:9px;color:var(--ink-faint);text-align:right;margin-top:6px;letter-spacing:0.08em;text-transform:uppercase}
+.cal-scroll-hint{font-size:9px;color:var(--ink-faint);letter-spacing:0.08em;text-transform:uppercase}
 /* Count label */
 .trips-count-label{font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:14px}
 /* Km stat */
@@ -610,70 +610,98 @@ async function _fetchAllDocChecks(trips){
 }
 
 /* ── Calendar ── */
-var _calYear=new Date().getFullYear();
-var _CAL_MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-function _isLeap(y){return(y%4===0&&y%100!==0)||(y%400===0);}
-function _yearDays(y){return _isLeap(y)?366:365;}
-function _dayOfYear(dateStr,year){
-  var d=new Date(dateStr.slice(0,10)+'T00:00:00');
-  var s=new Date(year+'-01-01T00:00:00');
-  return Math.round((d-s)/86400000);
-}
+var _CAL_MOS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function renderCalendarView(trips){
-  var year=_calYear;
-  var total=_yearDays(year);
-  var feb=_isLeap(year)?29:28;
-  var mdays=[31,feb,31,30,31,30,31,31,30,31,30,31];
-  var yearTrips=trips.filter(function(t){
-    if(!t.departure_date)return false;
-    var dy=parseInt(t.departure_date.slice(0,4));
-    var ry=t.return_date?parseInt(t.return_date.slice(0,4)):dy;
-    return dy<=year&&ry>=year;
-  });
-  var monthHtml='<div class="cal-months-row">';
-  mdays.forEach(function(days,i){monthHtml+='<div class="cal-month-cell" style="flex:'+days+'">'+_CAL_MONTHS[i]+'</div>';});
-  monthHtml+='</div>';
-  // Greedy row assignment
-  var rows=[];
-  yearTrips.forEach(function(t){
-    var dep=Math.max(0,_dayOfYear(t.departure_date,year));
-    var ret=Math.min(total-1,_dayOfYear(t.return_date||t.departure_date,year));
-    if(ret<dep)ret=dep;
-    var placed=false;
-    for(var ri=0;ri<rows.length;ri++){
-      if(dep>rows[ri][rows[ri].length-1].ret+1){rows[ri].push({t:t,dep:dep,ret:ret});placed=true;break;}
+  var PPD=2; // px per day
+  var today=new Date();today.setHours(0,0,0,0);
+  // Anchor: earlier of (today−6mo snapped to 1st) and (earliest trip dep snapped to 1st)
+  var anc=new Date(today);anc.setMonth(anc.getMonth()-6);anc.setDate(1);
+  // End: later of (today+12mo) and (latest trip return)
+  var end=new Date(today);end.setMonth(end.getMonth()+12);
+  trips.forEach(function(t){
+    if(t.departure_date){
+      var d=new Date(t.departure_date.slice(0,10)+'T00:00:00');
+      if(d<anc)anc=new Date(d.getFullYear(),d.getMonth(),1);
     }
-    if(!placed)rows.push([{t:t,dep:dep,ret:ret}]);
+    var r=t.return_date?new Date(t.return_date.slice(0,10)+'T00:00:00')
+      :t.departure_date?new Date(t.departure_date.slice(0,10)+'T00:00:00'):null;
+    if(r&&r>end)end=r;
   });
-  var tripsHtml='<div class="cal-trips-area">';
-  if(!rows.length){
-    tripsHtml+='<div class="cal-empty">No trips recorded in '+year+'.</div>';
-  }else{
-    rows.forEach(function(row){
-      tripsHtml+='<div class="cal-trip-row">';
-      row.forEach(function(item){
-        var left=(item.dep/total*100).toFixed(2)+'%';
-        var wDays=Math.max(1,item.ret-item.dep+1);
-        var width=(wDays/total*100).toFixed(2)+'%';
-        var ctx=item.t.trip_context||'PERSONAL';
-        var sty=ctx==='CORPORATE'?'background:var(--green-soft);color:var(--green);border:0.5px solid var(--green)'
-          :ctx==='BLEISURE'?'background:var(--amber-soft);color:var(--amber);border:0.5px solid var(--amber)'
-          :'background:#e8f0fe;color:#1a56db;border:0.5px solid #b3cef7';
-        var nm=_escHtml(_tripName(item.t));
-        tripsHtml+='<a href="/trip.html?id='+item.t.id+'" class="cal-trip-bar" style="left:'+left+';width:'+width+';'+sty+'" title="'+nm+'">'+nm+'</a>';
-      });
-      tripsHtml+='</div>';
-    });
+  function off(d){return Math.round((d-anc)/86400000);}
+  var totDays=off(end)+1;
+  var totPx=totDays*PPD;
+  var todPx=off(today)*PPD;
+  // Month headers — flex proportional, capped to axis span
+  var mHtml='<div class="cal-months-row">';
+  var cur=new Date(anc.getFullYear(),anc.getMonth(),1);
+  var lastY=-1;
+  while(cur<=end){
+    var nxt=new Date(cur.getFullYear(),cur.getMonth()+1,1);
+    var capEnd=new Date(end.getTime()+86400000);
+    var mDays=Math.round((Math.min(nxt,capEnd)-cur)/86400000);
+    var lbl=_CAL_MOS[cur.getMonth()]+(cur.getFullYear()!==lastY?' '+cur.getFullYear():'');
+    lastY=cur.getFullYear();
+    mHtml+='<div class="cal-month-cell" style="flex:'+mDays+'">'+lbl+'</div>';
+    cur=nxt;
   }
-  tripsHtml+='</div>';
-  var nav='<div class="cal-year-nav">'
-    +'<button class="cal-chevron" onclick="calChangeYear(-1)" aria-label="Previous year"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"><path d="M15 6L9 12L15 18"/></svg></button>'
-    +'<span class="cal-year-label">'+year+'</span>'
-    +'<button class="cal-chevron" onclick="calChangeYear(1)" aria-label="Next year"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"><path d="M9 6L15 12L9 18"/></svg></button>'
+  mHtml+='</div>';
+  // Greedy row packing with absolute day offsets
+  var rows=[];
+  trips.filter(function(t){return!!t.departure_date;})
+    .slice().sort(function(a,b){return new Date(a.departure_date)-new Date(b.departure_date);})
+    .forEach(function(t){
+      var dep=off(new Date(t.departure_date.slice(0,10)+'T00:00:00'));
+      var retD=t.return_date?new Date(t.return_date.slice(0,10)+'T00:00:00'):new Date(t.departure_date.slice(0,10)+'T00:00:00');
+      var ret=off(retD);if(ret<dep)ret=dep;
+      var placed=false;
+      for(var ri=0;ri<rows.length;ri++){
+        if(dep>rows[ri][rows[ri].length-1].ret+1){rows[ri].push({t:t,dep:dep,ret:ret,retD:retD});placed=true;break;}
+      }
+      if(!placed)rows.push([{t:t,dep:dep,ret:ret,retD:retD}]);
+    });
+  // Trip bars
+  var ROW_H=33;
+  var aH=Math.max(rows.length*ROW_H,44);
+  var bHtml='<div class="cal-trips-area" style="height:'+aH+'px">'
+    +'<div class="cal-now-line" id="cal-now" style="left:'+todPx+'px"><span class="cal-now-label">Today</span></div>';
+  rows.forEach(function(row,ri){
+    row.forEach(function(item){
+      var isPast=item.retD<today;
+      var lx=item.dep*PPD;
+      var wDays=Math.max(1,item.ret-item.dep+1);
+      var wx=wDays*PPD;
+      var topPx=ri*ROW_H+3;
+      var ctx=item.t.trip_context||'PERSONAL';
+      var sty=ctx==='CORPORATE'?'background:var(--green-soft);color:var(--green);border:0.5px solid var(--green)'
+        :ctx==='BLEISURE'?'background:var(--amber-soft);color:var(--amber);border:0.5px solid var(--amber)'
+        :'background:#e8f0fe;color:#1a56db;border:0.5px solid #b3cef7';
+      if(isPast)sty+=';opacity:0.45';
+      var nm=_escHtml(_tripName(item.t));
+      var lbl=wx>=100?nm+' \xb7 '+wDays+'n':wx>=40?wDays+'n':'';
+      bHtml+='<a href="/trip.html?id='+item.t.id+'" class="cal-trip-bar" '
+        +'style="left:'+lx+'px;top:'+topPx+'px;width:'+wx+'px;'+sty+'" '
+        +'title="'+nm+' ('+wDays+'n)">'+lbl+'</a>';
+    });
+  });
+  bHtml+='</div>';
+  var ctrls='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+    +'<button class="cal-jump-btn" onclick="calJumpToToday()">Jump to today</button>'
+    +'<span class="cal-scroll-hint">← scroll →</span>'
     +'</div>';
-  _ht('trips-calendar',nav+'<div class="cal-wrap"><div class="cal-inner">'+monthHtml+tripsHtml+'</div><div class="cal-scroll-hint">← scroll to see full year →</div></div>');
+  _ht('trips-calendar',ctrls+'<div class="cal-wrap"><div class="cal-inner" style="width:'+totPx+'px">'+mHtml+bHtml+'</div></div>');
+  // Auto-scroll to center on today
+  setTimeout(function(){
+    var w=document.querySelector('#trips-calendar .cal-wrap');
+    if(w)w.scrollLeft=Math.max(0,todPx-w.clientWidth/2);
+  },30);
 }
-function calChangeYear(dir){_calYear+=dir;renderCalendarView(_allTrips);}
+function calJumpToToday(){
+  var w=document.querySelector('#trips-calendar .cal-wrap');
+  if(!w)return;
+  var el=document.getElementById('cal-now');
+  var lx=el?parseInt(el.style.left)||0:0;
+  w.scrollTo({left:Math.max(0,lx-w.clientWidth/2),behavior:'smooth'});
+}
 
 /* ── View toggle ── */
 var _curView='list';
