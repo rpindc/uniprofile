@@ -188,6 +188,14 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .trip-pills-row{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;margin-top:8px}
 /* Context pill button */
 .ctx-pill-btn{font-family:var(--sans);font-size:10px;font-weight:500;padding:3px 8px;border-radius:100px;border:none;cursor:pointer;letter-spacing:0.01em;line-height:1.4}
+/* TripVault inbox card */
+.tripvault-inbox{margin-bottom:20px}
+.inbox-address-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0 6px}
+/* Pending trip */
+.trip-card.pending{border-color:var(--amber);border-left-width:3px}
+.pending-pill{background:var(--amber-soft);color:var(--amber);display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:100px;font-family:var(--sans);font-size:10px;font-weight:500;letter-spacing:0.01em;line-height:1.4}
+.pending-actions{margin-top:12px;padding-top:12px;border-top:0.5px solid var(--rule)}
+.pending-msg{font-size:12px;color:var(--ink-mute);margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -285,6 +293,16 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
           </button>
         </div>
       </div>
+    </div>
+
+    <!-- TripVault inbox address -->
+    <div class="card-warm tripvault-inbox" id="tripvault-inbox" style="display:none">
+      <div class="eyebrow">Your TripVault address</div>
+      <div class="inbox-address-row">
+        <span class="id" id="inbox-address" style="font-size:13px;color:var(--ink-soft)">—</span>
+        <button class="btn btn-secondary btn-sm" id="inbox-copy-btn" onclick="copyInboxAddress()">Copy</button>
+      </div>
+      <p class="caption">Forward any booking confirmation here — it'll appear in your vault.</p>
     </div>
 
     <!-- Filter bar -->
@@ -828,16 +846,28 @@ function _tripCard(t){
   // DocCheck (cached or loading state)
   var hasCached=_dcCache[t.id]!==undefined;
   var dcHtml='<div id="dc-wrap-'+t.id+'">'+_docCheckPillHtml(hasCached?_dcCache[t.id]:null,t.id,!hasCached)+'</div>';
-  var pillsRow='<div class="trip-pills-row">'+ctxTrigger+dcHtml+'</div>';
+  // Pending verification pill
+  var isPending=(t.status==='pending');
+  var pendingPillHtml=isPending?'<span class="pending-pill">Pending verification</span>':'';
+  var pillsRow='<div class="trip-pills-row">'+ctxTrigger+dcHtml+pendingPillHtml+'</div>';
   // Meta line (simplified — context moved to pills row)
   var metaParts=[_fmtRangeProse(t.departure_date,t.return_date)];
   var nights=_nightCount(t.departure_date,t.return_date);
   if(nights>0) metaParts.push(nights+" night"+(nights===1?"":"s"));
   if(t.trip_locator) metaParts.push("PNR "+t.trip_locator.toUpperCase());
   var details='<p class="trip-meta-line">'+metaParts.join(" · ")+(daysEl?" "+daysEl:"")+"</p>";
+  // Pending confirm/reject actions
+  var pendingActions=isPending
+    ?'<div class="pending-actions">'
+      +'<p class="pending-msg">This booking was forwarded to your vault and needs your confirmation.</p>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      +'<button class="btn btn-primary btn-sm" onclick="verifyTrip(\''+t.id+'\',\'confirm\',event)">Add to vault</button>'
+      +'<button class="btn btn-secondary btn-sm" onclick="verifyTrip(\''+t.id+'\',\'reject\',event)">Not mine</button>'
+      +'</div></div>'
+    :'';
   // Sparkline
   var sparkline=_buildSparkline(t.segments,t.id,past);
-  return '<div class="trip-card'+(past?" past":"")+'" id="tc-'+t.id+'">'
+  return '<div class="trip-card'+(past?" past":"")+(isPending?" pending":"")+'" id="tc-'+t.id+'">'
     +'<div class="trip-card-top">'
     +'<div class="trip-date"><div class="trip-date-month">'+month+'</div><div class="trip-date-day">'+day+'</div></div>'
     +'<div class="trip-main">'
@@ -858,6 +888,7 @@ function _tripCard(t){
     +'</div>'
     +sparkline
     +details
+    +pendingActions
     +_segmentsBlock(t.segments)
     +'</div>';
 }
@@ -1022,6 +1053,56 @@ function updateLede(){
   }
 }
 
+/* ── TripVault inbox address ── */
+function updateInboxAddress(upNumber){
+  if(!upNumber)return;
+  var addr=upNumber.toUpperCase()+'@trips.uniprofile.net';
+  var el=document.getElementById('inbox-address');
+  var card=document.getElementById('tripvault-inbox');
+  if(el)el.textContent=addr;
+  if(card)card.style.display='';
+}
+function copyInboxAddress(){
+  var el=document.getElementById('inbox-address');
+  if(!el)return;
+  var addr=el.textContent.trim();
+  var btn=document.getElementById('inbox-copy-btn');
+  navigator.clipboard.writeText(addr).then(function(){
+    if(btn){btn.textContent='Copied ✓';setTimeout(function(){btn.textContent='Copy';},2000);}
+  }).catch(function(){showToast('Your address: '+addr);});
+}
+
+/* ── Pending trip verify ── */
+async function verifyTrip(tripId,action,evt){
+  if(evt)evt.currentTarget.disabled=true;
+  try{
+    await _req('PUT','/api/v1/profile/'+_uid,{module:'trip_verify',data:{trip_id:tripId,action:action}});
+    if(action==='reject'){
+      _allTrips=_allTrips.filter(function(t){return t.id!==tripId;});
+      var card=document.getElementById('tc-'+tripId);
+      if(card)card.style.opacity='0';
+      setTimeout(function(){
+        if(card)card.remove();
+        renderTrips(_allTrips);
+        updateLede();
+      },200);
+      showToast('Booking removed.');
+    }else{
+      var t=_allTrips.find(function(x){return x.id===tripId;});
+      if(t){
+        var today=new Date();today.setHours(0,0,0,0);
+        t.status=t.departure_date&&new Date(t.departure_date)>=today?'upcoming':'completed';
+      }
+      renderTrips(_allTrips);
+      updateLede();
+      showToast('Trip added to vault.');
+    }
+  }catch(e){
+    showToast('Error — please try again.');
+    if(evt)evt.currentTarget.disabled=false;
+  }
+}
+
 /* ── Init ── */
 async function tripsInit(){
   if(!await _auth())return;
@@ -1030,10 +1111,31 @@ async function tripsInit(){
     _uid=p.uuid;
     _sidebarUpdate(p);
     _allTrips=p.trips||[];
+    updateInboxAddress(p.uniprofile_number);
     updateLede();
     renderTrips(_allTrips);
     // DocCheck fetches run async — cards update in place as each result arrives
     _fetchAllDocChecks(_allTrips);
+    // Handle ?verify_trip= links from TripVault confirmation emails
+    var qp=new URLSearchParams(window.location.search);
+    var vtId=qp.get('verify_trip');var vtAction=qp.get('action');
+    if(vtId&&(vtAction==='confirm'||vtAction==='reject')){
+      history.replaceState(null,'',window.location.pathname);
+      showToast('Processing…');
+      try{
+        await _req('PUT','/api/v1/profile/'+_uid,{module:'trip_verify',data:{trip_id:vtId,action:vtAction}});
+        if(vtAction==='reject'){
+          _allTrips=_allTrips.filter(function(t){return t.id!==vtId;});
+          showToast('Booking removed.');
+        }else{
+          var vt=_allTrips.find(function(t){return t.id===vtId;});
+          if(vt){var vd=new Date();vd.setHours(0,0,0,0);vt.status=vt.departure_date&&new Date(vt.departure_date)>=vd?'upcoming':'completed';}
+          showToast('Trip added to vault.');
+        }
+        renderTrips(_allTrips);
+        updateLede();
+      }catch(e){showToast('Link expired or trip not found.');}
+    }
   }catch(e){console.error(e);}
 }
 tripsInit();
