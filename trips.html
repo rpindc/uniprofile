@@ -506,6 +506,7 @@ function _buildSparkline(segments,tripId,isPast){
     if(!dur&&s.departure_datetime&&s.arrival_datetime){
       var dep=new Date(String(s.departure_datetime).replace(' ','T'));
       var arr=new Date(String(s.arrival_datetime).replace(' ','T'));
+      if(arr<dep)arr=new Date(arr.getTime()+86400000);
       dur=Math.max(0,Math.round((arr-dep)/60000));
     }
     items.push({type:'flight',dur:dur,seg:s});
@@ -515,6 +516,7 @@ function _buildSparkline(segments,tripId,isPast){
       if(s.arrival_datetime&&nx.departure_datetime){
         var a2=new Date(String(s.arrival_datetime).replace(' ','T'));
         var d2=new Date(String(nx.departure_datetime).replace(' ','T'));
+        if(d2<a2)d2=new Date(d2.getTime()+86400000);
         lay=Math.max(0,Math.round((d2-a2)/60000));
       }
       if(lay>0)items.push({type:'gap',dur:lay,at:(s.destination_iata||'').toUpperCase()});
