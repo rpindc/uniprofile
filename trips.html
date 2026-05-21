@@ -143,6 +143,51 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .seg-route{font-family:var(--mono);letter-spacing:0.04em}
 .seg-sub{font-size:12px;color:var(--ink-mute);margin-top:1px;line-height:1.4}
 @media(max-width:767px){.page-header{flex-direction:column;gap:16px}.trip-actions{flex-direction:column;align-items:flex-start;gap:6px}.trip-kebab{opacity:1}}
+/* Sparkline */
+.sparkline-wrap{padding:12px 0 2px}
+.sparkline-bar{height:6px;border-radius:3px;display:flex;cursor:pointer;overflow:hidden;background:var(--paper-warm)}
+.sparkline-seg-flight{background:rgba(26,26,26,0.55);flex-shrink:0}
+.sparkline-seg-flight.seg-past{background:rgba(26,26,26,0.18)}
+.sparkline-seg-hotel{background:rgba(26,26,26,0.28);flex-shrink:0}
+.sparkline-gap-el{background:var(--paper-warm);flex-shrink:0}
+.sparkline-detail{display:none;font-size:11px;color:var(--ink-mute);margin-top:6px;line-height:1.7}
+.sparkline-detail.open{display:block}
+/* DocCheck */
+.doccheck-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:100px;font-family:var(--sans);font-size:10px;font-weight:500;cursor:pointer;border:none;line-height:1.4;letter-spacing:0.01em}
+.dc-ready{background:var(--green-soft);color:var(--green)}
+.dc-attention{background:var(--amber-soft);color:var(--amber)}
+.dc-blocked{background:var(--red-soft);color:var(--red)}
+.dc-unknown{background:var(--paper-warm);color:var(--ink-mute)}
+.doccheck-preview-tag{font-size:9px;font-weight:500;letter-spacing:0.13em;text-transform:uppercase;color:var(--ink-faint);display:block;margin-top:1px}
+.doccheck-detail{display:none;margin-top:8px;padding:10px 12px;background:var(--paper-warm);border-radius:8px;font-size:12px;color:var(--ink-soft);line-height:1.55}
+.doccheck-detail.open{display:block}
+.doccheck-notice{font-size:11px;color:var(--ink-mute);margin-top:6px;font-style:italic}
+/* View toggle */
+.view-toggle{display:flex;gap:4px}
+.view-btn{font-family:var(--sans);font-size:12px;font-weight:500;padding:5px 11px;border-radius:100px;cursor:pointer;border:0.5px solid var(--rule-strong);background:transparent;color:var(--ink-soft);transition:all 120ms ease;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.view-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+/* Calendar */
+.cal-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.cal-inner{min-width:680px}
+.cal-year-nav{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.cal-year-label{font-family:var(--serif);font-size:18px;font-weight:400;color:var(--ink)}
+.cal-chevron{background:none;border:0.5px solid var(--rule-strong);border-radius:4px;width:28px;height:28px;cursor:pointer;color:var(--ink-mute);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cal-months-row{display:flex;margin-bottom:8px;border-bottom:0.5px solid var(--rule)}
+.cal-month-cell{font-size:9px;font-weight:500;letter-spacing:0.13em;text-transform:uppercase;color:var(--ink-mute);padding-bottom:6px;overflow:hidden;min-width:0}
+.cal-trips-area{position:relative}
+.cal-trip-row{position:relative;height:28px;margin-bottom:5px}
+.cal-trip-bar{position:absolute;height:22px;top:3px;border-radius:4px;display:flex;align-items:center;padding:0 7px;font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;text-decoration:none;transition:opacity 120ms;min-width:4px}
+.cal-trip-bar:hover{opacity:0.78}
+.cal-empty{font-size:13px;color:var(--ink-mute);padding:24px 0}
+.cal-scroll-hint{font-size:9px;color:var(--ink-faint);text-align:right;margin-top:6px;letter-spacing:0.08em;text-transform:uppercase}
+/* Count label */
+.trips-count-label{font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:14px}
+/* Km stat */
+.trips-km-stat{font-family:var(--serif);font-size:15px;font-style:italic;font-weight:300;color:var(--ink-soft);margin-top:4px}
+/* Pills row */
+.trip-pills-row{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;margin-top:8px}
+/* Context pill button */
+.ctx-pill-btn{font-family:var(--sans);font-size:10px;font-weight:500;padding:3px 8px;border-radius:100px;border:none;cursor:pointer;letter-spacing:0.01em;line-height:1.4}
 </style>
 </head>
 <body>
@@ -158,6 +203,8 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   <symbol id="i-chevron" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
   <symbol id="i-flight" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-hotel" viewBox="0 0 24 24" fill="none"><rect x="4" y="2" width="16" height="20" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M9 6H10.5M13.5 6H15M9 10H10.5M13.5 10H15M9 14H10.5M13.5 14H15" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><rect x="9" y="17" width="6" height="5" stroke="currentColor" stroke-width="1.25"/></symbol>
+  <symbol id="i-list-view" viewBox="0 0 24 24" fill="none"><path d="M9 6H20M9 12H20M9 18H20" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><circle cx="4.5" cy="6" r="1.25" fill="currentColor"/><circle cx="4.5" cy="12" r="1.25" fill="currentColor"/><circle cx="4.5" cy="18" r="1.25" fill="currentColor"/></symbol>
+  <symbol id="i-cal-view" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="17" rx="2" stroke="currentColor" stroke-width="1.25"/><path d="M3 9H21" stroke="currentColor" stroke-width="1.25"/><path d="M8 2V6M16 2V6" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M7 13H9M11 13H13M15 13H17M7 17H9M11 17H13" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
 </svg>
 
 <header class="mob-header">
@@ -222,11 +269,22 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
         <div class="eyebrow">Your travel</div>
         <h1 class="h1">Trips, in <em>order</em>.</h1>
         <p class="lede" id="trips-lede">Loading…</p>
+        <p class="trips-km-stat" id="trips-km" style="display:none"></p>
       </div>
-      <button class="btn btn-primary" style="flex-shrink:0;margin-top:8px" onclick="openAddTrip()">
-        <svg class="icon" style="width:14px;height:14px"><use href="#i-add"/></svg>
-        Add trip
-      </button>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;margin-top:8px">
+        <button class="btn btn-primary" onclick="openAddTrip()">
+          <svg class="icon" style="width:14px;height:14px"><use href="#i-add"/></svg>
+          Add trip
+        </button>
+        <div class="view-toggle">
+          <button class="view-btn active" id="view-list-btn" onclick="toggleView('list')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><use href="#i-list-view"/></svg>List
+          </button>
+          <button class="view-btn" id="view-cal-btn" onclick="toggleView('calendar')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><use href="#i-cal-view"/></svg>Calendar
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Filter bar -->
@@ -240,7 +298,9 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       <button class="filter-export" onclick="exportCsv()">⬇ Export CSV</button>
     </div>
 
+    <div class="trips-count-label" id="trips-count" style="display:none"></div>
     <div id="trips-list"></div>
+    <div id="trips-calendar" style="display:none"></div>
 
   </main>
 </div>
@@ -346,6 +406,275 @@ async function _auth(){
 }
 function showToast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},3000);}
 function _showErr(id,msg){var e=document.getElementById(id);if(e){e.textContent=msg;e.style.display=msg?"block":"none";}}
+
+/* ── IATA coordinates (for km stat + future Minard flow-map) ── */
+var _IATA_COORDS={
+  'ATL':[33.6407,-84.4277],'LAX':[33.9425,-118.4081],'ORD':[41.9742,-87.9073],
+  'DFW':[32.8998,-97.0403],'DEN':[39.8561,-104.6737],'JFK':[40.6413,-73.7781],
+  'SFO':[37.6213,-122.379],'SEA':[47.4502,-122.3088],'LAS':[36.0840,-115.1537],
+  'MCO':[28.4294,-81.3089],'EWR':[40.6895,-74.1745],'MIA':[25.7959,-80.2870],
+  'IAH':[29.9902,-95.3368],'PHX':[33.4373,-112.0078],'BOS':[42.3656,-71.0096],
+  'MSP':[44.8848,-93.2223],'DTW':[42.2162,-83.3554],'PHL':[39.8744,-75.2424],
+  'LGA':[40.7769,-73.8740],'FLL':[26.0726,-80.1527],'BWI':[39.1754,-76.6683],
+  'IAD':[38.9531,-77.4565],'DCA':[38.8521,-77.0377],'MDW':[41.7868,-87.7522],
+  'SLC':[40.7884,-111.9778],'HNL':[21.3187,-157.9225],'SAN':[32.7338,-117.1933],
+  'TPA':[27.9755,-82.5332],'PDX':[45.5898,-122.5951],'SJC':[37.3626,-121.9290],
+  'OAK':[37.7213,-122.2208],'RDU':[35.8776,-78.7875],'BNA':[36.1263,-86.6774],
+  'MCI':[39.2976,-94.7139],'STL':[38.7487,-90.3700],'MSY':[29.9934,-90.2580],
+  'SAT':[29.5337,-98.4698],'AUS':[30.1975,-97.6664],'LIR':[10.5933,-85.5444],
+  'SJO':[9.9939,-84.2088],'MBJ':[18.5037,-77.9135],'PUJ':[18.5674,-68.3634],
+  'LHR':[51.4700,-0.4543],'CDG':[49.0097,2.5479],'AMS':[52.3086,4.7639],
+  'FRA':[50.0379,8.5622],'IST':[41.2753,28.7519],'MAD':[40.4936,-3.5668],
+  'BCN':[41.2971,2.0785],'FCO':[41.8003,12.2389],'MUC':[48.3537,11.7750],
+  'ZRH':[47.4647,8.5492],'CPH':[55.6180,12.6560],'ARN':[59.6519,17.9186],
+  'BRU':[50.9010,4.4844],'VIE':[48.1103,16.5697],'DUB':[53.4213,-6.2701],
+  'LIS':[38.7813,-9.1359],'ATH':[37.9364,23.9445],'HEL':[60.3172,24.9633],
+  'OSL':[60.1939,11.1004],'WAW':[52.1657,20.9671],'PRG':[50.1008,14.2600],
+  'BUD':[47.4298,19.2611],'LGW':[51.1537,-0.1821],'GVA':[46.2370,6.1092],
+  'NCE':[43.6584,7.2087],'MXP':[45.6306,8.7231],'HAM':[53.6304,9.9882],
+  'DXB':[25.2532,55.3657],'DOH':[25.2731,51.6082],'AUH':[24.4330,54.6511],
+  'KWI':[29.2267,47.9689],'AMM':[31.7225,35.9932],'CAI':[30.1219,31.4056],
+  'ADD':[8.9779,38.7993],'NBO':[1.3192,36.9275],'JNB':[-26.1392,28.2460],
+  'CPT':[-33.9649,18.6017],'LOS':[6.5774,3.3212],'ACC':[5.6052,-0.1668],
+  'DEL':[28.5562,77.1000],'BOM':[19.0896,72.8656],'MAA':[12.9941,80.1709],
+  'BLR':[13.1986,77.7066],'CCU':[22.6520,88.4463],'HYD':[17.2313,78.4298],
+  'CMB':[7.1808,79.8841],'DAC':[23.8433,90.3978],'KTM':[27.6966,85.3591],
+  'KHI':[24.9065,67.1608],'LHE':[31.5216,74.4036],'ISB':[33.6167,73.0997],
+  'SIN':[1.3644,103.9915],'BKK':[13.6900,100.7501],'KUL':[2.7456,101.7099],
+  'CGK':[-6.1275,106.6537],'MNL':[14.5086,121.0194],'HKG':[22.3080,113.9185],
+  'PVG':[31.1434,121.8052],'PEK':[40.0799,116.6031],'CAN':[23.3924,113.2988],
+  'ICN':[37.4602,126.4407],'NRT':[35.7647,140.3864],'KIX':[34.4347,135.2440],
+  'SGN':[10.8188,106.6520],'HAN':[21.2213,105.8072],'RGN':[16.9073,96.1332],
+  'MEL':[-37.6690,144.8410],'SYD':[-33.9461,151.1772],'BNE':[-27.3842,153.1175],
+  'AKL':[-37.0082,174.7917],'GRU':[-23.4356,-46.4731],'EZE':[-34.8222,-58.5358],
+  'SCL':[-33.3930,-70.7858],'LIM':[-12.0219,-77.1143],'BOG':[4.7016,-74.1469],
+  'UIO':[-0.1292,-78.3575],'MDE':[6.1645,-75.4231],'GIG':[-22.8099,-43.2505],
+  'YYZ':[43.6777,-79.6248],'YVR':[49.1967,-123.1815],'YUL':[45.4706,-73.7408],
+  'MEX':[19.4363,-99.0721],'CUN':[21.0365,-86.8771],'GDL':[20.5218,-103.3106]
+};
+function _gcDist(la1,lo1,la2,lo2){
+  var R=6371,dLa=(la2-la1)*Math.PI/180,dLo=(lo2-lo1)*Math.PI/180;
+  var a=Math.sin(dLa/2)*Math.sin(dLa/2)+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dLo/2)*Math.sin(dLo/2);
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function _kmsThisYear(trips){
+  var year=new Date().getFullYear();
+  var total=0;
+  trips.forEach(function(t){
+    if(t.segments&&t.segments.length){
+      t.segments.forEach(function(s){
+        if(s.segment_type!=='FLIGHT')return;
+        var depY=s.departure_datetime?parseInt(String(s.departure_datetime).slice(0,4)):0;
+        if(depY!==year)return;
+        var o=_IATA_COORDS[s.origin_iata];var d=_IATA_COORDS[s.destination_iata];
+        if(o&&d)total+=_gcDist(o[0],o[1],d[0],d[1]);
+      });
+    }else if(t.departure_date&&parseInt(t.departure_date.slice(0,4))===year){
+      var o=_IATA_COORDS[t.origin_iata];var d=_IATA_COORDS[t.destination_iata];
+      if(o&&d)total+=_gcDist(o[0],o[1],d[0],d[1])*2;
+    }
+  });
+  return Math.round(total);
+}
+
+/* ── Sparkline ── */
+function _buildSparkline(segments,tripId,isPast){
+  if(!segments||!segments.length)return'';
+  var flights=segments.filter(function(s){return s.segment_type==='FLIGHT';}).sort(function(a,b){return(a.segment_order||0)-(b.segment_order||0);});
+  if(!flights.length)return'';
+  var items=[];
+  flights.forEach(function(s,i){
+    var dur=s.duration_minutes||0;
+    if(!dur&&s.departure_datetime&&s.arrival_datetime){
+      var dep=new Date(String(s.departure_datetime).replace(' ','T'));
+      var arr=new Date(String(s.arrival_datetime).replace(' ','T'));
+      dur=Math.max(0,Math.round((arr-dep)/60000));
+    }
+    items.push({type:'flight',dur:dur,seg:s});
+    if(i<flights.length-1){
+      var nx=flights[i+1];
+      var lay=0;
+      if(s.arrival_datetime&&nx.departure_datetime){
+        var a2=new Date(String(s.arrival_datetime).replace(' ','T'));
+        var d2=new Date(String(nx.departure_datetime).replace(' ','T'));
+        lay=Math.max(0,Math.round((d2-a2)/60000));
+      }
+      if(lay>0)items.push({type:'gap',dur:lay,at:(s.destination_iata||'').toUpperCase()});
+    }
+  });
+  var total=items.reduce(function(acc,x){return acc+x.dur;},0);
+  if(total<=0)return'';
+  var barHtml='';var detailParts=[];
+  items.forEach(function(item){
+    if(item.type==='flight'){
+      var s=item.seg;
+      var rt=(s.origin_iata||'').toUpperCase()+'→'+(s.destination_iata||'').toUpperCase();
+      var h=Math.floor(item.dur/60);var m=item.dur%60;
+      var ds=h>0?h+'h'+(m>0?' '+m+'m':''):(m+'m');
+      var cls='sparkline-seg-flight'+(isPast?' seg-past':'');
+      barHtml+='<div class="'+cls+'" style="flex:'+item.dur+'" title="'+rt+' '+ds+'"></div>';
+      detailParts.push('<span style="color:var(--ink)">'+rt+'</span>&thinsp;'+ds+(s.flight_number?' · '+s.flight_number:''));
+    }else{
+      var lh=Math.floor(item.dur/60);var lm=item.dur%60;
+      var lds=lh>0?lh+'h'+(lm>0?' '+lm+'m':''):(lm+'m');
+      barHtml+='<div class="sparkline-gap-el" style="flex:'+item.dur+'"></div>';
+      detailParts.push('<span style="color:var(--ink-faint)">'+lds+' at '+item.at+'</span>');
+    }
+  });
+  return '<div class="sparkline-wrap">'
+    +'<div class="sparkline-bar" onclick="toggleSparklineDetail(\''+tripId+'\')" title="Tap to see segment detail">'+barHtml+'</div>'
+    +'<div class="sparkline-detail" id="spk-'+tripId+'">'+detailParts.join(' · ')+'</div>'
+    +'</div>';
+}
+function toggleSparklineDetail(id){var el=document.getElementById('spk-'+id);if(el)el.classList.toggle('open');}
+
+/* ── DocCheck ── */
+var _dcCache={};var _dcFlight={};
+function _escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function _docCheckPillHtml(result,tripId,loading){
+  var previewTag='<span class="doccheck-preview-tag">DOCCHECK PREVIEW · SAMPLE RULES</span>';
+  if(loading){
+    return '<div id="dc-wrap-'+tripId+'" class="doccheck-wrap">'
+      +'<button class="doccheck-pill dc-unknown" onclick="toggleDocCheckDetail(\''+tripId+'\')">DocCheck …</button>'
+      +previewTag
+      +'<div class="doccheck-detail" id="dc-'+tripId+'"><div>Checking rules…</div></div></div>';
+  }
+  var cls,label,detail='';
+  if(!result){
+    cls='dc-unknown';label='DocCheck ?';
+    detail='<div>Could not load sample rules for this destination.</div>';
+  }else{
+    var st=result.status||result.admissibility_status||'UNKNOWN';
+    if(st==='CLEAR'||st==='CLEARED'){cls='dc-ready';label='DocCheck ✓';}
+    else if(st==='ATTENTION'||st==='CONDITIONAL'){cls='dc-attention';label='DocCheck ⚠';}
+    else if(st==='BLOCKED'||st==='DENIED'){cls='dc-blocked';label='DocCheck ✗';}
+    else{cls='dc-unknown';label='DocCheck ?';}
+    var rules=result.triggered_rules||result.rules||[];
+    if(rules.length){
+      detail+=rules.map(function(r){return'<div>'+_escHtml(r.message||r.rule||r.description||JSON.stringify(r))+'</div>';}).join('');
+    }else if(st==='CLEAR'||st==='CLEARED'){
+      detail+='<div>Documents appear to satisfy entry requirements for this destination.</div>';
+    }else{
+      detail+='<div>Check destination entry requirements for your passport type.</div>';
+    }
+  }
+  detail+='<div class="doccheck-notice">These rules are illustrative. Always verify with official sources before travel.</div>';
+  return '<div id="dc-wrap-'+tripId+'" class="doccheck-wrap">'
+    +'<button class="doccheck-pill '+cls+'" onclick="toggleDocCheckDetail(\''+tripId+'\')">'+label+'</button>'
+    +previewTag
+    +'<div class="doccheck-detail" id="dc-'+tripId+'">'+detail+'</div></div>';
+}
+function toggleDocCheckDetail(id){var el=document.getElementById('dc-'+id);if(el)el.classList.toggle('open');}
+async function _fetchDocCheck(trip){
+  var tid=trip.id;
+  if(_dcCache[tid]!==undefined||_dcFlight[tid]||!trip.destination_iata)return;
+  _dcFlight[tid]=true;
+  try{
+    var q='?destination_iata='+encodeURIComponent(trip.destination_iata);
+    if(trip.origin_iata)q+='&origin_iata='+encodeURIComponent(trip.origin_iata);
+    if(trip.departure_date)q+='&travel_date='+encodeURIComponent(trip.departure_date.slice(0,10));
+    q+='&trip_id='+encodeURIComponent(tid);
+    var res=await _req('GET','/api/v1/admissibility'+q);
+    _dcCache[tid]=res;
+  }catch(e){_dcCache[tid]=null;}
+  delete _dcFlight[tid];
+  var wrap=document.getElementById('dc-wrap-'+tid);
+  if(wrap)wrap.outerHTML=_docCheckPillHtml(_dcCache[tid],tid,false);
+}
+async function _fetchAllDocChecks(trips){
+  for(var i=0;i<trips.length;i++){await _fetchDocCheck(trips[i]);}
+}
+
+/* ── Calendar ── */
+var _calYear=new Date().getFullYear();
+var _CAL_MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function _isLeap(y){return(y%4===0&&y%100!==0)||(y%400===0);}
+function _yearDays(y){return _isLeap(y)?366:365;}
+function _dayOfYear(dateStr,year){
+  var d=new Date(dateStr.slice(0,10)+'T00:00:00');
+  var s=new Date(year+'-01-01T00:00:00');
+  return Math.round((d-s)/86400000);
+}
+function renderCalendarView(trips){
+  var year=_calYear;
+  var total=_yearDays(year);
+  var feb=_isLeap(year)?29:28;
+  var mdays=[31,feb,31,30,31,30,31,31,30,31,30,31];
+  var yearTrips=trips.filter(function(t){
+    if(!t.departure_date)return false;
+    var dy=parseInt(t.departure_date.slice(0,4));
+    var ry=t.return_date?parseInt(t.return_date.slice(0,4)):dy;
+    return dy<=year&&ry>=year;
+  });
+  var monthHtml='<div class="cal-months-row">';
+  mdays.forEach(function(days,i){monthHtml+='<div class="cal-month-cell" style="flex:'+days+'">'+_CAL_MONTHS[i]+'</div>';});
+  monthHtml+='</div>';
+  // Greedy row assignment
+  var rows=[];
+  yearTrips.forEach(function(t){
+    var dep=Math.max(0,_dayOfYear(t.departure_date,year));
+    var ret=Math.min(total-1,_dayOfYear(t.return_date||t.departure_date,year));
+    if(ret<dep)ret=dep;
+    var placed=false;
+    for(var ri=0;ri<rows.length;ri++){
+      if(dep>rows[ri][rows[ri].length-1].ret+1){rows[ri].push({t:t,dep:dep,ret:ret});placed=true;break;}
+    }
+    if(!placed)rows.push([{t:t,dep:dep,ret:ret}]);
+  });
+  var tripsHtml='<div class="cal-trips-area">';
+  if(!rows.length){
+    tripsHtml+='<div class="cal-empty">No trips recorded in '+year+'.</div>';
+  }else{
+    rows.forEach(function(row){
+      tripsHtml+='<div class="cal-trip-row">';
+      row.forEach(function(item){
+        var left=(item.dep/total*100).toFixed(2)+'%';
+        var wDays=Math.max(1,item.ret-item.dep+1);
+        var width=(wDays/total*100).toFixed(2)+'%';
+        var ctx=item.t.trip_context||'PERSONAL';
+        var sty=ctx==='CORPORATE'?'background:var(--green-soft);color:var(--green);border:0.5px solid var(--green)'
+          :ctx==='BLEISURE'?'background:var(--amber-soft);color:var(--amber);border:0.5px solid var(--amber)'
+          :'background:#e8f0fe;color:#1a56db;border:0.5px solid #b3cef7';
+        var nm=_escHtml(_tripName(item.t));
+        tripsHtml+='<a href="/trip.html?id='+item.t.id+'" class="cal-trip-bar" style="left:'+left+';width:'+width+';'+sty+'" title="'+nm+'">'+nm+'</a>';
+      });
+      tripsHtml+='</div>';
+    });
+  }
+  tripsHtml+='</div>';
+  var nav='<div class="cal-year-nav">'
+    +'<button class="cal-chevron" onclick="calChangeYear(-1)" aria-label="Previous year"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"><path d="M15 6L9 12L15 18"/></svg></button>'
+    +'<span class="cal-year-label">'+year+'</span>'
+    +'<button class="cal-chevron" onclick="calChangeYear(1)" aria-label="Next year"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"><path d="M9 6L15 12L9 18"/></svg></button>'
+    +'</div>';
+  _ht('trips-calendar',nav+'<div class="cal-wrap"><div class="cal-inner">'+monthHtml+tripsHtml+'</div><div class="cal-scroll-hint">← scroll to see full year →</div></div>');
+}
+function calChangeYear(dir){_calYear+=dir;renderCalendarView(_allTrips);}
+
+/* ── View toggle ── */
+var _curView='list';
+function toggleView(view){
+  _curView=view;
+  var listEl=document.getElementById('trips-list');
+  var calEl=document.getElementById('trips-calendar');
+  var filterEl=document.querySelector('.filter-bar');
+  var countEl=document.getElementById('trips-count');
+  var lb=document.getElementById('view-list-btn');var cb=document.getElementById('view-cal-btn');
+  if(view==='calendar'){
+    if(listEl)listEl.style.display='none';
+    if(calEl)calEl.style.display='block';
+    if(filterEl)filterEl.style.display='none';
+    if(countEl)countEl.style.display='none';
+    if(lb)lb.classList.remove('active');if(cb)cb.classList.add('active');
+    renderCalendarView(_allTrips);
+  }else{
+    if(listEl)listEl.style.display='';
+    if(calEl)calEl.style.display='none';
+    if(filterEl)filterEl.style.display='';
+    if(lb)lb.classList.add('active');if(cb)cb.classList.remove('active');
+    renderTrips(_allTrips);
+  }
+}
 
 /* ── Filtering ── */
 function applyFilter(filter,btn){
@@ -485,25 +814,36 @@ function _tripCard(t){
     if(diff===0) daysEl=' <span class="pill pill-ready" style="font-size:10px;vertical-align:middle">Today</span>';
     else if(diff<=30) daysEl=' <span class="pill pill-amber" style="font-size:10px;vertical-align:middle">'+diff+"d away</span>";
   }
-  var metaParts=[_fmtRangeProse(t.departure_date,t.return_date)];
-  var nights=_nightCount(t.departure_date,t.return_date);
-  if(nights>0) metaParts.push(nights+" night"+(nights===1?"":"s"));
+  // Context pill (always visible, still opens dropdown)
+  var ctxStyle=t.trip_context==='CORPORATE'?'background:var(--green-soft);color:var(--green)'
+    :t.trip_context==='BLEISURE'?'background:var(--amber-soft);color:var(--amber)'
+    :'background:#e8f0fe;color:#1a56db';
   var ctxTrigger='<span class="trip-ctx-wrap">'
-    +'<button class="trip-ctx-btn" onclick="toggleCtxMenu(\''+t.id+'\')" title="Change context">'+_ctxLabel(t.trip_context)+' &#x25BE;</button>'
+    +'<button class="trip-ctx-btn ctx-pill-btn" style="'+ctxStyle+'" onclick="toggleCtxMenu(\''+t.id+'\')" title="Change context">'+_ctxLabel(t.trip_context)+'</button>'
     +'<span class="trip-ctx-menu" id="ctxm-'+t.id+'">'
     +'<button class="trip-ctx-menu-item'+(t.trip_context==="PERSONAL"?" active":"")+'" onclick="selectCtx(\''+t.id+'\',\'PERSONAL\')">Personal</button>'
     +'<button class="trip-ctx-menu-item'+(t.trip_context==="CORPORATE"?" active":"")+'" onclick="selectCtx(\''+t.id+'\',\'CORPORATE\')">Business</button>'
     +'<button class="trip-ctx-menu-item'+(t.trip_context==="BLEISURE"?" active":"")+'" onclick="selectCtx(\''+t.id+'\',\'BLEISURE\')">Bleisure</button>'
     +'</span></span>';
-  metaParts.push(ctxTrigger);
+  // DocCheck (cached or loading state)
+  var hasCached=_dcCache[t.id]!==undefined;
+  var dcHtml='<div id="dc-wrap-'+t.id+'">'+_docCheckPillHtml(hasCached?_dcCache[t.id]:null,t.id,!hasCached)+'</div>';
+  var pillsRow='<div class="trip-pills-row">'+ctxTrigger+dcHtml+'</div>';
+  // Meta line (simplified — context moved to pills row)
+  var metaParts=[_fmtRangeProse(t.departure_date,t.return_date)];
+  var nights=_nightCount(t.departure_date,t.return_date);
+  if(nights>0) metaParts.push(nights+" night"+(nights===1?"":"s"));
   if(t.trip_locator) metaParts.push("PNR "+t.trip_locator.toUpperCase());
   var details='<p class="trip-meta-line">'+metaParts.join(" · ")+(daysEl?" "+daysEl:"")+"</p>";
+  // Sparkline
+  var sparkline=_buildSparkline(t.segments,t.id,past);
   return '<div class="trip-card'+(past?" past":"")+'" id="tc-'+t.id+'">'
     +'<div class="trip-card-top">'
     +'<div class="trip-date"><div class="trip-date-month">'+month+'</div><div class="trip-date-day">'+day+'</div></div>'
     +'<div class="trip-main">'
     +'<a href="/trip.html?id='+t.id+'" class="trip-title" style="text-decoration:none;color:inherit">'+name+'</a>'
     +(route?'<div class="trip-route">'+route+'</div>':"")
+    +pillsRow
     +'</div>'
     +'<div class="trip-actions">'
     +'<div class="trip-kebab-wrap">'
@@ -516,12 +856,23 @@ function _tripCard(t){
     +'</div>'
     +'</div>'
     +'</div>'
+    +sparkline
     +details
     +_segmentsBlock(t.segments)
     +'</div>';
 }
 function renderTrips(trips){
   var filtered=_filteredTrips();
+  // Count label
+  var countEl=document.getElementById('trips-count');
+  if(countEl){
+    if(filtered.length>0){
+      var nounMap={'upcoming':'upcoming trip','past':'past trip','PERSONAL':'personal trip','CORPORATE':'business trip','BLEISURE':'bleisure trip','all':'trip'};
+      var noun=nounMap[_curFilter]||'trip';
+      countEl.textContent=filtered.length+' '+(filtered.length===1?noun:noun+'s');
+      countEl.style.display='';
+    }else{countEl.style.display='none';}
+  }
   if(!filtered.length){
     var msg=_curFilter==="upcoming"?"No upcoming trips."
       :_curFilter==="past"?"No past trips recorded."
@@ -663,6 +1014,12 @@ function updateLede(){
   var up=_allTrips.filter(function(t){return t.departure_date&&new Date(t.departure_date)>=today;});
   var total=_allTrips.length;
   _st("trips-lede",total+" trip"+(total===1?"":"s")+" in your vault"+(up.length?" — "+up.length+" coming up":"")+".");
+  var kms=_kmsThisYear(_allTrips);
+  var kmEl=document.getElementById('trips-km');
+  if(kmEl){
+    if(kms>0){kmEl.textContent=kms.toLocaleString()+' km flown this year';kmEl.style.display='';}
+    else{kmEl.style.display='none';}
+  }
 }
 
 /* ── Init ── */
@@ -675,6 +1032,8 @@ async function tripsInit(){
     _allTrips=p.trips||[];
     updateLede();
     renderTrips(_allTrips);
+    // DocCheck fetches run async — cards update in place as each result arrives
+    _fetchAllDocChecks(_allTrips);
   }catch(e){console.error(e);}
 }
 tripsInit();
