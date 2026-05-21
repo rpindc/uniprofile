@@ -169,13 +169,12 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 /* Calendar */
 .cal-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 .cal-inner{min-width:0}
-.cal-months-row{display:flex;margin-bottom:8px;border-bottom:0.5px solid var(--rule)}
-.cal-month-cell{font-size:9px;font-weight:500;letter-spacing:0.13em;text-transform:uppercase;color:var(--ink-mute);padding-bottom:6px;overflow:hidden;min-width:0;flex-shrink:0}
+.cal-year-label{position:absolute;top:0;font-size:9px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-mute);white-space:nowrap;pointer-events:none}
+.cal-gap-marker{position:absolute;top:18px;height:22px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--ink-faint);letter-spacing:0.08em;border-left:0.5px dashed var(--rule);border-right:0.5px dashed var(--rule);box-sizing:border-box}
 .cal-trips-area{position:relative}
 .cal-trip-bar{position:absolute;height:22px;border-radius:4px;display:flex;align-items:center;padding:0 6px;font-size:10px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;text-decoration:none;transition:opacity 120ms;min-width:4px}
 .cal-trip-bar:hover{opacity:0.78}
 .cal-now-line{position:absolute;top:0;bottom:0;width:1px;background:var(--red);pointer-events:none;z-index:2}
-.cal-now-label{position:absolute;top:2px;left:4px;font-size:9px;font-weight:500;letter-spacing:0.08em;text-transform:uppercase;color:var(--red);white-space:nowrap}
 .cal-jump-btn{background:none;border:0.5px solid var(--rule-strong);border-radius:4px;padding:4px 10px;font-size:11px;font-family:var(--sans);color:var(--ink-mute);cursor:pointer;transition:color 120ms}
 .cal-jump-btn:hover{color:var(--ink)}
 .cal-empty{font-size:13px;color:var(--ink-mute);padding:24px 0}
@@ -612,84 +611,82 @@ async function _fetchAllDocChecks(trips){
 /* ── Calendar ── */
 var _CAL_MOS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function renderCalendarView(trips){
-  var PPD=2; // px per day
+  var GAP_DAYS=28,PPD_TRIP=15,MIN_TRIP_PX=120,GAP_PX=48,TODAY_GAP_PX=80,AREA_H=44;
   var today=new Date();today.setHours(0,0,0,0);
-  // Anchor: earlier of (today−6mo snapped to 1st) and (earliest trip dep snapped to 1st)
-  var anc=new Date(today);anc.setMonth(anc.getMonth()-6);anc.setDate(1);
-  // End: later of (today+12mo) and (latest trip return)
-  var end=new Date(today);end.setMonth(end.getMonth()+12);
-  trips.forEach(function(t){
-    if(t.departure_date){
-      var d=new Date(t.departure_date.slice(0,10)+'T00:00:00');
-      if(d<anc)anc=new Date(d.getFullYear(),d.getMonth(),1);
-    }
-    var r=t.return_date?new Date(t.return_date.slice(0,10)+'T00:00:00')
-      :t.departure_date?new Date(t.departure_date.slice(0,10)+'T00:00:00'):null;
-    if(r&&r>end)end=r;
-  });
-  function off(d){return Math.round((d-anc)/86400000);}
-  var totDays=off(end)+1;
-  var totPx=totDays*PPD;
-  var todPx=off(today)*PPD;
-  // Month headers — flex proportional, capped to axis span
-  var mHtml='<div class="cal-months-row">';
-  var cur=new Date(anc.getFullYear(),anc.getMonth(),1);
-  var lastY=-1;
-  while(cur<=end){
-    var nxt=new Date(cur.getFullYear(),cur.getMonth()+1,1);
-    var capEnd=new Date(end.getTime()+86400000);
-    var mDays=Math.round((Math.min(nxt,capEnd)-cur)/86400000);
-    var lbl=_CAL_MOS[cur.getMonth()]+(cur.getFullYear()!==lastY?' '+cur.getFullYear():'');
-    lastY=cur.getFullYear();
-    mHtml+='<div class="cal-month-cell" style="flex:'+mDays+'">'+lbl+'</div>';
-    cur=nxt;
-  }
-  mHtml+='</div>';
-  // Greedy row packing with absolute day offsets
-  var rows=[];
-  trips.filter(function(t){return!!t.departure_date;})
-    .slice().sort(function(a,b){return new Date(a.departure_date)-new Date(b.departure_date);})
-    .forEach(function(t){
-      var dep=off(new Date(t.departure_date.slice(0,10)+'T00:00:00'));
-      var retD=t.return_date?new Date(t.return_date.slice(0,10)+'T00:00:00'):new Date(t.departure_date.slice(0,10)+'T00:00:00');
-      var ret=off(retD);if(ret<dep)ret=dep;
-      var placed=false;
-      for(var ri=0;ri<rows.length;ri++){
-        if(dep>rows[ri][rows[ri].length-1].ret+1){rows[ri].push({t:t,dep:dep,ret:ret,retD:retD});placed=true;break;}
+  var sorted=trips.filter(function(t){return!!t.departure_date;})
+    .slice().sort(function(a,b){return new Date(a.departure_date)-new Date(b.departure_date);});
+  if(!sorted.length){_ht('trips-calendar','<p class="cal-empty">No trips to display.</p>');return;}
+  // Build segments: gap markers + trip bars in chronological order
+  var segs=[];
+  var frontier=null;
+  sorted.forEach(function(t){
+    var dep=new Date(t.departure_date.slice(0,10)+'T00:00:00');
+    var ret=t.return_date?new Date(t.return_date.slice(0,10)+'T00:00:00'):dep;
+    if(frontier!==null){
+      var gDays=Math.round((dep-frontier)/86400000);
+      if(gDays>GAP_DAYS){
+        var hasTod=today>=frontier&&today<dep;
+        segs.push({type:'gap',px:hasTod?TODAY_GAP_PX:GAP_PX,hasTod:hasTod,from:new Date(frontier),to:dep});
       }
-      if(!placed)rows.push([{t:t,dep:dep,ret:ret,retD:retD}]);
-    });
-  // Trip bars
-  var ROW_H=33;
-  var aH=Math.max(rows.length*ROW_H,44);
-  var bHtml='<div class="cal-trips-area" style="height:'+aH+'px">'
-    +'<div class="cal-now-line" id="cal-now" style="left:'+todPx+'px"><span class="cal-now-label">Today</span></div>';
-  rows.forEach(function(row,ri){
-    row.forEach(function(item){
-      var isPast=item.retD<today;
-      var lx=item.dep*PPD;
-      var wDays=Math.max(1,item.ret-item.dep+1);
-      var wx=wDays*PPD;
-      var topPx=ri*ROW_H+3;
-      var ctx=item.t.trip_context||'PERSONAL';
+    }
+    var nights=Math.round((ret-dep)/86400000);
+    var px=Math.max(MIN_TRIP_PX,Math.max(1,nights)*PPD_TRIP);
+    segs.push({type:'trip',t:t,dep:dep,ret:ret,nights:nights,px:px,isPast:ret<today,hasTod:dep<=today&&today<=ret});
+    if(frontier===null||ret>frontier)frontier=new Date(ret);
+  });
+  // Assign absolute pixel positions
+  var cursor=0;
+  segs.forEach(function(s){s.left=cursor;cursor+=s.px;});
+  var totPx=cursor;
+  // Scale sanity (reported to console, not blocking)
+  var maxBarPx=segs.filter(function(s){return s.type==='trip';})
+    .reduce(function(mx,s){return s.px>mx?s.px:mx;},0);
+  console.log('[Cal] Longest bar: '+maxBarPx+'px; canvas: '+totPx+'px');
+  // Locate today's pixel position
+  var todPx=null;
+  for(var si=0;si<segs.length;si++){
+    var s=segs[si];
+    if(s.type==='gap'&&s.hasTod){todPx=Math.round(s.left+s.px/2);break;}
+    if(s.type==='trip'&&s.hasTod){
+      var dIn=Math.round((today-s.dep)/86400000);
+      todPx=Math.round(s.left+(s.nights>0?dIn*(s.px/s.nights):s.px/2));break;
+    }
+  }
+  if(todPx===null){
+    var ls=segs[segs.length-1];
+    todPx=today>(ls.type==='trip'?ls.ret:ls.to)?totPx:0;
+  }
+  todPx=Math.min(Math.max(0,todPx),totPx);
+  // Render
+  var inner='<div class="cal-trips-area" style="height:'+AREA_H+'px">'
+    +'<div class="cal-now-line" id="cal-now" style="left:'+todPx+'px"></div>';
+  var seenYrs={};
+  segs.forEach(function(s){
+    if(s.type==='gap'){
+      inner+='<div class="cal-gap-marker" style="left:'+s.left+'px;width:'+s.px+'px">'+(s.hasTod?'Today':'···')+'</div>';
+    }else{
+      var yr=s.dep.getFullYear();
+      if(!seenYrs[yr]){seenYrs[yr]=true;
+        inner+='<div class="cal-year-label" style="left:'+s.left+'px">'+yr+'</div>';}
+      var nm=_escHtml(_tripName(s.t));
+      var mo=_CAL_MOS[s.dep.getMonth()];
+      var lbl=nm+' \xb7 '+mo+' '+s.dep.getDate()+' \xb7 '+s.nights+'n';
+      var ctx=s.t.trip_context||'PERSONAL';
       var sty=ctx==='CORPORATE'?'background:var(--green-soft);color:var(--green);border:0.5px solid var(--green)'
         :ctx==='BLEISURE'?'background:var(--amber-soft);color:var(--amber);border:0.5px solid var(--amber)'
         :'background:#e8f0fe;color:#1a56db;border:0.5px solid #b3cef7';
-      if(isPast)sty+=';opacity:0.45';
-      var nm=_escHtml(_tripName(item.t));
-      var lbl=wx>=100?nm+' \xb7 '+wDays+'n':wx>=40?wDays+'n':'';
-      bHtml+='<a href="/trip.html?id='+item.t.id+'" class="cal-trip-bar" '
-        +'style="left:'+lx+'px;top:'+topPx+'px;width:'+wx+'px;'+sty+'" '
-        +'title="'+nm+' ('+wDays+'n)">'+lbl+'</a>';
-    });
+      if(s.isPast)sty+=';opacity:0.45';
+      inner+='<a href="/trip.html?id='+s.t.id+'" class="cal-trip-bar" '
+        +'style="left:'+s.left+'px;top:18px;width:'+s.px+'px;'+sty+'" '
+        +'title="'+nm+' ('+s.nights+'n)">'+lbl+'</a>';
+    }
   });
-  bHtml+='</div>';
+  inner+='</div>';
   var ctrls='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
     +'<button class="cal-jump-btn" onclick="calJumpToToday()">Jump to today</button>'
     +'<span class="cal-scroll-hint">← scroll →</span>'
     +'</div>';
-  _ht('trips-calendar',ctrls+'<div class="cal-wrap"><div class="cal-inner" style="width:'+totPx+'px">'+mHtml+bHtml+'</div></div>');
-  // Auto-scroll to center on today
+  _ht('trips-calendar',ctrls+'<div class="cal-wrap"><div class="cal-inner" style="width:'+totPx+'px">'+inner+'</div></div>');
   setTimeout(function(){
     var w=document.querySelector('#trips-calendar .cal-wrap');
     if(w)w.scrollLeft=Math.max(0,todPx-w.clientWidth/2);
