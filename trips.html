@@ -179,6 +179,11 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .cal-jump-btn:hover{color:var(--ink)}
 .cal-empty{font-size:13px;color:var(--ink-mute);padding:24px 0}
 .cal-scroll-hint{font-size:9px;color:var(--ink-faint);letter-spacing:0.08em;text-transform:uppercase}
+.map-wrap{border-radius:8px;overflow:hidden;min-height:260px;background:#D9D3C7}
+.map-empty,.map-loading{display:flex;align-items:center;justify-content:center;min-height:260px;font-size:13px;color:var(--ink-mute);font-family:var(--sans);letter-spacing:0.03em}
+.map-arc{cursor:pointer}
+.map-tooltip{position:fixed;background:var(--paper);border:0.5px solid var(--rule-strong);border-radius:6px;padding:7px 11px;font-size:11px;color:var(--ink);pointer-events:none;white-space:nowrap;z-index:200;display:none;box-shadow:0 2px 8px rgba(0,0,0,0.1);font-family:var(--sans);line-height:1.6}
+.map-tooltip strong{font-weight:600;display:block;font-size:12px}
 /* Count label */
 .trips-count-label{font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:14px}
 /* Km stat */
@@ -212,6 +217,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   <symbol id="i-hotel" viewBox="0 0 24 24" fill="none"><rect x="4" y="2" width="16" height="20" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M9 6H10.5M13.5 6H15M9 10H10.5M13.5 10H15M9 14H10.5M13.5 14H15" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><rect x="9" y="17" width="6" height="5" stroke="currentColor" stroke-width="1.25"/></symbol>
   <symbol id="i-list-view" viewBox="0 0 24 24" fill="none"><path d="M9 6H20M9 12H20M9 18H20" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><circle cx="4.5" cy="6" r="1.25" fill="currentColor"/><circle cx="4.5" cy="12" r="1.25" fill="currentColor"/><circle cx="4.5" cy="18" r="1.25" fill="currentColor"/></symbol>
   <symbol id="i-cal-view" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="17" rx="2" stroke="currentColor" stroke-width="1.25"/><path d="M3 9H21" stroke="currentColor" stroke-width="1.25"/><path d="M8 2V6M16 2V6" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M7 13H9M11 13H13M15 13H17M7 17H9M11 17H13" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-map-view" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.25"/><path d="M12 3C9.5 6 8 9 8 12C8 15 9.5 18 12 21" stroke="currentColor" stroke-width="1.25"/><path d="M12 3C14.5 6 16 9 16 12C16 15 14.5 18 12 21" stroke="currentColor" stroke-width="1.25"/><path d="M3.5 9H20.5M3.5 15H20.5" stroke="currentColor" stroke-width="1.25"/></symbol>
 </svg>
 
 <header class="mob-header">
@@ -290,6 +296,9 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
           <button class="view-btn" id="view-cal-btn" onclick="toggleView('calendar')">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><use href="#i-cal-view"/></svg>Calendar
           </button>
+          <button class="view-btn" id="view-map-btn" onclick="toggleView('map')">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><use href="#i-map-view"/></svg>Map
+          </button>
         </div>
       </div>
     </div>
@@ -318,6 +327,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     <div class="trips-count-label" id="trips-count" style="display:none"></div>
     <div id="trips-list"></div>
     <div id="trips-calendar" style="display:none"></div>
+    <div id="trips-map" class="map-wrap" style="display:none"></div>
 
   </main>
 </div>
@@ -700,27 +710,272 @@ function calJumpToToday(){
   w.scrollTo({left:Math.max(0,lx-w.clientWidth/2),behavior:'smooth'});
 }
 
+/* ── Map ── */
+var _IATA_CITY={
+  'ATL':'Atlanta','LAX':'Los Angeles','ORD':'Chicago','DFW':'Dallas','DEN':'Denver',
+  'JFK':'New York','SFO':'San Francisco','SEA':'Seattle','LAS':'Las Vegas','MCO':'Orlando',
+  'EWR':'Newark','MIA':'Miami','IAH':'Houston','PHX':'Phoenix','BOS':'Boston',
+  'MSP':'Minneapolis','DTW':'Detroit','PHL':'Philadelphia','LGA':'New York','FLL':'Fort Lauderdale',
+  'BWI':'Baltimore','IAD':'Washington','DCA':'Washington','MDW':'Chicago','SLC':'Salt Lake City',
+  'HNL':'Honolulu','SAN':'San Diego','TPA':'Tampa','PDX':'Portland','SJC':'San Jose',
+  'OAK':'Oakland','RDU':'Raleigh','BNA':'Nashville','MCI':'Kansas City','STL':'St. Louis',
+  'MSY':'New Orleans','SAT':'San Antonio','AUS':'Austin',
+  'LIR':'Liberia','SJO':'San Jos\xe9','MBJ':'Montego Bay','PUJ':'Punta Cana','CUN':'Canc\xfan',
+  'GDL':'Guadalajara','MEX':'Mexico City',
+  'LHR':'London','CDG':'Paris','AMS':'Amsterdam','FRA':'Frankfurt','IST':'Istanbul',
+  'MAD':'Madrid','BCN':'Barcelona','FCO':'Rome','MUC':'Munich','ZRH':'Zurich',
+  'CPH':'Copenhagen','ARN':'Stockholm','BRU':'Brussels','VIE':'Vienna','DUB':'Dublin',
+  'LIS':'Lisbon','ATH':'Athens','HEL':'Helsinki','OSL':'Oslo','WAW':'Warsaw',
+  'PRG':'Prague','BUD':'Budapest','LGW':'London','GVA':'Geneva','NCE':'Nice',
+  'MXP':'Milan','HAM':'Hamburg',
+  'DXB':'Dubai','DOH':'Doha','AUH':'Abu Dhabi','KWI':'Kuwait City','AMM':'Amman',
+  'CAI':'Cairo','ADD':'Addis Ababa','NBO':'Nairobi','JNB':'Johannesburg',
+  'CPT':'Cape Town','LOS':'Lagos','ACC':'Accra',
+  'DEL':'Delhi','BOM':'Mumbai','MAA':'Chennai','BLR':'Bangalore','CCU':'Kolkata',
+  'HYD':'Hyderabad','CMB':'Colombo','DAC':'Dhaka','KTM':'Kathmandu',
+  'KHI':'Karachi','LHE':'Lahore','ISB':'Islamabad',
+  'SIN':'Singapore','BKK':'Bangkok','KUL':'Kuala Lumpur','CGK':'Jakarta',
+  'MNL':'Manila','HKG':'Hong Kong','PVG':'Shanghai','PEK':'Beijing','CAN':'Guangzhou',
+  'ICN':'Seoul','NRT':'Tokyo','KIX':'Osaka','SGN':'Ho Chi Minh City','HAN':'Hanoi','RGN':'Yangon',
+  'MEL':'Melbourne','SYD':'Sydney','BNE':'Brisbane','AKL':'Auckland',
+  'GRU':'S\xe3o Paulo','EZE':'Buenos Aires','SCL':'Santiago','LIM':'Lima',
+  'BOG':'Bogot\xe1','UIO':'Quito','MDE':'Medell\xedn','GIG':'Rio de Janeiro',
+  'YYZ':'Toronto','YVR':'Vancouver','YUL':'Montreal'
+};
+var _mapLandData=null,_mapLoadPromise=null;
+function _loadMapAssets(){
+  if(_mapLandData)return Promise.resolve();
+  if(_mapLoadPromise)return _mapLoadPromise;
+  function ls(src){return new Promise(function(ok,no){var s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=no;document.head.appendChild(s);});}
+  _mapLoadPromise=Promise.all([
+    ls('https://cdn.jsdelivr.net/npm/d3-geo@3/dist/d3-geo.umd.min.js'),
+    ls('https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js')
+  ]).then(function(){return fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json');})
+  .then(function(r){return r.json();})
+  .then(function(data){_mapLandData=data;})
+  .catch(function(e){_mapLoadPromise=null;throw e;});
+  return _mapLoadPromise;
+}
+function _arcColor(contexts){
+  var counts={};
+  contexts.forEach(function(c){counts[c]=(counts[c]||0)+1;});
+  var top=Object.keys(counts).sort(function(a,b){return counts[b]-counts[a];})[0];
+  return top==='CORPORATE'?'var(--green)':top==='BLEISURE'?'var(--amber)':'#1a56db';
+}
+function _buildRouteMap(trips){
+  var today=new Date();today.setHours(0,0,0,0);
+  var rm={};
+  trips.forEach(function(t){
+    var ret=t.return_date?new Date(t.return_date.slice(0,10)+'T00:00:00')
+           :t.departure_date?new Date(t.departure_date.slice(0,10)+'T00:00:00'):null;
+    var isPast=ret?ret<today:true;
+    var ctx=t.trip_context||'PERSONAL';
+    var pairs=[];
+    if(t.segments&&t.segments.length){
+      t.segments.filter(function(s){return s.segment_type==='FLIGHT';}).forEach(function(s){
+        if(s.origin_iata&&s.destination_iata&&s.origin_iata!==s.destination_iata)
+          pairs.push([s.origin_iata.toUpperCase(),s.destination_iata.toUpperCase()]);
+      });
+    }else if(t.origin_iata&&t.destination_iata&&t.origin_iata!==t.destination_iata){
+      pairs.push([t.origin_iata.toUpperCase(),t.destination_iata.toUpperCase()]);
+    }
+    pairs.forEach(function(p){
+      var key=[p[0],p[1]].sort().join('-');
+      if(!rm[key])rm[key]={a:p[0],b:p[1],count:0,contexts:[],allPast:true};
+      rm[key].count++;rm[key].contexts.push(ctx);
+      if(!isPast)rm[key].allPast=false;
+    });
+  });
+  return Object.values(rm).filter(function(r){return _IATA_COORDS[r.a]&&_IATA_COORDS[r.b];});
+}
+function _gcPoints(lng1,lat1,lng2,lat2,n){
+  var D=Math.PI/180,R=180/Math.PI;
+  var f1=lat1*D,l1=lng1*D,f2=lat2*D,l2=lng2*D;
+  var a=Math.sin((f2-f1)/2)*Math.sin((f2-f1)/2)+Math.cos(f1)*Math.cos(f2)*Math.sin((l2-l1)/2)*Math.sin((l2-l1)/2);
+  var d=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+  if(d<0.0001)return[[lng1,lat1],[lng2,lat2]];
+  var pts=[];
+  for(var i=0;i<=n;i++){
+    var t=i/n,A=Math.sin((1-t)*d)/Math.sin(d),B=Math.sin(t*d)/Math.sin(d);
+    var x=A*Math.cos(f1)*Math.cos(l1)+B*Math.cos(f2)*Math.cos(l2);
+    var y=A*Math.cos(f1)*Math.sin(l1)+B*Math.cos(f2)*Math.sin(l2);
+    var z=A*Math.sin(f1)+B*Math.sin(f2);
+    pts.push([Math.atan2(y,x)*R,Math.atan2(z,Math.sqrt(x*x+y*y))*R]);
+  }
+  return pts;
+}
+function _offsetPts(pts,perpDeg){
+  var n=pts.length-1;
+  return pts.map(function(p,i){
+    var w=Math.sin(i/n*Math.PI);
+    if(Math.abs(w)<0.01)return p;
+    var prev=pts[Math.max(0,i-1)],next=pts[Math.min(n,i+1)];
+    var dl=next[0]-prev[0],dt=next[1]-prev[1];
+    var len=Math.sqrt(dl*dl+dt*dt);
+    if(len<1e-10)return p;
+    return[p[0]+(-dt/len)*perpDeg*w,p[1]+(dl/len)*perpDeg*w];
+  });
+}
+function _bearing2(lat1,lng1,lat2,lng2){
+  var D=Math.PI/180,f1=lat1*D,f2=lat2*D,dl=(lng2-lng1)*D;
+  return Math.atan2(Math.sin(dl)*Math.cos(f2),Math.cos(f1)*Math.sin(f2)-Math.sin(f1)*Math.cos(f2)*Math.cos(dl))*180/Math.PI;
+}
+function _angDiff(a,b){var d=Math.abs(a-b)%360;return d>180?360-d:d;}
+function _computeArcOffsets(routes){
+  var offsets={},byEp={};
+  routes.forEach(function(r){
+    var key=[r.a,r.b].sort().join('-');
+    var cA=_IATA_COORDS[r.a],cB=_IATA_COORDS[r.b];
+    [[r.a,cA,r.b,cB],[r.b,cB,r.a,cA]].forEach(function(ep){
+      var brg=_bearing2(ep[1][0],ep[1][1],ep[3][0],ep[3][1]);
+      if(!byEp[ep[0]])byEp[ep[0]]=[];
+      byEp[ep[0]].push({key:key,brg:brg});
+    });
+  });
+  Object.keys(byEp).forEach(function(orig){
+    var rts=byEp[orig].slice().sort(function(a,b){return a.brg-b.brg;});
+    for(var i=0;i<rts.length-1;i++){
+      for(var j=i+1;j<rts.length;j++){
+        if(_angDiff(rts[i].brg,rts[j].brg)<10){
+          if(offsets[rts[i].key]===undefined)offsets[rts[i].key]=2.5;
+          if(offsets[rts[j].key]===undefined)offsets[rts[j].key]=-2.5;
+        }
+      }
+    }
+  });
+  return offsets;
+}
+function renderMapView(trips){
+  var el=document.getElementById('trips-map');
+  if(!el)return;
+  var routes=_buildRouteMap(trips);
+  if(!routes.length){
+    el.innerHTML='<div class="map-empty">No trips match this filter.</div>';
+    return;
+  }
+  if(!_mapLandData){
+    el.innerHTML='<div class="map-loading">Loading map…</div>';
+    _loadMapAssets().then(function(){renderMapView(trips);})
+    .catch(function(){el.innerHTML='<div class="map-empty">Map unavailable — check connection.</div>';});
+    return;
+  }
+  var w=el.clientWidth||360;
+  var h=Math.max(260,Math.round(w*0.52));
+  var proj=d3.geoNaturalEarth1().fitSize([w,h],{type:'Sphere'});
+  var pg=d3.geoPath().projection(proj);
+  var land=topojson.feature(_mapLandData,_mapLandData.objects.land);
+  var landPath=pg(land);
+  var offsets=_computeArcOffsets(routes);
+  var svg=[];
+  svg.push('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+w+' '+h+'" style="width:100%;height:auto;display:block">');
+  svg.push('<rect width="'+w+'" height="'+h+'" fill="#D9D3C7"/>');
+  if(landPath)svg.push('<path d="'+landPath+'" fill="#E8E2D4"/>');
+  var arcData=[];
+  routes.forEach(function(r){
+    var key=[r.a,r.b].sort().join('-');
+    var cA=_IATA_COORDS[r.a],cB=_IATA_COORDS[r.b];
+    var offDeg=offsets[key];
+    var coords=offDeg?_offsetPts(_gcPoints(cA[1],cA[0],cB[1],cB[0],64),offDeg):[[cA[1],cA[0]],[cB[1],cB[0]]];
+    var d=pg({type:'LineString',coordinates:coords});
+    if(!d)return;
+    var color=_arcColor(r.contexts);
+    var sw=(0.8+Math.min(r.count-1,5)*0.4).toFixed(1);
+    var op=r.allPast?'0.38':'1';
+    var ctxLabel=r.contexts[0]==='CORPORATE'?'Business':r.contexts[0]==='BLEISURE'?'Bleisure':'Personal';
+    var tip=r.a+'|'+r.b+'|'+(_IATA_CITY[r.a]||r.a)+'|'+(_IATA_CITY[r.b]||r.b)+'|'+ctxLabel+'|'+r.count;
+    svg.push('<path d="'+d+'" fill="none" stroke="transparent" stroke-width="12" class="map-arc" data-tip="'+_escHtml(tip)+'"/>');
+    arcData.push({d:d,color:color,sw:sw,op:op});
+  });
+  arcData.forEach(function(a){
+    svg.push('<path d="'+a.d+'" fill="none" stroke="'+a.color+'" stroke-width="'+a.sw+'" stroke-linecap="round" opacity="'+a.op+'" style="pointer-events:none"/>');
+  });
+  var seen={};
+  routes.forEach(function(r){seen[r.a]=1;seen[r.b]=1;});
+  Object.keys(seen).forEach(function(code){
+    var coord=_IATA_COORDS[code],pt=proj([coord[1],coord[0]]);
+    if(!pt)return;
+    var city=_IATA_CITY[code]||code,isDCA=code==='DCA';
+    var tip=code+'|'+city+(isDCA?'|home':'');
+    if(isDCA){
+      svg.push('<circle cx="'+pt[0].toFixed(1)+'" cy="'+pt[1].toFixed(1)+'" r="14" fill="transparent" class="map-arc" data-tip="'+_escHtml(tip)+'"/>');
+      svg.push('<circle cx="'+pt[0].toFixed(1)+'" cy="'+pt[1].toFixed(1)+'" r="8.5" fill="none" stroke="var(--ink)" stroke-width="1.5" style="pointer-events:none"/>');
+      svg.push('<circle cx="'+pt[0].toFixed(1)+'" cy="'+pt[1].toFixed(1)+'" r="4" fill="var(--ink)" style="pointer-events:none"/>');
+    }else{
+      svg.push('<circle cx="'+pt[0].toFixed(1)+'" cy="'+pt[1].toFixed(1)+'" r="8" fill="transparent" class="map-arc" data-tip="'+_escHtml(tip)+'"/>');
+      svg.push('<circle cx="'+pt[0].toFixed(1)+'" cy="'+pt[1].toFixed(1)+'" r="2.5" fill="var(--ink-mute)" style="pointer-events:none"/>');
+    }
+  });
+  svg.push('</svg>');
+  el.innerHTML=svg.join('');
+  var tt=document.getElementById('map-tt');
+  if(!tt){tt=document.createElement('div');tt.id='map-tt';tt.className='map-tooltip';document.body.appendChild(tt);}
+  function showTip(x,y,raw){
+    var p=raw.split('|'),html;
+    if(p[2]==='home'){
+      html='<strong>'+_escHtml(p[0])+'</strong>'+_escHtml(p[1])+' · Home';
+    }else if(p.length>=6){
+      html='<strong>'+_escHtml(p[0])+' ↔ '+_escHtml(p[1])+'</strong>'+_escHtml(p[2])+' ↔ '+_escHtml(p[3])+' · '+_escHtml(p[4])+' · '+p[5]+'×';
+    }else{
+      html='<strong>'+_escHtml(p[0])+'</strong>'+(p[1]?_escHtml(p[1]):'');
+    }
+    tt.innerHTML=html;
+    tt.style.left=Math.min(x+14,window.innerWidth-230)+'px';
+    tt.style.top=Math.max(8,y-50)+'px';
+    tt.style.display='block';
+  }
+  var svgEl=el.querySelector('svg');
+  svgEl.addEventListener('mousemove',function(e){
+    var tgt=e.target;
+    while(tgt&&tgt!==svgEl){if(tgt.dataset&&tgt.dataset.tip){showTip(e.clientX,e.clientY,tgt.dataset.tip);return;}tgt=tgt.parentNode;}
+    tt.style.display='none';
+  });
+  svgEl.addEventListener('mouseleave',function(){tt.style.display='none';});
+  svgEl.addEventListener('touchstart',function(e){
+    var tgt=e.target;
+    while(tgt&&tgt!==svgEl){
+      if(tgt.dataset&&tgt.dataset.tip){
+        var tc=e.touches[0];showTip(tc.clientX,tc.clientY,tgt.dataset.tip);
+        setTimeout(function(){tt.style.display='none';},2500);return;
+      }
+      tgt=tgt.parentNode;
+    }
+  },{passive:true});
+}
+
 /* ── View toggle ── */
 var _curView='list';
 function toggleView(view){
   _curView=view;
   var listEl=document.getElementById('trips-list');
   var calEl=document.getElementById('trips-calendar');
+  var mapEl=document.getElementById('trips-map');
   var filterEl=document.querySelector('.filter-bar');
   var countEl=document.getElementById('trips-count');
-  var lb=document.getElementById('view-list-btn');var cb=document.getElementById('view-cal-btn');
+  var lb=document.getElementById('view-list-btn');
+  var cb=document.getElementById('view-cal-btn');
+  var mb=document.getElementById('view-map-btn');
   if(view==='calendar'){
     if(listEl)listEl.style.display='none';
     if(calEl)calEl.style.display='block';
+    if(mapEl)mapEl.style.display='none';
     if(filterEl)filterEl.style.display='none';
     if(countEl)countEl.style.display='none';
-    if(lb)lb.classList.remove('active');if(cb)cb.classList.add('active');
+    if(lb)lb.classList.remove('active');if(cb)cb.classList.add('active');if(mb)mb.classList.remove('active');
     renderCalendarView(_allTrips);
+  }else if(view==='map'){
+    if(listEl)listEl.style.display='none';
+    if(calEl)calEl.style.display='none';
+    if(mapEl)mapEl.style.display='block';
+    if(filterEl)filterEl.style.display='';
+    if(countEl)countEl.style.display='none';
+    if(lb)lb.classList.remove('active');if(cb)cb.classList.remove('active');if(mb)mb.classList.add('active');
+    renderMapView(_filteredTrips());
   }else{
     if(listEl)listEl.style.display='';
     if(calEl)calEl.style.display='none';
+    if(mapEl)mapEl.style.display='none';
     if(filterEl)filterEl.style.display='';
-    if(lb)lb.classList.add('active');if(cb)cb.classList.remove('active');
+    if(lb)lb.classList.add('active');if(cb)cb.classList.remove('active');if(mb)mb.classList.remove('active');
     renderTrips(_allTrips);
   }
 }
@@ -730,7 +985,8 @@ function applyFilter(filter,btn){
   _curFilter=filter;
   document.querySelectorAll(".filter-btn").forEach(function(b){b.classList.remove("active");});
   if(btn)btn.classList.add("active");
-  renderTrips(_allTrips);
+  if(_curView==='map')renderMapView(_filteredTrips());
+  else renderTrips(_allTrips);
 }
 function _filteredTrips(){
   var today=new Date();today.setHours(0,0,0,0);
