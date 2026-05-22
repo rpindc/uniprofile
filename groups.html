@@ -64,8 +64,10 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .filter-btn:hover{color:var(--ink);border-color:var(--rule-strong)}
 .filter-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
 /* Group card */
-.group-card{background:#fff;border:0.5px solid var(--rule);border-radius:12px;padding:20px 24px;margin-bottom:12px;transition:border-color 120ms ease;display:flex;align-items:flex-start;gap:16px}
-.group-card:hover{border-color:var(--rule-strong)}
+.group-card{background:#fff;border:0.5px solid var(--rule);border-radius:12px;padding:20px 24px;margin-bottom:12px;transition:border-color 120ms ease;display:flex;align-items:flex-start;gap:16px;cursor:default}
+a.group-card{cursor:pointer;text-decoration:none;color:inherit}
+a.group-card:hover{border-color:var(--rule-strong)}
+a.group-card:active{background:rgba(26,26,26,0.02)}
 .group-card.archived{opacity:0.65}
 .group-card-date{flex-shrink:0;text-align:center;width:52px;padding:7px 0;border-radius:8px;background:var(--paper-cream)}
 .group-card-date-month{font-family:var(--sans);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
@@ -282,17 +284,20 @@ function _groupCard(g){
     if(diff<=14)statusBadge='<span class="pill pill-amber" style="font-size:10px;margin-left:8px">'+diff+'d away</span>';
   }
 
-  var tripLink=g.role==="member"?"/trip.html?group_id="+g.id:(g.trip_id?"/trip.html?id="+g.trip_id:"#");
-  var hasLink=g.role==="member"||g.trip_id;
-  return'<div class="group-card'+(g.archived_at?" archived":"")+'">'
+  var tripLink=g.role==="member"?"/trip.html?group_id="+g.id:(g.trip_id?"/trip.html?id="+g.trip_id:null);
+  var hasLink=g.role==="member"||!!g.trip_id;
+  var tag=hasLink?'a':'div';
+  var open='<'+tag+(hasLink?' href="'+escHtml(tripLink)+'"':'')+' class="group-card'+(g.archived_at?" archived":"")+'">';
+  var close='</'+tag+'>';
+  return open
     +'<div class="group-card-date"><div class="group-card-date-month">'+escHtml(month)+'</div><div class="group-card-date-day">'+day+'</div></div>'
     +'<div class="group-card-main">'
     +(eyebrow?'<div class="group-card-eyebrow">'+eyebrow+'</div>':"")
     +'<div class="group-card-name">'+escHtml(g.name||"Group")+roleBadge+statusBadge+'</div>'
     +'<div class="group-card-meta">'+escHtml(metaParts.join(" · "))+'</div>'
     +'</div>'
-    +(hasLink?'<div class="group-card-action"><a href="'+escHtml(tripLink)+'" class="btn btn-secondary btn-sm">View →</a></div>':"")
-    +'</div>';
+    +(hasLink?'<div class="group-card-action"><span class="btn btn-secondary btn-sm">View →</span></div>':"")
+    +close;
 }
 
 /* ── Render ── */
