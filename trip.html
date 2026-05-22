@@ -171,6 +171,22 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .doc-edit-status{font-size:12px;color:var(--green);font-weight:500;font-family:var(--sans);letter-spacing:-0.01em}
 body:not(.doc-editing) .edit-only{display:none!important}
 body.doc-editing #doc-edit-btn{display:none!important}
+/* Air sector flight rows */
+.doc-flight-row{display:flex;align-items:center;gap:16px;padding:12px 0;border-bottom:0.5px solid var(--rule)}
+.doc-flight-row:last-child{border-bottom:none}
+.doc-flight-flt{flex-shrink:0;min-width:60px}
+.doc-flight-code{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:0.06em;color:var(--ink-soft)}
+.doc-flight-route{flex:1;min-width:0}
+.doc-flight-iata{font-size:14px;font-weight:500;color:var(--ink);line-height:1.2}
+.doc-flight-arrow{color:var(--ink-mute);font-weight:400}
+.doc-flight-cities{font-size:11px;color:var(--ink-mute);margin-top:2px}
+.doc-flight-times{text-align:right;flex-shrink:0}
+.doc-flight-date{font-size:10px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:2px}
+.doc-flight-clock{font-size:13px;color:var(--ink-soft);font-family:var(--mono);letter-spacing:0.04em}
+.doc-flight-nextday{font-size:9px;color:var(--amber);margin-left:3px;vertical-align:super;font-weight:600;font-family:var(--sans)}
+.doc-flight-dir{font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-faint);padding-bottom:8px;margin-bottom:4px;border-bottom:0.5px solid var(--rule)}
+.doc-flight-dir+.doc-flight-dir{margin-top:18px}
+@media(max-width:599px){.doc-flight-row{flex-wrap:wrap;gap:6px}.doc-flight-flt{min-width:auto}.doc-flight-times{text-align:left;flex-basis:100%}}
 </style>
 </head>
 <body>
@@ -505,7 +521,39 @@ var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
 var _tok=null,_uid=null;
-var _trip=null,_group=null,_readiness=null,_familyProfile=null,_workspace=null,_itinerary=null,_documents=null,_contacts=null;
+var _trip=null,_group=null,_readiness=null,_familyProfile=null,_workspace=null,_itinerary=null,_documents=null,_contacts=null,_segments=null;
+var _IATA_CITY={
+  'ATL':'Atlanta','LAX':'Los Angeles','ORD':'Chicago','DFW':'Dallas','DEN':'Denver',
+  'JFK':'New York','SFO':'San Francisco','SEA':'Seattle','LAS':'Las Vegas','MCO':'Orlando',
+  'EWR':'Newark','MIA':'Miami','IAH':'Houston','PHX':'Phoenix','BOS':'Boston',
+  'MSP':'Minneapolis','DTW':'Detroit','PHL':'Philadelphia','LGA':'New York','FLL':'Fort Lauderdale',
+  'BWI':'Baltimore','IAD':'Washington','DCA':'Washington','MDW':'Chicago','SLC':'Salt Lake City',
+  'HNL':'Honolulu','SAN':'San Diego','TPA':'Tampa','PDX':'Portland','SJC':'San Jose',
+  'OAK':'Oakland','RDU':'Raleigh','BNA':'Nashville','MCI':'Kansas City','STL':'St. Louis',
+  'MSY':'New Orleans','SAT':'San Antonio','AUS':'Austin',
+  'LIR':'Liberia','SJO':'San Jos\xe9','MBJ':'Montego Bay','PUJ':'Punta Cana','CUN':'Canc\xfan',
+  'GDL':'Guadalajara','MEX':'Mexico City',
+  'LHR':'London','CDG':'Paris','AMS':'Amsterdam','FRA':'Frankfurt','IST':'Istanbul',
+  'MAD':'Madrid','BCN':'Barcelona','FCO':'Rome','MUC':'Munich','ZRH':'Zurich',
+  'CPH':'Copenhagen','ARN':'Stockholm','BRU':'Brussels','VIE':'Vienna','DUB':'Dublin',
+  'LIS':'Lisbon','ATH':'Athens','HEL':'Helsinki','OSL':'Oslo','WAW':'Warsaw',
+  'PRG':'Prague','BUD':'Budapest','LGW':'London','GVA':'Geneva','NCE':'Nice',
+  'MXP':'Milan','HAM':'Hamburg',
+  'DXB':'Dubai','DOH':'Doha','AUH':'Abu Dhabi','KWI':'Kuwait City','AMM':'Amman',
+  'CAI':'Cairo','ADD':'Addis Ababa','NBO':'Nairobi','JNB':'Johannesburg',
+  'CPT':'Cape Town','LOS':'Lagos','ACC':'Accra',
+  'DEL':'Delhi','BOM':'Mumbai','MAA':'Chennai','BLR':'Bangalore','CCU':'Kolkata',
+  'HYD':'Hyderabad','CMB':'Colombo','DAC':'Dhaka','KTM':'Kathmandu',
+  'KHI':'Karachi','LHE':'Lahore','ISB':'Islamabad',
+  'SIN':'Singapore','BKK':'Bangkok','KUL':'Kuala Lumpur','CGK':'Jakarta',
+  'MNL':'Manila','HKG':'Hong Kong','PVG':'Shanghai','PEK':'Beijing','CAN':'Guangzhou',
+  'ICN':'Seoul','NRT':'Tokyo','KIX':'Osaka','SGN':'Ho Chi Minh City','HAN':'Hanoi','RGN':'Yangon',
+  'MEL':'Melbourne','SYD':'Sydney','BNE':'Brisbane','AKL':'Auckland',
+  'GRU':'S\xe3o Paulo','EZE':'Buenos Aires','SCL':'Santiago','LIM':'Lima',
+  'BOG':'Bogot\xe1','UIO':'Quito','MDE':'Medell\xedn','GIG':'Rio de Janeiro',
+  'YYZ':'Toronto','YVR':'Vancouver','YUL':'Montreal',
+  'AMD':'Ahmedabad','CLT':'Charlotte','HND':'Tokyo','ITM':'Osaka','JAI':'Jaipur','UDR':'Udaipur'
+};
 var _reAuthCallback=null;
 var _accomEditId=null,_refEditId=null,_itineraryEditId=null;
 var _role='organizer';
@@ -578,6 +626,70 @@ function _tripName(t){return t.trip_name||((t.origin_iata||"")+(t.destination_ia
 function _ctxLabel(c){return c==="CORPORATE"?"Business":c==="BLEISURE"?"Bleisure":"Personal";}
 
 /* ── Render trip header ── */
+/* ── Air sector helpers ── */
+function _fmtSegTime(dt){
+  if(!dt)return'—';
+  var s=String(dt);
+  // extract HH:MM from ISO string; ignore timezone suffix
+  var m=s.match(/T(\d{2}:\d{2})/);
+  return m?m[1]:'—';
+}
+function _fmtSegDate(dt){
+  if(!dt)return'';
+  var s=String(dt).slice(0,10);
+  var d=new Date(s+'T12:00:00');
+  return isNaN(d.getTime())?'':d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+function renderAirSectors(segments,tripCtx){
+  var html='<div class="doc-section">';
+  html+='<div class="doc-section-head"><div class="doc-section-label">Air Sectors</div></div>';
+  if(!segments||!segments.length){
+    html+='<div class="doc-air-slot">No flight segments on file for this trip.</div>';
+    html+='</div>';
+    return html;
+  }
+  var retDate=tripCtx&&(tripCtx.return_date);
+  var outbound=segments,ret=[];
+  var showLabels=false;
+  if(retDate){
+    outbound=segments.filter(function(s){return String(s.departure_datetime||'').slice(0,10)<retDate;});
+    ret=segments.filter(function(s){return String(s.departure_datetime||'').slice(0,10)>=retDate;});
+    showLabels=outbound.length>0&&ret.length>0;
+  }
+  function _flightRow(s){
+    var depTime=_fmtSegTime(s.departure_datetime);
+    var arrTime=_fmtSegTime(s.arrival_datetime);
+    var depDate=_fmtSegDate(s.departure_datetime);
+    var depDay=String(s.departure_datetime||'').slice(0,10);
+    var arrDay=String(s.arrival_datetime||'').slice(0,10);
+    var nextDay=depDay&&arrDay&&arrDay>depDay;
+    var oCity=_IATA_CITY[s.origin_iata]||'';
+    var dCity=_IATA_CITY[s.destination_iata]||'';
+    var h='<div class="doc-flight-row">';
+    h+='<div class="doc-flight-flt"><span class="doc-flight-code">'+escHtml((s.carrier||'').toUpperCase()+(s.flight_number?' '+s.flight_number:''))+'</span></div>';
+    h+='<div class="doc-flight-route">';
+    h+='<div class="doc-flight-iata">'+escHtml(s.origin_iata||'—')+' <span class="doc-flight-arrow">→</span> '+escHtml(s.destination_iata||'—')+'</div>';
+    if(oCity&&dCity)h+='<div class="doc-flight-cities">'+escHtml(oCity)+' → '+escHtml(dCity)+'</div>';
+    h+='</div>';
+    h+='<div class="doc-flight-times">';
+    h+='<div class="doc-flight-date">'+escHtml(depDate)+'</div>';
+    h+='<div class="doc-flight-clock">'+escHtml(depTime)+' → '+escHtml(arrTime)+(nextDay?'<span class="doc-flight-nextday">+1</span>':'')+'</div>';
+    h+='</div>';
+    h+='</div>';
+    return h;
+  }
+  if(showLabels){
+    html+='<div class="doc-flight-dir">Outbound</div>';
+    outbound.forEach(function(s){html+=_flightRow(s);});
+    html+='<div class="doc-flight-dir" style="margin-top:18px">Return</div>';
+    ret.forEach(function(s){html+=_flightRow(s);});
+  }else{
+    segments.forEach(function(s){html+=_flightRow(s);});
+  }
+  html+='</div>';
+  return html;
+}
+
 function renderTripHeader(t){
   var today=new Date();today.setHours(0,0,0,0);
   var dep=t.departure_date?new Date(t.departure_date+'T00:00:00'):null;
@@ -633,11 +745,8 @@ function renderGroupSection(){
     }
     html+='</div>';
 
-    /* Air sectors placeholder */
-    html+='<div class="doc-section">';
-    html+='<div class="doc-section-head"><div class="doc-section-label">Air Sectors</div></div>';
-    html+='<div class="doc-air-slot">Flight segments will appear here once air sector data is available for group trips.</div>';
-    html+='</div>';
+    /* Air sectors */
+    html+=renderAirSectors(_segments,_group||_trip);
 
     /* Travelers & Readiness */
     html+='<div class="doc-section">';
@@ -1660,8 +1769,9 @@ async function tripInit(){
         _req("GET","/api/v1/trip-groups/"+groupId+"/itinerary"),
         _req("GET","/api/v1/trip-groups/"+groupId+"/documents"),
         _req("GET","/api/v1/trip-groups/"+groupId+"/emergency-contacts"),
+        _req("GET","/api/v1/trip-groups/"+groupId+"/segments").catch(function(){return[];}),
       ]);
-      _group=results[0];_readiness=results[1];_workspace=results[2];_itinerary=results[3]||[];_documents=results[4]||[];_contacts=results[5]||[];
+      _group=results[0];_readiness=results[1];_workspace=results[2];_itinerary=results[3]||[];_documents=results[4]||[];_contacts=results[5]||[];_segments=results[6]||[];
       document.title=(_group.name||"Group")+" — UniProfile";
       var today=new Date();today.setHours(0,0,0,0);
       var dep=_group.departure_date?new Date(_group.departure_date+'T00:00:00'):null;
@@ -1682,7 +1792,7 @@ async function tripInit(){
       mHtml+='</div>';
       if(cd)mHtml+='<div class="doc-countdown-row">'+_countdownHtml(cd)+'<span></span></div>';
       mHtml+='<div class="doc-edit-bar">';
-      mHtml+='<button class="btn btn-primary" id="doc-edit-btn" onclick="enterEditMode()" style="font-size:13px;gap:9px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit document</button>';
+      mHtml+='<button class="btn btn-primary" id="doc-edit-btn" onclick="enterEditMode()">Edit document</button>';
       mHtml+='<div class="doc-edit-banner edit-only"><span class="doc-edit-status">✓ Editing — changes save as you go</span><button class="btn btn-secondary btn-sm" onclick="exitEditMode()">Done</button></div>';
       mHtml+='</div>';
       mHtml+='</div>';
@@ -1719,6 +1829,7 @@ async function tripInit(){
           _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id+"/itinerary"),
           _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id+"/documents"),
           _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id+"/emergency-contacts"),
+          _req("GET","/api/v1/trip-groups/"+_trip.trip_group_id+"/segments").catch(function(){return[];}),
         ]);
         _group=results[0];
         _readiness=results[1];
@@ -1726,6 +1837,7 @@ async function tripInit(){
         _itinerary=results[3]||[];
         _documents=results[4]||[];
         _contacts=results[5]||[];
+        _segments=results[6]||[];
       }catch(e){
         console.error("Failed to load group data:",e);
       }
