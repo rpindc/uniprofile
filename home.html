@@ -522,15 +522,18 @@ function renderHealth(p){
 
   var html="";
   checks.forEach(function(c){
-    var iconCls=c.done?"check-done":c.optional?"check-miss":"check-miss";
+    var iconCls=c.done?"check-done":"check-miss";
     var iconContent=c.done?'<svg style="width:10px;height:10px"><use href="#i-check"/></svg>':"·";
+    var labelColor=c.done?"var(--ink)":c.optional?"var(--ink-mute)":"var(--ink-soft)";
+    var optionalTag=(!c.done&&c.optional)?'<span style="font-size:10px;font-weight:400;color:var(--ink-mute);letter-spacing:0.08em;text-transform:uppercase;margin-left:8px">optional</span>':"";
+    var btnCls=c.optional?"btn btn-tertiary btn-sm":"btn btn-secondary btn-sm";
     html+='<div class="check-item">'
       +'<div class="check-icon '+iconCls+'">'+iconContent+'</div>'
       +'<div style="flex:1;min-width:0">'
-      +'<div style="font-size:13px;font-weight:500;color:'+(c.done?"var(--ink)":"var(--ink-soft)")+'">'+c.label+'</div>'
+      +'<div style="font-size:13px;font-weight:500;color:'+labelColor+'">'+c.label+optionalTag+'</div>'
       +'<div class="caption">'+c.detail+'</div>'
       +'</div>'
-      +(!c.done?'<a href="'+c.link+'" class="btn btn-secondary btn-sm" style="flex-shrink:0">Add</a>':"")
+      +(!c.done?'<a href="'+c.link+'" class="'+btnCls+'" style="flex-shrink:0">Add</a>':"")
       +'</div>';
   });
   _ht("health-list",html);
