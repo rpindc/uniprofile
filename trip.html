@@ -631,7 +631,7 @@ function _fmtSegTime(dt){
   if(!dt)return'—';
   var s=String(dt);
   // extract HH:MM from ISO string; ignore timezone suffix
-  var m=s.match(/T(\d{2}:\d{2})/);
+  var m=s.match(/[T ](\d{2}:\d{2})/);
   return m?m[1]:'—';
 }
 function _fmtSegDate(dt){
