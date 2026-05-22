@@ -143,6 +143,28 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   .readiness-table td:first-child::before{display:none}
 }
 @media(max-width:767px){.main{padding:24px 20px}.readiness-table th,.readiness-table td{padding:8px 10px}.readiness-card{gap:16px}.btn-sm{min-height:44px}}
+/* Direction B — travel document layout */
+.doc-header{padding-bottom:24px;border-bottom:2px solid var(--ink);margin-bottom:0}
+.doc-header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.doc-issuer-block{text-align:right;flex-shrink:0}
+.doc-issuer-mark{font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-mute);line-height:1.9}
+.doc-issuer-mark strong{display:block;font-size:11px;letter-spacing:0.14em;color:var(--ink)}
+.doc-locator{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:0.06em;color:var(--ink-soft);display:inline-block;margin-top:6px}
+.doc-meta-row{display:flex;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:0.5px solid var(--rule)}
+.doc-meta-field{padding-right:28px;padding-bottom:4px}
+.doc-meta-label{font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:3px}
+.doc-meta-value{font-size:13px;color:var(--ink);line-height:1.3}
+.doc-countdown-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:14px}
+.doc-controls{display:flex;gap:6px;flex-wrap:wrap;padding:12px 0 14px;border-bottom:0.5px solid var(--rule)}
+.doc-section{padding:22px 0;border-top:0.5px solid var(--rule-strong)}
+.doc-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.doc-section-label{font-family:var(--sans);font-size:10px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-mute)}
+.doc-air-slot{padding:18px;background:var(--paper-cream);border-radius:6px;border:0.5px dashed var(--rule-strong);font-size:12px;color:var(--ink-faint);font-family:var(--sans);letter-spacing:0.04em;text-align:center}
+.doc-audit-toggle{background:none;border:none;cursor:pointer;font-family:var(--sans);font-size:10px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-mute);padding:0;display:flex;align-items:center;gap:6px}
+.doc-audit-toggle:hover{color:var(--ink)}
+.doc-audit-body{margin-top:12px;display:none}
+.doc-audit-body.open{display:block}
+@media(max-width:599px){.doc-header-top{flex-direction:column-reverse;gap:6px}.doc-issuer-block{text-align:left}.doc-meta-field{min-width:50%}}
 </style>
 </head>
 <body>
@@ -223,16 +245,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       <a href="/trips.html" id="breadcrumb-link" style="font-size:12px;color:var(--ink-mute);text-decoration:none;font-family:var(--sans)">← All trips</a>
     </div>
 
-    <div id="trip-header" style="display:none;margin-bottom:8px">
-      <div class="eyebrow" id="trip-eyebrow" style="margin-bottom:10px"></div>
-      <h1 class="h1" id="trip-title"></h1>
-      <div id="trip-meta" style="margin-top:8px;font-size:14px;color:var(--ink-soft)"></div>
-      <div id="trip-organizer" style="margin-top:4px;font-size:13px;color:var(--ink-mute)"></div>
-      <div id="trip-countdown" style="margin-top:10px"></div>
-    </div>
-    <div id="trip-actions" style="display:none;margin-top:16px;margin-bottom:32px"></div>
-
-    <div id="trip-details" style="display:none;margin-bottom:28px"></div>
+    <div id="trip-header" style="display:none;margin-bottom:0"></div>
 
     <div id="group-section">
       <div class="caption" style="color:var(--ink-mute);padding:20px 0">Loading…</div>
@@ -559,72 +572,64 @@ function _ctxLabel(c){return c==="CORPORATE"?"Business":c==="BLEISURE"?"Bleisure
 /* ── Render trip header ── */
 function renderTripHeader(t){
   var today=new Date();today.setHours(0,0,0,0);
-  var dep=t.departure_date?new Date(t.departure_date+"T00:00:00"):null;
+  var dep=t.departure_date?new Date(t.departure_date+'T00:00:00'):null;
   var past=dep&&dep<today;
-  var route=(t.origin_iata&&t.destination_iata&&t.origin_iata!==t.destination_iata)?t.origin_iata.toUpperCase()+" → "+t.destination_iata.toUpperCase():"";
-
-  _show("trip-header");
-  _st("trip-eyebrow",past?"Past trip":"Upcoming trip");
-  _ht("trip-title",escHtml(_tripName(t)));
-
-  var metaParts=[];
-  if(route)metaParts.push(route);
-  else if(t.destination_iata)metaParts.push(t.destination_iata.toUpperCase());
-  if(t.departure_date||t.return_date)metaParts.push(_fmtRange(t.departure_date,t.return_date));
-  _ht("trip-meta",metaParts.length?'<span>'+metaParts.map(escHtml).join(' · ')+'</span>':'');
-  _ht("trip-countdown",_countdownHtml(_countdown(t.departure_date,t.return_date)));
-
-  var parts=[];
-  if(t.departure_date||t.return_date)parts.push(_fmtRange(t.departure_date,t.return_date));
+  var route=(t.origin_iata&&t.destination_iata&&t.origin_iata!==t.destination_iata)?t.origin_iata.toUpperCase()+' → '+t.destination_iata.toUpperCase():'';
   var nights=_nightCount(t.departure_date,t.return_date);
-  if(nights>0)parts.push(nights+" night"+(nights===1?"":"s"));
-  if(t.trip_context)parts.push(_ctxLabel(t.trip_context));
-  if(t.trip_locator)parts.push("PNR "+t.trip_locator.toUpperCase());
-
-  var detHtml='<div class="card"><div style="font-size:13px;color:var(--ink-soft);line-height:1.8">'+escHtml(parts.join(" · "))+'</div>';
-  if(t.notes)detHtml+='<div class="caption" style="margin-top:10px;font-style:italic">'+escHtml(t.notes)+'</div>';
-  detHtml+='</div>';
-  _ht("trip-details",detHtml);
-  _show("trip-details");
+  var cd=_countdown(t.departure_date,t.return_date);
+  var html='<div class="doc-header">';
+  html+='<div class="doc-header-top">';
+  html+='<div style="min-width:0"><div class="eyebrow" style="margin-bottom:10px">'+escHtml(past?'Past trip':'Upcoming trip')+'</div>';
+  html+='<h1 class="h1">'+escHtml(_tripName(t))+'</h1></div>';
+  html+='<div class="doc-issuer-block"><div class="doc-issuer-mark"><strong>UniProfile</strong>Group Travel Record</div>';
+  if(t.trip_locator)html+='<div class="doc-locator">'+escHtml(t.trip_locator.toUpperCase())+'</div>';
+  html+='</div></div>';
+  html+='<div class="doc-meta-row">';
+  if(route)html+='<div class="doc-meta-field"><div class="doc-meta-label">Route</div><div class="doc-meta-value">'+escHtml(route)+'</div></div>';
+  else if(t.destination_iata)html+='<div class="doc-meta-field"><div class="doc-meta-label">Destination</div><div class="doc-meta-value">'+escHtml(t.destination_iata.toUpperCase())+'</div></div>';
+  if(t.departure_date||t.return_date)html+='<div class="doc-meta-field"><div class="doc-meta-label">Dates</div><div class="doc-meta-value">'+escHtml(_fmtRange(t.departure_date,t.return_date))+'</div></div>';
+  if(nights>0)html+='<div class="doc-meta-field"><div class="doc-meta-label">Duration</div><div class="doc-meta-value">'+nights+' night'+(nights===1?'':'s')+'</div></div>';
+  if(t.trip_context)html+='<div class="doc-meta-field"><div class="doc-meta-label">Type</div><div class="doc-meta-value">'+escHtml(_ctxLabel(t.trip_context))+'</div></div>';
+  html+='</div>';
+  if(cd)html+='<div class="doc-countdown-row">'+_countdownHtml(cd)+'<span></span></div>';
+  html+='</div>';
+  _ht('trip-header',html);_show('trip-header');
 }
 
 /* ── Render group section ── */
 function renderGroupSection(){
   var html='';
 
-  /* Populate action buttons into hero area */
-  var actEl=document.getElementById('trip-actions');
-  if(actEl){
-    if(_group){
-      var aHtml='<div style="display:flex;gap:8px;flex-wrap:wrap">';
-      if(_role==='organizer'){
-        aHtml+='<button class="btn btn-secondary btn-sm" onclick="openAddMember()">Add member</button>';
-        aHtml+='<button class="btn btn-secondary btn-sm" onclick="openRename()">Rename</button>';
-        aHtml+='<button class="btn btn-secondary btn-sm" style="color:var(--ink-mute)" onclick="openAuditLog()">Activity</button>';
-        if(!_group.archived_at)aHtml+='<button class="btn btn-secondary btn-sm" style="color:var(--ink-mute)" onclick="archiveGroup()">Archive</button>';
-        aHtml+='<button class="btn btn-danger btn-sm" onclick="deleteGroup()">Delete</button>';
-      }else{
-        aHtml+='<button class="btn btn-danger btn-sm" onclick="leaveGroup()">Leave group</button>';
-      }
-      aHtml+='</div>';
-      actEl.innerHTML=aHtml;
-      actEl.style.display='';
-    }else{
-      actEl.style.display='none';
-    }
-  }
-
   if(!_group){
+    html+='<div class="doc-section">';
     html+='<div class="card-warm">';
     html+='<div class="h2" style="margin-bottom:10px">No group yet</div>';
     html+='<p style="font-size:14px;color:var(--ink-soft);margin-bottom:20px;line-height:1.6">Create a trip group to coordinate travel readiness with your companions — track passports, share documents, and see who\'s ready at a glance.</p>';
     html+='<button class="btn btn-primary" onclick="createGroup()">Create Trip Group</button>';
-    html+='</div>';
+    html+='</div></div>';
   }else{
-    /* Zone 2 — Who's Going */
-    html+='<div class="card zone-who">';
-    html+='<div class="section-card-head">';
-    html+='<div class="section-card-title"><svg class="icon" style="color:var(--ink-mute)" aria-hidden="true"><use href="#i-people"/></svg><span class="h3">Who\'s going</span></div>';
+    /* Controls bar */
+    html+='<div class="doc-controls">';
+    if(_role==='organizer'){
+      html+='<button class="btn btn-secondary btn-sm" onclick="openAddMember()">Add member</button>';
+      html+='<button class="btn btn-secondary btn-sm" onclick="openRename()">Rename</button>';
+      if(!_group.archived_at)html+='<button class="btn btn-secondary btn-sm" style="color:var(--ink-mute)" onclick="archiveGroup()">Archive</button>';
+      html+='<button class="btn btn-danger btn-sm" onclick="deleteGroup()">Delete</button>';
+    }else{
+      html+='<button class="btn btn-danger btn-sm" onclick="leaveGroup()">Leave group</button>';
+    }
+    html+='</div>';
+
+    /* Air sectors placeholder */
+    html+='<div class="doc-section">';
+    html+='<div class="doc-section-head"><div class="doc-section-label">Air Sectors</div></div>';
+    html+='<div class="doc-air-slot">Flight segments will appear here once air sector data is available for group trips.</div>';
+    html+='</div>';
+
+    /* Travelers & Readiness */
+    html+='<div class="doc-section">';
+    html+='<div class="doc-section-head">';
+    html+='<div class="doc-section-label">Travelers &amp; Readiness</div>';
     if(_group.archived_at)html+='<span class="pill pill-neutral" style="font-size:10px">Archived '+escHtml(_fmtShort(_group.archived_at.slice(0,10)))+'</span>';
     html+='</div>';
 
@@ -641,24 +646,24 @@ function renderGroupSection(){
       html+='</div>';
     }
 
-    /* Member list */
     html+=renderMemberList(_group.members||[]);
 
-    /* Readiness matrix */
     if(_readiness&&_readiness.members&&_readiness.members.length){
       html+='<div style="margin-top:24px">';
-      html+='<div style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:12px">Readiness — '+escHtml(_readiness.destination_name||_readiness.destination||"")+'</div>';
+      html+='<div style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:12px">Readiness — '+escHtml(_readiness.destination_name||_readiness.destination||'')+'</div>';
       html+=renderReadinessMatrix(_readiness);
       html+='</div>';
     }
 
-    html+='</div>'; /* end zone-who */
+    html+='</div>'; /* end travelers section */
 
-    /* Zones 3 + 4 — workspace */
     html+=renderWorkspaceSection();
+
+    /* Activity log — inline collapsed */
+    html+=renderAuditSection();
   }
 
-  _ht("group-section",html);
+  _ht('group-section',html);
 }
 
 /* ── Member list ── */
@@ -758,9 +763,9 @@ function renderReadinessMatrix(readiness){
 /* ── Itinerary section ── */
 function renderItinerarySection(){
   var items=_itinerary||[];
-  var html='<div class="card zone-plan">';
-  html+='<div class="section-card-head">';
-  html+='<div class="section-card-title"><svg class="icon" style="color:var(--ink-mute)" aria-hidden="true"><use href="#i-calendar"/></svg><span class="h3">Itinerary</span></div>';
+  var html='<div class="doc-section">';
+  html+='<div class="doc-section-head">';
+  html+='<div class="doc-section-label">Itinerary</div>';
   html+='<button class="btn btn-secondary btn-sm" onclick="openItineraryModal(null)">Add</button>';
   html+='</div>';
   if(!items.length){
@@ -810,9 +815,9 @@ function renderItinerarySection(){
 function _fmtBytes(b){b=Number(b||0);if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(0)+'KB';return(b/1048576).toFixed(1)+'MB';}
 function renderDocumentsSection(){
   var docs=_documents||[];
-  var html='<div class="card zone-logistics">';
-  html+='<div class="section-card-head">';
-  html+='<div class="section-card-title"><svg class="icon" style="color:var(--ink-mute)" aria-hidden="true"><use href="#i-file"/></svg><span class="h3">Trip documents</span></div>';
+  var html='<div class="doc-section">';
+  html+='<div class="doc-section-head">';
+  html+='<div class="doc-section-label">Trip Documents</div>';
   html+='<button class="btn btn-secondary btn-sm" onclick="openDocModal()">Add</button>';
   html+='</div>';
   if(!docs.length){
@@ -861,9 +866,9 @@ function renderEmergencyContactsSection(){
   var contacts=_contacts||[];
   var mine=contacts.filter(function(c){return c.created_by===_uid;});
   var others=contacts.filter(function(c){return c.created_by!==_uid;});
-  var html='<div class="card zone-logistics">';
-  html+='<div class="section-card-head">';
-  html+='<div class="section-card-title"><svg class="icon" style="color:var(--ink-mute)" aria-hidden="true"><use href="#i-phone-alert"/></svg><span class="h3">Emergency contacts</span></div>';
+  var html='<div class="doc-section">';
+  html+='<div class="doc-section-head">';
+  html+='<div class="doc-section-label">Emergency Contacts</div>';
   html+='<button class="btn btn-secondary btn-sm" onclick="openContactModal(null)">Add</button>';
   html+='</div>';
   /* Your contacts subsection */
@@ -895,9 +900,9 @@ function renderWorkspaceSection(){
   /* Accommodations */
   var accoms=(_workspace&&_workspace.accommodations)||[];
   var sortedAccoms=accoms.slice().sort(function(a,b){return(a.check_in||"9")>(b.check_in||"9")?1:(a.check_in||"9")<(b.check_in||"9")?-1:0;});
-  html+='<div class="card zone-logistics">';
-  html+='<div class="section-card-head">';
-  html+='<div class="section-card-title"><svg class="icon" style="color:var(--ink-mute)" aria-hidden="true"><use href="#i-building"/></svg><span class="h3">Where we\'re staying</span></div>';
+  html+='<div class="doc-section">';
+  html+='<div class="doc-section-head">';
+  html+='<div class="doc-section-label">Accommodations</div>';
   if(_role==='organizer')html+='<button class="btn btn-secondary btn-sm" onclick="openAccomModal(null)">Add</button>';
   html+='</div>';
   if(!sortedAccoms.length){
@@ -932,9 +937,9 @@ function renderWorkspaceSection(){
 
   /* Quick Reference */
   var refs=(_workspace&&_workspace.reference_numbers)||[];
-  html+='<div class="card zone-logistics">';
-  html+='<div class="section-card-head">';
-  html+='<div class="section-card-title"><svg class="icon" style="color:var(--ink-mute)" aria-hidden="true"><use href="#i-bookmark"/></svg><span class="h3">Quick reference</span></div>';
+  html+='<div class="doc-section">';
+  html+='<div class="doc-section-head">';
+  html+='<div class="doc-section-label">Quick Reference</div>';
   if(_role==='organizer')html+='<button class="btn btn-secondary btn-sm" onclick="openRefModal(null)">Add</button>';
   html+='</div>';
   if(!refs.length){
@@ -964,9 +969,9 @@ function renderWorkspaceSection(){
 
   /* Trip notes */
   var notes=(_workspace&&_workspace.trip_notes)||"";
-  html+='<div class="card zone-logistics">';
-  html+='<div class="section-card-head">';
-  html+='<div class="section-card-title"><span class="h3">Trip notes</span></div>';
+  html+='<div class="doc-section">';
+  html+='<div class="doc-section-head">';
+  html+='<div class="doc-section-label">Trip Notes</div>';
   if(_role==='organizer')html+='<button class="btn btn-secondary btn-sm" onclick="openEditNotes()">Edit</button>';
   html+='</div>';
   html+='<div id="ws-notes-display"><div class="ws-notes-display'+(notes?'':' empty')+'">'+_renderNotes(notes)+'</div></div>';
@@ -1295,6 +1300,53 @@ async function deleteRef(id){
 }
 
 /* ── Audit log ── */
+function renderAuditSection(){
+  var html='<div class="doc-section">';
+  html+='<div class="doc-section-head">';
+  html+='<div class="doc-section-label">Activity Log</div>';
+  html+='<button class="doc-audit-toggle" id="doc-audit-btn" onclick="toggleAuditInline()">Show ↓</button>';
+  html+='</div>';
+  html+='<div class="doc-audit-body" id="doc-audit-body"></div>';
+  html+='</div>';
+  return html;
+}
+var _auditLoaded=false;
+async function toggleAuditInline(){
+  var body=document.getElementById('doc-audit-body');
+  var btn=document.getElementById('doc-audit-btn');
+  if(!body)return;
+  if(body.classList.contains('open')){body.classList.remove('open');if(btn)btn.textContent='Show ↓';return;}
+  body.classList.add('open');if(btn)btn.textContent='Hide ↑';
+  if(_auditLoaded)return;
+  _auditLoaded=true;
+  body.innerHTML="<div class='caption' style='color:var(--ink-mute)'>Loading…</div>";
+  try{
+    var rows=await _req('GET','/api/v1/trip-groups/'+_group.id+'/audit-log');
+    if(!rows||!rows.length){body.innerHTML="<div class='caption' style='color:var(--ink-mute);padding:8px 0'>No activity recorded yet.</div>";return;}
+    var labelMap={
+      member_added:'added a member',member_removed:'removed a member',member_left:'left the group',
+      consent_approved:'approved data sharing',consent_declined:'declined data sharing',
+      consent_requested:'requested data sharing',consent_revoked:'revoked data sharing',
+      workspace_notes_updated:'updated trip notes',
+      workspace_accommodation_added:'added an accommodation',workspace_accommodation_edited:'edited an accommodation',workspace_accommodation_removed:'removed an accommodation',
+      workspace_reference_added:'added a reference',workspace_reference_edited:'edited a reference',workspace_reference_removed:'removed a reference',
+      itinerary_added:'added an itinerary item',itinerary_edited:'edited an itinerary item',itinerary_removed:'removed an itinerary item',
+      document_added:'uploaded a document',document_removed:'removed a document',
+      emergency_contact_added:'added an emergency contact',emergency_contact_removed:'removed an emergency contact',
+      group_renamed:'renamed the group',group_archived:'archived the group',group_deleted:'deleted the group',
+    };
+    var h='<div>';
+    rows.forEach(function(r){
+      var who=r.actor_uuid===_uid?'You':escHtml(r.actor_name||'A member');
+      var what=labelMap[r.action]||r.action;
+      h+='<div class="audit-entry"><div style="font-weight:500">'+who+' '+escHtml(what)+'</div>';
+      h+='<div class="audit-entry-meta">'+escHtml(formatLocal(r.created_at))+'</div></div>';
+    });
+    h+='</div>';
+    body.innerHTML=h;
+  }catch(e){body.innerHTML="<div class='caption' style='color:var(--red)'>Failed to load activity.</div>";}
+}
+
 async function openAuditLog(){
   if(!_group)return;
   document.getElementById("audit-modal").classList.add("open");
@@ -1598,15 +1650,26 @@ async function tripInit(){
       ]);
       _group=results[0];_readiness=results[1];_workspace=results[2];_itinerary=results[3]||[];_documents=results[4]||[];_contacts=results[5]||[];
       document.title=(_group.name||"Group")+" — UniProfile";
-      _show("trip-header");
-      _st("trip-eyebrow",_group.destination_name||"Trip Group");
-      _ht("trip-title",escHtml(_group.name||"Group"));
-      var _mParts=[];
-      if(_group.destination_name)_mParts.push(escHtml(_group.destination_name));
-      if(_group.departure_date||_group.return_date)_mParts.push(escHtml(_fmtRange(_group.departure_date,_group.return_date)));
-      if(_mParts.length)_ht("trip-meta",'<span>'+_mParts.join(' · ')+'</span>');
-      if(_group.organizer_name)_ht("trip-organizer",'Organized by <span style="color:var(--ink-soft);font-weight:500">'+escHtml(_group.organizer_name)+'</span>');
-      _ht("trip-countdown",_countdownHtml(_countdown(_group.departure_date,_group.return_date)));
+      var today=new Date();today.setHours(0,0,0,0);
+      var dep=_group.departure_date?new Date(_group.departure_date+'T00:00:00'):null;
+      var past=dep&&dep<today;
+      var nights=_nightCount(_group.departure_date,_group.return_date);
+      var cd=_countdown(_group.departure_date,_group.return_date);
+      var mHtml='<div class="doc-header">';
+      mHtml+='<div class="doc-header-top">';
+      mHtml+='<div style="min-width:0"><div class="eyebrow" style="margin-bottom:10px">'+escHtml(past?'Past trip':'Upcoming trip')+'</div>';
+      mHtml+='<h1 class="h1">'+escHtml(_group.name||'Group')+'</h1></div>';
+      mHtml+='<div class="doc-issuer-block"><div class="doc-issuer-mark"><strong>UniProfile</strong>Group Travel Record</div></div>';
+      mHtml+='</div>';
+      mHtml+='<div class="doc-meta-row">';
+      if(_group.destination_name)mHtml+='<div class="doc-meta-field"><div class="doc-meta-label">Destination</div><div class="doc-meta-value">'+escHtml(_group.destination_name)+'</div></div>';
+      if(_group.departure_date||_group.return_date)mHtml+='<div class="doc-meta-field"><div class="doc-meta-label">Dates</div><div class="doc-meta-value">'+escHtml(_fmtRange(_group.departure_date,_group.return_date))+'</div></div>';
+      if(nights>0)mHtml+='<div class="doc-meta-field"><div class="doc-meta-label">Duration</div><div class="doc-meta-value">'+nights+' night'+(nights===1?'':'s')+'</div></div>';
+      if(_group.organizer_name)mHtml+='<div class="doc-meta-field"><div class="doc-meta-label">Organized by</div><div class="doc-meta-value">'+escHtml(_group.organizer_name)+'</div></div>';
+      mHtml+='</div>';
+      if(cd)mHtml+='<div class="doc-countdown-row">'+_countdownHtml(cd)+'<span></span></div>';
+      mHtml+='</div>';
+      _ht('trip-header',mHtml);_show('trip-header');
       renderGroupSection();
     }catch(e){
       console.error(e);
