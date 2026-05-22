@@ -2429,6 +2429,23 @@ exports.handler=async function(event){
         return err("Password verification failed",event,500);
       }
     }
+    // ── Air Sectors ───────────────────────────────────────────────────────────
+    // GET /api/v1/trip-groups/{group_id}/segments
+    // share_air_sectors scope: currently implied by existing group consent (status='approved').
+    // Future: check c.granted_scopes includes 'air_sectors' for granular per-member control
+    // without changing the consent UI — just a Lambda condition and a column add.
+    if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/segments$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      const {row}=await validateTripGroupAccess(groupId,myUuid);
+      if(!row.trip_id)return ok([],event);
+      const rows=await sql(
+        "SELECT id,segment_order,carrier,flight_number,origin_iata,destination_iata,departure_datetime,arrival_datetime,cabin_class FROM trip_segments WHERE trip_id=:tid::uuid AND segment_type='FLIGHT' ORDER BY segment_order ASC,departure_datetime ASC",
+        [strParam("tid",row.trip_id)]
+      );
+      return ok(rows,event);
+    }
     // ── End Gate 3 ────────────────────────────────────────────────────────────
 
     return err("Not found",event,404);
