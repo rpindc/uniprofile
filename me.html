@@ -1415,7 +1415,7 @@ function _renderHeader(p){
   var id=p.identity||{};
   _st("me-avatar",_ini(p));
   var ne=document.getElementById("me-name");
-  if(ne)ne.innerHTML=(id.legal_first||_dn(p))+(id.legal_last?" <em>"+id.legal_last+"</em>":"");
+  if(ne)ne.innerHTML=_esc(id.legal_first||_dn(p))+(id.legal_last?" <em>"+_esc(id.legal_last)+"</em>":"");
 }
 
 function _renderLegalIdCard(p){
@@ -1766,14 +1766,14 @@ function _renderLoyaltyCard(p){
   if(!programs.length){_ht("loyalty-list-inner","<div style='padding:10px 0;color:var(--ink-mute);font-size:13px'>No programs added yet.</div>");return;}
   var html="";
   programs.forEach(function(lp){
-    var name=lp.provider_name||lp.program_name||"Program";
+    var name=_esc(lp.provider_name||lp.program_name||"Program");
     var badge=({AIRLINE:"lb-airline",HOTEL:"lb-hotel",CAR:"lb-car",CREDIT_CARD:"lb-card"})[lp.program_type]||"lb-card";
-    var tier=lp.tier_status?(' <span class="pill '+badge+'">'+lp.tier_status+"</span>"):"";
+    var tier=lp.tier_status?(' <span class="pill '+badge+'">'+_esc(lp.tier_status)+"</span>"):"";
     var pts=lp.points_balance?(' <span class="caption" style="margin-left:5px">'+Number(lp.points_balance).toLocaleString()+" pts</span>"):"";
     html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--rule)">'
       +'<div style="flex:1;min-width:0">'
-      +'<div style="font-size:13px;font-weight:500">'+name+(lp.program_name&&lp.program_name!==name?" · "+lp.program_name:"")+'</div>'
-      +'<div style="font-size:12px;color:var(--ink-mute);display:flex;align-items:center;flex-wrap:wrap;gap:4px">'+(lp.member_number?"···"+lp.member_number.slice(-4)+" ":"")+tier+pts+'</div>'
+      +'<div style="font-size:13px;font-weight:500">'+name+(lp.program_name&&lp.program_name!==name?" · "+_esc(lp.program_name):"")+'</div>'
+      +'<div style="font-size:12px;color:var(--ink-mute);display:flex;align-items:center;flex-wrap:wrap;gap:4px">'+(lp.member_number?"···"+_esc(lp.member_number.slice(-4))+" ":"")+tier+pts+'</div>'
       +'</div>'
       +'<div style="display:flex;gap:5px;flex-shrink:0">'
       +'<button class="btn btn-secondary btn-xs" onclick="openEditLoyalty(\''+lp.id+'\')">Edit</button>'
@@ -1983,9 +1983,9 @@ function _renderInlineDocList(containerId,typeFilter){
     var pillTxt=dr===null||dr===undefined?"No expiry":dr<0?"Expired":dr<=90?"Expiring":"Valid";
     html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--rule)">'
       +'<div style="flex:1;min-width:0">'
-      +'<div style="font-size:13px;font-weight:500">'+_docLabel(d.doc_type)+(d.issuing_country?" ("+d.issuing_country+")":'')+'</div>'
+      +'<div style="font-size:13px;font-weight:500">'+_esc(_docLabel(d.doc_type))+(d.issuing_country?" ("+_esc(d.issuing_country)+")":'')+'</div>'
       +'<div style="display:flex;align-items:center;gap:8px;margin-top:3px">'
-      +(d.doc_number?'<span style="font-size:12px;color:var(--ink-mute)">···'+d.doc_number.slice(-4)+'</span>':'')
+      +(d.doc_number?'<span style="font-size:12px;color:var(--ink-mute)">···'+_esc(d.doc_number.slice(-4))+'</span>':'')
       +'<span class="pill '+pillCls+'" style="font-size:10px;padding:2px 7px">'+pillTxt+'</span>'
       +(exp?'<span style="font-size:12px;color:var(--ink-mute)">'+exp+'</span>':'')
       +'</div>'
