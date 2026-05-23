@@ -726,6 +726,12 @@ exports.handler=async function(event){
     if(method==="POST"&&path.indexOf("/transactions/")!==-1){
       const key=event.headers&&event.headers["x-uniprofile-key"];
       if(!key)return err("Platform authentication required",event,401);
+      const storedKey=process.env.PLATFORM_KEY||"";
+      if(!storedKey)return err("Platform not configured",event,503);
+      const{createHash,timingSafeEqual}=require('crypto');
+      const provided=createHash('sha256').update(key).digest();
+      const expected=createHash('sha256').update(storedKey).digest();
+      if(!timingSafeEqual(provided,expected))return err("Platform authentication required",event,401);
       const t=body;
       const tripRows=await sql("INSERT INTO trips (traveler_uuid,trip_name,trip_locator,departure_date,return_date,origin_iata,destination_iata,trip_context,source_platform,total_fare,currency) VALUES (:u,:name,:pnr,:dep,:ret,:orig,:dest,:ctx,:src,:fare,:cur) RETURNING id",[uuidParam("u",uuid),strParam("name",t.trip_name||(t.origin_iata+"-"+t.destination_iata)),strParam("pnr",t.pnr),dateParam("dep",t.departure_date),dateParam("ret",t.return_date),strParam("orig",t.origin_iata),strParam("dest",t.destination_iata),strParam("ctx",t.trip_context||"PERSONAL"),strParam("src","platform"),numParam("fare",t.total_fare),strParam("cur",t.currency||"USD")]);
       const tripId=tripRows[0]&&tripRows[0].id;
