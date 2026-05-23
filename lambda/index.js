@@ -710,6 +710,9 @@ exports.handler=async function(event){
       return ok({success:true,module:body.module,profile:await buildProfile(uuid)},event);
     }
     if(method==="GET"&&path.indexOf("/bleisure")!==-1){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      if(myUuid!==uuid)return err("Access denied",event,403);
       const rows=await sql("SELECT active_context,last_switched_at FROM bleisure_context WHERE traveler_uuid=:u",[uuidParam("u",uuid)]);
       return ok(rows[0]||{active_context:"PERSONAL"},event);
     }
@@ -1621,12 +1624,13 @@ exports.handler=async function(event){
       const members=await sql(`SELECT gm.*,t.uniprofile_number,t.display_name,ti.legal_first FROM gc_group_members gm LEFT JOIN travelers t ON t.uuid=gm.traveler_uuid LEFT JOIN traveler_identity ti ON ti.traveler_uuid=gm.traveler_uuid WHERE gm.group_id=:gid AND gm.status='active' ORDER BY gm.created_at ASC`,[strParam("gid",groupId)]);
       const parcels=await sql("SELECT * FROM gc_trip_parcels WHERE group_id=:gid ORDER BY created_at DESC",[strParam("gid",groupId)]);
       const consents=await sql("SELECT * FROM gc_consent_grants WHERE group_id=:gid ORDER BY granted_at DESC LIMIT 20",[strParam("gid",groupId)]);
-      // doc matrix: for each member who has a traveler_uuid, get their docs
+      // doc matrix: owner sees all members; non-owners see their own row only
       const docMatrix=[];
       for(const m of members){
         if(!m.traveler_uuid)continue;
+        if(myUuid!==g.owner_uuid&&m.traveler_uuid!==myUuid)continue;
         const docs=await sql(`SELECT doc_type,expiry_date,days_remaining FROM travel_documents WHERE traveler_uuid=:u ORDER BY is_primary DESC`,[uuidParam("u",m.traveler_uuid)]);
-        docMatrix.push({member_id:m.id,member_name:m._displayName,docs});
+        docMatrix.push({member_id:m.id,member_name:(m.display_name&&m.display_name.trim())||(m.legal_first&&m.legal_first.trim())||m.invited_name||'Member',docs});
       }
       return ok({group:g,members,parcels,consents,doc_matrix:docMatrix},event);
     }
@@ -1762,9 +1766,13 @@ exports.handler=async function(event){
     if(method==="GET"&&path.match(/\/api\/v1\/gcgroups\/[^/]+\/GRP-[^/]+\/parcels\/[^/]+$/)){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
-      const parts=path.split("/");const parcelId=parts[parts.length-1];
+      const parts=path.split("/");const parcelId=parts[parts.length-1];const groupId=parts[parts.length-3];
+      const access=await sql(
+        `SELECT p.id FROM gc_trip_parcels p JOIN gc_groups g ON g.id=p.group_id LEFT JOIN gc_group_members gm ON gm.group_id=g.id AND gm.traveler_uuid=:u AND gm.status='active' WHERE p.id=:pid AND p.group_id=:gid AND (g.owner_uuid=:u OR gm.traveler_uuid=:u)`,
+        [uuidParam("u",myUuid),uuidParam("pid",parcelId),strParam("gid",groupId)]
+      );
+      if(!access.length)return err("Access denied",event,403);
       const parcel=(await sql("SELECT * FROM gc_trip_parcels WHERE id=:pid",[uuidParam("pid",parcelId)]))[0];
-      if(!parcel)return err("Parcel not found",event,404);
       const checks=await sql("SELECT * FROM gc_parcel_checks WHERE parcel_id=:pid ORDER BY check_type,member_name",[uuidParam("pid",parcelId)]);
       return ok({parcel,checks},event);
     }
@@ -1773,8 +1781,14 @@ exports.handler=async function(event){
     if(method==="PUT"&&path.match(/\/api\/v1\/gcgroups\/[^/]+\/GRP-[^/]+\/parcels\/[^/]+\/resolve$/)){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split("/");const groupId=parts[parts.length-4];const parcelId=parts[parts.length-2];
       const {check_id,resolution}=body;
       if(!check_id)return err("check_id required",event,400);
+      const access=await sql(
+        `SELECT 1 FROM gc_parcel_checks pc JOIN gc_trip_parcels p ON p.id=pc.parcel_id JOIN gc_groups g ON g.id=p.group_id LEFT JOIN gc_group_members gm ON gm.group_id=g.id AND gm.traveler_uuid=:u AND gm.status='active' WHERE pc.id=:cid AND pc.parcel_id=:pid::uuid AND p.group_id=:gid AND (g.owner_uuid=:u OR gm.traveler_uuid=:u)`,
+        [uuidParam("u",myUuid),uuidParam("cid",check_id),uuidParam("pid",parcelId),strParam("gid",groupId)]
+      );
+      if(!access.length)return err("Access denied",event,403);
       await sql("UPDATE gc_parcel_checks SET status='resolved',resolution=:res,resolved_at=NOW() WHERE id=:cid",[strParam("res",resolution||"acknowledged"),uuidParam("cid",check_id)]);
       return ok({success:true},event);
     }
