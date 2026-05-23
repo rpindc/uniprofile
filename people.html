@@ -728,7 +728,7 @@ async function searchUniProfile(){
     if(!res||!res.length){_ht("up-results","<div style='font-size:12px;color:var(--ink-mute);padding:8px 0;'>No results.</div>");return;}
     var html=res.map(function(r){
       var name=_esc(r.display_name||"UniProfile User");
-      var sub=_esc(r.up_id||"")+(r.joined_year?" · joined "+r.joined_year:"");
+      var sub=_esc(r.up_id||"");
       var color=_avColor(r.display_name||"");
       var ini=_ini(r.display_name||"");
       var uid=_esc(r.member_uuid||"");

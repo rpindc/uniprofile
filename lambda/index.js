@@ -184,16 +184,16 @@ async function buildProfile(uuid){
   const p=[uuidParam("u",uuid)];
   const R=await Promise.all([
     sql("SELECT legal_first,legal_middle,legal_last,dob,nationality,gender_code,home_airport FROM traveler_identity WHERE traveler_uuid=:u",p),
-    sql("SELECT id,doc_type,doc_number,given_names,surname,issuing_country,nationality,dob,gender_code,issue_date,expiry_date,place_of_birth,visa_type,destination_country,entries,valid_from,valid_until,port_of_entry,pr_category,pr_conditions,esta_application_number,esta_status,doc_notes,is_primary FROM travel_documents WHERE traveler_uuid=:u ORDER BY is_primary DESC",p),
+    sql("SELECT id,doc_type,doc_number,given_names,surname,issuing_country,nationality,dob,gender_code,issue_date,expiry_date,visa_type,destination_country,entries,valid_from,valid_until,port_of_entry,pr_category,pr_conditions,esta_application_number,esta_status,doc_notes,is_primary FROM travel_documents WHERE traveler_uuid=:u ORDER BY is_primary DESC",p),
     sql("SELECT cabin_domestic,cabin_international,seat_position,row_preference,avoid_last_row,avoid_middle_seats,wheelchair_needed,hotel_room_type,hotel_floor_pref,car_type_pref FROM seat_preferences WHERE traveler_uuid=:u",p),
     sql("SELECT primary_meal_code,beverage_pref,allergies,avoid_items,dietary_notes FROM meal_preferences WHERE traveler_uuid=:u",p),
     sql("SELECT id,program_type,provider_name,program_name,member_number,tier_status,tier_expires,auto_apply,linked_card_type,linked_card_last4,points_balance,notes FROM loyalty_memberships WHERE traveler_uuid=:u AND is_active=TRUE ORDER BY program_type,provider_name",p),
     sql("SELECT active_context,last_switched_at FROM bleisure_context WHERE traveler_uuid=:u",p),
     sql("SELECT profile_complete,tier,email,uniprofile_number,display_name FROM travelers WHERE uuid=:u",p),
     sql("SELECT context,preferred_card,company_name,cost_center,policy_description,expense_platform,corporate_card FROM payment_profiles WHERE traveler_uuid=:u ORDER BY context",p),
-    sql("SELECT id,trip_name,trip_locator,departure_date,return_date,origin_iata,destination_iata,trip_context,status,total_fare,currency,source_platform,notes FROM trips WHERE traveler_uuid=:u ORDER BY departure_date DESC LIMIT 50",p),
-    sql("SELECT s.trip_id,s.id,s.segment_type,s.segment_order,s.carrier,s.flight_number,s.origin_iata,s.destination_iata,s.departure_datetime,s.arrival_datetime,s.cabin_class,s.seat_number,s.booking_ref,s.duration_minutes,s.aircraft_type FROM trip_segments s INNER JOIN trips t ON t.id=s.trip_id WHERE t.traveler_uuid=:u ORDER BY s.trip_id,s.segment_order",p),
-    sql("SELECT ps.trip_id,ps.passenger_name,ps.ticket_number,ps.seat_number,ps.is_primary FROM trip_passengers ps INNER JOIN trips t ON t.id=ps.trip_id WHERE t.traveler_uuid=:u ORDER BY ps.trip_id,ps.is_primary DESC",p),
+    sql("SELECT id,trip_name,trip_locator,departure_date,return_date,origin_iata,destination_iata,trip_context,status,total_fare,currency,notes FROM trips WHERE traveler_uuid=:u ORDER BY departure_date DESC LIMIT 50",p),
+    sql("SELECT s.trip_id,s.id,s.segment_type,s.segment_order,s.carrier,s.flight_number,s.origin_iata,s.destination_iata,s.departure_datetime,s.arrival_datetime,s.cabin_class,s.seat_number,s.duration_minutes,s.aircraft_type FROM trip_segments s INNER JOIN trips t ON t.id=s.trip_id WHERE t.traveler_uuid=:u ORDER BY s.trip_id,s.segment_order",p),
+    sql("SELECT ps.trip_id,ps.passenger_name,ps.seat_number,ps.is_primary FROM trip_passengers ps INNER JOIN trips t ON t.id=ps.trip_id WHERE t.traveler_uuid=:u ORDER BY ps.trip_id,ps.is_primary DESC",p),
     sql("SELECT code,label,category,sort_order,fields_required,fields_optional FROM document_types WHERE is_active=TRUE ORDER BY sort_order",[]),
     sql("SELECT id,name,type,destination,dep::text,ret::text,members,flights,hotel,notes,trip_id::text,archived_at FROM traveler_groups WHERE owner_uuid=:u ORDER BY updated_at DESC",p),
     sql("SELECT module_name,data FROM traveler_profile_modules WHERE traveler_uuid=:u",p),
@@ -205,7 +205,7 @@ async function buildProfile(uuid){
     try{mealData.avoid_items=typeof mealData.avoid_items==="string"?JSON.parse(mealData.avoid_items):(mealData.avoid_items||[]);}catch(e){mealData.avoid_items=[];}
   }
   const now=new Date();
-  const docsWithExpiry=docs.map(d=>Object.assign({},d,{days_remaining:d.expiry_date?Math.floor((new Date(d.expiry_date)-now)/86400000):null}));
+  const docsWithExpiry=docs.map(d=>{const{doc_number,...rest}=d;return Object.assign({},rest,{doc_number_last4:doc_number?doc_number.slice(-4):null,days_remaining:d.expiry_date?Math.floor((new Date(d.expiry_date)-now)/86400000):null});});
   const docTypesGrouped={};
   docTypeRows.forEach(dt=>{
     if(!docTypesGrouped[dt.category])docTypesGrouped[dt.category]=[];
@@ -262,8 +262,11 @@ async function updateModule(uuid,module,data){
     case "document_add":
       await sql("INSERT INTO travel_documents (traveler_uuid,doc_type,doc_number,given_names,surname,issuing_country,nationality,dob,gender_code,issue_date,expiry_date,place_of_birth,visa_type,destination_country,entries,valid_from,valid_until,port_of_entry,pr_category,pr_conditions,esta_application_number,esta_status,doc_notes,is_primary) VALUES (:u,:dt,:dn,:gn,:sn,:ic,:nat,:dob,:gen,:id,:ed,:pb,:vt,:dc,:en,:vf,:vu,:pe,:prc,:prcn,:ean,:es,:notes,:pri)",[uuidParam("u",uuid),strParam("dt",data.doc_type),strParam("dn",data.doc_number),strParam("gn",data.given_names),strParam("sn",data.surname),strParam("ic",data.issuing_country),strParam("nat",data.nationality),dateParam("dob",data.dob),strParam("gen",data.gender_code),dateParam("id",data.issue_date),dateParam("ed",data.expiry_date),strParam("pb",data.place_of_birth),strParam("vt",data.visa_type),strParam("dc",data.destination_country),strParam("en",data.entries),dateParam("vf",data.valid_from),dateParam("vu",data.valid_until),strParam("pe",data.port_of_entry),strParam("prc",data.pr_category),strParam("prcn",data.pr_conditions),strParam("ean",data.esta_application_number),strParam("es",data.esta_status),strParam("notes",data.doc_notes),boolParam("pri",data.is_primary||false)]);
       break;
-    case "document_update":
-      await sql("UPDATE travel_documents SET doc_number=:dn,given_names=:gn,surname=:sn,issuing_country=:ic,nationality=:nat,dob=:dob,gender_code=:gen,issue_date=:id,expiry_date=:ed,place_of_birth=:pb,visa_type=:vt,destination_country=:dc,entries=:en,valid_from=:vf,valid_until=:vu,port_of_entry=:pe,pr_category=:prc,pr_conditions=:prcn,esta_application_number=:ean,esta_status=:es,doc_notes=:notes,is_primary=:pri,updated_at=NOW() WHERE id=:did AND traveler_uuid=:u",[strParam("dn",data.doc_number),strParam("gn",data.given_names),strParam("sn",data.surname),strParam("ic",data.issuing_country),strParam("nat",data.nationality),dateParam("dob",data.dob),strParam("gen",data.gender_code),dateParam("id",data.issue_date),dateParam("ed",data.expiry_date),strParam("pb",data.place_of_birth),strParam("vt",data.visa_type),strParam("dc",data.destination_country),strParam("en",data.entries),dateParam("vf",data.valid_from),dateParam("vu",data.valid_until),strParam("pe",data.port_of_entry),strParam("prc",data.pr_category),strParam("prcn",data.pr_conditions),strParam("ean",data.esta_application_number),strParam("es",data.esta_status),strParam("notes",data.doc_notes),boolParam("pri",data.is_primary||false),uuidParam("did",data.doc_id),uuidParam("u",uuid)]);
+    case "document_update":{
+      const dnClause=data.doc_number?"doc_number=:dn,":"";
+      const dnParam=data.doc_number?[strParam("dn",data.doc_number)]:[];
+      await sql(`UPDATE travel_documents SET ${dnClause}given_names=:gn,surname=:sn,issuing_country=:ic,nationality=:nat,dob=:dob,gender_code=:gen,issue_date=:id,expiry_date=:ed,visa_type=:vt,destination_country=:dc,entries=:en,valid_from=:vf,valid_until=:vu,port_of_entry=:pe,pr_category=:prc,pr_conditions=:prcn,esta_application_number=:ean,esta_status=:es,doc_notes=:notes,is_primary=:pri,updated_at=NOW() WHERE id=:did AND traveler_uuid=:u`,[...dnParam,strParam("gn",data.given_names),strParam("sn",data.surname),strParam("ic",data.issuing_country),strParam("nat",data.nationality),dateParam("dob",data.dob),strParam("gen",data.gender_code),dateParam("id",data.issue_date),dateParam("ed",data.expiry_date),strParam("vt",data.visa_type),strParam("dc",data.destination_country),strParam("en",data.entries),dateParam("vf",data.valid_from),dateParam("vu",data.valid_until),strParam("pe",data.port_of_entry),strParam("prc",data.pr_category),strParam("prcn",data.pr_conditions),strParam("ean",data.esta_application_number),strParam("es",data.esta_status),strParam("notes",data.doc_notes),boolParam("pri",data.is_primary||false),uuidParam("did",data.doc_id),uuidParam("u",uuid)]);
+      break;}
       break;
     case "document_delete":
       await sql("DELETE FROM travel_documents WHERE id=:did AND traveler_uuid=:u",[uuidParam("did",data.doc_id),uuidParam("u",uuid)]);
@@ -776,6 +779,16 @@ exports.handler=async function(event){
       if(!result) result = runTimaticRules(nat,destination_iata,transit_iatas||[],daysValid,esta,travelDate);
       return ok({success:true,result},event);
     }
+    // GET /api/v1/profile/{uuid}/documents/{doc_id} — full doc_number, owner-only, for edit form
+    if(method==="GET"&&path.match(/\/profile\/[^/]+\/documents\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      if(myUuid!==uuid)return err("Access denied",event,403);
+      const parts=path.split("/");const docId=parts[parts.length-1];
+      const rows=await sql("SELECT doc_number FROM travel_documents WHERE id=:did AND traveler_uuid=:u",[uuidParam("did",docId),uuidParam("u",uuid)]);
+      if(!rows.length)return err("Document not found",event,404);
+      return ok({doc_number:rows[0].doc_number||null},event);
+    }
     // ── People Routes ─────────────────────────────────────────────────────
     // GET /api/v1/people/search-uniprofile?q=<query>
     if(method==="GET"&&path==="/api/v1/people/search-uniprofile"){
@@ -794,11 +807,11 @@ exports.handler=async function(event){
       const isUpId=/^UP-[A-Z0-9]{4}-[A-Z0-9]{4}$/i.test(q.trim());
       let rows=[];
       if(isUpId){
-        rows=await sql("SELECT t.uuid,t.uniprofile_number AS up_id,i.legal_first,i.legal_last,EXTRACT(YEAR FROM t.created_at)::int AS joined_year FROM travelers t LEFT JOIN traveler_identity i ON i.traveler_uuid=t.uuid WHERE UPPER(t.uniprofile_number)=UPPER(:q) AND t.uuid<>:u LIMIT 10",[strParam("q",q.trim()),uuidParam("u",myUuid)]);
+        rows=await sql("SELECT t.uuid,t.uniprofile_number AS up_id,i.legal_first,i.legal_last FROM travelers t LEFT JOIN traveler_identity i ON i.traveler_uuid=t.uuid WHERE UPPER(t.uniprofile_number)=UPPER(:q) AND t.uuid<>:u LIMIT 10",[strParam("q",q.trim()),uuidParam("u",myUuid)]);
       } else {
-        rows=await sql("SELECT t.uuid,t.uniprofile_number AS up_id,i.legal_first,i.legal_last,EXTRACT(YEAR FROM t.created_at)::int AS joined_year FROM travelers t LEFT JOIN traveler_identity i ON i.traveler_uuid=t.uuid WHERE (LOWER(i.legal_first)||' '||LOWER(i.legal_last) LIKE :q OR LOWER(i.legal_first) LIKE :q2 OR LOWER(i.legal_last) LIKE :q2) AND t.uuid<>:u LIMIT 15",[strParam("q",'%'+q.toLowerCase()+'%'),strParam("q2",q.toLowerCase()+'%'),uuidParam("u",myUuid)]);
+        rows=await sql("SELECT t.uuid,t.uniprofile_number AS up_id,i.legal_first,i.legal_last FROM travelers t LEFT JOIN traveler_identity i ON i.traveler_uuid=t.uuid WHERE (LOWER(i.legal_first)||' '||LOWER(i.legal_last) LIKE :q OR LOWER(i.legal_first) LIKE :q2 OR LOWER(i.legal_last) LIKE :q2) AND t.uuid<>:u LIMIT 15",[strParam("q",'%'+q.toLowerCase()+'%'),strParam("q2",q.toLowerCase()+'%'),uuidParam("u",myUuid)]);
       }
-      return ok(rows.map(r=>({up_id:r.up_id||null,display_name:[r.legal_first,r.legal_last].filter(Boolean).join(" ")||"UniProfile User",joined_year:r.joined_year||null,member_uuid:r.uuid})),event);
+      return ok(rows.map(r=>({up_id:r.up_id||null,display_name:[r.legal_first,r.legal_last].filter(Boolean).join(" ")||"UniProfile User",member_uuid:r.uuid})),event);
     }
     // POST /api/v1/people/named-only
     if(method==="POST"&&path==="/api/v1/people/named-only"){

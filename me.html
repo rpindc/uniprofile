@@ -1509,7 +1509,7 @@ function _renderIdentityCards(p){
     var tPillTxt=ttDocs.length>=2?"Both active":ttDocs.length+" active";
     _ht("trusted-pill",_pill("pill-green",tPillTxt));
     tb.className="card-item-body";
-    tb.textContent=ttDocs.map(function(d){return _docLabel(d.doc_type)+(d.doc_number?" ···"+d.doc_number.slice(-4):"");}).join(", ")+". Applied automatically on U.S.-touching bookings.";
+    tb.textContent=ttDocs.map(function(d){return _docLabel(d.doc_type)+(d.doc_number_last4?" ···"+d.doc_number_last4:"");}).join(", ")+". Applied automatically on U.S.-touching bookings.";
     if(tbtn)tbtn.textContent="Edit";
   }else{
     _ht("trusted-pill",_pill("pill-neutral","Not set"));
@@ -1806,12 +1806,16 @@ function openEditDocById(id){
   _st("doc-modal-title","Edit document");
   var btn=document.getElementById("doc-submit-btn");
   if(btn)btn.textContent="Save changes";
-  _setval("doc-type",d.doc_type);_setval("doc-number",d.doc_number);
+  _setval("doc-type",d.doc_type);_setval("doc-number","");
   _setval("doc-expiry",d.expiry_date?d.expiry_date.slice(0,10):"");
   if(_pickers["doc-country"])_pickers["doc-country"].setValue(d.issuing_country||"");
-  _clearDocErrors();
-  _validateDocForm();
+  _clearDocErrors();_validateDocForm();
   document.getElementById("doc-modal").classList.add("open");
+  _req("GET","/api/v1/profile/"+_uid+"/documents/"+id).then(function(r){
+    _setval("doc-number",r.doc_number||"");_validateDocForm();
+  }).catch(function(){
+    _showErr("doc-modal-error","Couldn't load document number — close and try again.");
+  });
 }
 function closeDocModal(){document.getElementById("doc-modal").classList.remove("open");}
 function _fieldErr(inputId,errId,msg){
@@ -1914,7 +1918,8 @@ async function deleteLoyalty(id){
 /* ── Identity card — passport auto-save ── */
 function _prefillPassport(){
   var passport=Object.values(_docsMap).find(function(d){return d.doc_type==="PASSPORT";});
-  _setval("psp-number",passport?passport.doc_number:"");
+  _setval("psp-number","");
+  if(passport)_req("GET","/api/v1/profile/"+_uid+"/documents/"+passport.id).then(function(r){_setval("psp-number",r.doc_number||"");}).catch(function(){});
   _setval("psp-expiry",passport&&passport.expiry_date?passport.expiry_date.slice(0,10):"");
   if(_pickers["psp-country"])_pickers["psp-country"].setValue(passport?passport.issuing_country||"":"");
   _showErr("psp-save-err","");
@@ -1942,7 +1947,8 @@ async function _autoSavePassport(){
 /* ── Identity card — driver's license auto-save ── */
 function _prefillDriversLicense(){
   var dl=Object.values(_docsMap).find(function(d){return d.doc_type==="DRIVERS_LICENSE";});
-  _setval("dl-number",dl?dl.doc_number:"");
+  _setval("dl-number","");
+  if(dl)_req("GET","/api/v1/profile/"+_uid+"/documents/"+dl.id).then(function(r){_setval("dl-number",r.doc_number||"");}).catch(function(){});
   if(_pickers["dl-country"])_pickers["dl-country"].setValue(dl?dl.issuing_country||"":"");
   _setval("dl-expiry",dl&&dl.expiry_date?dl.expiry_date.slice(0,10):"");
   _showErr("dl-save-err","");
@@ -1985,7 +1991,7 @@ function _renderInlineDocList(containerId,typeFilter){
       +'<div style="flex:1;min-width:0">'
       +'<div style="font-size:13px;font-weight:500">'+_esc(_docLabel(d.doc_type))+(d.issuing_country?" ("+_esc(d.issuing_country)+")":'')+'</div>'
       +'<div style="display:flex;align-items:center;gap:8px;margin-top:3px">'
-      +(d.doc_number?'<span style="font-size:12px;color:var(--ink-mute)">···'+_esc(d.doc_number.slice(-4))+'</span>':'')
+      +(d.doc_number_last4?'<span style="font-size:12px;color:var(--ink-mute)">···'+_esc(d.doc_number_last4)+'</span>':'')
       +'<span class="pill '+pillCls+'" style="font-size:10px;padding:2px 7px">'+pillTxt+'</span>'
       +(exp?'<span style="font-size:12px;color:var(--ink-mute)">'+exp+'</span>':'')
       +'</div>'
