@@ -155,6 +155,18 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 
 /* ── Auto-save note ── */
 .autosave-note{font-size:12px;font-style:italic;color:var(--ink-mute)}
+
+/* ── me.html page-level edit toggle ── */
+.me-edit-only{display:none}
+body.me-editing .me-edit-only{display:inline-flex}
+body.me-editing .me-edit-only.btn-dashed{display:block}
+#me-edit-btn{display:inline-flex}
+body.me-editing #me-edit-btn{display:none}
+.me-edit-banner{display:none;align-items:center;justify-content:space-between;background:var(--paper-warm);border:0.5px solid rgba(26,26,26,0.12);border-radius:8px;padding:10px 16px;margin-bottom:20px;gap:12px}
+body.me-editing .me-edit-banner{display:flex}
+.me-edit-banner-label{font-size:13px;font-family:var(--sans);color:var(--ink-soft)}
+.me-edit-banner-done{font-family:var(--sans);font-size:13px;font-weight:500;color:var(--ink);background:none;border:0.5px solid var(--rule-strong);border-radius:4px;padding:6px 14px;cursor:pointer;transition:background 120ms}
+.me-edit-banner-done:hover{background:rgba(26,26,26,0.04)}
 .form-section-head{font-size:10px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);padding-bottom:6px;border-bottom:0.5px solid var(--rule);margin-bottom:12px}
 .edit-footer{display:flex;justify-content:space-between;align-items:center;margin-top:18px;padding-top:14px;border-top:0.5px solid var(--rule)}
 .save-err{font-size:12px;color:var(--red);margin-top:8px;display:none}
@@ -326,13 +338,21 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
        TAB 1 — Identity
   ══════════════════════════════════════════ -->
   <div id="tab-identity">
-    <p class="tab-lede">Who you are, by document. Tap any card to view or update. These are what operators see when you book.</p>
+    <p class="tab-lede">Who you are, by document. These are what operators see when you book.</p>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <span></span>
+      <button class="btn btn-secondary btn-sm" id="me-edit-btn" onclick="enterEditMode()">Edit profile</button>
+    </div>
+    <div class="me-edit-banner">
+      <span class="me-edit-banner-label">Editing profile — tap any card to expand</span>
+      <button class="me-edit-banner-done" onclick="exitEditMode()">Done</button>
+    </div>
 
     <!-- Universal: Legal identity -->
     <div class="card-universal">
       <div class="card-universal-head">
         <div class="eyebrow">Legal identity</div>
-        <button class="btn btn-secondary btn-xs" onclick="toggleUniversal('legal-id')">Edit</button>
       </div>
       <p class="card-universal-body" id="legal-id-prose">Loading…</p>
       <div class="card-universal-edit" id="cu-legal-id-edit">
@@ -362,7 +382,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
         </div>
         <div id="identity-save-err" class="save-err"></div>
         <div class="edit-footer">
-          <button class="btn-cancel" onclick="closeUniversal('legal-id')">Cancel</button>
+          <button class="btn-cancel" onclick="exitEditMode()">Done</button>
           <span class="autosave-note">Saves automatically as you choose.</span>
         </div>
       </div>
@@ -378,7 +398,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
           <div class="card-item-title-block"><div class="card-item-title">Passport<em class="edit-sfx"> — editing</em></div></div>
           <div class="card-item-actions">
             <span id="passport-pill"></span>
-            <button class="btn btn-secondary btn-xs" id="passport-btn" onclick="toggleCard('passport')" aria-expanded="false">Set up</button>
+            <button class="btn btn-secondary btn-xs me-edit-only" id="passport-btn" onclick="toggleCard('passport')" aria-expanded="false">Set up</button>
           </div>
         </div>
         <div class="card-item-body empty" id="passport-body">Your primary travel document. Required for international flights. Add it once and it auto-fills at every booking.</div>
@@ -416,7 +436,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
           <div class="card-item-title-block"><div class="card-item-title">Visa &amp; residency<em class="edit-sfx"> — editing</em></div></div>
           <div class="card-item-actions">
             <span id="visa-pill"></span>
-            <button class="btn btn-secondary btn-xs" id="visa-btn" onclick="toggleCard('visa')" aria-expanded="false">Set up</button>
+            <button class="btn btn-secondary btn-xs me-edit-only" id="visa-btn" onclick="toggleCard('visa')" aria-expanded="false">Set up</button>
           </div>
         </div>
         <div class="card-item-body empty" id="visa-body">Visas, residency permits, work permits, OCI cards. Add any that apply to your travel.</div>
@@ -439,7 +459,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
           <div class="card-item-title-block"><div class="card-item-title">Trusted traveler<em class="edit-sfx"> — editing</em></div></div>
           <div class="card-item-actions">
             <span id="trusted-pill"></span>
-            <button class="btn btn-secondary btn-xs" id="trusted-btn" onclick="toggleCard('trusted')" aria-expanded="false">Set up</button>
+            <button class="btn btn-secondary btn-xs me-edit-only" id="trusted-btn" onclick="toggleCard('trusted')" aria-expanded="false">Set up</button>
           </div>
         </div>
         <div class="card-item-body empty" id="trusted-body">KTN, Global Entry, NEXUS, Clear. Add your number once and it's filled at every eligible booking.</div>
@@ -462,7 +482,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
           <div class="card-item-title-block"><div class="card-item-title">Driver's license<em class="edit-sfx"> — editing</em></div></div>
           <div class="card-item-actions">
             <span id="drivers-pill"></span>
-            <button class="btn btn-secondary btn-xs" id="drivers-btn" onclick="toggleCard('drivers')" aria-expanded="false">Set up</button>
+            <button class="btn btn-secondary btn-xs me-edit-only" id="drivers-btn" onclick="toggleCard('drivers')" aria-expanded="false">Set up</button>
           </div>
         </div>
         <div class="card-item-body empty" id="drivers-body">Used at car rentals and as a U.S. domestic flight backup. Real ID compliance flagged automatically.</div>
@@ -495,7 +515,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 
     </div><!-- /card-list -->
 
-    <button class="btn-dashed" onclick="openAddDoc()">+ Add another document (OCI, NEXUS, military ID…)</button>
+    <button class="btn-dashed me-edit-only" onclick="openAddDoc()">+ Add another document (OCI, NEXUS, military ID…)</button>
   </div><!-- /tab-identity -->
 
 
@@ -1393,6 +1413,20 @@ function toggleUniversal(name){
 function closeUniversal(name){
   var el=document.getElementById("cu-"+name+"-edit");
   if(el)el.style.display="none";
+}
+
+/* ── Page-level edit toggle ── */
+function enterEditMode(){
+  document.body.classList.add("me-editing");
+  toggleUniversal("legal-id");
+}
+function exitEditMode(){
+  document.body.classList.remove("me-editing");
+  closeUniversal("legal-id");
+  ["passport","visa","trusted","drivers"].forEach(function(n){
+    var card=document.getElementById("card-"+n);
+    if(card&&card.classList.contains("editing"))toggleCard(n);
+  });
 }
 
 /* ── Coming soon ── */
