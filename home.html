@@ -373,7 +373,7 @@ function renderAlerts(p){
       +'<div class="icon-bg '+(a.level==="red"?"icon-bg-red":"icon-bg-amber")+'" style="width:32px;height:32px;flex-shrink:0">'
       +'<svg class="icon" style="width:14px;height:14px"><use href="#i-attention"/></svg></div>'
       +'<div style="flex:1;min-width:0">'
-      +'<div style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:3px">'+a.title+'</div>'
+      +'<div style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:3px">'+escHtml(a.title)+'</div>'
       +'<div class="body" style="margin-bottom:8px">'+a.body+'</div>'
       +'<a href="'+a.link+'" class="link">Fix now →</a>'
       +'</div></div>';
@@ -417,8 +417,8 @@ function renderNextTrip(p){
     if(nights>0)dates+=" · "+nights+" night"+(nights===1?"":"s");
   }
 
-  var pnr=t.trip_locator?'<div style="margin-top:6px"><span class="micro-label">PNR</span> <span class="id" style="font-size:12px">'+t.trip_locator+'</span></div>':"";
-  var notes=t.notes?'<div class="caption" style="margin-top:4px">'+t.notes+'</div>':"";
+  var pnr=t.trip_locator?'<div style="margin-top:6px"><span class="micro-label">PNR</span> <span class="id" style="font-size:12px">'+escHtml(t.trip_locator)+'</span></div>':"";
+  var notes=t.notes?'<div class="caption" style="margin-top:4px">'+escHtml(t.notes)+'</div>':"";
 
   /* other upcoming trips */
   var moreHtml="";
@@ -429,7 +429,7 @@ function renderNextTrip(p){
       var ud=new Date(u.departure_date);
       var udays=Math.round((ud-today)/86400000);
       moreHtml+='<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:0.5px solid var(--rule)">'
-        +'<span style="font-size:13px;color:var(--ink)">'+_tripName(u)+'</span>'
+        +'<span style="font-size:13px;color:var(--ink)">'+escHtml(_tripName(u))+'</span>'
         +'<span class="caption">'+_fmtShort(u.departure_date)+' · '+udays+'d</span>'
         +'</div>';
     });
@@ -443,7 +443,7 @@ function renderNextTrip(p){
     +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
     +'<span style="font-size:11px;padding:2px 9px;border-radius:100px;font-weight:500;'+ctxColor+'">'+ctxLabel+'</span>'
     +'</div>'
-    +'<h3 class="h2" style="font-size:26px;margin-bottom:4px">'+_tripName(t)+'</h3>'
+    +'<h3 class="h2" style="font-size:26px;margin-bottom:4px">'+escHtml(_tripName(t))+'</h3>'
     +route
     +'<div class="body">'+dates+'</div>'
     +pnr+notes
@@ -531,7 +531,7 @@ function renderHealth(p){
       +'<div class="check-icon '+iconCls+'">'+iconContent+'</div>'
       +'<div style="flex:1;min-width:0">'
       +'<div style="font-size:13px;font-weight:500;color:'+labelColor+'">'+c.label+optionalTag+'</div>'
-      +'<div class="caption">'+c.detail+'</div>'
+      +'<div class="caption">'+escHtml(c.detail)+'</div>'
       +'</div>'
       +(!c.done?'<a href="'+c.link+'" class="'+btnCls+'" style="flex-shrink:0">Add</a>':"")
       +'</div>';

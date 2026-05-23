@@ -19,6 +19,8 @@ const DB = {
   database:    process.env.DB_NAME || "uniprofile",
 };
 
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#x27;");}
+
 async function sql(query, params = []) {
   try {
     const res = await rds.send(new ExecuteStatementCommand({ ...DB, sql: query, parameters: params, formatRecordsAs: "JSON" }));
@@ -280,7 +282,7 @@ async function sendConfirmation(toEmail, upNumber, addedTrips, originalSubject) 
 
   if (!addedTrips.length) {
     bodyText = `Hi,\n\nWe received your email "${originalSubject}" but could not find any travel bookings in it.\n\nIf this was a booking confirmation, please forward the original email from your airline, hotel, or travel provider directly to ${upNumber}@trips.uniprofile.net.\n\n— UniProfile TripVault`;
-    bodyHtml = `<p>Hi,</p><p>We received your email <em>${originalSubject}</em> but could not find any travel bookings in it.</p><p>If this was a booking confirmation, please forward the original email from your airline, hotel, or travel provider directly to <strong>${upNumber}@trips.uniprofile.net</strong>.</p><p style="color:#888;font-size:12px">— UniProfile TripVault</p>`;
+    bodyHtml = `<p>Hi,</p><p>We received your email <em>${esc(originalSubject)}</em> but could not find any travel bookings in it.</p><p>If this was a booking confirmation, please forward the original email from your airline, hotel, or travel provider directly to <strong>${esc(upNumber)}@trips.uniprofile.net</strong>.</p><p style="color:#888;font-size:12px">— UniProfile TripVault</p>`;
   } else {
     const lines = addedTrips.map(({ tripName, trip }) => {
       const from = trip.origin_iata || "";
@@ -299,11 +301,11 @@ async function sendConfirmation(toEmail, upNumber, addedTrips, originalSubject) 
       const to   = trip.destination_iata || "";
       const dep  = fmtDate(trip.departure_date);
       const firstSeg = (trip.segments || [])[0];
-      const flightInfo = firstSeg ? ` &middot; ${firstSeg.flight_number || ""}` : "";
-      return `<li style="padding:4px 0"><strong style="font-family:monospace">${from} &rarr; ${to}</strong>${dep ? "  " + dep : ""}${flightInfo}</li>`;
+      const flightInfo = firstSeg ? ` &middot; ${esc(firstSeg.flight_number || "")}` : "";
+      return `<li style="padding:4px 0"><strong style="font-family:monospace">${esc(from)} &rarr; ${esc(to)}</strong>${dep ? "  " + esc(dep) : ""}${flightInfo}</li>`;
     }).join("");
 
-    bodyHtml = `<p>Hi,</p><p>The following trip${addedTrips.length > 1 ? "s have" : " has"} been added to your TripVault:</p><ul style="padding-left:20px">${htmlLines}</ul><p><a href="https://www.uniprofile.net" style="color:#2563EB">View your vault →</a></p><p style="color:#888;font-size:12px">— UniProfile TripVault &nbsp;|&nbsp; Forward booking confirmations to ${upNumber}@trips.uniprofile.net</p>`;
+    bodyHtml = `<p>Hi,</p><p>The following trip${addedTrips.length > 1 ? "s have" : " has"} been added to your TripVault:</p><ul style="padding-left:20px">${htmlLines}</ul><p><a href="https://www.uniprofile.net" style="color:#2563EB">View your vault →</a></p><p style="color:#888;font-size:12px">— UniProfile TripVault &nbsp;|&nbsp; Forward booking confirmations to ${esc(upNumber)}@trips.uniprofile.net</p>`;
   }
 
   try {
@@ -340,13 +342,13 @@ async function sendVerificationRequest(toEmail, upNumber, pendingTrips, original
     const to   = trip.destination_iata || "";
     const dep  = fmtDate(trip.departure_date);
     const firstSeg = (trip.segments || [])[0];
-    const flightInfo = firstSeg ? ` · ${firstSeg.flight_number || ""}` : "";
-    const confirmUrl = `${appUrl}?verify_trip=${tripId}&action=confirm`;
-    const rejectUrl  = `${appUrl}?verify_trip=${tripId}&action=reject`;
+    const flightInfo = firstSeg ? ` · ${esc(firstSeg.flight_number || "")}` : "";
+    const confirmUrl = `${appUrl}?verify_trip=${esc(tripId)}&action=confirm`;
+    const rejectUrl  = `${appUrl}?verify_trip=${esc(tripId)}&action=reject`;
     return `<tr>
       <td style="padding:12px 0;border-bottom:1px solid #eee">
-        <strong style="font-family:monospace">${from} → ${to}</strong>${dep ? "  " + dep : ""}${flightInfo}<br>
-        <span style="font-size:12px;color:#888">${tripName}</span>
+        <strong style="font-family:monospace">${esc(from)} → ${esc(to)}</strong>${dep ? "  " + esc(dep) : ""}${flightInfo}<br>
+        <span style="font-size:12px;color:#888">${esc(tripName)}</span>
       </td>
       <td style="padding:12px 0 12px 16px;border-bottom:1px solid #eee;white-space:nowrap">
         <a href="${confirmUrl}" style="background:#059669;color:#fff;padding:6px 14px;border-radius:4px;text-decoration:none;font-size:13px;font-weight:500;margin-right:8px">Add to vault</a>
@@ -357,10 +359,10 @@ async function sendVerificationRequest(toEmail, upNumber, pendingTrips, original
 
   const bodyHtml = `
     <p>Hi,</p>
-    <p>We received a booking confirmation email (<em>${originalSubject}</em>) addressed to your TripVault address, but we couldn't verify the passenger name matches your profile.</p>
+    <p>We received a booking confirmation email (<em>${esc(originalSubject)}</em>) addressed to your TripVault address, but we couldn't verify the passenger name matches your profile.</p>
     <p>Please confirm whether this booking belongs to you:</p>
     <table style="border-collapse:collapse;width:100%;max-width:520px">${htmlItems}</table>
-    <p style="color:#888;font-size:12px;margin-top:24px">If you didn't expect this email, click "Not mine" — the booking will be removed. Your TripVault address is <strong>${upNumber}@trips.uniprofile.net</strong>.</p>`;
+    <p style="color:#888;font-size:12px;margin-top:24px">If you didn't expect this email, click "Not mine" — the booking will be removed. Your TripVault address is <strong>${esc(upNumber)}@trips.uniprofile.net</strong>.</p>`;
 
   const bodyText = pendingTrips.map(({ tripName, trip }) =>
     `${trip.origin_iata || "?"} → ${trip.destination_iata || "?"} ${fmtDate(trip.departure_date)} — ${tripName}`
