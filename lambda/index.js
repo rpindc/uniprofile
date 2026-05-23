@@ -1798,11 +1798,16 @@ exports.handler=async function(event){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
       const parts=path.split("/");const groupId=parts[parts.indexOf("consent")-1];
+      const access=await sql(
+        `SELECT 1 FROM gc_groups g LEFT JOIN gc_group_members gm ON gm.group_id=g.id AND gm.traveler_uuid=:u AND gm.status='active' WHERE g.id=:gid AND (g.owner_uuid=:u OR gm.traveler_uuid=:u)`,
+        [uuidParam("u",myUuid),strParam("gid",groupId)]
+      );
+      if(!access.length)return err("Access denied",event,403);
       const {operator,scope_tokens,purpose,parcel_id}=body;
       if(!operator)return err("operator required",event,400);
       const expires=new Date();expires.setHours(expires.getHours()+24);
       await sql(`INSERT INTO gc_consent_grants (group_id,member_uuid,operator,scope_tokens,purpose,granted_by,expires_at,parcel_id) VALUES (:gid,:u,:op,:sc::jsonb,:pur,:gb,:exp,:pid)`,
-        [strParam("gid",parts[parts.indexOf("consent")-1]),uuidParam("u",myUuid),strParam("op",operator),
+        [strParam("gid",groupId),uuidParam("u",myUuid),strParam("op",operator),
          strParam("sc",JSON.stringify(scope_tokens||[])),strParam("pur",purpose),uuidParam("gb",myUuid),
          strParam("exp",expires.toISOString()),parcel_id?uuidParam("pid",parcel_id):{name:"pid",value:{isNull:true}}]);
       return ok({success:true},event);
