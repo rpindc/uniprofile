@@ -1146,10 +1146,11 @@ async function saveNotes(){
 /* ── Documents ── */
 async function openDocument(id){
   if(!_group)return;
+  var win=window.open("","_blank","noopener");
   try{
     var res=await _req("GET","/api/v1/trip-groups/"+_group.id+"/documents/"+id+"/download-url");
-    window.open(res.download_url,"_blank","noopener");
-  }catch(e){showToast("Failed to open document.");}
+    win.location.href=res.download_url;
+  }catch(e){win.close();showToast("Failed to open document.");}
 }
 function openDocModal(){
   document.getElementById("doc-filename-display").textContent="No file chosen";
