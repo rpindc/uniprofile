@@ -186,7 +186,7 @@ var _CID="2heljmdli4f9cv2i4m0i020mfc";
 var _tok=null,_uid=null;
 var _allGroups=[],_curFilter="all";
 
-function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent(window.location.origin+window.location.pathname);}
+function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent("https://www.uniprofile.net/home.html");}
 function _ph(){var p=new URLSearchParams(window.location.hash.slice(1));return p.get("id_token")||p.get("access_token");}
 async function _req(method,ep,body){
   var o={method:method,headers:{Authorization:"Bearer "+_tok}};
