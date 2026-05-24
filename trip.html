@@ -191,6 +191,8 @@ body.doc-editing #doc-edit-btn{display:none!important}
 .readiness-sentence{font-size:13px;color:var(--ink-soft);padding:10px 0 0;font-family:var(--sans);line-height:1.4}
 /* ── Phase 2 slots (screen: hidden; print: shown when populated) ── */
 #pdf-admissibility,#pdf-provenance{display:none}
+/* ── PDF stamp (screen: hidden; print: running footer) ── */
+#pdf-stamp{display:none}
 /* ── Save as PDF button: hide in edit mode ── */
 body.doc-editing #save-pdf-btn{display:none!important}
 /* ── Print stylesheet ── */
@@ -225,8 +227,10 @@ body.doc-editing #save-pdf-btn{display:none!important}
   .doc-countdown-row{display:none}
   /* Phase 2 slots: appear when populated */
   #pdf-admissibility:not(:empty),#pdf-provenance:not(:empty){display:block!important;font-size:10pt;color:#444;padding:10pt 0 0;border-top:0.5pt solid #bbb;margin-top:10pt}
+  /* Running footer stamp on every page */
+  #pdf-stamp{display:block!important;position:fixed;bottom:0;left:0;right:0;font-size:8pt;color:#888;font-family:sans-serif;text-align:center;border-top:0.5pt solid #ddd;padding:4pt 0 2pt;background:#fff}
   /* Page settings */
-  @page{margin:18mm 20mm;size:A4 portrait}
+  @page{margin:18mm 20mm 24mm;size:A4 portrait}
 }
 </style>
 </head>
@@ -315,6 +319,8 @@ body.doc-editing #save-pdf-btn{display:none!important}
     <div id="group-section">
       <div class="caption" style="color:var(--ink-mute);padding:20px 0">Loading…</div>
     </div>
+
+    <div id="pdf-stamp"></div>
 
   </main>
 </div>
@@ -563,7 +569,7 @@ body.doc-editing #save-pdf-btn{display:none!important}
 var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
-var _tok=null,_uid=null;
+var _tok=null,_uid=null,_myInitials='';
 var _trip=null,_group=null,_readiness=null,_familyProfile=null,_workspace=null,_itinerary=null,_documents=null,_contacts=null,_segments=null;
 var _IATA_CITY={
   'ATL':'Atlanta','LAX':'Los Angeles','ORD':'Chicago','DFW':'Dallas','DEN':'Denver',
@@ -1235,7 +1241,27 @@ async function saveNotes(){
 }
 
 /* ── Save as PDF ── */
-function savePdf(){window.print();}
+function _initials(p){
+  var id=(p&&p.identity)||{};
+  var f=(id.legal_first||'').trim(),l=(id.legal_last||'').trim();
+  if(f&&l)return(f[0]+l[0]).toUpperCase();
+  if(f)return f[0].toUpperCase();
+  var dn=(p&&p.display_name||'').trim();
+  return dn?dn.slice(0,2).toUpperCase():'';
+}
+function _fmtUtcStamp(){
+  var d=new Date(),mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return d.getUTCDate()+' '+mo[d.getUTCMonth()]+' '+d.getUTCFullYear()+' '+String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0')+' UTC';
+}
+function savePdf(){
+  var el=document.getElementById('pdf-stamp');
+  if(el){
+    var ini=_myInitials?' · '+_myInitials:'';
+    el.textContent='Generated '+_fmtUtcStamp()+ini+' · reflects data at time of export';
+  }
+  window.print();
+  setTimeout(function(){if(el)el.textContent='';},1500);
+}
 
 /* ── Member booking ref ── */
 async function saveMemberRef(memberId,value){
@@ -1868,7 +1894,7 @@ async function tripInit(){
     if(bl){bl.href="/groups.html";bl.textContent="← All groups";}
     try{
       var p=await _req("GET","/api/v1/me");
-      _uid=p.uuid;_sidebarUpdate(p);
+      _uid=p.uuid;_myInitials=_initials(p);_sidebarUpdate(p);
       var results=await Promise.all([
         _req("GET","/api/v1/trip-groups/"+groupId),
         _req("GET","/api/v1/trip-groups/"+groupId+"/readiness"),
@@ -1921,7 +1947,7 @@ async function tripInit(){
   if(!tripId){_ht("group-section","<div class='caption' style='color:var(--ink-mute);padding:20px 0'>No trip specified.</div>");return;}
   try{
     var p=await _req("GET","/api/v1/me");
-    _uid=p.uuid;
+    _uid=p.uuid;_myInitials=_initials(p);
     _sidebarUpdate(p);
     _trip=(p.trips||[]).find(function(t){return t.id===tripId;});
     if(!_trip){
