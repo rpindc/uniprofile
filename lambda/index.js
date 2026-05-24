@@ -1186,7 +1186,9 @@ exports.handler=async function(event){
         }
         const admissibility=evaluateAdmissibility(docs,destIata,returnDate);
         const passportCheck={id:'passport_present',label:'Passport',status:docs.length?'passed':'failed',detail:docs.length?'On file':'Not added'};
-        return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,checks:[passportCheck,...admissibility.checks],overall_status:docs.length?admissibility.overall_status:'action_needed'};
+        const noRules=admissibility.overall_status==='n/a';
+        const admChecks=noRules?[{id:'rules_na',label:'Entry rules',status:'info',detail:'Requirements for '+destIata+' not yet available — verify with official sources'}]:admissibility.checks;
+        return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,checks:[passportCheck,...admChecks],overall_status:docs.length?(noRules?'ready':admissibility.overall_status):'action_needed'};
       });
       const total=memberResults.length;
       const ready=memberResults.filter(function(m){return m.overall_status==='ready';}).length;
