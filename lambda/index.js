@@ -1013,6 +1013,22 @@ exports.handler=async function(event){
       if(kind==='named_only')writeAuditLog(groupId,myUuid,'member_added',null,{kind:'named_only',member_id:memberId,display_name:memberName});
       return{statusCode:201,headers:cors(go(event)),body:JSON.stringify({id:memberId,kind,named_only_id:namedId,linked_uuid:linkedId,display_name:memberName,avatar_color:color})};
     }
+    // PATCH /api/v1/trip-groups/{group_id}/members/{member_id}
+    if(method==="PATCH"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/members\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const groupId=parts[3],memberId=parts[5];
+      await validateTripGroupId(groupId,myUuid);
+      const groupRows=await sql("SELECT members FROM traveler_groups WHERE id=:id",[strParam("id",groupId)]);
+      const members=typeof groupRows[0].members==="string"?JSON.parse(groupRows[0].members):(groupRows[0].members||[]);
+      const idx=members.findIndex(function(m){return m.id===memberId;});
+      if(idx===-1)return err("Member not found",event,404);
+      const{booking_ref}=body;
+      members[idx]=Object.assign({},members[idx],{booking_ref:booking_ref&&booking_ref.trim()||null});
+      await sql("UPDATE traveler_groups SET members=:m::jsonb,updated_at=NOW() WHERE id=:id",[strParam("m",JSON.stringify(members)),strParam("id",groupId)]);
+      return ok({success:true},event);
+    }
     // DELETE /api/v1/trip-groups/{group_id}/members/{member_id}
     if(method==="DELETE"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/members\/[^/]+$/)){
       const token=await verifyToken(event);

@@ -187,6 +187,8 @@ body.doc-editing #doc-edit-btn{display:none!important}
 .doc-flight-dir{font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-faint);padding-bottom:8px;margin-bottom:4px;border-bottom:0.5px solid var(--rule)}
 .doc-flight-dir+.doc-flight-dir{margin-top:18px}
 @media(max-width:599px){.doc-flight-row{flex-wrap:wrap;gap:6px}.doc-flight-flt{min-width:auto}.doc-flight-times{text-align:left;flex-basis:100%}}
+/* ── Readiness sentence ── */
+.readiness-sentence{font-size:13px;color:var(--ink-soft);padding:10px 0 0;font-family:var(--sans);line-height:1.4}
 </style>
 </head>
 <body>
@@ -692,6 +694,49 @@ function renderAirSectors(segments,tripCtx){
   return html;
 }
 
+/* ── OneOrder header amendments ── */
+var DOCCHECK_PREVIEW=true; // flip to false when DocCheck uses real (non-preview) rules
+
+function _readinessSentence(readiness,destName){
+  if(!readiness)return null;
+  var members=readiness.members||[];
+  if(!members.length)return null;
+  var total=members.length;
+  var needsDoc=members.filter(function(m){return m.overall_status==='action_needed'||m.overall_status==='blocked';}).length;
+  var dest=destName?' for '+escHtml(destName):'';
+  if(DOCCHECK_PREVIEW){
+    var suffix=dest?' · verify entry rules'+dest:'';
+    if(needsDoc===0)return'Documents on file for all '+total+' traveler'+(total===1?'':'s')+suffix;
+    return needsDoc+' of '+total+' traveler'+(total===1?'':'s')+' need'+(needsDoc===1?'s':'')+' documents'+suffix;
+  }else{
+    if(needsDoc===0)return'✓ All '+total+' travelers ready'+dest;
+    return needsDoc+' of '+total+' travelers need attention'+dest;
+  }
+}
+function renderReadinessSentence(){
+  var el=document.getElementById('readiness-sentence');
+  if(!el)return;
+  var dest=_readiness&&(_readiness.destination_name||_readiness.destination);
+  var s=_readinessSentence(_readiness,dest);
+  el.innerHTML=s?'<div class="readiness-sentence">'+s+'</div>':'';
+}
+function _lifecyclePill(){
+  var dep=(_trip&&_trip.departure_date)||(_group&&_group.departure_date);
+  var ret=(_trip&&_trip.return_date)||(_group&&_group.return_date);
+  if(_group&&_group.archived_at)return'<span class="pill pill-neutral" style="font-size:10px">Archived</span>';
+  if(!dep)return'';
+  var today=new Date();today.setHours(0,0,0,0);
+  var depDate=new Date(dep+'T00:00:00');
+  var retDate=ret?new Date(ret+'T00:00:00'):null;
+  if(depDate>today)return'<span class="pill pill-neutral" style="font-size:10px">Upcoming</span>';
+  if(!retDate||retDate>=today)return'<span class="pill" style="background:var(--green-soft);color:var(--green);font-size:10px">In progress</span>';
+  return'<span class="pill pill-neutral" style="font-size:10px">Completed</span>';
+}
+function renderLifecyclePill(){
+  var el=document.getElementById('lifecycle-pill');
+  if(el)el.innerHTML=_lifecyclePill();
+}
+
 function renderTripHeader(t){
   var today=new Date();today.setHours(0,0,0,0);
   var dep=t.departure_date?new Date(t.departure_date+'T00:00:00'):null;
@@ -705,6 +750,7 @@ function renderTripHeader(t){
   html+='<h1 class="h1">'+escHtml(_tripName(t))+'</h1></div>';
   html+='<div class="doc-issuer-block"><div class="doc-issuer-mark"><strong>UniProfile</strong>Group Travel Record</div>';
   if(t.trip_locator)html+='<div class="doc-locator">'+escHtml(t.trip_locator.toUpperCase())+'</div>';
+  html+='<div id="lifecycle-pill" style="margin-top:6px"></div>';
   html+='</div></div>';
   html+='<div class="doc-meta-row">';
   if(route)html+='<div class="doc-meta-field"><div class="doc-meta-label">Route</div><div class="doc-meta-value">'+escHtml(route)+'</div></div>';
@@ -713,6 +759,7 @@ function renderTripHeader(t){
   if(nights>0)html+='<div class="doc-meta-field"><div class="doc-meta-label">Duration</div><div class="doc-meta-value">'+nights+' night'+(nights===1?'':'s')+'</div></div>';
   if(t.trip_context)html+='<div class="doc-meta-field"><div class="doc-meta-label">Type</div><div class="doc-meta-value">'+escHtml(_ctxLabel(t.trip_context))+'</div></div>';
   html+='</div>';
+  html+='<div id="readiness-sentence"></div>';
   if(cd)html+='<div class="doc-countdown-row">'+_countdownHtml(cd)+'<span></span></div>';
   html+='<div class="doc-edit-bar">';
   html+='<button class="btn btn-primary" id="doc-edit-btn" onclick="enterEditMode()">Edit document</button>';
@@ -811,6 +858,8 @@ function renderMemberList(members){
     html+='<div style="flex:1;min-width:0">';
     html+='<div style="font-size:13px;font-weight:500;line-height:1.2">'+escHtml(m.display_name||"Member")+'</div>';
     html+='<div class="caption">'+escHtml(kindLabel)+' · '+escHtml(roleLabel)+'</div>';
+    if(m.booking_ref)html+='<div class="caption" style="margin-top:2px;font-family:var(--mono);font-size:11px">Ref: '+escHtml(m.booking_ref)+'</div>';
+    if(_role==='organizer')html+='<div class="edit-only" style="margin-top:5px"><input class="form-input" style="font-size:11px;padding:3px 7px;height:auto;font-family:var(--mono)" placeholder="Booking ref…" id="bref-'+escHtml(m.id)+'" value="'+escHtml(m.booking_ref||'')+'" onblur="saveMemberRef(\''+escHtml(m.id)+'\',this.value)" maxlength="30"/></div>';
     html+='</div>';
     if(badge)html+='<div>'+badge+'</div>';
     if(m.kind!=="self"&&_role==='organizer'){
@@ -1088,9 +1137,6 @@ function renderWorkspaceSection(){
   }
   html+='</div>';
 
-  /* Emergency contacts */
-  html+=renderEmergencyContactsSection();
-
   /* Trip notes */
   var notes=(_workspace&&_workspace.trip_notes)||"";
   html+='<div class="doc-section">';
@@ -1107,6 +1153,9 @@ function renderWorkspaceSection(){
   html+='<span id="ws-notes-count" style="font-size:11px;color:var(--ink-mute);margin-left:auto">'+notes.length+'/5000</span>';
   html+='</div></div>';
   html+='</div>';
+
+  /* Emergency contacts */
+  html+=renderEmergencyContactsSection();
 
   return html;
 }
@@ -1141,6 +1190,16 @@ async function saveNotes(){
     cancelEditNotes();
     showToast("Notes saved.");
   }catch(e){showToast("Failed to save notes.");}
+}
+
+/* ── Member booking ref ── */
+async function saveMemberRef(memberId,value){
+  if(!_group)return;
+  try{
+    var bref=value.trim().toUpperCase()||null;
+    await _req("PATCH","/api/v1/trip-groups/"+_group.id+"/members/"+memberId,{booking_ref:bref});
+    if(_group.members){var m=_group.members.find(function(x){return x.id===memberId;});if(m)m.booking_ref=bref;}
+  }catch(e){showToast("Failed to save booking ref.");}
 }
 
 /* ── Documents ── */
@@ -1785,7 +1844,7 @@ async function tripInit(){
       mHtml+='<div class="doc-header-top">';
       mHtml+='<div style="min-width:0"><div class="eyebrow" style="margin-bottom:10px">'+escHtml(past?'Past trip':'Upcoming trip')+'</div>';
       mHtml+='<h1 class="h1">'+escHtml(_group.name||'Group')+'</h1></div>';
-      mHtml+='<div class="doc-issuer-block"><div class="doc-issuer-mark"><strong>UniProfile</strong>Group Travel Record</div></div>';
+      mHtml+='<div class="doc-issuer-block"><div class="doc-issuer-mark"><strong>UniProfile</strong>Group Travel Record</div><div id="lifecycle-pill" style="margin-top:6px"></div></div>';
       mHtml+='</div>';
       mHtml+='<div class="doc-meta-row">';
       if(_group.destination_name)mHtml+='<div class="doc-meta-field"><div class="doc-meta-label">Destination</div><div class="doc-meta-value">'+escHtml(_group.destination_name)+'</div></div>';
@@ -1793,6 +1852,7 @@ async function tripInit(){
       if(nights>0)mHtml+='<div class="doc-meta-field"><div class="doc-meta-label">Duration</div><div class="doc-meta-value">'+nights+' night'+(nights===1?'':'s')+'</div></div>';
       if(_group.organizer_name)mHtml+='<div class="doc-meta-field"><div class="doc-meta-label">Organized by</div><div class="doc-meta-value">'+escHtml(_group.organizer_name)+'</div></div>';
       mHtml+='</div>';
+      mHtml+='<div id="readiness-sentence"></div>';
       if(cd)mHtml+='<div class="doc-countdown-row">'+_countdownHtml(cd)+'<span></span></div>';
       mHtml+='<div class="doc-edit-bar">';
       mHtml+='<button class="btn btn-primary" id="doc-edit-btn" onclick="enterEditMode()">Edit document</button>';
@@ -1800,6 +1860,7 @@ async function tripInit(){
       mHtml+='</div>';
       mHtml+='</div>';
       _ht('trip-header',mHtml);_show('trip-header');
+      renderReadinessSentence();renderLifecyclePill();
       renderGroupSection();
     }catch(e){
       console.error(e);
@@ -1841,6 +1902,7 @@ async function tripInit(){
         _documents=results[4]||[];
         _contacts=results[5]||[];
         _segments=results[6]||[];
+        renderReadinessSentence();renderLifecyclePill();
       }catch(e){
         console.error("Failed to load group data:",e);
       }
