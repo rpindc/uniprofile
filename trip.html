@@ -189,6 +189,45 @@ body.doc-editing #doc-edit-btn{display:none!important}
 @media(max-width:599px){.doc-flight-row{flex-wrap:wrap;gap:6px}.doc-flight-flt{min-width:auto}.doc-flight-times{text-align:left;flex-basis:100%}}
 /* ── Readiness sentence ── */
 .readiness-sentence{font-size:13px;color:var(--ink-soft);padding:10px 0 0;font-family:var(--sans);line-height:1.4}
+/* ── Phase 2 slots (screen: hidden; print: shown when populated) ── */
+#pdf-admissibility,#pdf-provenance{display:none}
+/* ── Save as PDF button: hide in edit mode ── */
+body.doc-editing #save-pdf-btn{display:none!important}
+/* ── Print stylesheet ── */
+@media print{
+  /* Hide all chrome */
+  .mob-header,#mob-drawer,#mob-scrim,.sidebar,
+  #breadcrumb-link,
+  .doc-edit-bar,.doc-controls,
+  .edit-only,.ws-item-actions,
+  #save-pdf-btn,#ws-notes-editor,
+  .modal-overlay,#toast-msg{display:none!important}
+  /* Full-width single-column layout */
+  .shell{display:block}
+  .main{max-width:100%;padding:0;margin:0}
+  body{background:#fff;color:#1a1a1a;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  a{color:inherit;text-decoration:none}
+  /* Header */
+  .doc-header{border-bottom:2pt solid #1a1a1a;padding-bottom:16pt}
+  .doc-issuer-mark{font-size:10pt}
+  .doc-locator{font-size:11pt}
+  /* Sections */
+  .doc-section{border-top:0.5pt solid #bbb;padding:14pt 0}
+  .doc-section-head{page-break-after:avoid}
+  .doc-section-label{page-break-after:avoid}
+  /* Avoid splitting rows across pages */
+  .doc-flight-row,.ws-item,.readiness-table tr{page-break-inside:avoid}
+  /* Keep section headers with first row of content */
+  .doc-section{page-break-inside:auto}
+  /* Warm card backgrounds survive print */
+  .card-warm,.readiness-card{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  /* Countdown hidden (irrelevant in static PDF) */
+  .doc-countdown-row{display:none}
+  /* Phase 2 slots: appear when populated */
+  #pdf-admissibility:not(:empty),#pdf-provenance:not(:empty){display:block!important;font-size:10pt;color:#444;padding:10pt 0 0;border-top:0.5pt solid #bbb;margin-top:10pt}
+  /* Page settings */
+  @page{margin:18mm 20mm;size:A4 portrait}
+}
 </style>
 </head>
 <body>
@@ -760,10 +799,13 @@ function renderTripHeader(t){
   if(t.trip_context)html+='<div class="doc-meta-field"><div class="doc-meta-label">Type</div><div class="doc-meta-value">'+escHtml(_ctxLabel(t.trip_context))+'</div></div>';
   html+='</div>';
   html+='<div id="readiness-sentence"></div>';
+  html+='<div id="pdf-admissibility"></div>';
   if(cd)html+='<div class="doc-countdown-row">'+_countdownHtml(cd)+'<span></span></div>';
+  html+='<div id="pdf-provenance"></div>';
   html+='<div class="doc-edit-bar">';
   html+='<button class="btn btn-primary" id="doc-edit-btn" onclick="enterEditMode()">Edit document</button>';
   html+='<div class="doc-edit-banner edit-only"><span class="doc-edit-status">✓ Editing — changes save as you go</span><button class="btn btn-secondary btn-sm" onclick="exitEditMode()">Done</button></div>';
+  html+='<button class="btn btn-secondary btn-sm" id="save-pdf-btn" onclick="savePdf()">Save as PDF</button>';
   html+='</div>';
   html+='</div>';
   _ht('trip-header',html);_show('trip-header');
@@ -1191,6 +1233,9 @@ async function saveNotes(){
     showToast("Notes saved.");
   }catch(e){showToast("Failed to save notes.");}
 }
+
+/* ── Save as PDF ── */
+function savePdf(){window.print();}
 
 /* ── Member booking ref ── */
 async function saveMemberRef(memberId,value){
@@ -1853,10 +1898,13 @@ async function tripInit(){
       if(_group.organizer_name)mHtml+='<div class="doc-meta-field"><div class="doc-meta-label">Organized by</div><div class="doc-meta-value">'+escHtml(_group.organizer_name)+'</div></div>';
       mHtml+='</div>';
       mHtml+='<div id="readiness-sentence"></div>';
+      mHtml+='<div id="pdf-admissibility"></div>';
       if(cd)mHtml+='<div class="doc-countdown-row">'+_countdownHtml(cd)+'<span></span></div>';
+      mHtml+='<div id="pdf-provenance"></div>';
       mHtml+='<div class="doc-edit-bar">';
       mHtml+='<button class="btn btn-primary" id="doc-edit-btn" onclick="enterEditMode()">Edit document</button>';
       mHtml+='<div class="doc-edit-banner edit-only"><span class="doc-edit-status">✓ Editing — changes save as you go</span><button class="btn btn-secondary btn-sm" onclick="exitEditMode()">Done</button></div>';
+      mHtml+='<button class="btn btn-secondary btn-sm" id="save-pdf-btn" onclick="savePdf()">Save as PDF</button>';
       mHtml+='</div>';
       mHtml+='</div>';
       _ht('trip-header',mHtml);_show('trip-header');
