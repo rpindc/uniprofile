@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Trip Group Invite — UniProfile</title>
+<title>Journey Invite — UniProfile</title>
 <meta name="robots" content="noindex,nofollow" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -97,7 +97,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     <a href="/me.html" class="mob-nav-item" data-page="me"><svg class="icon" aria-hidden="true"><use href="#i-me"/></svg>Me</a>
     <a href="/people.html" class="mob-nav-item" data-page="people"><svg class="icon" aria-hidden="true"><use href="#i-people"/></svg>People</a>
     <a href="/trips.html" class="mob-nav-item" data-page="trips"><svg class="icon" aria-hidden="true"><use href="#i-trips"/></svg>Trips</a>
-    <a href="/groups.html" class="mob-nav-item active" data-page="groups"><svg class="icon" aria-hidden="true"><use href="#i-groups"/></svg>Groups</a>
+    <a href="/groups.html" class="mob-nav-item active" data-page="groups"><svg class="icon" aria-hidden="true"><use href="#i-groups"/></svg>Journey</a>
     <a href="/privacy.html" class="mob-nav-item" data-page="privacy"><svg class="icon" aria-hidden="true"><use href="#i-privacy"/></svg>Privacy</a>
   </div>
   <div class="mob-drawer-footer">
@@ -123,7 +123,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       <a href="/me.html" class="nav-item"><svg class="icon"><use href="#i-me"/></svg>Me</a>
       <a href="/people.html" class="nav-item"><svg class="icon"><use href="#i-people"/></svg>People</a>
       <a href="/trips.html" class="nav-item"><svg class="icon"><use href="#i-trips"/></svg>Trips</a>
-      <a href="/groups.html" class="nav-item active"><svg class="icon"><use href="#i-groups"/></svg>Groups</a>
+      <a href="/groups.html" class="nav-item active"><svg class="icon"><use href="#i-groups"/></svg>Journey</a>
       <a href="/privacy.html" class="nav-item"><svg class="icon"><use href="#i-privacy"/></svg>Privacy</a>
     </nav>
     <div class="sidebar-user-card">
@@ -207,12 +207,12 @@ function renderState(state,extra){
     var range=_fmtRange(inv.departure_date,inv.return_date);
     var destStr=[inv.destination_name||inv.destination,range].filter(Boolean).join(" · ");
     var html='<div class="invite-card">';
-    html+='<div class="eyebrow" style="margin-bottom:12px">Trip group invite</div>';
+    html+='<div class="eyebrow" style="margin-bottom:12px">Journey invite</div>';
     html+='<div class="invite-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><circle cx="16" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><path d="M2 20C2 17 4.7 15 8 15" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M10 18C10 15.5 12.5 14 16 14C19.5 14 22 15.5 22 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg></div>';
     html+='<h1 class="h2" style="margin-bottom:8px">You\'ve been invited</h1>';
-    html+='<p class="lede"><strong>'+escHtml(inv.organizer_name||"Someone")+'</strong> has invited you to join their trip group.</p>';
+    html+='<p class="lede"><strong>'+escHtml(inv.organizer_name||"Someone")+'</strong> has invited you to join their journey.</p>';
     html+='<div class="invite-meta-row">';
-    html+='<div class="invite-meta-item"><span class="invite-meta-label">Group</span><span style="font-weight:500">'+escHtml(inv.group_name||"Trip Group")+'</span></div>';
+    html+='<div class="invite-meta-item"><span class="invite-meta-label">Journey</span><span style="font-weight:500">'+escHtml(inv.group_name||"Journey")+'</span></div>';
     if(destStr)html+='<div class="invite-meta-item"><span class="invite-meta-label">Destination</span><span>'+escHtml(destStr)+'</span></div>';
     html+='<div class="invite-meta-item"><span class="invite-meta-label">Organized by</span><span>'+escHtml(inv.organizer_name||"—")+'</span></div>';
     html+='</div>';
@@ -247,16 +247,16 @@ function renderState(state,extra){
     wrap.innerHTML='<div class="invite-card" style="text-align:center;padding:48px 36px">'
       +'<div class="state-icon" style="color:var(--green)">✓</div>'
       +'<h2 class="h2" style="margin-bottom:12px">You\'re in!</h2>'
-      +'<p class="lede" style="margin-bottom:28px">You\'ve joined the group. Your travel readiness will now be visible to the organizer.</p>'
-      +(groupId?'<a href="/trip.html?group_id='+escHtml(groupId)+'" class="btn btn-primary">View group →</a>':'<a href="/groups.html" class="btn btn-primary">Go to Groups →</a>')
+      +'<p class="lede" style="margin-bottom:28px">You\'ve joined the journey. Your travel readiness will now be visible to the organizer.</p>'
+      +(groupId?'<a href="/trip.html?group_id='+escHtml(groupId)+'" class="btn btn-primary">View journey →</a>':'<a href="/groups.html" class="btn btn-primary">Go to Journeys →</a>')
       +'</div>';
 
   }else if(state==="declined"){
     wrap.innerHTML='<div class="invite-card" style="text-align:center;padding:48px 36px">'
       +'<div class="state-icon" style="color:var(--ink-mute)">✗</div>'
       +'<h2 class="h2" style="margin-bottom:12px">Invite declined</h2>'
-      +'<p class="lede" style="margin-bottom:28px">You\'ve declined this trip group invite. The organizer will be notified.</p>'
-      +'<a href="/groups.html" class="btn btn-secondary">Go to Groups</a>'
+      +'<p class="lede" style="margin-bottom:28px">You\'ve declined this journey invite. The organizer will be notified.</p>'
+      +'<a href="/groups.html" class="btn btn-secondary">Go to Journeys</a>'
       +'</div>';
 
   }else if(state==="already_accepted"){
@@ -264,8 +264,8 @@ function renderState(state,extra){
     wrap.innerHTML='<div class="invite-card" style="text-align:center;padding:48px 36px">'
       +'<div class="state-icon" style="color:var(--green)">✓</div>'
       +'<h2 class="h2" style="margin-bottom:12px">Already joined</h2>'
-      +'<p class="lede" style="margin-bottom:28px">You\'ve already accepted this invite and are part of the group.</p>'
-      +(groupId?'<a href="/trip.html?group_id='+escHtml(groupId)+'" class="btn btn-primary">View group →</a>':'<a href="/groups.html" class="btn btn-primary">Go to Groups →</a>')
+      +'<p class="lede" style="margin-bottom:28px">You\'ve already accepted this invite and are part of the journey.</p>'
+      +(groupId?'<a href="/trip.html?group_id='+escHtml(groupId)+'" class="btn btn-primary">View journey →</a>':'<a href="/groups.html" class="btn btn-primary">Go to Journeys →</a>')
       +'</div>';
 
   }else if(state==="already_declined"){
@@ -273,7 +273,7 @@ function renderState(state,extra){
       +'<div class="state-icon" style="color:var(--ink-mute)">✗</div>'
       +'<h2 class="h2" style="margin-bottom:12px">Invite previously declined</h2>'
       +'<p class="lede" style="margin-bottom:28px">You already declined this invite. Contact the organizer if you\'d like to join.</p>'
-      +'<a href="/groups.html" class="btn btn-secondary">Go to Groups</a>'
+      +'<a href="/groups.html" class="btn btn-secondary">Go to Journeys</a>'
       +'</div>';
 
   }else if(state==="wrong_account"){
@@ -290,7 +290,7 @@ function renderState(state,extra){
       +'<div style="font-size:40px;margin-bottom:20px" aria-hidden="true">🔍</div>'
       +'<h2 class="h2" style="margin-bottom:12px">Invite not found</h2>'
       +'<p class="lede" style="margin-bottom:28px">'+(extra||"This invite link is invalid or has expired.")+'</p>'
-      +'<a href="/groups.html" class="btn btn-secondary">Go to Groups</a>'
+      +'<a href="/groups.html" class="btn btn-secondary">Go to Journeys</a>'
       +'</div>';
   }
 }
@@ -377,7 +377,7 @@ async function inviteInit(){
 
   try{
     _invite=await _req("GET","/api/v1/trip-groups/invite/"+_consentId);
-    document.title=(_invite.group_name||"Trip Group")+" Invite — UniProfile";
+    document.title=(_invite.group_name||"Journey")+" Invite — UniProfile";
     var status=(_invite.status||"").toLowerCase();
     if(status==="pending"){
       renderState("pending");

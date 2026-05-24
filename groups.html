@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Groups — UniProfile</title>
+<title>Journeys — UniProfile</title>
 <meta name="robots" content="noindex,nofollow" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -109,7 +109,7 @@ a.group-card:active{background:rgba(26,26,26,0.02)}
     <a href="/me.html" class="mob-nav-item" data-page="me"><svg class="icon" aria-hidden="true"><use href="#i-me"/></svg>Me</a>
     <a href="/people.html" class="mob-nav-item" data-page="people"><svg class="icon" aria-hidden="true"><use href="#i-people"/></svg>People</a>
     <a href="/trips.html" class="mob-nav-item" data-page="trips"><svg class="icon" aria-hidden="true"><use href="#i-trips"/></svg>Trips</a>
-    <a href="/groups.html" class="mob-nav-item" data-page="groups"><svg class="icon" aria-hidden="true"><use href="#i-groups"/></svg>Groups</a>
+    <a href="/groups.html" class="mob-nav-item" data-page="groups"><svg class="icon" aria-hidden="true"><use href="#i-groups"/></svg>Journey</a>
     <a href="/privacy.html" class="mob-nav-item" data-page="privacy"><svg class="icon" aria-hidden="true"><use href="#i-privacy"/></svg>Privacy</a>
   </div>
   <div class="mob-drawer-footer">
@@ -135,7 +135,7 @@ a.group-card:active{background:rgba(26,26,26,0.02)}
       <a href="/me.html" class="nav-item"><svg class="icon"><use href="#i-me"/></svg>Me</a>
       <a href="/people.html" class="nav-item"><svg class="icon"><use href="#i-people"/></svg>People</a>
       <a href="/trips.html" class="nav-item"><svg class="icon"><use href="#i-trips"/></svg>Trips</a>
-      <a href="/groups.html" class="nav-item active"><svg class="icon"><use href="#i-groups"/></svg>Groups</a>
+      <a href="/groups.html" class="nav-item active"><svg class="icon"><use href="#i-groups"/></svg>Journey</a>
       <a href="/privacy.html" class="nav-item"><svg class="icon"><use href="#i-privacy"/></svg>Privacy</a>
     </nav>
     <div class="sidebar-user-card">
@@ -157,7 +157,7 @@ a.group-card:active{background:rgba(26,26,26,0.02)}
     <div class="page-header">
       <div class="page-header-text">
         <div class="eyebrow">Trip coordination</div>
-        <h1 class="h1">Groups, by <em>trip</em>.</h1>
+        <h1 class="h1">Journeys, by <em>trip</em>.</h1>
         <p class="lede" id="groups-lede">Loading…</p>
       </div>
     </div>
@@ -305,14 +305,14 @@ function renderGroups(){
   var list=_filtered();
   if(!list.length){
     var msgs={
-      all:"No trip groups yet. Create one from a trip's detail page.",
-      upcoming:"No upcoming trip groups.",
-      active:"No groups for trips happening right now.",
-      past:"No past trip groups.",
-      joined:"No joined groups yet. Accept an invite to appear here.",
-      archived:"No archived groups.",
+      all:"No journeys yet. Create one from a trip's detail page.",
+      upcoming:"No upcoming journeys.",
+      active:"No journeys happening right now.",
+      past:"No past journeys.",
+      joined:"No joined journeys yet. Accept an invite to appear here.",
+      archived:"No archived journeys.",
     };
-    _ht("groups-list","<div style='padding:32px 0;color:var(--ink-mute);font-size:13px'>"+(msgs[_curFilter]||"No groups found.")+"</div>");
+    _ht("groups-list","<div style='padding:32px 0;color:var(--ink-mute);font-size:13px'>"+(msgs[_curFilter]||"No journeys found.")+"</div>");
     return;
   }
   var today=new Date();today.setHours(0,0,0,0);
@@ -332,7 +332,7 @@ function updateLede(){
   var parts=[];
   if(organizing)parts.push(organizing+" organizing");
   if(joined)parts.push(joined+" joined");
-  _st("groups-lede",total+" group"+(total===1?"":"s")+(parts.length?" ("+parts.join(", ")+")":"")+".");
+  _st("groups-lede",(total===1?total+" journey":total+" journeys")+(parts.length?" ("+parts.join(", ")+")":"")+".");
 }
 
 /* ── Init ── */

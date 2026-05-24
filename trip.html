@@ -272,7 +272,7 @@ body.doc-editing #save-pdf-btn{display:none!important}
     <a href="/me.html" class="mob-nav-item" data-page="me"><svg class="icon" aria-hidden="true"><use href="#i-me"/></svg>Me</a>
     <a href="/people.html" class="mob-nav-item" data-page="people"><svg class="icon" aria-hidden="true"><use href="#i-people"/></svg>People</a>
     <a href="/trips.html" class="mob-nav-item" data-page="trips"><svg class="icon" aria-hidden="true"><use href="#i-trips"/></svg>Trips</a>
-    <a href="/groups.html" class="mob-nav-item" data-page="groups"><svg class="icon" aria-hidden="true"><use href="#i-groups"/></svg>Groups</a>
+    <a href="/groups.html" class="mob-nav-item" data-page="groups"><svg class="icon" aria-hidden="true"><use href="#i-groups"/></svg>Journey</a>
     <a href="/privacy.html" class="mob-nav-item" data-page="privacy"><svg class="icon" aria-hidden="true"><use href="#i-privacy"/></svg>Privacy</a>
   </div>
   <div class="mob-drawer-footer">
@@ -298,7 +298,7 @@ body.doc-editing #save-pdf-btn{display:none!important}
       <a href="/me.html" class="nav-item"><svg class="icon"><use href="#i-me"/></svg>Me</a>
       <a href="/people.html" class="nav-item"><svg class="icon"><use href="#i-people"/></svg>People</a>
       <a href="/trips.html" class="nav-item active"><svg class="icon"><use href="#i-trips"/></svg>Trips</a>
-      <a href="/groups.html" class="nav-item"><svg class="icon"><use href="#i-groups"/></svg>Groups</a>
+      <a href="/groups.html" class="nav-item"><svg class="icon"><use href="#i-groups"/></svg>Journey</a>
       <a href="/privacy.html" class="nav-item"><svg class="icon"><use href="#i-privacy"/></svg>Privacy</a>
     </nav>
     <div class="sidebar-user-card">
@@ -357,8 +357,8 @@ body.doc-editing #save-pdf-btn{display:none!important}
       <button class="modal-close" onclick="closeRename()">&#x2715;</button>
     </div>
     <div class="form-field">
-      <label class="form-label">Group name</label>
-      <input class="form-input" id="rename-input" maxlength="120" placeholder="Group name"/>
+      <label class="form-label">Journey name</label>
+      <input class="form-input" id="rename-input" maxlength="120" placeholder="Journey name"/>
     </div>
     <div class="form-actions">
       <button class="btn btn-primary btn-sm" onclick="submitRename()">Save</button>
@@ -391,7 +391,7 @@ body.doc-editing #save-pdf-btn{display:none!important}
 <div class="modal-overlay" id="audit-modal" onclick="if(event.target===this)closeAuditLog()">
   <div class="modal" style="max-width:560px">
     <div class="modal-header">
-      <h2 class="h3">Group activity</h2>
+      <h2 class="h3">Journey activity</h2>
       <button class="modal-close" onclick="closeAuditLog()">&#x2715;</button>
     </div>
     <div id="audit-content" style="min-height:80px">
@@ -853,7 +853,7 @@ function renderTripHeader(t){
   html+='<div class="doc-header-top">';
   html+='<div style="min-width:0"><div class="eyebrow" style="margin-bottom:10px">'+escHtml(past?'Past trip':'Upcoming trip')+'</div>';
   html+='<h1 class="h1">'+escHtml(_tripName(t))+'</h1></div>';
-  html+='<div class="doc-issuer-block"><div class="doc-issuer-mark"><strong>UniProfile</strong>Group Travel Record</div>';
+  html+='<div class="doc-issuer-block"><div class="doc-issuer-mark"><strong>UniProfile</strong>Journey Record</div>';
   if(t.trip_locator)html+='<div class="doc-locator">'+escHtml(t.trip_locator.toUpperCase())+'</div>';
   html+='<div id="lifecycle-pill" style="margin-top:6px"></div>';
   html+='</div></div>';
@@ -887,8 +887,8 @@ function renderGroupSection(){
     html+='<div class="doc-section">';
     html+='<div class="card-warm">';
     html+='<div class="h2" style="margin-bottom:10px">No group yet</div>';
-    html+='<p style="font-size:14px;color:var(--ink-soft);margin-bottom:20px;line-height:1.6">Create a trip group to coordinate travel readiness with your companions — track passports, share documents, and see who\'s ready at a glance.</p>';
-    html+='<button class="btn btn-primary" onclick="createGroup()">Create Trip Group</button>';
+    html+='<p style="font-size:14px;color:var(--ink-soft);margin-bottom:20px;line-height:1.6">Create a journey to coordinate travel readiness with your companions — track passports, share documents, and see who\'s ready at a glance.</p>';
+    html+='<button class="btn btn-primary" onclick="createGroup()">Create Journey</button>';
     html+='</div></div>';
   }else{
     /* Controls bar — edit-only */
@@ -899,7 +899,7 @@ function renderGroupSection(){
       if(!_group.archived_at)html+='<button class="btn btn-secondary btn-sm" style="color:var(--ink-mute)" onclick="archiveGroup()">Archive</button>';
       html+='<button class="btn btn-danger btn-sm" onclick="deleteGroup()">Delete</button>';
     }else{
-      html+='<button class="btn btn-danger btn-sm" onclick="leaveGroup()">Leave group</button>';
+      html+='<button class="btn btn-danger btn-sm" onclick="leaveGroup()">Leave journey</button>';
     }
     html+='</div>';
 
@@ -1389,7 +1389,7 @@ async function submitDocModal(){
   try{
     var mimeType=file.type||'application/octet-stream';
     var urlRes=await _req("POST","/api/v1/trip-groups/"+_group.id+"/documents/upload-url",{filename:file.name,mime_type:mimeType,file_size_bytes:file.size});
-    if(urlRes.near_limit)showToast("Approaching 20-document limit for this group.");
+    if(urlRes.near_limit)showToast("Approaching 20-document limit for this journey.");
     await new Promise(function(resolve,reject){
       var xhr=new XMLHttpRequest();
       xhr.open("PUT",urlRes.upload_url,true);
@@ -1757,9 +1757,9 @@ async function leaveGroup(){
   if(!confirm("Leave \""+_group.name+"\"? The organizer will be notified."))return;
   try{
     await _req("POST","/api/v1/trip-groups/"+_group.id+"/leave",{});
-    showToast("You have left the group.");
+    showToast("You have left the journey.");
     setTimeout(function(){window.location.href="/groups.html";},1200);
-  }catch(e){showToast("Failed to leave group.");}
+  }catch(e){showToast("Failed to leave journey.");}
 }
 
 async function createGroup(){
@@ -1769,19 +1769,19 @@ async function createGroup(){
     await _req("POST","/api/v1/trips/"+_trip.id+"/group",{name:name});
     window.location.reload();
   }catch(e){
-    if(e.message&&e.message.includes("409"))showToast("A group already exists for this trip.");
-    else showToast("Failed to create group.");
+    if(e.message&&e.message.includes("409"))showToast("A journey already exists for this trip.");
+    else showToast("Failed to create journey.");
   }
 }
 
 async function archiveGroup(){
   if(!_group)return;
-  if(!confirm("Archive this trip group? It will move to the archived list."))return;
+  if(!confirm("Archive this journey? It will move to the archived list."))return;
   try{
     await _req("POST","/api/v1/trip-groups/"+_group.id+"/archive",{});
-    showToast("Group archived.");
+    showToast("Journey archived.");
     window.location.reload();
-  }catch(e){showToast("Failed to archive group.");}
+  }catch(e){showToast("Failed to archive journey.");}
 }
 
 async function deleteGroup(){
@@ -1790,16 +1790,16 @@ async function deleteGroup(){
     if(!confirm("Permanently delete \""+_group.name+"\"? This cannot be undone."))return;
     try{
       await _req("DELETE","/api/v1/trip-groups/"+_group.id);
-      showToast("Group deleted.");
+      showToast("Journey deleted.");
       setTimeout(function(){window.location.href="/trips.html";},1000);
-    }catch(e){showToast("Failed to delete group.");}
-  },"Deleting a group is permanent. Please confirm your password to continue.");
+    }catch(e){showToast("Failed to delete journey.");}
+  },"Deleting a journey is permanent. Please confirm your password to continue.");
 }
 
 async function removeMember(memberId,memberName){
   if(!_group)return;
   openReAuth(async function(){
-    if(!confirm("Remove "+memberName+" from the group? They will be notified."))return;
+    if(!confirm("Remove "+memberName+" from this journey? They will be notified."))return;
     try{
       await _req("DELETE","/api/v1/trip-groups/"+_group.id+"/members/"+memberId);
       showToast("Member removed.");
@@ -1821,10 +1821,10 @@ async function submitRename(){
   if(!name){return;}
   try{
     await _req("PATCH","/api/v1/trip-groups/"+_group.id,{name:name});
-    showToast("Group renamed.");
+    showToast("Journey renamed.");
     closeRename();
     window.location.reload();
-  }catch(e){showToast("Failed to rename group.");}
+  }catch(e){showToast("Failed to rename journey.");}
 }
 
 /* ── Add member modal ── */
@@ -1962,7 +1962,7 @@ async function tripInit(){
   if(groupId){
     _role='member';
     var bl=document.getElementById("breadcrumb-link");
-    if(bl){bl.href="/groups.html";bl.textContent="← All groups";}
+    if(bl){bl.href="/groups.html";bl.textContent="← All journeys";}
     try{
       var p=await _req("GET","/api/v1/me");
       _uid=p.uuid;_myInitials=_initials(p);_sidebarUpdate(p);
@@ -1986,7 +1986,7 @@ async function tripInit(){
       mHtml+='<div class="doc-header-top">';
       mHtml+='<div style="min-width:0"><div class="eyebrow" style="margin-bottom:10px">'+escHtml(past?'Past trip':'Upcoming trip')+'</div>';
       mHtml+='<h1 class="h1">'+escHtml(_group.name||'Group')+'</h1></div>';
-      mHtml+='<div class="doc-issuer-block"><div class="doc-issuer-mark"><strong>UniProfile</strong>Group Travel Record</div><div id="lifecycle-pill" style="margin-top:6px"></div></div>';
+      mHtml+='<div class="doc-issuer-block"><div class="doc-issuer-mark"><strong>UniProfile</strong>Journey Record</div><div id="lifecycle-pill" style="margin-top:6px"></div></div>';
       mHtml+='</div>';
       mHtml+='<div class="doc-meta-row">';
       if(_group.destination_name)mHtml+='<div class="doc-meta-field"><div class="doc-meta-label">Destination</div><div class="doc-meta-value">'+escHtml(_group.destination_name)+'</div></div>';
