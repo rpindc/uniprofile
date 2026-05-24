@@ -772,6 +772,59 @@ function renderReadinessSentence(){
   var s=_readinessSentence(_readiness,dest);
   el.innerHTML=s?'<div class="readiness-sentence">'+s+'</div>':'';
 }
+function renderPdfAdmissibility(){
+  var el=document.getElementById('pdf-admissibility');
+  if(!el||!_readiness)return;
+  var members=_readiness.members||[];
+  if(!members.length)return;
+  var dest=_readiness.destination_name||_readiness.destination||'';
+  var html='<div class="doc-section-label" style="margin-bottom:9pt">Document Readiness'+(dest?' — '+escHtml(dest.toUpperCase()):'')+'</div>';
+  html+='<table style="width:100%;border-collapse:collapse">';
+  members.forEach(function(m){
+    var st=m.overall_status;
+    var icon,ic;
+    if(st==='ready'){icon='✓';ic='#2d6a4f';}
+    else if(st==='blocked'){icon='✗';ic='#c44d4d';}
+    else if(st==='action_needed'){icon='⚠';ic='#ba7517';}
+    else{icon='–';ic='#aaa';}
+    var detail='';
+    var checks=m.checks||[];
+    if(m.kind==='linked'){
+      var c0=checks[0];
+      detail=c0&&c0.detail?c0.detail:(st==='ready'?'Data sharing approved':'');
+    }else{
+      var bad=checks.find(function(c){return c.status==='failed'||c.status==='warning';});
+      var inf=checks.find(function(c){return c.status==='info';});
+      var pass=checks.find(function(c){return c.id==='passport_present'&&c.status==='passed';});
+      if(bad)detail=bad.detail||bad.label||'';
+      else if(pass)detail='Passport on file'+(inf?' · '+(inf.detail||inf.label||''):'');
+      else detail='Passport not on file';
+    }
+    html+='<tr style="border-bottom:0.5pt solid #ebebeb">';
+    html+='<td style="padding:5pt 6pt 5pt 0;width:18pt;text-align:center;font-size:11pt;color:'+ic+';font-weight:bold">'+icon+'</td>';
+    html+='<td style="padding:5pt 10pt 5pt 0;font-weight:500;white-space:nowrap;font-size:10pt">'+escHtml(m.display_name||'Member')+'</td>';
+    html+='<td style="padding:5pt 0;color:#666;font-size:9pt;line-height:1.35">'+escHtml(detail)+'</td>';
+    html+='</tr>';
+  });
+  html+='</table>';
+  if(DOCCHECK_PREVIEW){
+    var dph=dest?' for '+escHtml(dest):'';
+    html+='<p style="font-size:8pt;color:#999;margin-top:6pt;font-style:italic;line-height:1.4">Based on common entry requirements'+dph+' · verify with official government sources before travel.</p>';
+  }
+  el.innerHTML=html;
+}
+function renderPdfProvenance(){
+  var el=document.getElementById('pdf-provenance');
+  if(!el||!_group)return;
+  var linked=(_group.members||[]).filter(function(m){return m.kind==='linked';});
+  var n=linked.length;
+  var consentLine=n>0
+    ?'Each of the '+n+' invited traveller'+(n===1?'':'s')+' controls what information they share; document details are held privately by each individual.'
+    :'Each traveller controls what information they share; document details are held privately by each individual.';
+  el.innerHTML='<p style="font-size:8pt;color:#999;font-style:italic;line-height:1.5">'+
+    escHtml('This record was generated from traveller-consented data. '+consentLine+' Entry requirement guidance reflects common requirements only — verify with official government or embassy sources before departure.')+
+    '</p>';
+}
 function _lifecyclePill(){
   var dep=(_trip&&_trip.departure_date)||(_group&&_group.departure_date);
   var ret=(_trip&&_trip.return_date)||(_group&&_group.return_date);
@@ -1954,6 +2007,7 @@ async function tripInit(){
       mHtml+='</div>';
       _ht('trip-header',mHtml);_show('trip-header');
       renderReadinessSentence();renderLifecyclePill();
+      renderPdfAdmissibility();renderPdfProvenance();
       renderGroupSection();
     }catch(e){
       console.error(e);
@@ -1996,6 +2050,7 @@ async function tripInit(){
         _contacts=results[5]||[];
         _segments=results[6]||[];
         renderReadinessSentence();renderLifecyclePill();
+        renderPdfAdmissibility();renderPdfProvenance();
       }catch(e){
         console.error("Failed to load group data:",e);
       }
