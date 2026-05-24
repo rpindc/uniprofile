@@ -202,7 +202,7 @@ body.doc-editing #save-pdf-btn{display:none!important}
   #breadcrumb-link,
   .doc-edit-bar,.doc-controls,
   .edit-only,.ws-item-actions,
-  #save-pdf-btn,#ws-notes-editor,
+  #save-pdf-btn,#pdf-hint,#ws-notes-editor,
   .modal-overlay,#toast-msg{display:none!important}
   /* Full-width single-column layout */
   .shell{display:block}
@@ -229,6 +229,13 @@ body.doc-editing #save-pdf-btn{display:none!important}
   #pdf-admissibility:not(:empty),#pdf-provenance:not(:empty){display:block!important;font-size:10pt;color:#444;padding:10pt 0 0;border-top:0.5pt solid #bbb;margin-top:10pt}
   /* Running footer stamp on every page */
   #pdf-stamp{display:block!important;position:fixed;bottom:0;left:0;right:0;font-size:8pt;color:#888;font-family:sans-serif;text-align:center;border-top:0.5pt solid #ddd;padding:4pt 0 2pt;background:#fff}
+  /* Tighten letter-spacing so spaced caps survive fallback fonts */
+  .eyebrow{letter-spacing:0.07em}
+  .doc-section-label{letter-spacing:0.09em}
+  .doc-meta-label{letter-spacing:0.09em}
+  .doc-flight-dir{letter-spacing:0.09em}
+  .doc-issuer-mark{letter-spacing:0.1em}
+  .doc-issuer-mark strong{letter-spacing:0.07em}
   /* Page settings */
   @page{margin:18mm 20mm 24mm;size:A4 portrait}
 }
@@ -812,6 +819,7 @@ function renderTripHeader(t){
   html+='<button class="btn btn-primary" id="doc-edit-btn" onclick="enterEditMode()">Edit document</button>';
   html+='<div class="doc-edit-banner edit-only"><span class="doc-edit-status">✓ Editing — changes save as you go</span><button class="btn btn-secondary btn-sm" onclick="exitEditMode()">Done</button></div>';
   html+='<button class="btn btn-secondary btn-sm" id="save-pdf-btn" onclick="savePdf()">Save as PDF</button>';
+  html+='<span class="caption" id="pdf-hint" style="color:var(--ink-faint);margin-left:8px">In the print dialog, uncheck "Headers and footers"</span>';
   html+='</div>';
   html+='</div>';
   _ht('trip-header',html);_show('trip-header');
@@ -1249,6 +1257,14 @@ function _initials(p){
   var dn=(p&&p.display_name||'').trim();
   return dn?dn.slice(0,2).toUpperCase():'';
 }
+function _normTimeLabel(s){
+  if(!s)return s;
+  // pad single-digit minutes: "7:0 PM" → "7:00 PM", "7:0PM" → "7:00 PM"
+  s=s.replace(/(\d{1,2}):(\d)(?!\d)\s*(am|pm)/i,function(_,h,m,ap){return h+':0'+m+' '+ap.toUpperCase();});
+  // add space before AM/PM if missing: "7:30PM" → "7:30 PM"
+  s=s.replace(/(\d{1,2}:\d{2})(am|pm)/i,function(_,t,ap){return t+' '+ap.toUpperCase();});
+  return s;
+}
 function _fmtUtcStamp(){
   var d=new Date(),mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   return d.getUTCDate()+' '+mo[d.getUTCMonth()]+' '+d.getUTCFullYear()+' '+String(d.getUTCHours()).padStart(2,'0')+':'+String(d.getUTCMinutes()).padStart(2,'0')+' UTC';
@@ -1259,8 +1275,10 @@ function savePdf(){
     var ini=_myInitials?' · '+_myInitials:'';
     el.textContent='Generated '+_fmtUtcStamp()+ini+' · reflects data at time of export';
   }
-  window.print();
-  setTimeout(function(){if(el)el.textContent='';},1500);
+  (document.fonts?document.fonts.ready:Promise.resolve()).then(function(){
+    window.print();
+    setTimeout(function(){if(el)el.textContent='';},1500);
+  });
 }
 
 /* ── Member booking ref ── */
@@ -1378,7 +1396,7 @@ async function submitItineraryModal(){
   if(!day_date||!title){document.getElementById("itin-error").textContent="Date and title are required.";document.getElementById("itin-error").style.display="block";return;}
   var payload={
     day_date:day_date,
-    time_label:document.getElementById("itin-time").value.trim()||null,
+    time_label:_normTimeLabel(document.getElementById("itin-time").value.trim())||null,
     title:title,
     location:document.getElementById("itin-location").value.trim()||null,
     notes:document.getElementById("itin-notes").value.trim()||null,
@@ -1931,6 +1949,7 @@ async function tripInit(){
       mHtml+='<button class="btn btn-primary" id="doc-edit-btn" onclick="enterEditMode()">Edit document</button>';
       mHtml+='<div class="doc-edit-banner edit-only"><span class="doc-edit-status">✓ Editing — changes save as you go</span><button class="btn btn-secondary btn-sm" onclick="exitEditMode()">Done</button></div>';
       mHtml+='<button class="btn btn-secondary btn-sm" id="save-pdf-btn" onclick="savePdf()">Save as PDF</button>';
+      mHtml+='<span class="caption" id="pdf-hint" style="color:var(--ink-faint);margin-left:8px">In the print dialog, uncheck "Headers and footers"</span>';
       mHtml+='</div>';
       mHtml+='</div>';
       _ht('trip-header',mHtml);_show('trip-header');
