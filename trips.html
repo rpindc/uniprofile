@@ -315,12 +315,12 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 
     <!-- TripVault inbox address -->
     <div class="card-warm tripvault-inbox" id="tripvault-inbox" style="display:none">
-      <div class="eyebrow">Your TripVault address</div>
+      <div class="eyebrow" style="margin-bottom:6px">Forward bookings to your vault</div>
+      <p style="font-size:13px;color:var(--ink-soft);margin-bottom:12px;">When you book a flight, hotel, or tour, forward the confirmation email to:</p>
       <div class="inbox-address-row">
-        <span class="id" id="inbox-address" style="font-size:13px;color:var(--ink-soft)">—</span>
-        <button class="btn btn-secondary btn-sm" id="inbox-copy-btn" onclick="copyInboxAddress()">Copy</button>
+        <div style="background:#fff;border:0.5px solid var(--rule);border-radius:6px;padding:8px 12px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="inbox-address">—</div>
+        <button class="btn btn-secondary btn-sm" id="inbox-copy-btn" onclick="copyInboxAddress()" style="flex-shrink:0">Copy</button>
       </div>
-      <p class="caption">Forward any booking confirmation here — it'll appear in your vault.</p>
     </div>
 
     <!-- Filter bar -->

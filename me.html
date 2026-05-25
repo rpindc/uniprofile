@@ -385,7 +385,7 @@ body.me-editing .me-edit-banner{display:flex}
         </div>
         <div id="identity-save-err" class="save-err"></div>
         <div class="edit-footer">
-          <button class="btn-cancel" onclick="exitEditMode()">Done</button>
+          <button class="btn btn-primary btn-sm" onclick="exitEditMode()">Done</button>
           <span class="autosave-note">Saves automatically as you choose.</span>
         </div>
       </div>
@@ -401,7 +401,7 @@ body.me-editing .me-edit-banner{display:flex}
           <div class="card-item-title-block"><div class="card-item-title">Passport<em class="edit-sfx"> — editing</em></div></div>
           <div class="card-item-actions">
             <span id="passport-pill"></span>
-            <button class="btn btn-secondary btn-xs me-edit-only" id="passport-btn" onclick="toggleCard('passport')" aria-expanded="false">Set up</button>
+            <button class="btn btn-secondary btn-sm me-edit-only" id="passport-btn" onclick="toggleCard('passport')" aria-expanded="false">Set up</button>
           </div>
         </div>
         <div class="card-item-body empty" id="passport-body">Your primary travel document. Required for international flights. Add it once and it auto-fills at every booking.</div>
@@ -426,7 +426,7 @@ body.me-editing .me-edit-banner{display:flex}
           </div>
           <div id="psp-save-err" class="save-err"></div>
           <div class="edit-footer">
-            <button class="btn-cancel" onclick="toggleCard('passport')">Cancel</button>
+            <button class="btn btn-secondary btn-sm" onclick="toggleCard('passport')">Cancel</button>
             <span class="autosave-note">Saves automatically as you choose.</span>
           </div>
         </div>
@@ -439,7 +439,7 @@ body.me-editing .me-edit-banner{display:flex}
           <div class="card-item-title-block"><div class="card-item-title">Visa &amp; residency<em class="edit-sfx"> — editing</em></div></div>
           <div class="card-item-actions">
             <span id="visa-pill"></span>
-            <button class="btn btn-secondary btn-xs me-edit-only" id="visa-btn" onclick="toggleCard('visa')" aria-expanded="false">Set up</button>
+            <button class="btn btn-secondary btn-sm me-edit-only" id="visa-btn" onclick="toggleCard('visa')" aria-expanded="false">Set up</button>
           </div>
         </div>
         <div class="card-item-body empty" id="visa-body">Visas, residency permits, work permits, OCI cards. Add any that apply to your travel.</div>
@@ -449,7 +449,7 @@ body.me-editing .me-edit-banner{display:flex}
             <svg class="icon" style="width:13px;height:13px"><use href="#i-add"/></svg> Add visa or permit
           </button>
           <div class="edit-footer">
-            <button class="btn-cancel" onclick="toggleCard('visa')">Done</button>
+            <button class="btn btn-primary btn-sm" onclick="toggleCard('visa')">Done</button>
             <span class="autosave-note">Items save immediately when added or removed.</span>
           </div>
         </div>
@@ -462,7 +462,7 @@ body.me-editing .me-edit-banner{display:flex}
           <div class="card-item-title-block"><div class="card-item-title">Trusted traveler<em class="edit-sfx"> — editing</em></div></div>
           <div class="card-item-actions">
             <span id="trusted-pill"></span>
-            <button class="btn btn-secondary btn-xs me-edit-only" id="trusted-btn" onclick="toggleCard('trusted')" aria-expanded="false">Set up</button>
+            <button class="btn btn-secondary btn-sm me-edit-only" id="trusted-btn" onclick="toggleCard('trusted')" aria-expanded="false">Set up</button>
           </div>
         </div>
         <div class="card-item-body empty" id="trusted-body">KTN, Global Entry, NEXUS, Clear. Add your number once and it's filled at every eligible booking.</div>
@@ -472,7 +472,7 @@ body.me-editing .me-edit-banner{display:flex}
             <svg class="icon" style="width:13px;height:13px"><use href="#i-add"/></svg> Add trusted traveler document
           </button>
           <div class="edit-footer">
-            <button class="btn-cancel" onclick="toggleCard('trusted')">Done</button>
+            <button class="btn btn-primary btn-sm" onclick="toggleCard('trusted')">Done</button>
             <span class="autosave-note">Items save immediately when added or removed.</span>
           </div>
         </div>
@@ -485,7 +485,7 @@ body.me-editing .me-edit-banner{display:flex}
           <div class="card-item-title-block"><div class="card-item-title">Driver's license<em class="edit-sfx"> — editing</em></div></div>
           <div class="card-item-actions">
             <span id="drivers-pill"></span>
-            <button class="btn btn-secondary btn-xs me-edit-only" id="drivers-btn" onclick="toggleCard('drivers')" aria-expanded="false">Set up</button>
+            <button class="btn btn-secondary btn-sm me-edit-only" id="drivers-btn" onclick="toggleCard('drivers')" aria-expanded="false">Set up</button>
           </div>
         </div>
         <div class="card-item-body empty" id="drivers-body">Used at car rentals and as a U.S. domestic flight backup. Real ID compliance flagged automatically.</div>
@@ -510,7 +510,7 @@ body.me-editing .me-edit-banner{display:flex}
           </div>
           <div id="dl-save-err" class="save-err"></div>
           <div class="edit-footer">
-            <button class="btn-cancel" onclick="toggleCard('drivers')">Cancel</button>
+            <button class="btn btn-secondary btn-sm" onclick="toggleCard('drivers')">Cancel</button>
             <span class="autosave-note">Saves automatically as you choose.</span>
           </div>
         </div>
@@ -523,7 +523,7 @@ body.me-editing .me-edit-banner{display:flex}
           <div class="card-item-title-block"><div class="card-item-title">Travel insurance<em class="edit-sfx"> — editing</em></div></div>
           <div class="card-item-actions">
             <span id="insurance-pill"></span>
-            <button class="btn btn-secondary btn-xs me-edit-only" id="insurance-btn" onclick="toggleCard('insurance')" aria-expanded="false">Set up</button>
+            <button class="btn btn-secondary btn-sm me-edit-only" id="insurance-btn" onclick="toggleCard('insurance')" aria-expanded="false">Set up</button>
           </div>
         </div>
         <div class="card-item-body empty" id="insurance-body">Policy number, provider, and coverage dates. Used in Journey readiness checks — never displays "you're covered", only "on file".</div>
@@ -558,7 +558,7 @@ body.me-editing .me-edit-banner{display:flex}
           </div>
           <div id="ins-save-err" class="save-err"></div>
           <div class="edit-footer">
-            <button class="btn-cancel" onclick="toggleCard('insurance')">Cancel</button>
+            <button class="btn btn-secondary btn-sm" onclick="toggleCard('insurance')">Cancel</button>
             <span class="autosave-note">Saves automatically as you type.</span>
           </div>
         </div>
@@ -580,7 +580,7 @@ body.me-editing .me-edit-banner{display:flex}
     <div class="card-universal">
       <div class="card-universal-head">
         <div class="eyebrow">Across all travel</div>
-        <button class="btn btn-secondary btn-xs" onclick="toggleUniversal('universal-travel')">Edit</button>
+        <button class="btn btn-secondary btn-sm" onclick="toggleUniversal('universal-travel')">Edit</button>
       </div>
       <p class="card-universal-body" id="universal-travel-prose">Loading…</p>
       <div class="card-universal-edit" id="cu-universal-travel-edit">
@@ -628,7 +628,7 @@ body.me-editing .me-edit-banner{display:flex}
         <label class="form-check"><input type="checkbox" id="u-wheelchair" onchange="_debounce('universal',_autoSaveUniversal,400)"> Wheelchair / mobility assistance needed</label>
         <div id="universal-save-err" class="save-err" style="margin-top:8px"></div>
         <div class="edit-footer">
-          <button class="btn-cancel" onclick="closeUniversal('universal-travel')">Cancel</button>
+          <button class="btn btn-secondary btn-sm" onclick="closeUniversal('universal-travel')">Cancel</button>
           <span class="autosave-note">Saves automatically as you choose.</span>
         </div>
       </div>
@@ -644,7 +644,7 @@ body.me-editing .me-edit-banner{display:flex}
           <div class="card-item-title-block"><div class="card-item-title">Flight<em class="edit-sfx"> — editing</em></div></div>
           <div class="card-item-actions">
             <span id="flight-pill"></span>
-            <button class="btn btn-secondary btn-xs" id="flight-btn" onclick="toggleCard('flight')" aria-expanded="false">Set up</button>
+            <button class="btn btn-secondary btn-sm" id="flight-btn" onclick="toggleCard('flight')" aria-expanded="false">Set up</button>
           </div>
         </div>
         <div class="card-item-body empty" id="flight-body">Seat position, cabin class, preferred airlines — set once, applied quietly at every booking.</div>
@@ -731,7 +731,7 @@ body.me-editing .me-edit-banner{display:flex}
           </div>
           <div id="flight-save-err" class="save-err"></div>
           <div class="edit-footer">
-            <button class="btn-cancel" onclick="toggleCard('flight')">Cancel</button>
+            <button class="btn btn-secondary btn-sm" onclick="toggleCard('flight')">Cancel</button>
             <span class="autosave-note">Saves automatically as you choose.</span>
           </div>
         </div>
@@ -744,7 +744,7 @@ body.me-editing .me-edit-banner{display:flex}
           <div class="card-item-title-block"><div class="card-item-title">Hotel<em class="edit-sfx"> — editing</em></div></div>
           <div class="card-item-actions">
             <span id="hotel-pill"></span>
-            <button class="btn btn-secondary btn-xs" id="hotel-btn" onclick="toggleCard('hotel')" aria-expanded="false">Set up</button>
+            <button class="btn btn-secondary btn-sm" id="hotel-btn" onclick="toggleCard('hotel')" aria-expanded="false">Set up</button>
           </div>
         </div>
         <div class="card-item-body empty" id="hotel-body">Bed type, floor preference, late checkout — set these once and we'll request them on every stay.</div>
@@ -802,7 +802,7 @@ body.me-editing .me-edit-banner{display:flex}
           </div>
           <div id="hotel-save-err" class="save-err"></div>
           <div class="edit-footer">
-            <button class="btn-cancel" onclick="toggleCard('hotel')">Cancel</button>
+            <button class="btn btn-secondary btn-sm" onclick="toggleCard('hotel')">Cancel</button>
             <span class="autosave-note">Saves automatically as you choose.</span>
           </div>
         </div>
@@ -815,7 +815,7 @@ body.me-editing .me-edit-banner{display:flex}
           <div class="card-item-title-block"><div class="card-item-title">Cruise<em class="edit-sfx"> — editing</em></div></div>
           <div class="card-item-actions">
             <span id="cruise-pill"></span>
-            <button class="btn btn-secondary btn-xs" id="cruise-btn" onclick="toggleCard('cruise')" aria-expanded="false">Set up</button>
+            <button class="btn btn-secondary btn-sm" id="cruise-btn" onclick="toggleCard('cruise')" aria-expanded="false">Set up</button>
           </div>
         </div>
         <div class="card-item-body empty" id="cruise-body">Tell us how you like to cruise — cabin, dining, excursions, accessibility — and we'll quietly apply it at every booking.</div>
@@ -905,7 +905,7 @@ body.me-editing .me-edit-banner{display:flex}
           </div>
           <div id="cruise-save-err" class="save-err"></div>
           <div class="edit-footer">
-            <button class="btn-cancel" onclick="toggleCard('cruise')">Cancel</button>
+            <button class="btn btn-secondary btn-sm" onclick="toggleCard('cruise')">Cancel</button>
             <span class="autosave-note">Saves automatically as you choose.</span>
           </div>
         </div>
@@ -918,7 +918,7 @@ body.me-editing .me-edit-banner{display:flex}
           <div class="card-item-title-block"><div class="card-item-title">Rail &amp; ground<em class="edit-sfx"> — editing</em></div></div>
           <div class="card-item-actions">
             <span id="rail-pill"></span>
-            <button class="btn btn-secondary btn-xs" id="rail-btn" onclick="toggleCard('rail')" aria-expanded="false">Set up</button>
+            <button class="btn btn-secondary btn-sm" id="rail-btn" onclick="toggleCard('rail')" aria-expanded="false">Set up</button>
           </div>
         </div>
         <div class="card-item-body empty" id="rail-body">Train class, seat facing, car rental size — set your ground preferences and they follow you everywhere.</div>
@@ -971,7 +971,7 @@ body.me-editing .me-edit-banner{display:flex}
           </div>
           <div id="rail-save-err" class="save-err"></div>
           <div class="edit-footer">
-            <button class="btn-cancel" onclick="toggleCard('rail')">Done</button>
+            <button class="btn btn-primary btn-sm" onclick="toggleCard('rail')">Done</button>
             <span class="autosave-note">Saves automatically as you choose.</span>
           </div>
         </div>
@@ -991,7 +991,7 @@ body.me-editing .me-edit-banner{display:flex}
     <div class="card-universal">
       <div class="card-universal-head">
         <div class="eyebrow">Default booking context</div>
-        <button class="btn btn-secondary btn-xs" onclick="openComingSoon()">Edit rules</button>
+        <button class="btn btn-secondary btn-sm" onclick="openComingSoon()">Edit rules</button>
       </div>
       <p class="card-universal-body">Personal travel by default. Switch to corporate at checkout when needed, or set rules to switch automatically.</p>
     </div>
@@ -1006,7 +1006,7 @@ body.me-editing .me-edit-banner{display:flex}
           <div class="card-item-title-block"><div class="card-item-title">Employer &amp; role<em class="edit-sfx"> — editing</em></div></div>
           <div class="card-item-actions">
             <span id="employer-pill"></span>
-            <button class="btn btn-secondary btn-xs" id="employer-btn" onclick="toggleCard('employer')" aria-expanded="false">Set up</button>
+            <button class="btn btn-secondary btn-sm" id="employer-btn" onclick="toggleCard('employer')" aria-expanded="false">Set up</button>
           </div>
         </div>
         <div class="card-item-body empty" id="employer-body">Add your employer and role so UniProfile can apply the right booking context and expense policy automatically.</div>
@@ -1031,7 +1031,7 @@ body.me-editing .me-edit-banner{display:flex}
           </div>
           <div id="employer-save-err" class="save-err"></div>
           <div class="edit-footer">
-            <button class="btn-cancel" onclick="toggleCard('employer')">Done</button>
+            <button class="btn btn-primary btn-sm" onclick="toggleCard('employer')">Done</button>
             <span class="autosave-note">Saves automatically as you type.</span>
           </div>
         </div>
@@ -1044,7 +1044,7 @@ body.me-editing .me-edit-banner{display:flex}
           <div class="card-item-title-block"><div class="card-item-title">Travel policy<em class="edit-sfx"> — editing</em></div></div>
           <div class="card-item-actions">
             <span id="policy-pill"></span>
-            <button class="btn btn-secondary btn-xs" id="policy-btn" onclick="toggleCard('policy')" aria-expanded="false">Set up</button>
+            <button class="btn btn-secondary btn-sm" id="policy-btn" onclick="toggleCard('policy')" aria-expanded="false">Set up</button>
           </div>
         </div>
         <div class="card-item-body empty" id="policy-body">Cabin rules, hotel caps, pre-approval thresholds — your expense policy, applied automatically at booking.</div>
@@ -1130,7 +1130,7 @@ body.me-editing .me-edit-banner{display:flex}
           </div>
           <div id="policy-save-err" class="save-err"></div>
           <div class="edit-footer">
-            <button class="btn-cancel" onclick="toggleCard('policy')">Done</button>
+            <button class="btn btn-primary btn-sm" onclick="toggleCard('policy')">Done</button>
             <span class="autosave-note">Saves automatically as you choose.</span>
           </div>
         </div>
@@ -1143,7 +1143,7 @@ body.me-editing .me-edit-banner{display:flex}
           <div class="card-item-title-block"><div class="card-item-title">Corporate payment<em class="edit-sfx"> — editing</em></div></div>
           <div class="card-item-actions">
             <span id="corp-pay-pill"></span>
-            <button class="btn btn-secondary btn-xs" id="corp-pay-btn" onclick="toggleCard('corp-pay')" aria-expanded="false">Set up</button>
+            <button class="btn btn-secondary btn-sm" id="corp-pay-btn" onclick="toggleCard('corp-pay')" aria-expanded="false">Set up</button>
           </div>
         </div>
         <div class="card-item-body empty" id="corp-pay-body">Add your corporate card and expense platform so receipts route correctly every time.</div>
@@ -1162,7 +1162,7 @@ body.me-editing .me-edit-banner{display:flex}
           </div>
           <div id="corp-pay-save-err" class="save-err"></div>
           <div class="edit-footer">
-            <button class="btn-cancel" onclick="toggleCard('corp-pay')">Done</button>
+            <button class="btn btn-primary btn-sm" onclick="toggleCard('corp-pay')">Done</button>
             <span class="autosave-note">Saves automatically as you type.</span>
           </div>
         </div>
@@ -1175,7 +1175,7 @@ body.me-editing .me-edit-banner{display:flex}
           <div class="card-item-title-block"><div class="card-item-title">Personal payment<em class="edit-sfx"> — editing</em></div></div>
           <div class="card-item-actions">
             <span id="pers-pay-pill"></span>
-            <button class="btn btn-secondary btn-xs" id="pers-pay-btn" onclick="toggleCard('pers-pay')" aria-expanded="false">Set up</button>
+            <button class="btn btn-secondary btn-sm" id="pers-pay-btn" onclick="toggleCard('pers-pay')" aria-expanded="false">Set up</button>
           </div>
         </div>
         <div class="card-item-body empty" id="pers-pay-body">Your personal preferred card. Set once and UniProfile uses it by default on personal bookings.</div>
@@ -1190,7 +1190,7 @@ body.me-editing .me-edit-banner{display:flex}
           </div>
           <div id="pers-pay-save-err" class="save-err"></div>
           <div class="edit-footer">
-            <button class="btn-cancel" onclick="toggleCard('pers-pay')">Done</button>
+            <button class="btn btn-primary btn-sm" onclick="toggleCard('pers-pay')">Done</button>
             <span class="autosave-note">Saves automatically as you type.</span>
           </div>
         </div>
@@ -1203,7 +1203,7 @@ body.me-editing .me-edit-banner{display:flex}
           <div class="card-item-title-block"><div class="card-item-title">Loyalty programs</div></div>
           <div class="card-item-actions">
             <span id="loyalty-pill"></span>
-            <button class="btn btn-secondary btn-xs" id="loyalty-btn" onclick="toggleCard('loyalty')" aria-expanded="false">Set up</button>
+            <button class="btn btn-secondary btn-sm" id="loyalty-btn" onclick="toggleCard('loyalty')" aria-expanded="false">Set up</button>
           </div>
         </div>
         <div class="card-item-body empty" id="loyalty-body">Link your airline, hotel, and car loyalty numbers — UniProfile fills them in silently at booking.</div>
@@ -1213,7 +1213,7 @@ body.me-editing .me-edit-banner{display:flex}
             <svg class="icon" style="width:13px;height:13px"><use href="#i-add"/></svg> Add program
           </button>
           <div class="edit-footer">
-            <button class="btn-cancel" onclick="toggleCard('loyalty')">Done</button>
+            <button class="btn btn-primary btn-sm" onclick="toggleCard('loyalty')">Done</button>
             <span class="autosave-note">Saves automatically as you choose.</span>
           </div>
         </div>
@@ -1885,8 +1885,8 @@ function _renderLoyaltyCard(p){
       +'<div style="font-size:12px;color:var(--ink-mute);display:flex;align-items:center;flex-wrap:wrap;gap:4px">'+(lp.member_number?"···"+_esc(lp.member_number.slice(-4))+" ":"")+tier+pts+'</div>'
       +'</div>'
       +'<div style="display:flex;gap:5px;flex-shrink:0">'
-      +'<button class="btn btn-secondary btn-xs" onclick="openEditLoyalty(\''+lp.id+'\')">Edit</button>'
-      +'<button class="btn btn-danger btn-xs" onclick="deleteLoyalty(\''+lp.id+'\')">Delete</button>'
+      +'<button class="btn btn-secondary btn-sm" onclick="openEditLoyalty(\''+lp.id+'\')">Edit</button>'
+      +'<button class="btn btn-danger btn-sm" onclick="deleteLoyalty(\''+lp.id+'\')">Delete</button>'
       +'</div></div>';
   });
   _ht("loyalty-list-inner",html);
@@ -2144,8 +2144,8 @@ function _renderInlineDocList(containerId,typeFilter){
       +'</div>'
       +'</div>'
       +'<div style="display:flex;gap:5px;flex-shrink:0">'
-      +'<button class="btn btn-secondary btn-xs" onclick="openEditDocById(\''+did+'\')">Edit</button>'
-      +'<button class="btn btn-danger btn-xs" onclick="deleteDoc(\''+did+'\')">Delete</button>'
+      +'<button class="btn btn-secondary btn-sm" onclick="openEditDocById(\''+did+'\')">Edit</button>'
+      +'<button class="btn btn-danger btn-sm" onclick="deleteDoc(\''+did+'\')">Delete</button>'
       +'</div></div>';
   });
   container.innerHTML=html;
