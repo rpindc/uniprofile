@@ -297,8 +297,8 @@ body.doc-editing #save-pdf-btn{display:none!important}
       <a href="/home.html" class="nav-item"><svg class="icon"><use href="#i-home"/></svg>Home</a>
       <a href="/me.html" class="nav-item"><svg class="icon"><use href="#i-me"/></svg>Me</a>
       <a href="/people.html" class="nav-item"><svg class="icon"><use href="#i-people"/></svg>People</a>
-      <a href="/trips.html" class="nav-item active"><svg class="icon"><use href="#i-trips"/></svg>Trips</a>
-      <a href="/groups.html" class="nav-item"><svg class="icon"><use href="#i-groups"/></svg>Journey</a>
+      <a href="/trips.html" class="nav-item" id="nav-trips"><svg class="icon"><use href="#i-trips"/></svg>Trips</a>
+      <a href="/groups.html" class="nav-item" id="nav-groups"><svg class="icon"><use href="#i-groups"/></svg>Journey</a>
       <a href="/privacy.html" class="nav-item"><svg class="icon"><use href="#i-privacy"/></svg>Privacy</a>
     </nav>
     <div class="sidebar-user-card">
@@ -1994,6 +1994,16 @@ async function addLinkedMember(linkedUuid){
   }
 }
 
+/* ── Nav ── */
+function _setNavActive(page){
+  document.querySelectorAll(".nav-item").forEach(function(a){a.classList.remove("active");});
+  document.querySelectorAll(".mob-nav-item").forEach(function(a){a.classList.remove("active");});
+  var si=document.getElementById("nav-"+page);
+  if(si)si.classList.add("active");
+  var mob=document.querySelector(".mob-nav-item[data-page='"+page+"']");
+  if(mob)mob.classList.add("active");
+}
+
 /* ── Init ── */
 async function tripInit(){
   if(!await _auth())return;
@@ -2004,6 +2014,7 @@ async function tripInit(){
   /* Member view — joined group, no owned trip */
   if(groupId){
     _role='member';
+    _setNavActive('groups');
     var bl=document.getElementById("breadcrumb-link");
     if(bl){bl.href="/groups.html";bl.textContent="← All journeys";}
     try{
@@ -2074,6 +2085,13 @@ async function tripInit(){
       return;
     }
     document.title=(_trip.trip_name||"Trip")+" — UniProfile";
+    if(_trip.trip_group_id){
+      _setNavActive('groups');
+      var bl=document.getElementById("breadcrumb-link");
+      if(bl){bl.href="/groups.html";bl.textContent="← All journeys";}
+    }else{
+      _setNavActive('trips');
+    }
     renderTripHeader(_trip);
 
     if(_trip.trip_group_id){

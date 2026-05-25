@@ -163,6 +163,9 @@ a.group-card:active{background:rgba(26,26,26,0.02)}
         <h1 class="h1">Your journeys, by <em>trip</em>.</h1>
         <p class="lede" id="groups-lede">Loading…</p>
       </div>
+      <div style="flex-shrink:0;margin-top:8px">
+        <button class="btn btn-primary" onclick="openCreateJourneyModal()">Create Journey</button>
+      </div>
     </div>
 
     <div class="filter-bar">
@@ -181,13 +184,27 @@ a.group-card:active{background:rgba(26,26,26,0.02)}
 
 <div class="toast" id="toast"></div>
 
+<!-- Create Journey trip-picker modal -->
+<div id="cj-modal-scrim" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:900" onclick="closeCreateJourneyModal()"></div>
+<div id="cj-modal" role="dialog" aria-modal="true" aria-labelledby="cj-modal-title" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:901;background:#fff;border-radius:12px;padding:28px 24px;width:min(440px,92vw);max-height:80vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.18)">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px">
+    <div>
+      <div class="eyebrow" style="margin-bottom:4px">New journey</div>
+      <h2 class="h2" id="cj-modal-title" style="margin:0">Choose a trip</h2>
+    </div>
+    <button onclick="closeCreateJourneyModal()" style="background:none;border:none;cursor:pointer;color:var(--ink-mute);font-size:20px;line-height:1;padding:0 0 0 12px" aria-label="Close">&#x2715;</button>
+  </div>
+  <p style="font-size:13px;color:var(--ink-soft);margin-bottom:16px">Select one of your trips to create a Journey for it. You can then invite people from the Journey page.</p>
+  <div id="cj-trip-list" style="display:flex;flex-direction:column;gap:8px"></div>
+</div>
+
 <script src="/components/mobile-drawer.js"></script>
 <script>
 var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
 var _tok=null,_uid=null;
-var _allGroups=[],_curFilter="all";
+var _allGroups=[],_curFilter="all",_myTrips=[];
 
 function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent("https://www.uniprofile.net/home.html");}
 function _ph(){var p=new URLSearchParams(window.location.hash.slice(1));return p.get("id_token")||p.get("access_token");}
@@ -338,12 +355,56 @@ function updateLede(){
   _st("groups-lede",(total===1?total+" journey":total+" journeys")+(parts.length?" ("+parts.join(", ")+")":"")+".");
 }
 
+/* ── Create Journey modal ── */
+function openCreateJourneyModal(){
+  if(!_myTrips.length){
+    window.location.href="/trips.html";
+    return;
+  }
+  var groupedIds=new Set(_allGroups.filter(function(g){return g.role!=="member";}).map(function(g){return g.trip_id;}).filter(Boolean));
+  var eligible=_myTrips.filter(function(t){return!groupedIds.has(t.id);});
+  var listEl=document.getElementById("cj-trip-list");
+  if(!listEl)return;
+  if(!eligible.length){
+    listEl.innerHTML='<p style="font-size:13px;color:var(--ink-mute);padding:8px 0">All your trips already have a Journey. Open one to manage it.</p>';
+  }else{
+    listEl.innerHTML=eligible.map(function(t){
+      var dest=t.destination_iata||t.destination||"";
+      var name=t.trip_name||dest||"Unnamed trip";
+      var dates=t.departure_date?t.departure_date+(t.return_date?" – "+t.return_date:""):"";
+      return '<button onclick="createJourneyForTrip(\''+escHtml(t.id)+'\')" style="display:flex;flex-direction:column;align-items:flex-start;width:100%;background:var(--surface-warm,#faf9f7);border:0.5px solid var(--rule);border-radius:8px;padding:12px 14px;cursor:pointer;text-align:left;gap:2px;font-family:var(--sans)">'
+        +'<span style="font-size:14px;font-weight:500;color:var(--ink)">'+escHtml(name)+'</span>'
+        +(dates?'<span style="font-size:12px;color:var(--ink-mute)">'+escHtml(dates)+'</span>':"")
+        +'</button>';
+    }).join("");
+  }
+  document.getElementById("cj-modal-scrim").style.display="block";
+  document.getElementById("cj-modal").style.display="block";
+}
+function closeCreateJourneyModal(){
+  document.getElementById("cj-modal-scrim").style.display="none";
+  document.getElementById("cj-modal").style.display="none";
+}
+async function createJourneyForTrip(tripId){
+  var trip=_myTrips.find(function(t){return t.id===tripId;});
+  var name=(trip&&(trip.trip_name||trip.destination_iata||"Trip")||"Trip")+" group";
+  closeCreateJourneyModal();
+  try{
+    await _req("POST","/api/v1/trips/"+tripId+"/group",{name:name});
+    window.location.href="/trip.html?id="+encodeURIComponent(tripId);
+  }catch(e){
+    if(e.message&&e.message.includes("409"))showToast("A journey already exists for that trip.");
+    else showToast("Failed to create journey.");
+  }
+}
+
 /* ── Init ── */
 async function groupsInit(){
   if(!await _auth())return;
   try{
     var p=await _req("GET","/api/v1/me");
     _uid=p.uuid;
+    _myTrips=p.trips||[];
     _sidebarUpdate(p);
     _allGroups=await _req("GET","/api/v1/trip-groups");
     updateLede();
