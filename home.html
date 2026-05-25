@@ -290,7 +290,7 @@ async function _req(method,ep,body){
   return r.json();
 }
 function _dn(p){if(!p)return"Traveler";if(p.display_name&&p.display_name.trim())return p.display_name.trim();if(p.identity&&p.identity.legal_first)return p.identity.legal_first;return p.uniprofile_number||p.email||"Traveler";}
-function _ini(p){var s=_dn(p).trim();return s.length>=2?s.slice(0,2).toUpperCase():s.toUpperCase();}
+function _ini(p){var id=p&&p.identity||{};var f=(id.legal_first||"").trim();var l=(id.legal_last||"").trim();if(f&&l)return(f[0]+l[0]).toUpperCase();if(f)return f.slice(0,2).toUpperCase();var s=_dn(p).trim();return s.length>=2?s.slice(0,2).toUpperCase():s.toUpperCase();}
 function _st(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
 function _ht(id,v){var e=document.getElementById(id);if(e)e.innerHTML=v;}
 function _fmt(s){if(!s)return"—";return new Date(s).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});}

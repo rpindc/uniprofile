@@ -256,11 +256,13 @@ async function _req(method,ep,body){
   return r.json();
 }
 function _dn(p){if(!p)return"Traveler";if(p.display_name&&p.display_name.trim())return p.display_name.trim();if(p.identity&&p.identity.legal_first)return p.identity.legal_first;return p.uniprofile_number||p.email||"Traveler";}
+function _ini(p){var id=p&&p.identity||{};var f=(id.legal_first||"").trim();var l=(id.legal_last||"").trim();if(f&&l)return(f[0]+l[0]).toUpperCase();if(f)return f.slice(0,2).toUpperCase();var s=_dn(p).trim();return s.length>=2?s.slice(0,2).toUpperCase():s.toUpperCase();}
 function _st(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
 function _ht(id,v){var e=document.getElementById(id);if(e)e.innerHTML=v;}
 function _sidebarUpdate(p){
   _st("sidebar-number",p.uniprofile_number||"—");
   _st("sidebar-name",_dn(p));
+  _st("sidebar-avatar",_ini(p));
   _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
 }
 function _evtLabel(type){
@@ -499,11 +501,15 @@ async function loadFactors(){
       var since=f.created_at?("Added "+_fmt(f.created_at)):"";
       fHtml+='<div class="factor-row">'
         +'<div class="factor-icon">'+icon+'</div>'
-        +'<div class="factor-main"><div class="factor-name">'+label+(f.label?" · "+f.label:"")+'</div><div class="factor-meta">'+since+'</div></div>'
+        +'<div class="factor-main"><div class="factor-name">'+label+' <span style="font-weight:400;color:var(--ink-mute);">· Set up (not yet enforced)</span></div><div class="factor-meta">'+since+'</div></div>'
         +'<button class="btn btn-danger btn-sm" onclick="removeFactor(\''+f.id+'\')">Remove</button>'
         +'</div>';
     });
-    fHtml+='<p style="font-size:12px;color:var(--ink-mute);padding:12px 0 4px;line-height:1.5;">Your authenticator is set up, but login is not yet gated on it — enforcement is coming in a future update.</p>';
+    fHtml+='<div style="background:var(--amber-soft);border-radius:8px;padding:12px 16px;margin:10px 0 6px;display:flex;gap:10px;align-items:flex-start;">'
+      +'<span style="color:var(--amber);font-size:15px;flex-shrink:0;line-height:1.4;">ⓘ</span>'
+      +'<div><p style="font-size:13px;font-weight:500;color:var(--amber);margin-bottom:3px;">Not yet enforced at sign-in</p>'
+      +'<p style="font-size:13px;color:var(--ink-soft);line-height:1.5;">Set up, but sign-in still uses your password only. Login enforcement is coming in a future update.</p>'
+      +'</div></div>';
   }
   _ht("privacy-factors",fHtml);
 
