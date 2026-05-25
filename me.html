@@ -513,6 +513,54 @@ body.me-editing .me-edit-banner{display:flex}
         </div>
       </div>
 
+      <!-- Travel insurance -->
+      <div class="card-item" id="card-insurance">
+        <div class="card-item-head">
+          <div class="card-item-icon"><svg class="icon" style="width:18px;height:18px"><use href="#i-policy"/></svg></div>
+          <div class="card-item-title-block"><div class="card-item-title">Travel insurance<em class="edit-sfx"> — editing</em></div></div>
+          <div class="card-item-actions">
+            <span id="insurance-pill"></span>
+            <button class="btn btn-secondary btn-xs me-edit-only" id="insurance-btn" onclick="toggleCard('insurance')" aria-expanded="false">Set up</button>
+          </div>
+        </div>
+        <div class="card-item-body empty" id="insurance-body">Policy number, provider, and coverage dates. Used in Journey readiness checks — never displays "you're covered", only "on file".</div>
+        <div class="card-item-edit" id="insurance-edit">
+          <div class="form-field">
+            <label class="form-label">Emergency assistance phone <span class="form-label-helper">— shown prominently in Journey</span></label>
+            <input class="form-input" id="ins-ephone" placeholder="e.g. +1 800 123 4567" autocomplete="off"/>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">Provider</label>
+              <input class="form-input" id="ins-provider" placeholder="e.g. Allianz, AXA" autocomplete="off"/>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Coverage type <span class="form-label-helper">— optional</span></label>
+              <input class="form-input" id="ins-coverage" placeholder="e.g. Comprehensive, Medical only" autocomplete="off"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label class="form-label">Valid from</label>
+              <input class="form-input" type="date" id="ins-valid-from"/>
+            </div>
+            <div class="form-field">
+              <label class="form-label">Valid until</label>
+              <input class="form-input" type="date" id="ins-valid-until"/>
+            </div>
+          </div>
+          <div class="form-field">
+            <label class="form-label">Policy number <span class="form-label-helper">— optional, stored masked</span></label>
+            <input class="form-input" id="ins-number" placeholder="e.g. POL-123456" autocomplete="off"/>
+          </div>
+          <div id="ins-save-err" class="save-err"></div>
+          <div class="edit-footer">
+            <button class="btn-cancel" onclick="toggleCard('insurance')">Cancel</button>
+            <span class="autosave-note">Saves automatically as you type.</span>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /card-list -->
 
     <button class="btn-dashed me-edit-only" onclick="openAddDoc()">+ Add another document (OCI, NEXUS, military ID…)</button>
@@ -1566,6 +1614,30 @@ function _renderIdentityCards(p){
     db.textContent="Used at car rentals and as a U.S. domestic flight backup. Real ID compliance flagged automatically.";
     if(dbtn)dbtn.textContent="Set up";
   }
+
+  // Travel insurance
+  var insurance=docs.find(function(d){return d.doc_type==="TRAVEL_INSURANCE";});
+  var ib=document.getElementById("insurance-body");
+  var ibtn=document.getElementById("insurance-btn");
+  if(insurance){
+    var vfStr=insurance.valid_from?insurance.valid_from.slice(0,10):null;
+    var vuStr=insurance.valid_until?insurance.valid_until.slice(0,10):null;
+    var dateRange=vfStr&&vuStr?_esc(_fmt2(vfStr))+" – "+_esc(_fmt2(vuStr)):vfStr?_esc(_fmt2(vfStr))+" onwards":vuStr?"until "+_esc(_fmt2(vuStr)):null;
+    _ht("insurance-pill",_pill("pill-green","On file"));
+    ib.className="card-item-body";
+    var bodyParts=[];
+    if(insurance.insurance_provider)bodyParts.push(_esc(insurance.insurance_provider));
+    if(insurance.coverage_type)bodyParts.push(_esc(insurance.coverage_type));
+    if(dateRange)bodyParts.push(dateRange);
+    if(insurance.doc_number_last4)bodyParts.push("Policy ···"+_esc(insurance.doc_number_last4));
+    ib.innerHTML=bodyParts.length?bodyParts.join(" · ")+".":'Policy on file.';
+    if(ibtn)ibtn.textContent="Edit";
+  }else{
+    _ht("insurance-pill",_pill("pill-neutral","Not set"));
+    ib.className="card-item-body empty";
+    ib.textContent="Policy number, provider, and coverage dates. Used in Journey readiness checks — never displays \"you're covered\", only \"on file\".";
+    if(ibtn)ibtn.textContent="Set up";
+  }
 }
 
 function _renderUniversalTravel(p){
@@ -2006,6 +2078,48 @@ async function _autoSaveDriversLicense(){
   }catch(e){_showErrRetry("dl-save-err",_autoSaveDriversLicense);}
 }
 
+/* ── Identity card — travel insurance auto-save ── */
+function _prefillInsurance(){
+  var ins=Object.values(_docsMap).find(function(d){return d.doc_type==="TRAVEL_INSURANCE";});
+  _setval("ins-number","");
+  if(ins)_req("GET","/api/v1/profile/"+_uid+"/documents/"+ins.id).then(function(r){_setval("ins-number",r.doc_number||"");}).catch(function(){});
+  _setval("ins-ephone",ins&&ins.emergency_phone?ins.emergency_phone:"");
+  _setval("ins-provider",ins&&ins.insurance_provider?ins.insurance_provider:"");
+  _setval("ins-coverage",ins&&ins.coverage_type?ins.coverage_type:"");
+  _setval("ins-valid-from",ins&&ins.valid_from?ins.valid_from.slice(0,10):"");
+  _setval("ins-valid-until",ins&&ins.valid_until?ins.valid_until.slice(0,10):"");
+  _showErr("ins-save-err","");
+  ["ins-number","ins-ephone","ins-provider","ins-coverage","ins-valid-from","ins-valid-until"].forEach(function(fid){
+    var el=document.getElementById(fid);
+    if(el)el.addEventListener("change",function(){_debounce("insurance",_autoSaveInsurance,500);});
+  });
+}
+async function _autoSaveInsurance(){
+  _showErr("ins-save-err","");
+  var num=_val("ins-number").trim();
+  var ephone=_val("ins-ephone").trim();
+  var provider=_val("ins-provider").trim();
+  var coverage=_val("ins-coverage").trim();
+  var vf=_val("ins-valid-from");
+  var vu=_val("ins-valid-until");
+  if(!num&&!ephone&&!provider&&!coverage&&!vf&&!vu)return;
+  var existing=Object.values(_docsMap).find(function(d){return d.doc_type==="TRAVEL_INSURANCE";});
+  var data={doc_type:"TRAVEL_INSURANCE"};
+  if(num)data.doc_number=num;
+  if(ephone)data.emergency_phone=ephone;
+  if(provider)data.insurance_provider=provider;
+  if(coverage)data.coverage_type=coverage;
+  if(vf)data.valid_from=vf;
+  if(vu)data.valid_until=vu;
+  if(existing)data.doc_id=existing.id||existing.doc_id;
+  try{
+    await _req("PUT","/api/v1/profile/"+_uid,{module:existing?"document_update":"document_add",data:data});
+    showToast("Insurance saved.");
+    var p=await _req("GET","/api/v1/me");_prof=p;_docsMap={};(p.documents||[]).forEach(function(d){var did=d.id||d.doc_id;_docsMap[did]=d;});
+    _renderIdentityCards(p);
+  }catch(e){_showErrRetry("ins-save-err",_autoSaveInsurance);}
+}
+
 /* ── Identity card — inline doc list renderers (visa & trusted) ── */
 var _VISA_TYPES=["VISA","US_GREEN_CARD","ESTA","NATIONAL_ID","OCI_CARD","BIRTH_CERTIFICATE","MILITARY_ID"];
 var _TT_TYPES=["KTN","GLOBAL_ENTRY","NEXUS","SENTRI"];
@@ -2059,6 +2173,7 @@ toggleCard=function(name){
   if(card&&card.classList.contains("editing")){
     if(name==="passport")_prefillPassport();
     if(name==="drivers")_prefillDriversLicense();
+    if(name==="insurance")_prefillInsurance();
     if(name==="visa")_renderInlineDocList("visa-doc-list",_VISA_TYPES);
     if(name==="trusted")_renderInlineDocList("trusted-doc-list",_TT_TYPES);
     if(name==="flight")_populateFlightEdit(_prof);

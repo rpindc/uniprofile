@@ -184,7 +184,7 @@ async function buildProfile(uuid){
   const p=[uuidParam("u",uuid)];
   const R=await Promise.all([
     sql("SELECT legal_first,legal_middle,legal_last,dob,nationality,gender_code,home_airport FROM traveler_identity WHERE traveler_uuid=:u",p),
-    sql("SELECT id,doc_type,doc_number,given_names,surname,issuing_country,nationality,dob,gender_code,issue_date,expiry_date,visa_type,destination_country,entries,valid_from,valid_until,port_of_entry,pr_category,pr_conditions,esta_application_number,esta_status,doc_notes,is_primary FROM travel_documents WHERE traveler_uuid=:u ORDER BY is_primary DESC",p),
+    sql("SELECT id,doc_type,doc_number,given_names,surname,issuing_country,nationality,dob,gender_code,issue_date,expiry_date,visa_type,destination_country,entries,valid_from,valid_until,port_of_entry,pr_category,pr_conditions,esta_application_number,esta_status,doc_notes,is_primary,insurance_provider,coverage_type,emergency_phone FROM travel_documents WHERE traveler_uuid=:u ORDER BY is_primary DESC",p),
     sql("SELECT cabin_domestic,cabin_international,seat_position,row_preference,avoid_last_row,avoid_middle_seats,wheelchair_needed,hotel_room_type,hotel_floor_pref,car_type_pref FROM seat_preferences WHERE traveler_uuid=:u",p),
     sql("SELECT primary_meal_code,beverage_pref,allergies,avoid_items,dietary_notes FROM meal_preferences WHERE traveler_uuid=:u",p),
     sql("SELECT id,program_type,provider_name,program_name,member_number,tier_status,tier_expires,auto_apply,linked_card_type,linked_card_last4,points_balance,notes FROM loyalty_memberships WHERE traveler_uuid=:u AND is_active=TRUE ORDER BY program_type,provider_name",p),
@@ -261,12 +261,12 @@ async function updateModule(uuid,module,data){
       await sql("UPDATE trips SET trip_context=:ctx,updated_at=NOW() WHERE id=:id AND traveler_uuid=:u",[strParam("ctx",data.context),strParam("id",data.trip_id),uuidParam("u",uuid)]);
       break;
     case "document_add":
-      await sql("INSERT INTO travel_documents (traveler_uuid,doc_type,doc_number,given_names,surname,issuing_country,nationality,dob,gender_code,issue_date,expiry_date,place_of_birth,visa_type,destination_country,entries,valid_from,valid_until,port_of_entry,pr_category,pr_conditions,esta_application_number,esta_status,doc_notes,is_primary) VALUES (:u,:dt,:dn,:gn,:sn,:ic,:nat,:dob,:gen,:id,:ed,:pb,:vt,:dc,:en,:vf,:vu,:pe,:prc,:prcn,:ean,:es,:notes,:pri)",[uuidParam("u",uuid),strParam("dt",data.doc_type),strParam("dn",data.doc_number),strParam("gn",data.given_names),strParam("sn",data.surname),strParam("ic",data.issuing_country),strParam("nat",data.nationality),dateParam("dob",data.dob),strParam("gen",data.gender_code),dateParam("id",data.issue_date),dateParam("ed",data.expiry_date),strParam("pb",data.place_of_birth),strParam("vt",data.visa_type),strParam("dc",data.destination_country),strParam("en",data.entries),dateParam("vf",data.valid_from),dateParam("vu",data.valid_until),strParam("pe",data.port_of_entry),strParam("prc",data.pr_category),strParam("prcn",data.pr_conditions),strParam("ean",data.esta_application_number),strParam("es",data.esta_status),strParam("notes",data.doc_notes),boolParam("pri",data.is_primary||false)]);
+      await sql("INSERT INTO travel_documents (traveler_uuid,doc_type,doc_number,given_names,surname,issuing_country,nationality,dob,gender_code,issue_date,expiry_date,place_of_birth,visa_type,destination_country,entries,valid_from,valid_until,port_of_entry,pr_category,pr_conditions,esta_application_number,esta_status,doc_notes,is_primary,insurance_provider,coverage_type,emergency_phone) VALUES (:u,:dt,:dn,:gn,:sn,:ic,:nat,:dob,:gen,:id,:ed,:pb,:vt,:dc,:en,:vf,:vu,:pe,:prc,:prcn,:ean,:es,:notes,:pri,:iprov,:covt,:ephone)",[uuidParam("u",uuid),strParam("dt",data.doc_type),strParam("dn",data.doc_number),strParam("gn",data.given_names),strParam("sn",data.surname),strParam("ic",data.issuing_country),strParam("nat",data.nationality),dateParam("dob",data.dob),strParam("gen",data.gender_code),dateParam("id",data.issue_date),dateParam("ed",data.expiry_date),strParam("pb",data.place_of_birth),strParam("vt",data.visa_type),strParam("dc",data.destination_country),strParam("en",data.entries),dateParam("vf",data.valid_from),dateParam("vu",data.valid_until),strParam("pe",data.port_of_entry),strParam("prc",data.pr_category),strParam("prcn",data.pr_conditions),strParam("ean",data.esta_application_number),strParam("es",data.esta_status),strParam("notes",data.doc_notes),boolParam("pri",data.is_primary||false),strParam("iprov",data.insurance_provider),strParam("covt",data.coverage_type),strParam("ephone",data.emergency_phone)]);
       break;
     case "document_update":{
       const dnClause=data.doc_number?"doc_number=:dn,":"";
       const dnParam=data.doc_number?[strParam("dn",data.doc_number)]:[];
-      await sql(`UPDATE travel_documents SET ${dnClause}given_names=:gn,surname=:sn,issuing_country=:ic,nationality=:nat,dob=:dob,gender_code=:gen,issue_date=:id,expiry_date=:ed,visa_type=:vt,destination_country=:dc,entries=:en,valid_from=:vf,valid_until=:vu,port_of_entry=:pe,pr_category=:prc,pr_conditions=:prcn,esta_application_number=:ean,esta_status=:es,doc_notes=:notes,is_primary=:pri,updated_at=NOW() WHERE id=:did AND traveler_uuid=:u`,[...dnParam,strParam("gn",data.given_names),strParam("sn",data.surname),strParam("ic",data.issuing_country),strParam("nat",data.nationality),dateParam("dob",data.dob),strParam("gen",data.gender_code),dateParam("id",data.issue_date),dateParam("ed",data.expiry_date),strParam("vt",data.visa_type),strParam("dc",data.destination_country),strParam("en",data.entries),dateParam("vf",data.valid_from),dateParam("vu",data.valid_until),strParam("pe",data.port_of_entry),strParam("prc",data.pr_category),strParam("prcn",data.pr_conditions),strParam("ean",data.esta_application_number),strParam("es",data.esta_status),strParam("notes",data.doc_notes),boolParam("pri",data.is_primary||false),uuidParam("did",data.doc_id),uuidParam("u",uuid)]);
+      await sql(`UPDATE travel_documents SET ${dnClause}given_names=:gn,surname=:sn,issuing_country=:ic,nationality=:nat,dob=:dob,gender_code=:gen,issue_date=:id,expiry_date=:ed,visa_type=:vt,destination_country=:dc,entries=:en,valid_from=:vf,valid_until=:vu,port_of_entry=:pe,pr_category=:prc,pr_conditions=:prcn,esta_application_number=:ean,esta_status=:es,doc_notes=:notes,is_primary=:pri,insurance_provider=:iprov,coverage_type=:covt,emergency_phone=:ephone,updated_at=NOW() WHERE id=:did AND traveler_uuid=:u`,[...dnParam,strParam("gn",data.given_names),strParam("sn",data.surname),strParam("ic",data.issuing_country),strParam("nat",data.nationality),dateParam("dob",data.dob),strParam("gen",data.gender_code),dateParam("id",data.issue_date),dateParam("ed",data.expiry_date),strParam("vt",data.visa_type),strParam("dc",data.destination_country),strParam("en",data.entries),dateParam("vf",data.valid_from),dateParam("vu",data.valid_until),strParam("pe",data.port_of_entry),strParam("prc",data.pr_category),strParam("prcn",data.pr_conditions),strParam("ean",data.esta_application_number),strParam("es",data.esta_status),strParam("notes",data.doc_notes),boolParam("pri",data.is_primary||false),strParam("iprov",data.insurance_provider),strParam("covt",data.coverage_type),strParam("ephone",data.emergency_phone),uuidParam("did",data.doc_id),uuidParam("u",uuid)]);
       break;}
       break;
     case "document_delete":
@@ -1152,7 +1152,7 @@ exports.handler=async function(event){
       const returnDate=g.return_date||null;
       const members=typeof g.members==="string"?JSON.parse(g.members):(g.members||[]);
       // Fetch docs for self (organizer's own docs, or member's own docs)
-      const selfDocs=await sql("SELECT doc_type AS document_type,expiry_date AS date_of_expiry FROM travel_documents WHERE traveler_uuid=:u AND doc_type='PASSPORT'",[uuidParam("u",myUuid)]);
+      const selfDocs=await sql("SELECT doc_type AS document_type,expiry_date AS date_of_expiry,valid_from,valid_until,insurance_provider FROM travel_documents WHERE traveler_uuid=:u AND doc_type IN ('PASSPORT','TRAVEL_INSURANCE')",[uuidParam("u",myUuid)]);
       // Named-only docs — only organizer can access these
       const namedIds=role==='organizer'?members.filter(function(m){return m.kind==='named_only'&&m.named_only_id;}).map(function(m){return m.named_only_id;}):[];
       const namedDocs=namedIds.length?await sql("SELECT named_only_id::text,document_type,date_of_expiry FROM named_only_documents WHERE named_only_id=ANY(ARRAY["+namedIds.map(function(_,i){return':id'+i;}).join(',')+"]::uuid[])",namedIds.map(function(id,i){return uuidParam('id'+i,id);})):[];
@@ -1184,11 +1184,33 @@ exports.handler=async function(event){
             return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,joined:cStatus==='approved'};
           }
         }
-        const admissibility=evaluateAdmissibility(docs,destIata,returnDate);
-        const passportCheck={id:'passport_present',label:'Passport',status:docs.length?'passed':'failed',detail:docs.length?'On file':'Not added'};
+        const passportDocs=docs.filter(function(d){return d.document_type==='PASSPORT';});
+        const insuranceDocs=docs.filter(function(d){return d.document_type==='TRAVEL_INSURANCE';});
+        const admissibility=evaluateAdmissibility(passportDocs,destIata,returnDate);
+        const passportCheck={id:'passport_present',label:'Passport',status:passportDocs.length?'passed':'failed',detail:passportDocs.length?'On file':'Not added'};
         const noRules=admissibility.overall_status==='n/a';
         const admChecks=noRules?[{id:'rules_na',label:'Entry rules',status:'info',detail:'Requirements for '+destIata+' not yet available — verify with official sources'}]:admissibility.checks;
-        return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,checks:[passportCheck,...admChecks],overall_status:docs.length?(noRules?'ready':admissibility.overall_status):'action_needed'};
+        let insuranceCheck=null;
+        if(insuranceDocs.length){
+          const ins=insuranceDocs[0];
+          const tripStart=returnDate?(new Date(returnDate.slice(0,10))):null;
+          const vf=ins.valid_from?new Date(ins.valid_from.slice(0,10)):null;
+          const vu=ins.valid_until?new Date(ins.valid_until.slice(0,10)):null;
+          const coversTrip=vf&&vu&&tripStart?vf<=tripStart&&vu>=tripStart:null;
+          const fromStr=vf?vf.toISOString().slice(0,10):null;
+          const untilStr=vu?vu.toISOString().slice(0,10):null;
+          if(coversTrip===false){
+            insuranceCheck={id:'insurance',label:'Travel insurance',status:'warning',detail:'Insurance on file — dates may not cover this trip · verify before travel'};
+          } else if(fromStr&&untilStr){
+            insuranceCheck={id:'insurance',label:'Travel insurance',status:'passed',detail:'Travel insurance on file · covers '+fromStr+'–'+untilStr};
+          } else {
+            insuranceCheck={id:'insurance',label:'Travel insurance',status:'passed',detail:'Travel insurance on file'};
+          }
+        } else {
+          insuranceCheck={id:'insurance',label:'Travel insurance',status:'info',detail:'No travel insurance on file · some destinations require proof of coverage'};
+        }
+        const allChecks=[passportCheck,...admChecks,insuranceCheck];
+        return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,checks:allChecks,overall_status:passportDocs.length?(noRules?'ready':admissibility.overall_status):'action_needed'};
       });
       const total=memberResults.length;
       const ready=memberResults.filter(function(m){return m.overall_status==='ready';}).length;

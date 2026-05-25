@@ -577,7 +577,7 @@ var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
 var _tok=null,_uid=null,_myInitials='';
-var _trip=null,_group=null,_readiness=null,_familyProfile=null,_workspace=null,_itinerary=null,_documents=null,_contacts=null,_segments=null;
+var _trip=null,_group=null,_readiness=null,_familyProfile=null,_workspace=null,_itinerary=null,_documents=null,_contacts=null,_segments=null,_myInsurance=null;
 var _IATA_CITY={
   'ATL':'Atlanta','LAX':'Los Angeles','ORD':'Chicago','DFW':'Dallas','DEN':'Denver',
   'JFK':'New York','SFO':'San Francisco','SEA':'Seattle','LAS':'Las Vegas','MCO':'Orlando',
@@ -1169,6 +1169,46 @@ function renderEmergencyContactsSection(){
   return html;
 }
 
+/* ── Insurance section ── */
+function renderInsuranceSection(){
+  var ins=_myInsurance;
+  var html='<div class="doc-section">';
+  html+='<div class="doc-section-head">';
+  html+='<div class="doc-section-label">Your Travel Insurance</div>';
+  html+='<a class="btn btn-secondary btn-sm" href="/me.html#insurance" target="_blank" rel="noopener">Manage</a>';
+  html+='</div>';
+  if(!ins){
+    html+='<div class="caption" style="color:var(--ink-faint);font-style:italic;padding:6px 0">No travel insurance on file. Add it on your <a href="/me.html" style="color:var(--ink-mute)">profile</a> · some destinations require proof of coverage.</div>';
+  }else{
+    var ephone=ins.emergency_phone;
+    if(ephone){
+      html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--rule)">';
+      html+='<div style="flex:1;min-width:0">';
+      html+='<div style="font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:2px">Emergency assistance</div>';
+      html+='<a href="tel:'+escHtml(ephone)+'" style="font-size:15px;font-weight:600;color:var(--ink);text-decoration:none">'+escHtml(ephone)+'</a>';
+      html+='</div></div>';
+    }
+    var rows=[];
+    if(ins.insurance_provider)rows.push({label:'Provider',val:ins.insurance_provider});
+    if(ins.coverage_type)rows.push({label:'Coverage',val:ins.coverage_type});
+    var vf=ins.valid_from?ins.valid_from.slice(0,10):null;
+    var vu=ins.valid_until?ins.valid_until.slice(0,10):null;
+    if(vf||vu){
+      var dateStr=(vf&&vu)?(vf+' – '+vu):vf?('From '+vf):('Until '+vu);
+      rows.push({label:'Valid',val:dateStr});
+    }
+    if(ins.doc_number_last4)rows.push({label:'Policy',val:'···'+ins.doc_number_last4});
+    rows.forEach(function(r){
+      html+='<div class="ws-item"><div class="ws-item-main">';
+      html+='<span style="font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-faint);margin-right:8px">'+escHtml(r.label)+'</span>';
+      html+='<span style="font-size:13px">'+escHtml(r.val)+'</span>';
+      html+='</div></div>';
+    });
+  }
+  html+='</div>';
+  return html;
+}
+
 /* ── Workspace section ── */
 function renderWorkspaceSection(){
   if(!_group)return'';
@@ -1216,6 +1256,9 @@ function renderWorkspaceSection(){
 
   /* Documents */
   html+=renderDocumentsSection();
+
+  /* Insurance */
+  html+=renderInsuranceSection();
 
   /* Quick Reference */
   var refs=(_workspace&&_workspace.reference_numbers)||[];
@@ -1966,6 +2009,7 @@ async function tripInit(){
     try{
       var p=await _req("GET","/api/v1/me");
       _uid=p.uuid;_myInitials=_initials(p);_sidebarUpdate(p);
+      _myInsurance=(p.documents||[]).find(function(d){return d.doc_type==="TRAVEL_INSURANCE";})||null;
       var results=await Promise.all([
         _req("GET","/api/v1/trip-groups/"+groupId),
         _req("GET","/api/v1/trip-groups/"+groupId+"/readiness"),
@@ -2022,6 +2066,7 @@ async function tripInit(){
     var p=await _req("GET","/api/v1/me");
     _uid=p.uuid;_myInitials=_initials(p);
     _sidebarUpdate(p);
+    _myInsurance=(p.documents||[]).find(function(d){return d.doc_type==="TRAVEL_INSURANCE";})||null;
     _trip=(p.trips||[]).find(function(t){return t.id===tripId;});
     if(!_trip){
       document.title="Trip not found — UniProfile";
