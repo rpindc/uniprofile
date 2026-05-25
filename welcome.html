@@ -3,13 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Welcome — UniProfile</title>
-<meta name="description" content="A quieter place for your travel. Here's what works today and what's still on the way." />
-<meta name="robots" content="noindex,nofollow" />
+<title>UniProfile — One home for everything you travel with</title>
+<meta name="description" content="UniProfile gives travelers a single private place for their documents, trips, insurance, preferences, and family." />
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,300;9..144,0,400;9..144,1,300;9..144,1,400&family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
   :root {
@@ -23,8 +22,8 @@
     --rule-strong: rgba(26, 26, 26, 0.18);
     --green: #2d6a4f;
     --green-soft: #e8efe9;
-    --amber: #8a5a1c;
-    --amber-soft: #f3ead8;
+    --amber: #ba7517;
+    --amber-soft: #f9f1e3;
     --serif: 'Fraunces', Georgia, serif;
     --sans: 'Inter Tight', -apple-system, sans-serif;
   }
@@ -50,7 +49,7 @@
 
   /* Top bar */
   .topbar {
-    padding: 32px 0 24px;
+    padding: 24px 0;
     border-bottom: 0.5px solid var(--rule);
   }
 
@@ -66,6 +65,7 @@
     font-weight: 400;
     letter-spacing: -0.01em;
     color: var(--ink);
+    text-decoration: none;
   }
 
   .wordmark em {
@@ -73,13 +73,39 @@
     font-weight: 300;
   }
 
-  .badge {
-    font-size: 11px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ink-mute);
-    font-weight: 500;
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
   }
+
+  .topbar-login {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    text-decoration: none;
+    letter-spacing: -0.005em;
+    transition: color 120ms ease;
+  }
+
+  .topbar-login:hover { color: var(--ink); }
+
+  .topbar-signup {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--paper);
+    background: var(--ink);
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    letter-spacing: -0.005em;
+    transition: background 120ms ease;
+    white-space: nowrap;
+  }
+
+  .topbar-signup:hover { background: #2a2a2a; }
 
   /* Hero */
   .hero {
@@ -175,9 +201,7 @@
     gap: 28px;
   }
 
-  .feature {
-    position: relative;
-  }
+  .feature { position: relative; }
 
   .feature-name {
     font-family: var(--sans);
@@ -251,8 +275,8 @@
     color: var(--paper);
     background: var(--ink);
     border: none;
-    padding: 16px 28px;
-    border-radius: 2px;
+    padding: 12px 24px;
+    border-radius: 4px;
     cursor: pointer;
     letter-spacing: -0.005em;
     transition: background 160ms ease, transform 160ms ease;
@@ -267,13 +291,8 @@
     transform: translateY(-1px);
   }
 
-  .btn-primary .arrow {
-    transition: transform 160ms ease;
-  }
-
-  .btn-primary:hover .arrow {
-    transform: translateX(3px);
-  }
+  .btn-primary .arrow { transition: transform 160ms ease; }
+  .btn-primary:hover .arrow { transform: translateX(3px); }
 
   .btn-link {
     font-family: var(--sans);
@@ -309,7 +328,8 @@
   /* Responsive */
   @media (max-width: 720px) {
     .container { padding: 0 24px; }
-    .hero { padding: 64px 0 48px; }
+    .topbar { padding: 16px 0; }
+    .hero { padding: 56px 0 40px; }
     .columns {
       grid-template-columns: 1fr;
       gap: 56px;
@@ -333,10 +353,7 @@
   .reveal-4 { animation-delay: 380ms; }
 
   @keyframes reveal {
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -353,18 +370,21 @@
 <div class="topbar">
   <div class="container topbar-inner">
     <div class="wordmark">Uni<em>Profile</em></div>
-    <div class="badge">Early access</div>
+    <div class="topbar-actions">
+      <a id="topbar-login" href="#" class="topbar-login">Log in</a>
+      <a id="topbar-signup" href="#" class="topbar-signup">Sign up</a>
+    </div>
   </div>
 </div>
 
 <main class="container">
 
   <section class="hero">
-    <div class="eyebrow reveal reveal-1">You're invited</div>
+    <div class="eyebrow reveal reveal-1">Early access</div>
     <h1 class="reveal reveal-2">One home for<br /><em>everything</em> you travel with.</h1>
     <p class="lede reveal reveal-3">
       UniProfile gives travelers a single private place for their documents,
-      trips, insurance, preferences, and family — and is being built to
+      trips, insurance, preferences, and travel companions — and is being built to
       eventually replace the dozens of forms you fill out at every booking.
       A lot of that works today. Here's the honest split before you sign up.
     </p>
@@ -381,42 +401,37 @@
       <div class="feature-list">
         <div class="feature">
           <div class="feature-name">Document vault &amp; expiry alerts</div>
-          <div class="feature-desc">Passport, visa, KTN, Global Entry, ESTA, vaccination records — encrypted in one place. We watch expiry dates against your trips and warn you before it's a problem.</div>
+          <div class="feature-desc">Passport, visa, KTN, Global Entry, ESTA, driver's licence — in one place. We watch expiry dates against your trips and alert you before it becomes a problem.</div>
         </div>
 
         <div class="feature">
           <div class="feature-name">Trip vault by email</div>
-          <div class="feature-desc">Forward any booking confirmation — flights, hotels, trains, cruises — and it's parsed and saved in one place, searchable by destination and date.</div>
+          <div class="feature-desc">Forward any booking confirmation — flights, hotels, trains, cruises — to your personal vault address. It's parsed and saved, searchable by destination and date.</div>
         </div>
 
         <div class="feature">
-          <div class="feature-name">Family &amp; companion profiles</div>
-          <div class="feature-desc">Track your parents', kids', and partner's documents alongside yours. Expiry alerts cover the whole household, not just you.</div>
+          <div class="feature-name">Travel companions &amp; family</div>
+          <div class="feature-desc">Add named profiles for travel companions and family members, each with their own documents and expiry dates. Manage everyone's paperwork without juggling separate records.</div>
         </div>
 
         <div class="feature">
           <div class="feature-name">Preferences, saved once</div>
-          <div class="feature-desc">Seat, meal, room type, bed firmness, loyalty numbers — written down once in your profile instead of re-entered at every site.</div>
+          <div class="feature-desc">Seat position, cabin class, meal code, hotel bed type, loyalty numbers — written down once in your profile. The same list every booking asks you to retype.</div>
         </div>
 
         <div class="feature">
-          <div class="feature-name">Insurance &amp; tours</div>
-          <div class="feature-desc">Store travel insurance policies and booked tours or activities alongside your trips. Attach PDFs, track coverage dates, and see what's live versus upcoming.</div>
+          <div class="feature-name">Travel insurance</div>
+          <div class="feature-desc">Store your travel insurance policy — provider, coverage dates, and emergency phone number — alongside your passport and other documents.</div>
         </div>
 
         <div class="feature">
-          <div class="feature-name">Group bookings</div>
-          <div class="feature-desc">Manage group travel in one place — shared manifests, per-member document status, and group notes, all without a spreadsheet.</div>
+          <div class="feature-name">Journeys</div>
+          <div class="feature-desc">Create a Journey for any trip — solo it's your own complete record; with others, everyone shares one readiness view. Document status, itinerary, and emergency contacts without a spreadsheet.</div>
         </div>
 
         <div class="feature">
           <div class="feature-name">Cruise profile</div>
-          <div class="feature-desc">Cabin preferences, dining seatings, onboard packages, and shore excursion notes — a dedicated section for cruisers.</div>
-        </div>
-
-        <div class="feature">
-          <div class="feature-name">Consent ledger &amp; data rights</div>
-          <div class="feature-desc">Every data-sharing event is logged with who saw what and when. Revoke any operator's access instantly. Full GDPR export on demand.</div>
+          <div class="feature-desc">Cabin preference, deck level, dining seating, excursion style, sailing type — saved once, available for every booking.</div>
         </div>
       </div>
     </div>
@@ -450,12 +465,17 @@
 
         <div class="feature">
           <div class="feature-name">Visa &amp; entry-rule checks</div>
-          <div class="feature-desc">Real-time monitoring of visa validity, ETA expirations, and destination-rule changes against your itinerary.</div>
+          <div class="feature-desc">Basic entry-rule checks run today in Journey readiness — passport validity against your destination. Real-time monitoring of ETA expirations and destination-rule changes is coming.</div>
         </div>
 
         <div class="feature">
           <div class="feature-name">Bleisure separation</div>
           <div class="feature-desc">When a work trip extends into a personal weekend, the policy, payment, and loyalty contexts switch automatically.</div>
+        </div>
+
+        <div class="feature">
+          <div class="feature-name">Consent ledger &amp; data rights</div>
+          <div class="feature-desc">A complete audit trail of who has seen your data and when — with per-operator access revocation and data export. Today you can view your recent account activity in Privacy; the full consent ledger is in development.</div>
         </div>
       </div>
     </div>
@@ -466,17 +486,17 @@
     <div class="footnote-label">A few things worth knowing</div>
     <ul class="footnote-list">
       <li>We don't sell your data. Not to advertisers, not to anyone.</li>
-      <li>You can export everything and delete your account at any time. No lock-in, no dark patterns.</li>
-      <li>Every operator that touches your data is listed in your consent ledger. You can revoke access to any of them instantly.</li>
+      <li>You can delete your account at any time. No lock-in, no dark patterns.</li>
       <li>This is early. You'll see rough edges. Tell us about them — that's the trade we're asking for.</li>
     </ul>
   </section>
 
   <section class="cta">
     <a id="btn-signup" href="#" class="btn-primary">
-      Continue to signup
+      Create account
       <span class="arrow">→</span>
     </a>
+    <a id="btn-login" href="#" class="btn-link">Log in</a>
     <a id="btn-privacy" href="#" class="btn-link">How privacy works</a>
   </section>
 
@@ -485,18 +505,19 @@
 <footer>
   <div class="container footer-inner">
     <div>UniProfile</div>
-    <div>By invitation only</div>
+    <div>Early access</div>
   </div>
 </footer>
 
 <script>
 (function(){
-  var COGNITO = "https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
-  var CLIENT_ID = "2heljmdli4f9cv2i4m0i020mfc";
-  var redirect = encodeURIComponent(window.location.origin + "/");
-  document.getElementById("btn-signup").href =
-    COGNITO + "/signup?client_id=" + CLIENT_ID +
-    "&response_type=token&scope=email+openid+profile&redirect_uri=" + redirect;
+  var C = "https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
+  var CID = "2heljmdli4f9cv2i4m0i020mfc";
+  var RU = encodeURIComponent(window.location.origin + "/home.html");
+  var loginUrl  = C + "/login?client_id="  + CID + "&response_type=token&scope=email+openid+profile&redirect_uri=" + RU;
+  var signupUrl = C + "/signup?client_id=" + CID + "&response_type=token&scope=email+openid+profile&redirect_uri=" + RU;
+  ["btn-login",  "topbar-login" ].forEach(function(id){var el=document.getElementById(id);if(el)el.href=loginUrl;});
+  ["btn-signup", "topbar-signup"].forEach(function(id){var el=document.getElementById(id);if(el)el.href=signupUrl;});
   document.getElementById("btn-privacy").href = "/privacy.html";
 })();
 </script>

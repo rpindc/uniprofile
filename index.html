@@ -2,10 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta http-equiv="refresh" content="0;url=/home.html" />
 <title>UniProfile</title>
 </head>
 <body>
-<script>window.location.replace('/home.html');</script>
+<script>
+if(localStorage.getItem('up_token')){
+  window.location.replace('/home.html');
+}else{
+  window.location.replace('/welcome.html');
+}
+</script>
 </body>
 </html>
