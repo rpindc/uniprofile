@@ -268,7 +268,8 @@ function _sidebarUpdate(p){
 function _evtLabel(e){
   var type=typeof e==='string'?e:(e&&e.event_type||'');
   var m=(e&&typeof e==='object'&&e.metadata&&typeof e.metadata==='object')?e.metadata:{};
-  function fmtDoc(d){return(d||'Document').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});}
+  var _docNames={PASSPORT:'Passport',VISA:'Visa',TRAVEL_INSURANCE:'Travel insurance',DRIVERS_LICENSE:"Driver's license",BIRTH_CERTIFICATE:'Birth certificate',US_GREEN_CARD:'Permanent resident card',NATIONAL_ID:'National ID',GLOBAL_ENTRY:'Global Entry',KTN:'Known traveler no.',ESTA:'ESTA',NEXUS:'NEXUS',SENTRI:'SENTRI',MILITARY_ID:'Military ID',OCI_CARD:'OCI card'};
+  function fmtDoc(d){return _docNames[d]||(d||'Document').replace(/_/g,' ').toLowerCase().replace(/^\w/,function(c){return c.toUpperCase();});}
   var map={
     totp_enrolled:'Authenticator app enrolled',
     step_up_granted:'Step-up verified',
