@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,300;9..144,0,400;9..144,1,300;9..144,1,400&family=Inter+Tight:wght@400;500&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/components/mobile-drawer.css">
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
 <style>
 :root{--ink:#1a1a1a;--ink-soft:#4a4a48;--ink-mute:#8a8a86;--ink-faint:#b8b8b3;--paper:#faf8f4;--paper-warm:#f3efe7;--paper-cream:#f9f7f2;--rule:rgba(26,26,26,0.08);--rule-strong:rgba(26,26,26,0.18);--field-bg:#fff;--green:#2d6a4f;--green-soft:#e8efe9;--amber:#ba7517;--amber-soft:#f9f1e3;--red:#c44d4d;--red-soft:#f4e8e8;--serif:'Fraunces',Georgia,serif;--sans:'Inter Tight',-apple-system,sans-serif;--mono:'JetBrains Mono','SF Mono',Menlo,monospace}
@@ -87,6 +88,19 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .factor-name{font-size:14px;font-weight:500;color:var(--ink);margin-bottom:2px}
 .factor-meta{font-size:12px;color:var(--ink-mute)}
 @media(max-width:767px){}
+.modal-overlay{position:fixed;inset:0;background:rgba(26,26,26,0.55);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
+.modal-box{background:var(--paper);border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(0,0,0,0.18)}
+.modal-head{padding:24px 24px 16px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.modal-body{padding:0 24px 24px}
+.modal-close{background:none;border:none;cursor:pointer;color:var(--ink-mute);padding:4px;border-radius:4px;flex-shrink:0;line-height:1;margin-top:2px}
+.modal-close:hover{color:var(--ink)}
+.codes-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0;background:var(--paper-warm);border-radius:8px;padding:16px}
+.code-item{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--ink);letter-spacing:0.04em;padding:6px 8px;background:#fff;border-radius:4px;text-align:center}
+.qr-wrap{display:flex;justify-content:center;margin:16px 0;padding:16px;background:#fff;border-radius:8px;border:0.5px solid var(--rule)}
+.secret-box{font-family:var(--mono);font-size:12px;color:var(--ink-soft);background:var(--paper-warm);border-radius:6px;padding:10px 14px;word-break:break-all;letter-spacing:0.06em;text-align:center;margin:8px 0 16px}
+.totp-input{font-family:var(--mono);font-size:26px;font-weight:500;letter-spacing:0.24em;text-align:center;width:100%;padding:14px;border:1.5px solid var(--rule-strong);border-radius:8px;background:#fff;color:var(--ink);outline:none;margin-top:8px}
+.totp-input:focus{border-color:var(--ink)}
+.totp-error{font-size:12px;color:var(--red);margin-top:8px;min-height:18px;text-align:center}
 </style>
 </head>
 <body>
@@ -222,11 +236,15 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   </main>
 </div>
 
+<div id="totp-modal" style="display:none" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="totp-modal-title">
+  <div class="modal-box"><div id="totp-modal-inner"></div></div>
+</div>
+
 <script src="/components/mobile-drawer.js"></script>
 <script>var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
-var _tok=null,_prof=null,_uid=null;
+var _tok=null,_prof=null,_uid=null,_enrollSecret=null;
 function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent("https://www.uniprofile.net/home.html");}
 function _ph(){var p=new URLSearchParams(window.location.hash.slice(1));return p.get("id_token")||p.get("access_token");}
 async function _req(method,ep,body){
@@ -300,25 +318,163 @@ function switchTab(name){
   if(tabs[tabIdx])tabs[tabIdx].classList.add("active");
 }
 
+// ── Modal helpers ────────────────────────────────────────────────────────────
+
+function _closeModal(){
+  document.getElementById("totp-modal").style.display="none";
+  document.getElementById("totp-modal-inner").innerHTML="";
+  _enrollSecret=null;
+  window._currentCodes=null;
+  switchTab("security");
+  loadFactors();
+}
+
+function _copyCodes(){
+  var text=(window._currentCodes||[]).join("\n");
+  var btn=document.getElementById("codes-copy-btn");
+  function _markCopied(){if(btn){var orig=btn.innerHTML;btn.textContent="Copied!";setTimeout(function(){btn.innerHTML=orig;},2000);}}
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(_markCopied).catch(function(){_fallbackCopy(text);_markCopied();});
+  } else {_fallbackCopy(text);_markCopied();}
+}
+function _fallbackCopy(text){
+  var ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";
+  document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);
+}
+function _downloadCodes(){
+  var codes=window._currentCodes||[];
+  var text="UniProfile Recovery Codes\nGenerated: "+new Date().toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"})+"\n\n"+codes.join("\n")+"\n\nEach code can only be used once.\nKeep this file somewhere safe and private.";
+  var blob=new Blob([text],{type:"text/plain"});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement("a");a.href=url;a.download="uniprofile-recovery-codes.txt";
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+
+function _codesHtml(codes){
+  return codes.map(function(c){return'<div class="code-item">'+c+'</div>';}).join("");
+}
+
+// ── Step 2: recovery codes display (used after enroll and after regen) ───────
+
+function _showCodes(codes,isRegen){
+  window._currentCodes=codes;
+  var heading=isRegen?"New recovery codes":"2FA enabled — save your recovery codes";
+  var note=isRegen
+    ?"Your previous codes have been invalidated. Save these somewhere safe."
+    :"Recovery codes let you access your account if you lose your authenticator. Each code can only be used once.";
+  var copyIcon='<svg style="width:13px;height:13px;margin-right:4px;vertical-align:middle" viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.25"/><path d="M5 15H4C2.9 15 2 14.1 2 13V4C2 2.9 2.9 2 4 2H13C14.1 2 15 2.9 15 4V5" stroke="currentColor" stroke-width="1.25"/></svg>';
+  var dlIcon='<svg style="width:13px;height:13px;margin-right:4px;vertical-align:middle" viewBox="0 0 24 24" fill="none"><path d="M12 3V15M12 15L8 11M12 15L16 11" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 20H20" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>';
+  var inner=document.getElementById("totp-modal-inner");
+  inner.innerHTML=
+    '<div class="modal-head"><h2 class="h3" id="totp-modal-title">'+heading+'</h2></div>'
+    +'<div class="modal-body">'
+    +'<div style="background:var(--amber-soft);border-radius:8px;padding:12px 16px;margin-bottom:4px;">'
+    +'<p style="font-size:12px;font-weight:500;color:var(--amber);margin-bottom:3px;">Save these somewhere safe — they\'re shown once.</p>'
+    +'<p style="font-size:12px;color:var(--ink-soft);">'+note+'</p>'
+    +'</div>'
+    +'<div class="codes-grid">'+_codesHtml(codes)+'</div>'
+    +'<div style="display:flex;gap:8px;margin-bottom:16px;">'
+    +'<button class="btn btn-secondary btn-sm" id="codes-copy-btn" onclick="_copyCodes()" style="flex:1">'+copyIcon+'Copy all</button>'
+    +'<button class="btn btn-secondary btn-sm" onclick="_downloadCodes()" style="flex:1">'+dlIcon+'Download .txt</button>'
+    +'</div>'
+    +'<button class="btn btn-primary" style="width:100%" onclick="_closeModal()">Done — I\'ve saved them</button>'
+    +'</div>';
+  document.getElementById("totp-modal").style.display="flex";
+}
+
+// ── Step 1: QR code display ──────────────────────────────────────────────────
+
+function _showEnrollQR(otpauthUri,secret){
+  var fmt=secret.replace(/(.{4})/g,"$1 ").trim();
+  var inner=document.getElementById("totp-modal-inner");
+  inner.innerHTML=
+    '<div class="modal-head">'
+    +'<div><p class="eyebrow" style="margin-bottom:6px">Step 1 of 2</p><h2 class="h3" id="totp-modal-title">Scan with your authenticator</h2></div>'
+    +'<button class="modal-close" onclick="_closeModal()" aria-label="Cancel enrollment"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2L14 14M14 2L2 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>'
+    +'</div>'
+    +'<div class="modal-body">'
+    +'<p style="font-size:13px;color:var(--ink-soft);margin-bottom:0;">Open Authenticator, Authy, or any TOTP app and scan the code below.</p>'
+    +'<div class="qr-wrap"><canvas id="totp-qr-canvas"></canvas></div>'
+    +'<p style="font-size:11px;color:var(--ink-mute);text-align:center;margin-bottom:4px;">Can\'t scan? Enter this code manually in your app:</p>'
+    +'<div class="secret-box">'+fmt+'</div>'
+    +'<p style="font-size:13px;font-weight:500;color:var(--ink);margin-bottom:0;">Then enter the 6-digit code your app shows:</p>'
+    +'<input id="totp-code-input" class="totp-input" type="text" inputmode="numeric" maxlength="6" placeholder="000 000" autocomplete="one-time-code" oninput="this.value=this.value.replace(/[^0-9]/g,\'\')">'
+    +'<div class="totp-error" id="totp-error"></div>'
+    +'<div style="display:flex;gap:10px;margin-top:20px;">'
+    +'<button class="btn btn-secondary" onclick="_closeModal()" style="flex:0;white-space:nowrap">Cancel</button>'
+    +'<button class="btn btn-primary" id="totp-verify-btn" onclick="activateTotp()" style="flex:1">Verify and enable</button>'
+    +'</div>'
+    +'<p style="font-size:11px;color:var(--ink-mute);margin-top:14px;line-height:1.5;">2FA is optional — it adds extra protection for sensitive actions. Your login is not affected until enforcement is added in a future update.</p>'
+    +'</div>';
+  document.getElementById("totp-modal").style.display="flex";
+  setTimeout(function(){var inp=document.getElementById("totp-code-input");if(inp)inp.focus();},80);
+  var inp=document.getElementById("totp-code-input");
+  if(inp)inp.addEventListener("keydown",function(e){if(e.key==="Enter")activateTotp();});
+  if(typeof QRCode!=="undefined"){
+    QRCode.toCanvas(document.getElementById("totp-qr-canvas"),otpauthUri,{width:180,margin:1},function(err){if(err)console.error("QR error:",err);});
+  }
+}
+
+// ── Enrollment entry point ───────────────────────────────────────────────────
+
+async function startEnroll(){
+  var btn=document.getElementById("btn-enable-totp");
+  if(btn){btn.disabled=true;btn.textContent="Setting up…";}
+  try{
+    var res=await _req("POST","/api/v1/auth/totp/enroll");
+    _enrollSecret=res.secret;
+    _showEnrollQR(res.otpauth,res.secret);
+  }catch(e){
+    if(btn){btn.disabled=false;btn.textContent="Enable two-factor authentication";}
+    alert("Could not start setup. Please try again.");
+  }
+}
+
+async function activateTotp(){
+  var codeInput=document.getElementById("totp-code-input");
+  var code=codeInput?codeInput.value.trim():"";
+  var errEl=document.getElementById("totp-error");
+  if(!/^\d{6}$/.test(code)){if(errEl)errEl.textContent="Enter the 6-digit code from your app.";return;}
+  var btn=document.getElementById("totp-verify-btn");
+  if(btn){btn.disabled=true;btn.textContent="Verifying…";}
+  if(errEl)errEl.textContent="";
+  try{
+    var res=await _req("POST","/api/v1/auth/totp/activate",{code:code});
+    _showCodes(res.recovery_codes,false);
+  }catch(e){
+    if(btn){btn.disabled=false;btn.textContent="Verify and enable";}
+    if(errEl)errEl.textContent="Incorrect code — check your app and try again.";
+  }
+}
+
+// ── Recovery code regeneration ───────────────────────────────────────────────
+
 async function regenCodes(){
   if(!confirm("This will invalidate all existing recovery codes. Continue?"))return;
+  var btn=document.getElementById("regen-btn");
+  if(btn){btn.disabled=true;btn.textContent="Regenerating…";}
   try{
     var res=await _req("POST","/api/v1/auth/recovery-codes/regenerate");
     if(res.recovery_codes&&res.recovery_codes.length){
-      var msg="New codes:\n\n"+res.recovery_codes.join("\n")+"\n\nSave these somewhere safe — they won't be shown again.";
-      alert(msg);
+      _showCodes(res.recovery_codes,true);
     }
-    await loadFactors();
-  }catch(e){alert("Failed to regenerate codes.");}
+  }catch(e){
+    alert("Failed to regenerate codes.");
+    if(btn){btn.disabled=false;btn.textContent="Regenerate codes";}
+  }
 }
 
+// ── Factor removal ───────────────────────────────────────────────────────────
+
 async function removeFactor(factorId){
-  if(!confirm("Remove this security factor? You will no longer need it to verify your identity."))return;
+  if(!confirm("Remove this security factor? 2FA will be disabled on your account."))return;
   try{
     await _req("DELETE","/api/v1/auth/factors/"+factorId);
     await loadFactors();
   }catch(e){alert("Failed to remove factor.");}
 }
+
+// ── Load and render factors ──────────────────────────────────────────────────
 
 async function loadFactors(){
   var factorsRes={factors:[],recovery_codes_remaining:0};
@@ -327,10 +483,15 @@ async function loadFactors(){
   var rcRemaining=factorsRes.recovery_codes_remaining||0;
   var activeFactors=factors.filter(function(f){return f.is_active;});
 
-  // Render factors
   var fHtml="";
   if(!activeFactors.length){
-    fHtml='<div class="factor-row"><div class="factor-main"><div class="factor-name" style="font-weight:400;color:var(--ink-mute);">No two-factor authentication enrolled.</div><div class="factor-meta">Your account is protected by password only.</div></div></div>';
+    fHtml='<div class="factor-row" style="padding:20px 0;">'
+      +'<div class="factor-main">'
+      +'<div class="factor-name" style="font-weight:400;color:var(--ink-soft);margin-bottom:4px;">No two-factor authentication enrolled.</div>'
+      +'<div class="factor-meta" style="margin-bottom:16px;">Your account is protected by your Cognito password only.</div>'
+      +'<button class="btn btn-secondary btn-sm" id="btn-enable-totp" onclick="startEnroll()">Enable two-factor authentication</button>'
+      +'</div>'
+      +'</div>';
   } else {
     activeFactors.forEach(function(f){
       var icon=f.factor_type==="totp"?"🔐":"🔑";
@@ -345,14 +506,13 @@ async function loadFactors(){
   }
   _ht("privacy-factors",fHtml);
 
-  // Recovery codes info
   var secTab=document.getElementById("tab-security");
-  if(secTab)secTab.textContent=activeFactors.length?"Security":"Security · No 2FA";
+  if(secTab)secTab.textContent=activeFactors.length?"Security":"Security";
   var rcEl=document.getElementById("privacy-recovery-info");
   var regenBtn=document.getElementById("regen-btn");
   if(rcEl){
     if(!activeFactors.length){
-      rcEl.textContent="Enroll an authenticator app to generate recovery codes.";
+      rcEl.textContent="Enable 2FA above to generate recovery codes.";
       if(regenBtn)regenBtn.style.display="none";
     } else {
       rcEl.textContent=rcRemaining+" code"+(rcRemaining===1?"":"s")+" remaining.";
@@ -360,6 +520,8 @@ async function loadFactors(){
     }
   }
 }
+
+// ── Auth + init ──────────────────────────────────────────────────────────────
 
 async function _auth(){
   var h=_ph();
@@ -371,12 +533,15 @@ async function _auth(){
 
 async function privacyInit(){
   if(!await _auth())return;
+
+  // Close modal on overlay click
+  document.getElementById("totp-modal").addEventListener("click",function(e){if(e.target===this)_closeModal();});
+
   try{
     var p=await _req("GET","/api/v1/me");
     _prof=p;_uid=p.uuid;
     _sidebarUpdate(p);
 
-    // Load activity events
     var eventsRes={events:[]};
     try{eventsRes=await _req("GET","/api/v1/auth/events");}catch(e){}
     var events=eventsRes.events||[];
@@ -391,7 +556,6 @@ async function privacyInit(){
     if(!rows)rows='<div class="activity-row"><div class="activity-time">—</div><div class="activity-text" style="color:var(--ink-mute);">No activity recorded yet. Actions like updating your profile, adding documents, or changing context will appear here.</div><div class="activity-meta"></div></div>';
     _ht("privacy-activity-rows",rows);
 
-    // Load security factors
     await loadFactors();
 
   }catch(e){console.error(e);}
