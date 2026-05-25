@@ -503,6 +503,7 @@ async function loadFactors(){
         +'<button class="btn btn-danger btn-sm" onclick="removeFactor(\''+f.id+'\')">Remove</button>'
         +'</div>';
     });
+    fHtml+='<p style="font-size:12px;color:var(--ink-mute);padding:12px 0 4px;line-height:1.5;">Your authenticator is set up, but login is not yet gated on it — enforcement is coming in a future update.</p>';
   }
   _ht("privacy-factors",fHtml);
 
