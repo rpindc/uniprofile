@@ -713,8 +713,27 @@ exports.handler=async function(event){
       if(myUuid!==uuid)return err("Access denied",event,403);
       console.log("PUT module=",body.module,"hasData=",!!body.data,"isBase64=",event.isBase64Encoded,"rawBody=",event.body?String(event.body).slice(0,300):"null");
       if(!body.module||!body.data)return err("Missing module or data",event,400);
+      let _identFields=[];
+      if(body.module==='identity'){
+        const[_curId,_curTr]=await Promise.all([
+          sql("SELECT legal_first,legal_middle,legal_last,dob,nationality,gender_code,home_airport FROM traveler_identity WHERE traveler_uuid=:u",[uuidParam("u",uuid)]),
+          sql("SELECT display_name FROM travelers WHERE uuid=:u",[uuidParam("u",uuid)])
+        ]);
+        const _ci=_curId[0]||{};
+        const _cdn=((_curTr[0]||{}).display_name)||null;
+        for(const _f of['legal_first','legal_middle','legal_last','nationality','gender_code','home_airport']){
+          if(!Object.prototype.hasOwnProperty.call(body.data,_f))continue;
+          if(String(body.data[_f]||'').trim()!==String(_ci[_f]||'').trim())_identFields.push(_f);
+        }
+        if(Object.prototype.hasOwnProperty.call(body.data,'dob')){
+          if(String(body.data.dob||'').slice(0,10)!==String(_ci.dob||'').slice(0,10))_identFields.push('dob');
+        }
+        if(Object.prototype.hasOwnProperty.call(body.data,'display_name')){
+          if(String(body.data.display_name||'').trim()!==String(_cdn||'').trim())_identFields.push('display_name');
+        }
+      }
       await updateModule(uuid,body.module,body.data);
-      const _modEvtMap={identity:["identity_updated",{}],document_add:["document_added",{doc_type:body.data.doc_type}],document_update:["document_updated",{doc_type:body.data.doc_type}],document_delete:["document_deleted",{doc_type:(body.data&&body.data.doc_type)||null}],trip_add:["trip_added",{destination:body.data.destination_iata}],trip_delete:["trip_deleted",{}]};
+      const _modEvtMap={identity:["identity_updated",{fields:_identFields}],document_add:["document_added",{doc_type:body.data.doc_type}],document_update:["document_updated",{doc_type:body.data.doc_type}],document_delete:["document_deleted",{doc_type:(body.data&&body.data.doc_type)||null}],trip_add:["trip_added",{destination:body.data.destination_iata}],trip_delete:["trip_deleted",{}]};
       const _modEvt=_modEvtMap[body.module];
       if(_modEvt)await logSecEvent(uuid,_modEvt[0],_modEvt[1],event);
       return ok({success:true,module:body.module,profile:await buildProfile(uuid)},event);

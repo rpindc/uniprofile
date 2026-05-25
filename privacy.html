@@ -277,7 +277,7 @@ function _evtLabel(e){
     recovery_codes_regenerated:'Recovery codes regenerated',
     factor_removed:'Security factor removed'+(m.factor_type?' · '+m.factor_type:''),
     display_name_changed:'Display name updated',
-    identity_updated:'Identity updated',
+    identity_updated:(function(){var fl={legal_first:'Legal name',legal_middle:'Legal name',legal_last:'Legal name',dob:'Date of birth',nationality:'Nationality',gender_code:'Gender',home_airport:'Home airport',display_name:'Display name'};var fields=m.fields||[];var labels=[];var seen={};fields.forEach(function(f){var l=fl[f];if(l&&!seen[l]){seen[l]=1;labels.push(l);}});if(!labels.length)return'Identity updated';if(labels.length===1)return labels[0]+' updated';if(labels.length===2)return labels[0]+' and '+labels[1]+' updated';return labels[0]+' and '+(labels.length-1)+' more updated';})(),
     document_added:fmtDoc(m.doc_type)+' added',
     document_updated:fmtDoc(m.doc_type)+' updated',
     document_deleted:fmtDoc(m.doc_type)+' removed',
