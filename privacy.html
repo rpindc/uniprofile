@@ -300,7 +300,9 @@ function _evtLabel(e){
 }
 function _evtTime(ts){
   if(!ts)return"";
-  var d=new Date(ts);
+  var s=String(ts).replace(' ','T').replace(/\+00(:00)?$/,'Z').replace(/(\.\d+)\+00(:00)?$/,'$1Z');
+  if(!/Z$|[+-]\d{2}:\d{2}$/.test(s))s+='Z';
+  var d=new Date(s);
   return d.toLocaleDateString("en-US",{month:"short",day:"numeric"})+" · "+d.toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"});
 }
 function _fmt(s){if(!s)return"—";return new Date(s).toLocaleDateString("en-US",{day:"numeric",month:"long",year:"numeric"});}
