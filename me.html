@@ -527,31 +527,31 @@ body.me-editing .me-edit-banner{display:flex}
         <div class="card-item-edit" id="insurance-edit">
           <div class="form-field">
             <label class="form-label">Emergency assistance phone <span class="form-label-helper">— shown prominently in Journey</span></label>
-            <input class="form-input" id="ins-ephone" placeholder="e.g. +1 800 123 4567" autocomplete="off"/>
+            <input class="form-input" id="ins-ephone" placeholder="e.g. +1 800 123 4567" autocomplete="off" oninput="_debounce('insurance',_autoSaveInsurance,500)"/>
           </div>
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">Provider</label>
-              <input class="form-input" id="ins-provider" placeholder="e.g. Allianz, AXA" autocomplete="off"/>
+              <input class="form-input" id="ins-provider" placeholder="e.g. Allianz, AXA" autocomplete="off" oninput="_debounce('insurance',_autoSaveInsurance,500)"/>
             </div>
             <div class="form-field">
               <label class="form-label">Coverage type <span class="form-label-helper">— optional</span></label>
-              <input class="form-input" id="ins-coverage" placeholder="e.g. Comprehensive, Medical only" autocomplete="off"/>
+              <input class="form-input" id="ins-coverage" placeholder="e.g. Comprehensive, Medical only" autocomplete="off" oninput="_debounce('insurance',_autoSaveInsurance,500)"/>
             </div>
           </div>
           <div class="form-row">
             <div class="form-field">
               <label class="form-label">Valid from</label>
-              <input class="form-input" type="date" id="ins-valid-from"/>
+              <input class="form-input" type="date" id="ins-valid-from" onchange="_debounce('insurance',_autoSaveInsurance,500)"/>
             </div>
             <div class="form-field">
               <label class="form-label">Valid until</label>
-              <input class="form-input" type="date" id="ins-valid-until"/>
+              <input class="form-input" type="date" id="ins-valid-until" onchange="_debounce('insurance',_autoSaveInsurance,500)"/>
             </div>
           </div>
           <div class="form-field">
             <label class="form-label">Policy number <span class="form-label-helper">— optional, stored masked</span></label>
-            <input class="form-input" id="ins-number" placeholder="e.g. POL-123456" autocomplete="off"/>
+            <input class="form-input" id="ins-number" placeholder="e.g. POL-123456" autocomplete="off" oninput="_debounce('insurance',_autoSaveInsurance,500)"/>
           </div>
           <div id="ins-save-err" class="save-err"></div>
           <div class="edit-footer">
@@ -2089,10 +2089,6 @@ function _prefillInsurance(){
   _setval("ins-valid-from",ins&&ins.valid_from?ins.valid_from.slice(0,10):"");
   _setval("ins-valid-until",ins&&ins.valid_until?ins.valid_until.slice(0,10):"");
   _showErr("ins-save-err","");
-  ["ins-number","ins-ephone","ins-provider","ins-coverage","ins-valid-from","ins-valid-until"].forEach(function(fid){
-    var el=document.getElementById(fid);
-    if(el)el.addEventListener("change",function(){_debounce("insurance",_autoSaveInsurance,500);});
-  });
 }
 async function _autoSaveInsurance(){
   _showErr("ins-save-err","");
