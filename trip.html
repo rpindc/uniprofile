@@ -1669,6 +1669,32 @@ async function deleteRef(id){
 }
 
 /* ── Audit log ── */
+function _auditSubject(action,payload,targetName){
+  var p=payload&&typeof payload==='object'?payload:{};
+  switch(action){
+    case 'itinerary_added':case 'itinerary_edited':case 'itinerary_removed':
+      return p.title?' · '+escHtml(p.title):'';
+    case 'document_added':case 'document_removed':
+      return (p.label||p.filename)?' · '+escHtml(p.label||p.filename):'';
+    case 'workspace_accommodation_added':
+      return p.name?' · '+escHtml(p.name):'';
+    case 'workspace_reference_added':
+      return p.label?' · '+escHtml(p.label):'';
+    case 'emergency_contact_added':case 'emergency_contact_removed':
+      return p.contact_name?' · '+escHtml(p.contact_name):'';
+    case 'group_renamed':
+      return p.name?' · '+escHtml(p.name):'';
+    case 'member_added':
+      if(p.kind==='named_only')return p.display_name?' · '+escHtml(p.display_name):'';
+      if(p.kind==='linked')return targetName?' · '+escHtml(targetName):'';
+      return '';
+    case 'member_removed':
+      return p.display_name?' · '+escHtml(p.display_name):(targetName?' · '+escHtml(targetName):'');
+    case 'consent_requested':
+      return (p.scopes&&p.scopes.length)?' · '+escHtml(p.scopes.join(', ')):'';
+    default:return '';
+  }
+}
 function renderAuditSection(){
   var html='<div class="doc-section edit-only">';
   html+='<div class="doc-section-head">';
@@ -1708,7 +1734,8 @@ async function toggleAuditInline(){
     rows.forEach(function(r){
       var who=r.actor_uuid===_uid?'You':escHtml(r.actor_name||'A member');
       var what=labelMap[r.action]||r.action;
-      h+='<div class="audit-entry"><div style="font-weight:500">'+who+' '+escHtml(what)+'</div>';
+      var subj=_auditSubject(r.action,r.payload,r.target_name||null);
+      h+='<div class="audit-entry"><div style="font-weight:500">'+who+' '+escHtml(what)+subj+'</div>';
       h+='<div class="audit-entry-meta">'+escHtml(formatLocal(r.created_at))+'</div></div>';
     });
     h+='</div>';
@@ -1742,8 +1769,9 @@ async function openAuditLog(){
     rows.forEach(function(r){
       var who=r.actor_uuid===_uid?"You":escHtml(r.actor_name||"A member");
       var what=labelMap[r.action]||r.action;
+      var subj=_auditSubject(r.action,r.payload,r.target_name||null);
       h+='<div class="audit-entry">';
-      h+='<div style="font-weight:500">'+who+' '+escHtml(what)+'</div>';
+      h+='<div style="font-weight:500">'+who+' '+escHtml(what)+subj+'</div>';
       h+='<div class="audit-entry-meta">'+escHtml(formatLocal(r.created_at))+'</div>';
       h+='</div>';
     });

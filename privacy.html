@@ -265,43 +265,37 @@ function _sidebarUpdate(p){
   _st("sidebar-avatar",_ini(p));
   _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
 }
-function _evtLabel(type){
-  var m={
-    totp_enrolled:"Authenticator app enrolled",
-    step_up_granted:"Step-up verified",
-    recovery_code_used:"Recovery code used",
-    recovery_codes_regenerated:"Recovery codes regenerated",
-    factor_removed:"Security factor removed",
-    display_name_changed:"Display name updated",
-    identity_updated:"Identity updated",
-    document_added:"Document added",
-    document_updated:"Document updated",
-    document_deleted:"Document deleted",
-    trip_added:"Trip added",
-    trip_deleted:"Trip deleted",
-    context_switched:"Context switched",
-    login:"Sign in",
-    logout:"Sign out",
-    people_search:"People searched",
-    person_added_named_only:"Person added",
-    person_removed_named_only:"Person removed",
-    named_only_document_added:"Document added to person",
-    trip_group_created:"Trip group created",
-    trip_group_member_added:"Member added to trip group",
-    trip_group_member_removed:"Member removed from trip group",
-    trip_group_consent_requested:"Trip group consent requested",
-    trip_group_consent_withdrawn:"Trip group consent withdrawn"
+function _evtLabel(e){
+  var type=typeof e==='string'?e:(e&&e.event_type||'');
+  var m=(e&&typeof e==='object'&&e.metadata&&typeof e.metadata==='object')?e.metadata:{};
+  function fmtDoc(d){return(d||'Document').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});}
+  var map={
+    totp_enrolled:'Authenticator app enrolled',
+    step_up_granted:'Step-up verified',
+    recovery_code_used:'Recovery code used',
+    recovery_codes_regenerated:'Recovery codes regenerated',
+    factor_removed:'Security factor removed'+(m.factor_type?' · '+m.factor_type:''),
+    display_name_changed:'Display name updated',
+    identity_updated:'Identity updated',
+    document_added:fmtDoc(m.doc_type)+' added',
+    document_updated:fmtDoc(m.doc_type)+' updated',
+    document_deleted:fmtDoc(m.doc_type)+' removed',
+    trip_added:'Trip added'+(m.destination?' · '+m.destination:''),
+    trip_deleted:'Trip removed',
+    context_switched:'Context switched'+(m.context?' to '+m.context.charAt(0).toUpperCase()+m.context.slice(1).toLowerCase():''),
+    login:'Sign in',
+    logout:'Sign out',
+    people_search:'People searched',
+    person_added_named_only:'Person added'+(m.display_name?' · '+m.display_name:''),
+    person_removed_named_only:'Person removed'+(m.display_name?' · '+m.display_name:''),
+    named_only_document_added:'Document added to person'+(m.display_name?' · '+m.display_name:''),
+    trip_group_created:'Journey created',
+    trip_group_member_added:'Member added to journey',
+    trip_group_member_removed:'Member removed from journey',
+    trip_group_consent_requested:'Journey data sharing requested',
+    trip_group_consent_withdrawn:'Journey data sharing withdrawn',
   };
-  return m[type]||(type||"Event").replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();});
-}
-function _evtMeta(e){
-  if(!e.metadata)return"";
-  var m=e.metadata;
-  if(m.doc_type)return m.doc_type.replace(/_/g," ").replace(/\b\w/g,function(c){return c.toUpperCase();});
-  if(m.destination)return m.destination;
-  if(m.context)return m.context.charAt(0)+m.context.slice(1).toLowerCase();
-  if(m.factor)return m.factor;
-  return"";
+  return Object.prototype.hasOwnProperty.call(map,type)?map[type]:(type||'Event').replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});
 }
 function _evtTime(ts){
   if(!ts)return"";
@@ -556,8 +550,7 @@ async function privacyInit(){
     events.slice(0,20).forEach(function(e){
       rows+='<div class="activity-row">'
         +'<div class="activity-time">'+_evtTime(e.created_at||e.event_at)+'</div>'
-        +'<div class="activity-text">'+_evtLabel(e.event_type)+'</div>'
-        +'<div class="activity-meta">'+_evtMeta(e)+'</div>'
+        +'<div class="activity-text">'+_evtLabel(e)+'</div>'
         +'</div>';
     });
     if(!rows)rows='<div class="activity-row"><div class="activity-time">—</div><div class="activity-text" style="color:var(--ink-mute);">No activity recorded yet. Actions like updating your profile, adding documents, or changing context will appear here.</div><div class="activity-meta"></div></div>';

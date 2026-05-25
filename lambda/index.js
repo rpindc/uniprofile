@@ -714,7 +714,7 @@ exports.handler=async function(event){
       console.log("PUT module=",body.module,"hasData=",!!body.data,"isBase64=",event.isBase64Encoded,"rawBody=",event.body?String(event.body).slice(0,300):"null");
       if(!body.module||!body.data)return err("Missing module or data",event,400);
       await updateModule(uuid,body.module,body.data);
-      const _modEvtMap={identity:["identity_updated",{}],document_add:["document_added",{doc_type:body.data.doc_type}],document_update:["document_updated",{doc_type:body.data.doc_type}],document_delete:["document_deleted",{}],trip_add:["trip_added",{destination:body.data.destination_iata}],trip_delete:["trip_deleted",{}]};
+      const _modEvtMap={identity:["identity_updated",{}],document_add:["document_added",{doc_type:body.data.doc_type}],document_update:["document_updated",{doc_type:body.data.doc_type}],document_delete:["document_deleted",{doc_type:(body.data&&body.data.doc_type)||null}],trip_add:["trip_added",{destination:body.data.destination_iata}],trip_delete:["trip_deleted",{}]};
       const _modEvt=_modEvtMap[body.module];
       if(_modEvt)await logSecEvent(uuid,_modEvt[0],_modEvt[1],event);
       return ok({success:true,module:body.module,profile:await buildProfile(uuid)},event);
@@ -2033,7 +2033,7 @@ exports.handler=async function(event){
       const token=await verifyToken(event);
       const uuid=await getOrCreateTraveler(token.sub,token.email);
       const events=await sql("SELECT event_type,ip_address,metadata,created_at FROM auth_security_events WHERE traveler_uuid=:u ORDER BY created_at DESC LIMIT 50",[uuidParam("u",uuid)]);
-      return ok({events},event);
+      return ok({events:events.map(function(e){try{return Object.assign({},e,{metadata:typeof e.metadata==='string'?JSON.parse(e.metadata):(e.metadata||{})});}catch(_){return e;}})},event);
     }
     // ── End Auth Security ─────────────────────────────────────────────────────
 
@@ -2487,8 +2487,8 @@ exports.handler=async function(event){
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
       const groupId=path.split('/').filter(Boolean)[3];
       await validateTripGroupId(groupId,myUuid);
-      const rows=await sql("SELECT l.id,l.actor_uuid,l.action,l.target_uuid,l.payload,l.created_at,COALESCE(NULLIF(TRIM(i.legal_first||' '||i.legal_last),''),t.display_name,t.email) AS actor_name FROM trip_group_audit_log l LEFT JOIN travelers t ON t.uuid=l.actor_uuid LEFT JOIN traveler_identity i ON i.traveler_uuid=l.actor_uuid WHERE l.trip_group_id=:id ORDER BY l.created_at DESC LIMIT 100",[strParam("id",groupId)]);
-      return ok(rows,event);
+      const rows=await sql("SELECT l.id,l.actor_uuid,l.action,l.target_uuid,l.payload,l.created_at,COALESCE(NULLIF(TRIM(i.legal_first||' '||i.legal_last),''),t.display_name,t.email) AS actor_name,COALESCE(NULLIF(TRIM(ti.legal_first||' '||ti.legal_last),''),tt.display_name) AS target_name FROM trip_group_audit_log l LEFT JOIN travelers t ON t.uuid=l.actor_uuid LEFT JOIN traveler_identity i ON i.traveler_uuid=l.actor_uuid LEFT JOIN travelers tt ON tt.uuid=l.target_uuid LEFT JOIN traveler_identity ti ON ti.traveler_uuid=l.target_uuid WHERE l.trip_group_id=:id ORDER BY l.created_at DESC LIMIT 100",[strParam("id",groupId)]);
+      return ok(rows.map(function(r){try{return Object.assign({},r,{payload:typeof r.payload==='string'?JSON.parse(r.payload):(r.payload||{})});}catch(_){return r;}}),event);
     }
     // ── Re-auth ───────────────────────────────────────────────────────────────
     // POST /api/v1/auth/verify-password
