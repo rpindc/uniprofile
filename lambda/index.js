@@ -777,7 +777,7 @@ exports.handler=async function(event){
       const alerts=await sql("SELECT doc_type,expiry_date,days_remaining,alert_level FROM expiring_documents WHERE traveler_uuid=:u AND alert_level IN ('EXPIRED','CRITICAL','WARNING') ORDER BY days_remaining ASC",[uuidParam("u",uuid)]);
       return ok({alerts},event);
     }
-    if(method==="POST"&&(path.indexOf("/doccheck/")!==-1||path.endsWith("/doccheck"))){
+    if(method==="POST"&&uuid&&(path.indexOf("/doccheck/")!==-1||path.endsWith("/doccheck"))){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
       if(myUuid!==uuid) return err("Access denied",event,403);
