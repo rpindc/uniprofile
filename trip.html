@@ -63,6 +63,11 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .dc-entry-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:0}
 .dc-entry-label{font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute);flex-shrink:0}
 .dc-entry-notice{font-size:11px;color:var(--ink-mute);font-style:italic;line-height:1.5;margin-top:7px}
+.dc-consent-block{padding:14px 16px;background:var(--paper-warm);border-radius:8px;margin-top:14px;font-size:12px;line-height:1.55;color:var(--ink-soft)}
+.dc-consent-block p{margin:0 0 7px 0}
+.dc-consent-block ul{margin:4px 0 8px 0;padding-left:16px;color:var(--ink)}
+.dc-consent-block li{margin-bottom:3px}
+.dc-consent-actions{display:flex;gap:10px;align-items:center;margin-top:10px}
 .pill-dot{width:6px;height:6px;border-radius:50%}
 .dot-green{background:var(--green)}
 .dot-amber{background:var(--amber)}
@@ -820,8 +825,27 @@ async function _fetchSoloDocCheck(tripId){
     renderSoloDocCheck(rows&&rows.length?rows[0]:null);
   }catch(e){console.warn('DocCheck fetch failed:',e.message);}
 }
-async function requestSoloDocCheck(){
-  var btn=document.getElementById('dc-request-btn');
+function requestSoloDocCheck(){
+  var el=document.getElementById('trip-doccheck-wrap');
+  if(!el)return;
+  el.innerHTML='<div class="dc-consent-block">'
+    +'<p>To check entry requirements for this trip, a UniProfile reviewer (a person, not an automated system) will see the following details from your profile:</p>'
+    +'<ul>'
+    +'<li>Nationality and passport issuing country</li>'
+    +'<li>Passport validity — expiry date only, not the passport number</li>'
+    +'<li>Trip destination and travel dates</li>'
+    +'<li>Travel purpose (if provided)</li>'
+    +'<li>Visas and permits you've added to your profile</li>'
+    +'</ul>'
+    +'<p style="font-size:11px;color:var(--ink-mute)">Your passport number and other document details are not shared. This check is for your use only — your information will not be shared outside UniProfile.</p>'
+    +'<div class="dc-consent-actions">'
+    +'<button class="btn btn-secondary btn-sm" id="dc-confirm-solo" onclick="confirmSoloDocCheck()">Share &amp; request check</button>'
+    +'<button style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--ink-mute);padding:2px 0" onclick="cancelSoloDocCheck()">Cancel</button>'
+    +'</div>'
+    +'</div>';
+}
+async function confirmSoloDocCheck(){
+  var btn=document.getElementById('dc-confirm-solo');
   if(btn){btn.disabled=true;btn.textContent='Submitting…';}
   try{
     var r=await _req('POST','/api/v1/doccheck/request',{trip_id:_trip.id});
@@ -831,13 +855,16 @@ async function requestSoloDocCheck(){
     if(e.message&&e.message.includes('409')){
       renderSoloDocCheck({status:'pending'});
     }else if(e.message&&e.message.includes('400')){
-      if(btn){btn.disabled=false;btn.textContent='Request check';}
+      renderSoloDocCheck(_soloDocCheckReq);
       showToast('Add a destination to this trip to request an entry check.');
     }else{
-      if(btn){btn.disabled=false;btn.textContent='Request check';}
+      renderSoloDocCheck(_soloDocCheckReq);
       showToast('Failed to submit. Please try again.');
     }
   }
+}
+function cancelSoloDocCheck(){
+  renderSoloDocCheck(_soloDocCheckReq);
 }
 
 /* ── OneOrder header amendments ── */
