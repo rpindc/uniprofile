@@ -54,6 +54,15 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .pill-amber{background:var(--amber-soft);color:var(--amber)}
 .pill-neutral{background:var(--paper-warm);color:var(--ink-soft)}
 .pill-red{background:var(--red-soft);color:var(--red)}
+.doccheck-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-family:var(--sans);font-size:11px;font-weight:500;border:none;line-height:1.4}
+.dc-ready{background:var(--green-soft);color:var(--green)}
+.dc-attention{background:var(--amber-soft);color:var(--amber)}
+.dc-action{background:var(--red-soft);color:var(--red)}
+.dc-pending{background:#e8f0fe;color:#1a56db}
+.dc-entry-block{margin-top:14px;padding:14px 16px;background:var(--paper-warm);border-radius:8px}
+.dc-entry-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:0}
+.dc-entry-label{font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute);flex-shrink:0}
+.dc-entry-notice{font-size:11px;color:var(--ink-mute);font-style:italic;line-height:1.5;margin-top:7px}
 .pill-dot{width:6px;height:6px;border-radius:50%}
 .dot-green{background:var(--green)}
 .dot-amber{background:var(--amber)}
@@ -746,6 +755,91 @@ function renderAirSectors(segments,tripCtx){
   return html;
 }
 
+/* ── DocCheck (solo trip) ── */
+var _soloDocCheckReq=null;
+function _dcFmtDate(ts){
+  if(!ts)return'';
+  var s=String(ts).replace(' ','T');
+  if(!/Z$|[+-]\d{2}:\d{2}$/.test(s))s+='Z';
+  return new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function renderSoloDocCheck(req){
+  var el=document.getElementById('trip-doccheck-wrap');
+  if(!el)return;
+  _soloDocCheckReq=req||null;
+  var honesty='Does not verify document authenticity — final admission rests with border authorities.';
+  if(!req){
+    el.innerHTML='<div class="dc-entry-block">'
+      +'<div class="dc-entry-row">'
+      +'<span class="dc-entry-label">Entry requirements</span>'
+      +'<button class="btn btn-secondary btn-sm" id="dc-request-btn" onclick="requestSoloDocCheck()">Request check</button>'
+      +'</div>'
+      +'<div class="dc-entry-notice">Typically reviewed within a day or two. '+honesty+'</div>'
+      +'</div>';
+    return;
+  }
+  var st=req.status;
+  if(st==='pending'||st==='under_review'){
+    el.innerHTML='<div class="dc-entry-block">'
+      +'<div class="dc-entry-row">'
+      +'<span class="dc-entry-label">Entry requirements</span>'
+      +'<span class="doccheck-pill dc-pending">Under review</span>'
+      +'</div>'
+      +'<div class="dc-entry-notice">Your check was submitted. Typically reviewed within a day or two.</div>'
+      +'</div>';
+    return;
+  }
+  if(st==='reviewed'){
+    var res=req.result;
+    var checked='Checked '+_dcFmtDate(req.reviewed_at);
+    var statusHtml,detailHtml='';
+    if(res==='clear'){
+      statusHtml='<span class="doccheck-pill dc-ready">Entry rules met — as entered ✓</span>';
+      detailHtml='<div class="dc-entry-notice">'+checked+' · Re-check if more than 30 days from travel.</div>'
+        +'<div class="dc-entry-notice">'+honesty+'</div>';
+    }else if(res==='conditional'){
+      statusHtml='<span class="doccheck-pill dc-attention">Conditional ⚠</span>';
+      var note=req.admin_note?'<div style="font-size:12px;margin-top:6px;color:var(--ink-soft)">'+escHtml(req.admin_note)+'</div>':'';
+      detailHtml=note+'<div class="dc-entry-notice">'+checked+' · Re-check if more than 30 days from travel.</div>'
+        +'<div class="dc-entry-notice">'+honesty+'</div>';
+    }else{
+      statusHtml='<span class="doccheck-pill dc-action">Action needed</span>';
+      var note2=req.admin_note?'<div style="font-size:12px;margin-top:6px;color:var(--ink-soft)">'+escHtml(req.admin_note)+'</div>':'';
+      detailHtml=note2+'<div class="dc-entry-notice">'+checked+' · Verify with official sources before travel.</div>'
+        +'<div class="dc-entry-notice">'+honesty+'</div>';
+    }
+    el.innerHTML='<div class="dc-entry-block">'
+      +'<div class="dc-entry-row">'+statusHtml+'</div>'
+      +detailHtml
+      +'</div>';
+  }
+}
+async function _fetchSoloDocCheck(tripId){
+  try{
+    var rows=await _req('GET','/api/v1/doccheck/my?trip_id='+encodeURIComponent(tripId));
+    renderSoloDocCheck(rows&&rows.length?rows[0]:null);
+  }catch(e){console.warn('DocCheck fetch failed:',e.message);}
+}
+async function requestSoloDocCheck(){
+  var btn=document.getElementById('dc-request-btn');
+  if(btn){btn.disabled=true;btn.textContent='Submitting…';}
+  try{
+    var r=await _req('POST','/api/v1/doccheck/request',{trip_id:_trip.id});
+    renderSoloDocCheck({status:'pending',created_at:r.created_at});
+    showToast('Entry check submitted. Typically reviewed within a day or two.');
+  }catch(e){
+    if(e.message&&e.message.includes('409')){
+      renderSoloDocCheck({status:'pending'});
+    }else if(e.message&&e.message.includes('400')){
+      if(btn){btn.disabled=false;btn.textContent='Request check';}
+      showToast('Add a destination to this trip to request an entry check.');
+    }else{
+      if(btn){btn.disabled=false;btn.textContent='Request check';}
+      showToast('Failed to submit. Please try again.');
+    }
+  }
+}
+
 /* ── OneOrder header amendments ── */
 var DOCCHECK_PREVIEW=true; // flip to false when DocCheck uses real (non-preview) rules
 
@@ -866,6 +960,7 @@ function renderTripHeader(t){
   html+='</div>';
   html+='<div id="readiness-sentence"></div>';
   html+='<div id="pdf-admissibility"></div>';
+  html+='<div id="trip-doccheck-wrap"></div>';
   if(cd)html+='<div class="doc-countdown-row">'+_countdownHtml(cd)+'<span></span></div>';
   html+='<div id="pdf-provenance"></div>';
   html+='<div class="doc-edit-bar">';
@@ -2121,6 +2216,7 @@ async function tripInit(){
       _setNavActive('trips');
     }
     renderTripHeader(_trip);
+    if(!_trip.trip_group_id&&_trip.destination_iata){_fetchSoloDocCheck(_trip.id);}
 
     if(_trip.trip_group_id){
       try{

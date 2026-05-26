@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DocCheck Admin — UniProfile</title>
+<meta name="robots" content="noindex,nofollow" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,0,300;9..144,0,400;9..144,1,300;9..144,1,400&family=Inter+Tight:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1a1a1a;--ink-soft:#4a4a48;--ink-mute:#8a8a86;--ink-faint:#b8b8b3;--paper:#faf8f4;--paper-warm:#f3efe7;--rule:rgba(26,26,26,0.08);--rule-strong:rgba(26,26,26,0.18);--field-bg:#fff;--green:#2d6a4f;--green-soft:#e8efe9;--amber:#ba7517;--amber-soft:#f9f1e3;--red:#c44d4d;--red-soft:#f4e8e8;--serif:'Fraunces',Georgia,serif;--sans:'Inter Tight',-apple-system,sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}html{-webkit-font-smoothing:antialiased}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;font-size:14px}
+.wordmark{font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-0.01em;line-height:1;color:var(--ink);text-decoration:none;display:inline-block}
+.wordmark em{font-style:italic;font-weight:300}
+.admin-shell{max-width:740px;margin:0 auto;padding:40px 24px 80px}
+.admin-header{display:flex;align-items:baseline;gap:14px;margin-bottom:36px;border-bottom:0.5px solid var(--rule);padding-bottom:20px}
+.admin-header-tag{font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute)}
+.section-head{font-family:var(--serif);font-size:18px;font-weight:400;margin-bottom:16px;color:var(--ink)}
+.req-card{background:#fff;border:0.5px solid var(--rule);border-radius:10px;padding:18px 20px;margin-bottom:12px}
+.req-card+.req-card{margin-top:0}
+.req-meta{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px 20px;margin-bottom:14px}
+.req-field{font-size:12px;color:var(--ink-soft);line-height:1.4}
+.req-field-label{font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute);display:block;margin-bottom:1px}
+.req-name{font-size:14px;font-weight:500;margin-bottom:10px}
+.req-email{font-size:11px;color:var(--ink-mute)}
+.result-radios{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.result-radio-label{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;padding:6px 12px;border-radius:100px;border:0.5px solid var(--rule-strong);background:#fff;transition:all 100ms ease}
+.result-radio-label input{display:none}
+.result-radio-label.sel-clear{background:var(--green-soft);color:var(--green);border-color:var(--green-soft);font-weight:500}
+.result-radio-label.sel-conditional{background:var(--amber-soft);color:var(--amber);border-color:var(--amber-soft);font-weight:500}
+.result-radio-label.sel-action_needed{background:var(--red-soft);color:var(--red);border-color:var(--red-soft);font-weight:500}
+.note-field{width:100%;border:0.5px solid var(--rule-strong);border-radius:6px;padding:8px 10px;font-family:var(--sans);font-size:13px;color:var(--ink);background:var(--field-bg);resize:vertical;min-height:60px;margin-bottom:4px}
+.note-field:focus{outline:none;border-color:var(--ink-mute)}
+.note-hint{font-size:11px;color:var(--ink-mute);font-style:italic;margin-bottom:12px}
+.btn{font-family:var(--sans);font-size:13px;font-weight:500;padding:9px 18px;border-radius:6px;cursor:pointer;border:none;transition:all 120ms ease;display:inline-flex;align-items:center;gap:6px;text-decoration:none;letter-spacing:0.01em}
+.btn-primary{background:var(--ink);color:#fff}.btn-primary:hover{background:#333}
+.btn-primary:disabled{opacity:0.45;cursor:default}
+.btn-secondary{background:transparent;color:var(--ink-soft);border:0.5px solid var(--rule-strong)}.btn-secondary:hover{background:var(--paper-warm)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.reviewed-row{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:0.5px solid var(--rule);font-size:13px;flex-wrap:wrap}
+.reviewed-row:last-child{border-bottom:none}
+.pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:500}
+.pill-clear{background:var(--green-soft);color:var(--green)}
+.pill-conditional{background:var(--amber-soft);color:var(--amber)}
+.pill-action{background:var(--red-soft);color:var(--red)}
+.pill-pending{background:#e8f0fe;color:#1a56db}
+.empty-state{font-size:13px;color:var(--ink-mute);font-style:italic;padding:16px 0}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 200ms ease;pointer-events:none;white-space:nowrap;z-index:1000}
+.toast.show{opacity:1}
+.divider{height:0.5px;background:var(--rule);margin:28px 0}
+</style>
+</head>
+<body>
+<div class="admin-shell">
+  <div class="admin-header">
+    <a href="/" class="wordmark">Uni<em>Profile</em></a>
+    <span class="admin-header-tag">DocCheck Admin</span>
+  </div>
+  <div id="access-denied" style="display:none">
+    <p style="color:var(--red);font-size:14px">Access denied. Admin privileges required.</p>
+  </div>
+  <div id="admin-main" style="display:none">
+    <div id="queue-section">
+      <div class="section-head">Pending review</div>
+      <div id="queue-list"><div class="empty-state">Loading…</div></div>
+    </div>
+    <div class="divider"></div>
+    <div id="reviewed-section">
+      <div class="section-head">Recently reviewed</div>
+      <div id="reviewed-list" style="border:0.5px solid var(--rule);border-radius:8px;background:#fff"><div class="empty-state" style="padding-left:14px">Loading…</div></div>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+<script>
+var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
+var _tok=null;
+var _allReqs=[];
+function _ph(){var h=location.hash;if(!h)return null;var m=h.match(/id_token=([^&]+)/);return m?m[1]:null;}
+function _loginUrl(){return'https://auth.uniprofile.net/login?response_type=token&client_id=2heljmdli4f9cv2i4m0i020mfc&redirect_uri='+encodeURIComponent(location.origin+'/admin.html');}
+function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3200);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+async function _req(method,ep,body){
+  var o={method:method,headers:{Authorization:'Bearer '+_tok}};
+  if(body){o.headers['Content-Type']='application/json';o.body=JSON.stringify(body);}
+  var r=await fetch(_API+ep,o);
+  if(r.status===401){localStorage.removeItem('up_token');location.href=_loginUrl();throw new Error('unauth');}
+  if(!r.ok)throw Object.assign(new Error('HTTP '+r.status),{status:r.status});
+  return r.json();
+}
+function _fmtDate(s){
+  if(!s)return'—';
+  var d=new Date(s+'T00:00:00');
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function _fmtTs(ts){
+  if(!ts)return'—';
+  var s=String(ts).replace(' ','T');
+  if(!/Z$|[+-]\d{2}:\d{2}$/.test(s))s+='Z';
+  return new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function _resultPill(result){
+  if(result==='clear')return'<span class="pill pill-clear">Clear</span>';
+  if(result==='conditional')return'<span class="pill pill-conditional">Conditional</span>';
+  if(result==='action_needed')return'<span class="pill pill-action">Action needed</span>';
+  return'';
+}
+function _statusPill(st){
+  if(st==='pending'||st==='under_review')return'<span class="pill pill-pending">'+(st==='under_review'?'Under review':'Pending')+'</span>';
+  return'';
+}
+
+/* ── Render ── */
+function renderAll(){
+  var pending=_allReqs.filter(function(r){return r.status==='pending'||r.status==='under_review';});
+  var reviewed=_allReqs.filter(function(r){return r.status==='reviewed';});
+  renderQueue(pending);
+  renderReviewed(reviewed);
+}
+function renderQueue(items){
+  var el=document.getElementById('queue-list');
+  if(!items.length){el.innerHTML='<div class="empty-state">No pending requests.</div>';return;}
+  el.innerHTML=items.map(function(r){return reqCardHtml(r);}).join('');
+}
+function renderReviewed(items){
+  var el=document.getElementById('reviewed-list');
+  if(!items.length){el.innerHTML='<div class="empty-state" style="padding-left:14px">None yet.</div>';return;}
+  el.innerHTML=items.slice(0,15).map(function(r){
+    var dates=r.departure_date?_fmtDate(r.departure_date)+(r.return_date?' → '+_fmtDate(r.return_date):''):'—';
+    return'<div class="reviewed-row">'
+      +'<span style="flex:1;min-width:100px;font-weight:500">'+esc(r.requester_name||r.requester_email||'Unknown')+'</span>'
+      +'<span style="color:var(--ink-mute);font-family:monospace;font-size:12px">'+esc(r.destination_iata||'?')+'</span>'
+      +'<span style="color:var(--ink-mute);font-size:12px">'+esc(dates)+'</span>'
+      +_resultPill(r.result)
+      +'<span style="color:var(--ink-faint);font-size:11px">'+_fmtTs(r.reviewed_at)+'</span>'
+      +'</div>';
+  }).join('');
+}
+function reqCardHtml(r){
+  var dates=r.departure_date?_fmtDate(r.departure_date)+(r.return_date?' → '+_fmtDate(r.return_date):''):'—';
+  var nat=r.nationality||'—';
+  var pic=r.passport_issuing_country||'—';
+  var pexp=r.passport_expiry?_fmtDate(r.passport_expiry):'—';
+  return'<div class="req-card" id="rc-'+r.id+'">'
+    +'<div class="req-name">'+esc(r.requester_name||r.requester_email||'Unknown')
+    +(r.status==='under_review'?' <span style="font-size:11px;font-weight:400;color:var(--ink-mute)">(under review)</span>':'')
+    +'</div>'
+    +'<div class="req-email">'+esc(r.requester_email||'')+'</div>'
+    +'<div class="req-meta" style="margin-top:10px">'
+    +'<div class="req-field"><span class="req-field-label">Destination</span>'+esc(r.destination_iata||'—')+'</div>'
+    +'<div class="req-field"><span class="req-field-label">Travel dates</span>'+esc(dates)+'</div>'
+    +'<div class="req-field"><span class="req-field-label">Nationality</span>'+esc(nat)+'</div>'
+    +'<div class="req-field"><span class="req-field-label">Passport issued by</span>'+esc(pic)+'</div>'
+    +'<div class="req-field"><span class="req-field-label">Passport expires</span>'+esc(pexp)+'</div>'
+    +(r.travel_purpose?'<div class="req-field"><span class="req-field-label">Purpose</span>'+esc(r.travel_purpose)+'</div>':'')
+    +'</div>'
+    +'<div style="margin-bottom:8px;font-size:12px;color:var(--ink-mute)">Check current entry requirements in Timatic Web, then record your finding below.</div>'
+    +'<div class="result-radios" id="radios-'+r.id+'">'
+    +'<label class="result-radio-label" id="rl-clear-'+r.id+'"><input type="radio" name="result-'+r.id+'" value="clear" onchange="onResultChange(\''+r.id+'\',\'clear\')"> Entry rules met</label>'
+    +'<label class="result-radio-label" id="rl-conditional-'+r.id+'"><input type="radio" name="result-'+r.id+'" value="conditional" onchange="onResultChange(\''+r.id+'\',\'conditional\')"> Conditional</label>'
+    +'<label class="result-radio-label" id="rl-action_needed-'+r.id+'"><input type="radio" name="result-'+r.id+'" value="action_needed" onchange="onResultChange(\''+r.id+'\',\'action_needed\')"> Action needed</label>'
+    +'</div>'
+    +'<textarea class="note-field" id="note-'+r.id+'" placeholder="Brief explanation (optional)"></textarea>'
+    +'<div class="note-hint">Do not paste Timatic text. One or two sentences only.</div>'
+    +'<div style="display:flex;gap:8px;align-items:center">'
+    +'<button class="btn btn-primary btn-sm" id="submit-btn-'+r.id+'" onclick="submitReview(\''+r.id+'\')" disabled>Submit review</button>'
+    +(r.status==='pending'?'<button class="btn btn-secondary btn-sm" onclick="markUnderReview(\''+r.id+'\')">Mark under review</button>':'')
+    +'</div>'
+    +'<div id="card-err-'+r.id+'" style="display:none;color:var(--red);font-size:12px;margin-top:8px"></div>'
+    +'</div>';
+}
+function onResultChange(reqId,val){
+  ['clear','conditional','action_needed'].forEach(function(v){
+    var lbl=document.getElementById('rl-'+v+'-'+reqId);
+    if(lbl)lbl.className='result-radio-label'+(v===val?' sel-'+v:'');
+  });
+  var btn=document.getElementById('submit-btn-'+reqId);
+  if(btn)btn.disabled=false;
+}
+async function markUnderReview(reqId){
+  try{
+    await _req('PATCH','/api/v1/admin/doccheck/'+reqId,{status:'under_review'});
+    var r=_allReqs.find(function(x){return x.id===reqId;});
+    if(r){r.status='under_review';renderAll();}
+  }catch(e){showToast('Failed to update status.');}
+}
+async function submitReview(reqId){
+  var selected=document.querySelector('input[name="result-'+reqId+'"]:checked');
+  if(!selected)return;
+  var result=selected.value;
+  var note=(document.getElementById('note-'+reqId)||{}).value||'';
+  var btn=document.getElementById('submit-btn-'+reqId);
+  var errEl=document.getElementById('card-err-'+reqId);
+  if(btn){btn.disabled=true;btn.textContent='Saving…';}
+  if(errEl)errEl.style.display='none';
+  try{
+    await _req('PATCH','/api/v1/admin/doccheck/'+reqId,{status:'reviewed',result:result,admin_note:note||null});
+    var r=_allReqs.find(function(x){return x.id===reqId;});
+    if(r){Object.assign(r,{status:'reviewed',result:result,admin_note:note||null,reviewed_at:new Date().toISOString()});renderAll();}
+    showToast('Review submitted.');
+  }catch(e){
+    if(btn){btn.disabled=false;btn.textContent='Submit review';}
+    if(errEl){errEl.textContent='Failed to save. Please try again.';errEl.style.display='block';}
+  }
+}
+
+/* ── Init ── */
+async function adminInit(){
+  var h=_ph();
+  if(h){_tok=h;localStorage.setItem('up_token',_tok);history.replaceState(null,'',location.pathname);}
+  else _tok=localStorage.getItem('up_token');
+  if(!_tok){location.href=_loginUrl();return;}
+  try{
+    _allReqs=await _req('GET','/api/v1/admin/doccheck');
+    document.getElementById('admin-main').style.display='';
+    renderAll();
+  }catch(e){
+    if(e.status===403){
+      document.getElementById('access-denied').style.display='';
+    }else{
+      document.getElementById('admin-main').style.display='';
+      document.getElementById('queue-list').innerHTML='<div style="color:var(--red);font-size:13px">Failed to load requests.</div>';
+    }
+  }
+}
+adminInit();
+</script>
+</body>
+</html>

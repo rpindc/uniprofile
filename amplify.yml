@@ -21,6 +21,7 @@ frontend:
       - trip.html
       - trip-group-invite.html
       - privacy.html
+      - admin.html
       - guide.html
       - icons.html
       - components/**/*

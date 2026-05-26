@@ -2552,6 +2552,83 @@ exports.handler=async function(event){
     }
     // ── End Gate 3 ────────────────────────────────────────────────────────────
 
+    // ── DocCheck ─────────────────────────────────────────────────────────────
+    // POST /api/v1/doccheck/request
+    if(method==="POST"&&path==="/api/v1/doccheck/request"){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const {trip_id,travel_purpose}=body;
+      if(!trip_id)return err("trip_id required",event,400);
+      const [tripRows,passportRows,identRows]=await Promise.all([
+        sql("SELECT id,destination_iata,departure_date::text,return_date::text FROM trips WHERE id=:tid::uuid AND traveler_uuid=:u",[strParam("tid",trip_id),uuidParam("u",myUuid)]),
+        sql("SELECT issuing_country,nationality,expiry_date::text FROM travel_documents WHERE traveler_uuid=:u AND doc_type='PASSPORT' AND is_primary=TRUE LIMIT 1",[uuidParam("u",myUuid)]),
+        sql("SELECT nationality FROM traveler_identity WHERE traveler_uuid=:u LIMIT 1",[uuidParam("u",myUuid)])
+      ]);
+      if(!tripRows.length)return err("Trip not found",event,404);
+      const trip=tripRows[0];
+      if(!trip.destination_iata)return err("Trip has no destination — add a destination before requesting a check",event,400);
+      const existing=await sql("SELECT id FROM doccheck_requests WHERE requester_uuid=:u AND trip_id=:tid::uuid AND status IN ('pending','under_review')",[uuidParam("u",myUuid),strParam("tid",trip_id)]);
+      if(existing.length)return err("A review is already pending for this trip",event,409);
+      const pp=passportRows[0]||{};
+      const identNat=(identRows[0]||{}).nationality;
+      await sql(
+        "INSERT INTO doccheck_requests(requester_uuid,trip_id,nationality,passport_issuing_country,passport_expiry,destination_iata,departure_date,return_date,travel_purpose) VALUES(:u::uuid,:tid::uuid,:nat,:pic,:pexp,:dest,:dep,:ret,:purp)",
+        [uuidParam("u",myUuid),strParam("tid",trip_id),strParam("nat",identNat||pp.nationality||null),strParam("pic",pp.issuing_country||null),dateParam("pexp",pp.expiry_date||null),strParam("dest",trip.destination_iata),dateParam("dep",trip.departure_date||null),dateParam("ret",trip.return_date||null),strParam("purp",travel_purpose||null)]
+      );
+      const created=await sql("SELECT id,trip_id::text,status,created_at FROM doccheck_requests WHERE requester_uuid=:u AND trip_id=:tid::uuid ORDER BY created_at DESC LIMIT 1",[uuidParam("u",myUuid),strParam("tid",trip_id)]);
+      return ok(created[0]||{status:"pending"},event,201);
+    }
+    // GET /api/v1/doccheck/my
+    if(method==="GET"&&path==="/api/v1/doccheck/my"){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const qs=event.queryStringParameters||{};
+      const tripId=qs.trip_id;
+      let q="SELECT id,trip_id::text,status,result,admin_note,reviewed_at,created_at FROM doccheck_requests WHERE requester_uuid=:u";
+      const params=[uuidParam("u",myUuid)];
+      if(tripId){q+=" AND trip_id=:tid::uuid";params.push(strParam("tid",tripId));}
+      q+=" ORDER BY created_at DESC LIMIT 20";
+      const rows=await sql(q,params);
+      return ok(rows,event);
+    }
+    // GET /api/v1/admin/doccheck
+    if(method==="GET"&&path==="/api/v1/admin/doccheck"){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const adminCheck=await sql("SELECT is_admin FROM travelers WHERE uuid=:u",[uuidParam("u",myUuid)]);
+      if(!adminCheck.length||!adminCheck[0].is_admin)return err("Forbidden",event,403);
+      const rows=await sql(
+        "SELECT r.id,r.trip_id::text,r.status,r.result,r.admin_note,r.reviewed_at,r.created_at,r.nationality,r.passport_issuing_country,r.passport_expiry::text,r.destination_iata,r.departure_date::text,r.return_date::text,r.travel_purpose,COALESCE(NULLIF(TRIM(i.legal_first||' '||i.legal_last),''),t.display_name,t.email) AS requester_name,t.email AS requester_email,COALESCE(NULLIF(TRIM(ri.legal_first||' '||ri.legal_last),''),rt.display_name) AS reviewer_name FROM doccheck_requests r JOIN travelers t ON t.uuid=r.requester_uuid LEFT JOIN traveler_identity i ON i.traveler_uuid=r.requester_uuid LEFT JOIN travelers rt ON rt.uuid=r.reviewed_by LEFT JOIN traveler_identity ri ON ri.traveler_uuid=r.reviewed_by ORDER BY CASE WHEN r.status='pending' THEN 0 WHEN r.status='under_review' THEN 1 ELSE 2 END,r.created_at ASC LIMIT 50",
+        []
+      );
+      return ok(rows,event);
+    }
+    // PATCH /api/v1/admin/doccheck/{id}
+    if(method==="PATCH"&&path.match(/^\/api\/v1\/admin\/doccheck\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const adminCheck=await sql("SELECT is_admin FROM travelers WHERE uuid=:u",[uuidParam("u",myUuid)]);
+      if(!adminCheck.length||!adminCheck[0].is_admin)return err("Forbidden",event,403);
+      const reqId=path.split('/').filter(Boolean)[4];
+      const {status,result,admin_note}=body;
+      const validStatuses=['pending','under_review','reviewed'];
+      const validResults=['clear','conditional','action_needed'];
+      if(status!=null&&!validStatuses.includes(status))return err("Invalid status",event,400);
+      if(result!=null&&!validResults.includes(result))return err("Invalid result",event,400);
+      if(status==='reviewed'&&!result)return err("result required when marking reviewed",event,400);
+      const existing=await sql("SELECT id FROM doccheck_requests WHERE id=:rid::uuid",[strParam("rid",reqId)]);
+      if(!existing.length)return err("Not found",event,404);
+      const setClauses=[];const qParams=[strParam("rid",reqId)];
+      if(status!=null){setClauses.push("status=:st");qParams.push(strParam("st",status));}
+      if(result!=null){setClauses.push("result=:res");qParams.push(strParam("res",result));}
+      if(admin_note!=null){setClauses.push("admin_note=:note");qParams.push(strParam("note",admin_note));}
+      if(status==='reviewed'){setClauses.push("reviewed_by=:rev::uuid","reviewed_at=NOW()");qParams.push(uuidParam("rev",myUuid));}
+      setClauses.push("updated_at=NOW()");
+      await sql("UPDATE doccheck_requests SET "+setClauses.join(",")+" WHERE id=:rid::uuid",qParams);
+      const updated=await sql("SELECT id,status,result,admin_note,reviewed_at,updated_at FROM doccheck_requests WHERE id=:rid::uuid",[strParam("rid",reqId)]);
+      return ok(updated[0]||{},event);
+    }
+
     return err("Not found",event,404);
   }catch(e){
     if(e.status)return err(e.message,event,e.status);

@@ -153,12 +153,12 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .sparkline-detail{display:none;font-size:11px;color:var(--ink-mute);margin-top:6px;line-height:1.7}
 .sparkline-detail.open{display:block}
 /* DocCheck */
-.doccheck-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:100px;font-family:var(--sans);font-size:10px;font-weight:500;cursor:pointer;border:none;line-height:1.4;letter-spacing:0.01em}
-.dc-ready{background:var(--green-soft);color:var(--green)}
-.dc-attention{background:var(--amber-soft);color:var(--amber)}
-.dc-blocked{background:var(--red-soft);color:var(--red)}
-.dc-unknown{background:var(--paper-warm);color:var(--ink-mute)}
-.doccheck-preview-tag{font-size:9px;font-weight:500;letter-spacing:0.13em;text-transform:uppercase;color:var(--ink-faint);display:block;margin-top:1px}
+.doccheck-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:100px;font-family:var(--sans);font-size:11px;font-weight:500;border:none;line-height:1.4;letter-spacing:0.01em}
+.dc-ready{background:var(--green-soft);color:var(--green);cursor:pointer}
+.dc-attention{background:var(--amber-soft);color:var(--amber);cursor:pointer}
+.dc-action{background:var(--red-soft);color:var(--red);cursor:pointer}
+.dc-pending{background:#e8f0fe;color:#1a56db;cursor:default}
+.dc-request{background:var(--paper-warm);color:var(--ink-soft);cursor:pointer;border:0.5px solid var(--rule-strong)}
 .doccheck-detail{display:none;margin-top:8px;padding:10px 12px;background:var(--paper-warm);border-radius:8px;font-size:12px;color:var(--ink-soft);line-height:1.55}
 .doccheck-detail.open{display:block}
 .doccheck-notice{font-size:11px;color:var(--ink-mute);margin-top:6px;font-style:italic}
@@ -576,61 +576,94 @@ function _buildSparkline(segments,tripId,isPast){
 }
 function toggleSparklineDetail(id){var el=document.getElementById('spk-'+id);if(el)el.classList.toggle('open');}
 
-/* ── DocCheck ── */
-var _dcCache={};var _dcFlight={};
+/* ── DocCheck (manual review) ── */
+var _dcRequests={};
 function _escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function _docCheckPillHtml(result,tripId,loading){
-  var previewTag='<span class="doccheck-preview-tag">DOCCHECK PREVIEW · SAMPLE RULES</span>';
-  if(loading){
+function _dcDateStr(ts){
+  if(!ts)return'';
+  var s=String(ts).replace(' ','T');
+  if(!/Z$|[+-]\d{2}:\d{2}$/.test(s))s+='Z';
+  return new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function _docCheckPillHtml(req,tripId){
+  if(!req){
     return '<div id="dc-wrap-'+tripId+'" class="doccheck-wrap">'
-      +'<button class="doccheck-pill dc-unknown" onclick="toggleDocCheckDetail(\''+tripId+'\')">DocCheck …</button>'
-      +previewTag
-      +'<div class="doccheck-detail" id="dc-'+tripId+'"><div>Checking rules…</div></div></div>';
+      +'<button class="doccheck-pill dc-request" onclick="requestDocCheck(\''+tripId+'\')">Check entry requirements</button>'
+      +'</div>';
   }
-  var cls,label,detail='';
-  if(!result){
-    cls='dc-unknown';label='DocCheck ?';
-    detail='<div>Could not load sample rules for this destination.</div>';
-  }else{
-    var st=result.status||result.admissibility_status||'UNKNOWN';
-    if(st==='CLEAR'||st==='CLEARED'){cls='dc-ready';label='DocCheck ✓';}
-    else if(st==='ATTENTION'||st==='CONDITIONAL'){cls='dc-attention';label='DocCheck ⚠';}
-    else if(st==='BLOCKED'||st==='DENIED'){cls='dc-blocked';label='DocCheck ✗';}
-    else{cls='dc-unknown';label='DocCheck ?';}
-    var rules=result.triggered_rules||result.rules||[];
-    if(rules.length){
-      detail+=rules.map(function(r){return'<div>'+_escHtml(r.message||r.rule||r.description||JSON.stringify(r))+'</div>';}).join('');
-    }else if(st==='CLEAR'||st==='CLEARED'){
-      detail+='<div>Documents appear to satisfy entry requirements for this destination.</div>';
+  var st=req.status;
+  if(st==='pending'||st==='under_review'){
+    return '<div id="dc-wrap-'+tripId+'" class="doccheck-wrap">'
+      +'<span class="doccheck-pill dc-pending">Entry check under review</span>'
+      +'</div>';
+  }
+  if(st==='reviewed'){
+    var res=req.result;
+    var cls,label,detail='';
+    var checked='Checked '+_dcDateStr(req.reviewed_at);
+    var honesty='Does not verify document authenticity · final admission rests with border authorities.';
+    if(res==='clear'){
+      cls='dc-ready';label='Entry rules met ✓';
+      detail='<div>Entry rules met — as entered.</div>'
+        +'<div class="doccheck-notice">'+checked+' · Re-check if more than 30 days from travel.</div>'
+        +'<div class="doccheck-notice">'+honesty+'</div>';
+    }else if(res==='conditional'){
+      cls='dc-attention';label='Conditional ⚠';
+      detail+='<div>Entry may be subject to conditions.</div>';
+      if(req.admin_note)detail+='<div style="margin-top:5px">'+_escHtml(req.admin_note)+'</div>';
+      detail+='<div class="doccheck-notice">'+checked+' · Re-check if more than 30 days from travel.</div>'
+        +'<div class="doccheck-notice">'+honesty+'</div>';
     }else{
-      detail+='<div>Check destination entry requirements for your passport type.</div>';
+      cls='dc-action';label='Action needed';
+      detail+='<div>Action required before travel — check current entry requirements.</div>';
+      if(req.admin_note)detail+='<div style="margin-top:5px">'+_escHtml(req.admin_note)+'</div>';
+      detail+='<div class="doccheck-notice">'+checked+' · Verify with official sources before travel.</div>'
+        +'<div class="doccheck-notice">'+honesty+'</div>';
     }
+    return '<div id="dc-wrap-'+tripId+'" class="doccheck-wrap">'
+      +'<button class="doccheck-pill '+cls+'" onclick="toggleDocCheckDetail(\''+tripId+'\')">'+label+'</button>'
+      +'<div class="doccheck-detail" id="dc-'+tripId+'">'+detail+'</div>'
+      +'</div>';
   }
-  detail+='<div class="doccheck-notice">These rules are illustrative. Always verify with official sources before travel.</div>';
   return '<div id="dc-wrap-'+tripId+'" class="doccheck-wrap">'
-    +'<button class="doccheck-pill '+cls+'" onclick="toggleDocCheckDetail(\''+tripId+'\')">'+label+'</button>'
-    +previewTag
-    +'<div class="doccheck-detail" id="dc-'+tripId+'">'+detail+'</div></div>';
+    +'<button class="doccheck-pill dc-request" onclick="requestDocCheck(\''+tripId+'\')">Check entry requirements</button>'
+    +'</div>';
 }
 function toggleDocCheckDetail(id){var el=document.getElementById('dc-'+id);if(el)el.classList.toggle('open');}
-async function _fetchDocCheck(trip){
-  var tid=trip.id;
-  if(_dcCache[tid]!==undefined||_dcFlight[tid]||!trip.destination_iata)return;
-  _dcFlight[tid]=true;
+async function requestDocCheck(tripId){
+  var wrap=document.getElementById('dc-wrap-'+tripId);
+  if(wrap)wrap.innerHTML='<span class="doccheck-pill dc-pending" style="opacity:0.6">Submitting…</span>';
   try{
-    var q='?destination_iata='+encodeURIComponent(trip.destination_iata);
-    if(trip.origin_iata)q+='&origin_iata='+encodeURIComponent(trip.origin_iata);
-    if(trip.departure_date)q+='&travel_date='+encodeURIComponent(trip.departure_date.slice(0,10));
-    q+='&trip_id='+encodeURIComponent(tid);
-    var res=await _req('GET','/api/v1/admissibility'+q);
-    _dcCache[tid]=res;
-  }catch(e){_dcCache[tid]=null;}
-  delete _dcFlight[tid];
-  var wrap=document.getElementById('dc-wrap-'+tid);
-  if(wrap)wrap.outerHTML=_docCheckPillHtml(_dcCache[tid],tid,false);
+    var r=await _req('POST','/api/v1/doccheck/request',{trip_id:tripId});
+    _dcRequests[tripId]={status:'pending',created_at:r.created_at};
+    var nw=document.getElementById('dc-wrap-'+tripId);
+    if(nw)nw.outerHTML=_docCheckPillHtml(_dcRequests[tripId],tripId);
+    showToast('Entry check submitted. Typically reviewed within a day or two.');
+  }catch(e){
+    var nw=document.getElementById('dc-wrap-'+tripId);
+    if(e.message&&e.message.includes('409')){
+      _dcRequests[tripId]={status:'pending'};
+      if(nw)nw.outerHTML=_docCheckPillHtml(_dcRequests[tripId],tripId);
+    }else if(e.message&&e.message.includes('400')){
+      if(nw)nw.outerHTML=_docCheckPillHtml(null,tripId);
+      showToast('Add a destination to this trip before requesting an entry check.');
+    }else{
+      if(nw)nw.outerHTML=_docCheckPillHtml(null,tripId);
+      showToast('Failed to submit. Please try again.');
+    }
+  }
 }
-async function _fetchAllDocChecks(trips){
-  for(var i=0;i<trips.length;i++){await _fetchDocCheck(trips[i]);}
+async function _loadDocCheckRequests(trips){
+  try{
+    var all=await _req('GET','/api/v1/doccheck/my');
+    var byTrip={};
+    (all||[]).forEach(function(r){if(r.trip_id&&!byTrip[r.trip_id])byTrip[r.trip_id]=r;});
+    _dcRequests=byTrip;
+    trips.forEach(function(t){
+      var wrap=document.getElementById('dc-wrap-'+t.id);
+      if(wrap)wrap.outerHTML=_docCheckPillHtml(_dcRequests[t.id]||null,t.id);
+    });
+  }catch(e){console.warn('DocCheck load failed:',e.message);}
 }
 
 /* ── Calendar ── */
@@ -1187,9 +1220,8 @@ function _tripCard(t){
     +'<button class="trip-ctx-menu-item'+(t.trip_context==="CORPORATE"?" active":"")+'" onclick="selectCtx(\''+t.id+'\',\'CORPORATE\')">Business</button>'
     +'<button class="trip-ctx-menu-item'+(t.trip_context==="BLEISURE"?" active":"")+'" onclick="selectCtx(\''+t.id+'\',\'BLEISURE\')">Bleisure</button>'
     +'</span></span>';
-  // DocCheck (cached or loading state)
-  var hasCached=_dcCache[t.id]!==undefined;
-  var dcHtml='<div id="dc-wrap-'+t.id+'">'+_docCheckPillHtml(hasCached?_dcCache[t.id]:null,t.id,!hasCached)+'</div>';
+  // DocCheck state
+  var dcHtml=t.destination_iata?_docCheckPillHtml(_dcRequests[t.id]||null,t.id):'';
   // Pending verification pill
   var isPending=(t.status==='pending');
   var pendingPillHtml=isPending?'<span class="pending-pill">Pending verification</span>':'';
@@ -1461,8 +1493,8 @@ async function tripsInit(){
     updateInboxAddress(p.uniprofile_number);
     updateLede();
     renderTrips(_allTrips);
-    // DocCheck fetches run async — cards update in place as each result arrives
-    _fetchAllDocChecks(_allTrips);
+    // DocCheck: fetch all requests, then update pills in place
+    _loadDocCheckRequests(_allTrips);
     // Handle ?verify_trip= links from TripVault confirmation emails
     var qp=new URLSearchParams(window.location.search);
     var vtId=qp.get('verify_trip');var vtAction=qp.get('action');
