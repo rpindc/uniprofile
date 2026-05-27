@@ -105,6 +105,10 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .alert-card.invite{border-color:rgba(3,105,161,0.3);background:linear-gradient(to bottom right,#fff,#f0f8ff)}
 
 @media(max-width:767px){.stats-row{grid-template-columns:1fr 1fr}}
+/* ── Masked-field reveal ── */
+.rv-wrap{display:inline-flex;align-items:baseline;gap:5px}
+.rv-btn{background:none;border:none;color:var(--ink-mute);font-family:var(--sans);font-size:11px;cursor:pointer;padding:0;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;line-height:inherit}
+.rv-btn:hover{color:var(--ink-soft)}
 </style>
 </head>
 <body>
@@ -485,6 +489,7 @@ function renderHealth(p){
     {
       label:"Date of birth & nationality",
       detail:id.dob&&id.nationality?(id.dob.slice(0,10)+" · "+id.nationality):"Needed for document matching",
+      maskedField:id.dob&&id.nationality?{masked:"••••-••-•• · "+id.nationality,fullValue:id.dob.slice(0,10)+" · "+id.nationality}:null,
       done:!!(id.dob&&id.nationality),
       link:"me.html"
     },
@@ -538,7 +543,7 @@ function renderHealth(p){
       +'<div class="check-icon '+iconCls+'">'+iconContent+'</div>'
       +'<div style="flex:1;min-width:0">'
       +'<div style="font-size:13px;font-weight:500;color:'+labelColor+'">'+c.label+optionalTag+'</div>'
-      +'<div class="caption">'+escHtml(c.detail)+'</div>'
+      +'<div class="caption">'+(c.maskedField?_rvHtml(c.maskedField):escHtml(c.detail))+'</div>'
       +'</div>'
       +(!c.done?'<a href="'+c.link+'" class="'+btnCls+'" style="flex-shrink:0">Add</a>':"")
       +'</div>';
@@ -586,6 +591,23 @@ function renderInsight(p){
 
 /* ── Notifications ── */
 function escHtml(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function _rvHtml(mf){
+  var m=escHtml(mf.masked);
+  if(mf.fullValue){return '<span class="rv-wrap" data-masked="'+m+'" data-full="'+escHtml(mf.fullValue)+'"><span class="rv-val">'+m+'</span><button class="rv-btn" onclick="_reveal(this)">show</button></span>';}
+  return '<span class="rv-wrap" data-masked="'+m+'" data-doc-id="'+escHtml(mf.docId)+'"><span class="rv-val">'+m+'</span><button class="rv-btn" onclick="_reveal(this)">show</button></span>';
+}
+async function _reveal(btn){
+  var w=btn.closest('.rv-wrap'),v=w.querySelector('.rv-val');
+  if(btn.textContent==='hide'){v.textContent=w.dataset.masked;btn.textContent='show';return;}
+  if(w.dataset.full){v.textContent=w.dataset.full;btn.textContent='hide';return;}
+  btn.textContent='···';btn.disabled=true;
+  try{
+    var r=await _req('GET','/api/v1/profile/'+_uid+'/documents/'+w.dataset.docId);
+    w.dataset.full=r.doc_number||w.dataset.masked;
+    v.textContent=w.dataset.full;btn.textContent='hide';
+  }catch(e){btn.textContent='show';}
+  finally{btn.disabled=false;}
+}
 function _fmtTs(ts){if(!ts)return"";var s=ts.replace(' ','T').replace(/\+00(:00)?$/,'Z').replace(/(\.\d+)\+00(:00)?$/,'$1Z');if(!/Z$|[+-]\d{2}:\d{2}$/.test(s))s+='Z';var d=new Date(s);if(isNaN(d))return String(ts);var now=new Date();var ms=now-d;var hr=ms/3600000;if(hr<1&&hr>=0)return Math.max(1,Math.round(ms/60000))+'m ago';if(hr<24&&hr>=0)return Math.round(hr)+'h ago';if(hr<48&&hr>=0)return'Yesterday';return d.toLocaleDateString("en-US",{month:"short",day:"numeric"})+" at "+d.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});}
 
 function notifText(n){

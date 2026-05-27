@@ -253,6 +253,10 @@ body.doc-editing #save-pdf-btn{display:none!important}
   /* Page settings */
   @page{margin:18mm 20mm 24mm;size:A4 portrait}
 }
+/* ── Masked-field reveal ── */
+.rv-wrap{display:inline-flex;align-items:baseline;gap:5px}
+.rv-btn{background:none;border:none;color:var(--ink-mute);font-family:var(--sans);font-size:11px;cursor:pointer;padding:0;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;line-height:inherit}
+.rv-btn:hover{color:var(--ink-soft)}
 </style>
 </head>
 <body>
@@ -642,6 +646,23 @@ function _st(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
 function _ht(id,v){var e=document.getElementById(id);if(e)e.innerHTML=v;}
 function _show(id){var e=document.getElementById(id);if(e)e.style.display="";}
 function escHtml(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function _rvHtml(mf){
+  var m=escHtml(mf.masked);
+  if(mf.fullValue){return '<span class="rv-wrap" data-masked="'+m+'" data-full="'+escHtml(mf.fullValue)+'"><span class="rv-val">'+m+'</span><button class="rv-btn" onclick="_reveal(this)">show</button></span>';}
+  return '<span class="rv-wrap" data-masked="'+m+'" data-doc-id="'+escHtml(mf.docId)+'"><span class="rv-val">'+m+'</span><button class="rv-btn" onclick="_reveal(this)">show</button></span>';
+}
+async function _reveal(btn){
+  var w=btn.closest('.rv-wrap'),v=w.querySelector('.rv-val');
+  if(btn.textContent==='hide'){v.textContent=w.dataset.masked;btn.textContent='show';return;}
+  if(w.dataset.full){v.textContent=w.dataset.full;btn.textContent='hide';return;}
+  btn.textContent='···';btn.disabled=true;
+  try{
+    var r=await _req('GET','/api/v1/profile/'+_uid+'/documents/'+w.dataset.docId);
+    w.dataset.full=r.doc_number||w.dataset.masked;
+    v.textContent=w.dataset.full;btn.textContent='hide';
+  }catch(e){btn.textContent='show';}
+  finally{btn.disabled=false;}
+}
 function showToast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},3000);}
 function enterEditMode(){document.body.classList.add('doc-editing');}
 function exitEditMode(){document.body.classList.remove('doc-editing');}
@@ -1319,11 +1340,11 @@ function renderInsuranceSection(){
       var dateStr=(vf&&vu)?(vf+' – '+vu):vf?('From '+vf):('Until '+vu);
       rows.push({label:'Valid',val:dateStr});
     }
-    if(ins.doc_number_last4)rows.push({label:'Policy',val:'···'+ins.doc_number_last4});
+    if(ins.doc_number_last4)rows.push({label:'Policy',val:'···'+ins.doc_number_last4,maskedField:{masked:'···'+ins.doc_number_last4,docId:ins.id}});
     rows.forEach(function(r){
       html+='<div class="ws-item"><div class="ws-item-main">';
       html+='<span style="font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-faint);margin-right:8px">'+escHtml(r.label)+'</span>';
-      html+='<span style="font-size:13px">'+escHtml(r.val)+'</span>';
+      html+='<span style="font-size:13px">'+(r.maskedField?_rvHtml(r.maskedField):escHtml(r.val))+'</span>';
       html+='</div></div>';
     });
   }

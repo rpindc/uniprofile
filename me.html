@@ -25,7 +25,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-font-smoothing:antialiased}
-body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;font-size:14px}
+body{font-family:var(--sans);font-weight:400;background:var(--paper);color:var(--ink);line-height:1.55;font-size:14px}
 
 /* Typography */
 .h1{font-family:var(--serif);font-weight:300;font-size:clamp(28px,4vw,44px);line-height:1.1;letter-spacing:-0.02em}
@@ -45,11 +45,11 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .sidebar-wordmark-block{padding:0 24px 24px;border-bottom:0.5px solid rgba(26,26,26,0.06)}
 .wordmark{font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-0.01em;color:var(--ink);text-decoration:none;display:block}
 .wordmark em{font-style:italic;font-weight:300}
-.wordmark-tag{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;margin-top:6px}
+.wordmark-tag{font-family:var(--sans);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;margin-top:6px}
 .sidebar-id-block{padding:18px 24px;border-bottom:0.5px solid rgba(26,26,26,0.06)}
-.sidebar-id-label{font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;margin-bottom:6px}
+.sidebar-id-label{font-family:var(--sans);font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-mute);font-weight:500;margin-bottom:6px}
 .sidebar-nav{padding:20px 12px;flex:1}
-.sidebar-nav-label{font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-faint);font-weight:500;padding:0 12px 12px}
+.sidebar-nav-label{font-family:var(--sans);font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-faint);font-weight:500;padding:0 12px 12px}
 .nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:6px;text-decoration:none;color:var(--ink-soft);font-size:14px;margin-bottom:2px;transition:background 120ms ease}
 .nav-item:hover{background:rgba(26,26,26,0.03)}
 .nav-item.active{background:rgba(26,26,26,0.05);color:var(--ink);font-weight:500}
@@ -227,6 +227,10 @@ body.me-editing .me-edit-banner{display:flex}
   .tile.sel small{color:rgba(20,20,18,0.6)}
   .btn-primary:hover{opacity:0.85}
 }
+/* ── Masked-field reveal ── */
+.rv-wrap{display:inline-flex;align-items:baseline;gap:5px}
+.rv-btn{background:none;border:none;color:var(--ink-mute);font-family:var(--sans);font-size:11px;cursor:pointer;padding:0;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px;line-height:inherit}
+.rv-btn:hover{color:var(--ink-soft)}
 </style>
 </head>
 <body>
@@ -1507,13 +1511,13 @@ function _renderLegalIdCard(p){
   var id=p.identity||{};
   var parts=[];
   var ln=[id.legal_first,id.legal_middle,id.legal_last].filter(Boolean).join(" ");
-  if(ln)parts.push(ln);
-  if(id.dob)parts.push("born "+_fmt(id.dob));
-  if(id.nationality)parts.push(id.nationality+" national");
-  if(id.gender_code){var gmap={M:"male",F:"female",X:"unspecified gender"};parts.push(gmap[id.gender_code]||id.gender_code);}
+  if(ln)parts.push(_esc(ln));
+  if(id.dob)parts.push('born <span class="rv-wrap" data-masked="••••-••-••" data-full="'+_esc(id.dob.slice(0,10))+'"><span class="rv-val">••••-••-••</span><button class="rv-btn" onclick="_reveal(this)">show</button></span>');
+  if(id.nationality)parts.push(_esc(id.nationality)+" national");
+  if(id.gender_code){var gmap={M:"male",F:"female",X:"unspecified gender"};parts.push(gmap[id.gender_code]||_esc(id.gender_code));}
   var prose=parts.length?parts.join(", ")+".":"Legal name and identity not yet set.";
-  if(p.display_name&&p.display_name.trim())prose+=' Called "'+p.display_name.trim()+'" in your household.';
-  _st("legal-id-prose",prose);
+  if(p.display_name&&p.display_name.trim())prose+=' Called &ldquo;'+_esc(p.display_name.trim())+'&rdquo; in your household.';
+  _ht("legal-id-prose",prose);
   // Pre-fill edit fields
   _setval("edit-first",id.legal_first);_setval("edit-middle",id.legal_middle);_setval("edit-last",id.legal_last);
   _setval("edit-display-name",p.display_name);
@@ -1594,7 +1598,11 @@ function _renderIdentityCards(p){
     var tPillTxt=ttDocs.length>=2?"Both active":ttDocs.length+" active";
     _ht("trusted-pill",_pill("pill-green",tPillTxt));
     tb.className="card-item-body";
-    tb.textContent=ttDocs.map(function(d){return _docLabel(d.doc_type)+(d.doc_number_last4?" ···"+d.doc_number_last4:"");}).join(", ")+". Applied automatically on U.S.-touching bookings.";
+    tb.innerHTML=ttDocs.map(function(d){
+      var lbl=_esc(_docLabel(d.doc_type));
+      if(d.doc_number_last4){return lbl+' <span class="rv-wrap" data-masked="···'+_esc(d.doc_number_last4)+'" data-doc-id="'+_esc(d.id)+'"><span class="rv-val">···'+_esc(d.doc_number_last4)+'</span><button class="rv-btn" onclick="_reveal(this)">show</button></span>';}
+      return lbl;
+    }).join(", ")+". Applied automatically on U.S.-touching bookings.";
     if(tbtn)tbtn.textContent="Edit";
   }else{
     _ht("trusted-pill",_pill("pill-neutral","Not set"));
@@ -1632,7 +1640,7 @@ function _renderIdentityCards(p){
     if(insurance.insurance_provider)bodyParts.push(_esc(insurance.insurance_provider));
     if(insurance.coverage_type)bodyParts.push(_esc(insurance.coverage_type));
     if(dateRange)bodyParts.push(dateRange);
-    if(insurance.doc_number_last4)bodyParts.push("Policy ···"+_esc(insurance.doc_number_last4));
+    if(insurance.doc_number_last4)bodyParts.push('Policy <span class="rv-wrap" data-masked="···'+_esc(insurance.doc_number_last4)+'" data-doc-id="'+_esc(insurance.id)+'"><span class="rv-val">···'+_esc(insurance.doc_number_last4)+'</span><button class="rv-btn" onclick="_reveal(this)">show</button></span>');
     ib.innerHTML=bodyParts.length?bodyParts.join(" · ")+".":'Policy on file.';
     if(ibtn)ibtn.textContent="Edit";
   }else{
@@ -1882,7 +1890,7 @@ function _renderLoyaltyCard(p){
     html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--rule)">'
       +'<div style="flex:1;min-width:0">'
       +'<div style="font-size:13px;font-weight:500">'+name+(lp.program_name&&lp.program_name!==name?" · "+_esc(lp.program_name):"")+'</div>'
-      +'<div style="font-size:12px;color:var(--ink-mute);display:flex;align-items:center;flex-wrap:wrap;gap:4px">'+(lp.member_number?"···"+_esc(lp.member_number.slice(-4))+" ":"")+tier+pts+'</div>'
+      +'<div style="font-size:12px;color:var(--ink-mute);display:flex;align-items:center;flex-wrap:wrap;gap:4px">'+(lp.member_number?'<span class="rv-wrap" data-masked="···'+_esc(lp.member_number.slice(-4))+'" data-full="'+_esc(lp.member_number)+'"><span class="rv-val">···'+_esc(lp.member_number.slice(-4))+'</span><button class="rv-btn" onclick="_reveal(this)">show</button></span> ':"")+tier+pts+'</div>'
       +'</div>'
       +'<div style="display:flex;gap:5px;flex-shrink:0">'
       +'<button class="btn btn-secondary btn-sm" onclick="openEditLoyalty(\''+lp.id+'\')">Edit</button>'
@@ -2541,6 +2549,19 @@ async function meInit(){
   await meRefresh();
 }
 meInit();
+
+async function _reveal(btn){
+  var w=btn.closest('.rv-wrap'),v=w.querySelector('.rv-val');
+  if(btn.textContent==='hide'){v.textContent=w.dataset.masked;btn.textContent='show';return;}
+  if(w.dataset.full){v.textContent=w.dataset.full;btn.textContent='hide';return;}
+  btn.textContent='···';btn.disabled=true;
+  try{
+    var r=await _req('GET','/api/v1/profile/'+_uid+'/documents/'+w.dataset.docId);
+    w.dataset.full=r.doc_number||w.dataset.masked;
+    v.textContent=w.dataset.full;btn.textContent='hide';
+  }catch(e){btn.textContent='show';}
+  finally{btn.disabled=false;}
+}
 </script>
 </body>
 </html>
