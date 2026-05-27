@@ -50,6 +50,19 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 200ms ease;pointer-events:none;white-space:nowrap;z-index:1000}
 .toast.show{opacity:1}
 .divider{height:0.5px;background:var(--rule);margin:28px 0}
+.visa-list{font-size:12px;color:var(--ink-soft);line-height:1.7;margin-bottom:2px}
+.visa-list-empty{font-size:12px;color:var(--ink-mute);font-style:italic}
+.timatic-section{margin:14px 0 10px}
+.timatic-label{font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute);display:block;margin-bottom:5px}
+.timatic-field{width:100%;border:0.5px solid var(--rule-strong);border-radius:6px;padding:8px 10px;font-family:var(--sans);font-size:12px;color:var(--ink);background:var(--field-bg);resize:vertical;min-height:70px;margin-bottom:6px}
+.timatic-field:focus{outline:none;border-color:var(--ink-mute)}
+.ai-panel{background:var(--paper-warm);border:0.5px solid var(--rule-strong);border-radius:8px;padding:12px 14px;margin-bottom:12px;display:none}
+.ai-panel.visible{display:block}
+.ai-summary-text{font-size:13px;color:var(--ink);line-height:1.5;margin-bottom:8px}
+.ai-suggestion-hint{font-size:11px;color:var(--ink-mute);font-style:italic}
+.result-radio-label.hint-clear{border-color:var(--green);color:var(--green)}
+.result-radio-label.hint-conditional{border-color:var(--amber);color:var(--amber)}
+.result-radio-label.hint-action_needed{border-color:var(--red);color:var(--red)}
 </style>
 </head>
 <body>
@@ -140,6 +153,23 @@ function renderReviewed(items){
       +'</div>';
   }).join('');
 }
+function _visaListHtml(snapshot){
+  var visas=typeof snapshot==='string'?JSON.parse(snapshot||'[]'):(snapshot||[]);
+  if(!visas.length)return'<span class="visa-list-empty">None recorded</span>';
+  return'<div class="visa-list">'+visas.map(function(v){
+    var type=esc(v.visa_type||'VISA');
+    var ic=v.issuing_country?' · issued by '+esc(v.issuing_country):'';
+    var dc=v.destination_country?' for '+esc(v.destination_country):'';
+    var exp=v.valid_until?' — valid to '+esc(_fmtDate(v.valid_until)):'';
+    var ent=v.entries?' ('+esc(v.entries)+')':'';
+    return type+ic+dc+exp+ent;
+  }).join('<br>')+'</div>';
+}
+function _transitHtml(transit){
+  var arr=typeof transit==='string'?JSON.parse(transit||'[]'):(transit||[]);
+  if(!arr.length)return'None';
+  return esc(arr.join(' → '));
+}
 function reqCardHtml(r){
   var dates=r.departure_date?_fmtDate(r.departure_date)+(r.return_date?' → '+_fmtDate(r.return_date):''):'—';
   var nat=r.nationality||'—';
@@ -156,16 +186,28 @@ function reqCardHtml(r){
     +'<div class="req-field"><span class="req-field-label">Nationality</span>'+esc(nat)+'</div>'
     +'<div class="req-field"><span class="req-field-label">Passport issued by</span>'+esc(pic)+'</div>'
     +'<div class="req-field"><span class="req-field-label">Passport expires</span>'+esc(pexp)+'</div>'
+    +'<div class="req-field"><span class="req-field-label">Transit</span>'+_transitHtml(r.transit_iatas)+'</div>'
     +(r.travel_purpose?'<div class="req-field"><span class="req-field-label">Purpose</span>'+esc(r.travel_purpose)+'</div>':'')
     +'</div>'
-    +'<div style="margin-bottom:8px;font-size:12px;color:var(--ink-mute)">Check current entry requirements in Timatic Web, then record your finding below.</div>'
+    +'<div style="margin-bottom:6px"><span class="req-field-label" style="font-size:10px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-mute);display:block;margin-bottom:4px">Visas &amp; permits</span>'
+    +_visaListHtml(r.visas_snapshot)+'</div>'
+    +'<div class="timatic-section">'
+    +'<span class="timatic-label">Timatic output <span style="font-weight:400;font-style:italic;text-transform:none;letter-spacing:0">(internal — never shown to traveler)</span></span>'
+    +'<textarea class="timatic-field" id="timatic-'+r.id+'" placeholder="Paste Timatic output here…">'+esc(r.timatic_raw||'')+'</textarea>'
+    +'<button class="btn btn-secondary btn-sm" onclick="summarizeDocCheck(\''+r.id+'\')">Summarize</button>'
+    +'</div>'
+    +'<div class="ai-panel" id="ai-panel-'+r.id+'">'
+    +'<div class="ai-summary-text" id="ai-summary-'+r.id+'"></div>'
+    +'<div class="ai-suggestion-hint" id="ai-hint-'+r.id+'"></div>'
+    +'</div>'
+    +'<div style="margin:12px 0 8px;font-size:12px;color:var(--ink-mute)">Record your finding:</div>'
     +'<div class="result-radios" id="radios-'+r.id+'">'
     +'<label class="result-radio-label" id="rl-clear-'+r.id+'"><input type="radio" name="result-'+r.id+'" value="clear" onchange="onResultChange(\''+r.id+'\',\'clear\')"> Entry rules met</label>'
     +'<label class="result-radio-label" id="rl-conditional-'+r.id+'"><input type="radio" name="result-'+r.id+'" value="conditional" onchange="onResultChange(\''+r.id+'\',\'conditional\')"> Conditional</label>'
     +'<label class="result-radio-label" id="rl-action_needed-'+r.id+'"><input type="radio" name="result-'+r.id+'" value="action_needed" onchange="onResultChange(\''+r.id+'\',\'action_needed\')"> Action needed</label>'
     +'</div>'
-    +'<textarea class="note-field" id="note-'+r.id+'" placeholder="Brief explanation (optional)"></textarea>'
-    +'<div class="note-hint">Do not paste Timatic text. One or two sentences only.</div>'
+    +'<textarea class="note-field" id="note-'+r.id+'" placeholder="Brief note for the traveler (optional, 1–2 sentences)"></textarea>'
+    +'<div class="note-hint">Your words — not Timatic text. This is what the traveler will see.</div>'
     +'<div style="display:flex;gap:8px;align-items:center">'
     +'<button class="btn btn-primary btn-sm" id="submit-btn-'+r.id+'" onclick="submitReview(\''+r.id+'\')" disabled>Submit review</button>'
     +(r.status==='pending'?'<button class="btn btn-secondary btn-sm" onclick="markUnderReview(\''+r.id+'\')">Mark under review</button>':'')
@@ -188,17 +230,44 @@ async function markUnderReview(reqId){
     if(r){r.status='under_review';renderAll();}
   }catch(e){showToast('Failed to update status.');}
 }
+async function summarizeDocCheck(reqId){
+  var ta=document.getElementById('timatic-'+reqId);
+  var raw=ta?ta.value.trim():'';
+  if(!raw){showToast('Paste Timatic output first.');return;}
+  var btn=ta?ta.parentElement.querySelector('button'):null;
+  if(btn){btn.disabled=true;btn.textContent='Summarizing…';}
+  try{
+    var res=await _req('POST','/api/v1/admin/doccheck/'+reqId+'/summarize',{timatic_raw:raw});
+    var panel=document.getElementById('ai-panel-'+reqId);
+    var summaryEl=document.getElementById('ai-summary-'+reqId);
+    var hintEl=document.getElementById('ai-hint-'+reqId);
+    if(summaryEl)summaryEl.textContent=res.summary||'';
+    var suggested=res.suggested_result||'';
+    if(hintEl)hintEl.textContent=suggested?'AI suggests: '+{clear:'Entry rules met',conditional:'Conditional',action_needed:'Action needed'}[suggested]+' — verify and select below.':'';
+    if(panel)panel.classList.add('visible');
+    if(suggested){
+      ['clear','conditional','action_needed'].forEach(function(v){
+        var lbl=document.getElementById('rl-'+v+'-'+reqId);
+        if(!lbl)return;
+        lbl.classList.remove('hint-clear','hint-conditional','hint-action_needed');
+        if(v===suggested)lbl.classList.add('hint-'+v);
+      });
+    }
+  }catch(e){showToast('Summarize failed. Please try again.');}
+  finally{if(btn){btn.disabled=false;btn.textContent='Summarize';}}
+}
 async function submitReview(reqId){
   var selected=document.querySelector('input[name="result-'+reqId+'"]:checked');
   if(!selected)return;
   var result=selected.value;
   var note=(document.getElementById('note-'+reqId)||{}).value||'';
+  var timatic=(document.getElementById('timatic-'+reqId)||{}).value||'';
   var btn=document.getElementById('submit-btn-'+reqId);
   var errEl=document.getElementById('card-err-'+reqId);
   if(btn){btn.disabled=true;btn.textContent='Saving…';}
   if(errEl)errEl.style.display='none';
   try{
-    await _req('PATCH','/api/v1/admin/doccheck/'+reqId,{status:'reviewed',result:result,admin_note:note||null});
+    await _req('PATCH','/api/v1/admin/doccheck/'+reqId,{status:'reviewed',result:result,admin_note:note||null,timatic_raw:timatic||null});
     var r=_allReqs.find(function(x){return x.id===reqId;});
     if(r){Object.assign(r,{status:'reviewed',result:result,admin_note:note||null,reviewed_at:new Date().toISOString()});renderAll();}
     showToast('Review submitted.');
