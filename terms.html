@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>How it works — UniProfile</title>
+<title>Terms &amp; Privacy — UniProfile</title>
 <meta name="robots" content="noindex,nofollow" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,21 +44,26 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .main{flex:1;padding:36px 48px;min-width:0;max-width:760px}
 .page-header{margin-bottom:40px}
 
-/* Guide sections */
-.guide-section{padding:32px 0;border-bottom:0.5px solid var(--rule)}
-.guide-section:last-child{border-bottom:none;padding-bottom:8px}
-.guide-num{font-family:var(--serif);font-style:italic;font-weight:300;font-size:13px;color:var(--ink-faint);margin-bottom:10px}
-.guide-prose{font-size:15px;line-height:1.72;color:var(--ink-soft);max-width:620px}
-.guide-prose+.guide-prose{margin-top:14px}
-.guide-callout{background:var(--paper-warm);border-radius:8px;padding:18px 22px;margin-top:18px;max-width:620px}
-.guide-callout p{font-size:14px;line-height:1.65;color:var(--ink-soft)}
-.guide-soon{display:inline-block;font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);background:var(--amber-soft);padding:2px 9px;border-radius:100px;margin-bottom:10px}
-.guide-note{display:block;font-size:13px;color:var(--ink-mute);margin-top:12px;max-width:620px;font-style:italic}
+/* Terms sections */
+.terms-section{padding:32px 0;border-bottom:0.5px solid var(--rule)}
+.terms-section:last-of-type{border-bottom:none;padding-bottom:0}
+.terms-prose{font-size:15px;line-height:1.72;color:var(--ink-soft);max-width:620px}
+.terms-prose+.terms-prose{margin-top:14px}
+.terms-list{margin:14px 0 0 0;padding:0;list-style:none;max-width:620px}
+.terms-list li{font-size:15px;line-height:1.65;color:var(--ink-soft);padding:7px 0 7px 22px;position:relative;border-bottom:0.5px solid var(--rule)}
+.terms-list li:last-child{border-bottom:none}
+.terms-list li::before{content:"—";position:absolute;left:0;color:var(--ink-faint);font-size:13px}
+.terms-callout{background:var(--paper-warm);border-radius:8px;padding:18px 22px;margin-top:18px;max-width:620px}
+.terms-callout p{font-size:14px;line-height:1.65;color:var(--ink-soft)}
+.terms-label{font-size:11px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);margin-bottom:8px}
+.terms-intro{font-size:14px;line-height:1.65;color:var(--ink-mute);font-style:italic;max-width:620px;padding:0 0 24px;border-bottom:0.5px solid var(--rule);margin-bottom:8px}
+.terms-tagline{font-family:var(--serif);font-style:italic;font-weight:300;font-size:18px;color:var(--amber);letter-spacing:-0.01em;margin-top:40px;display:block}
+.terms-updated{font-size:12px;color:var(--ink-faint);margin-top:10px;display:block}
 
 @media(max-width:767px){
   .sidebar{display:none}
   .main{padding:20px 18px}
-  .guide-prose{font-size:14px}
+  .terms-prose{font-size:14px}
 }
 </style>
 </head>
@@ -73,6 +78,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   <symbol id="i-groups" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><circle cx="16" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><path d="M2 20C2 17 4.7 15 8 15" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M10 18C10 15.5 12.5 14 16 14C19.5 14 22 15.5 22 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
   <symbol id="i-book" viewBox="0 0 24 24" fill="none"><path d="M4 6C4 5.45 4.45 5 5 5H11V19H5C4.45 19 4 18.55 4 18V6Z" stroke="currentColor" stroke-width="1.25"/><path d="M13 5H19C19.55 5 20 5.45 20 6V18C20 18.55 19.55 19 19 19H13V5Z" stroke="currentColor" stroke-width="1.25"/><path d="M11 5V19" stroke="currentColor" stroke-width="1.25"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-terms" viewBox="0 0 24 24" fill="none"><path d="M9 5H7C5.9 5 5 5.9 5 7V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V7C19 5.9 18.1 5 17 5H15" stroke="currentColor" stroke-width="1.25"/><rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M9 12H15M9 16H13" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
 </svg>
 
 <header class="mob-header">
@@ -91,12 +97,12 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     <a href="/trips.html" class="mob-nav-item" data-page="trips"><svg class="icon" aria-hidden="true"><use href="#i-trips"/></svg>Trips</a>
     <a href="/groups.html" class="mob-nav-item" data-page="groups"><svg class="icon" aria-hidden="true"><use href="#i-groups"/></svg>Journey</a>
     <a href="/privacy.html" class="mob-nav-item" data-page="privacy"><svg class="icon" aria-hidden="true"><use href="#i-privacy"/></svg>Privacy</a>
-    <a href="/guide.html" class="mob-nav-item mob-nav-item-active" data-page="guide"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg>Guide</a>
+    <a href="/guide.html" class="mob-nav-item" data-page="guide"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg>Guide</a>
   </div>
   <div class="mob-drawer-footer">
     <button class="mob-nav-item mob-signout" id="mob-signout-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><polyline points="16 17 21 12 16 7" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>Sign out</button>
     <a href="/feedback.html" class="mob-nav-item" style="font-size:13px;color:var(--ink-mute);">Give feedback</a>
-    <a href="/terms.html" class="mob-nav-item" style="font-size:13px;color:var(--ink-mute);">Terms &amp; Privacy</a>
+    <a href="/terms.html" class="mob-nav-item mob-nav-item-active" style="font-size:13px;color:var(--ink-mute);">Terms &amp; Privacy</a>
   </div>
 </nav>
 
@@ -119,7 +125,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       <a href="/trips.html" class="nav-item"><svg class="icon"><use href="#i-trips"/></svg>Trips</a>
       <a href="/groups.html" class="nav-item"><svg class="icon"><use href="#i-groups"/></svg>Journey</a>
       <a href="/privacy.html" class="nav-item"><svg class="icon"><use href="#i-privacy"/></svg>Privacy</a>
-      <a href="/guide.html" class="nav-item active"><svg class="icon"><use href="#i-book"/></svg>Guide</a>
+      <a href="/guide.html" class="nav-item"><svg class="icon"><use href="#i-book"/></svg>Guide</a>
     </nav>
     <div class="sidebar-user-card">
       <div class="user-card-inner">
@@ -132,73 +138,107 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       </div>
       <button onclick="localStorage.removeItem('up_token');window.location.href='https://uniprofile-auth.auth.us-east-1.amazoncognito.com/logout?client_id=2heljmdli4f9cv2i4m0i020mfc&logout_uri='+encodeURIComponent(window.location.origin+'/');" style="width:100%;text-align:left;background:none;border:none;cursor:pointer;padding:4px 12px 6px;font-size:11px;color:var(--ink-mute);font-family:var(--sans);">Sign out</button>
       <a href="/feedback.html" style="display:block;padding:2px 12px 4px;font-size:11px;color:var(--ink-mute);font-family:var(--sans);text-decoration:none;">Give feedback</a>
-      <a href="/terms.html" style="display:block;padding:2px 12px 8px;font-size:11px;color:var(--ink-mute);font-family:var(--sans);text-decoration:none;">Terms &amp; Privacy</a>
+      <a href="/terms.html" style="display:block;padding:2px 12px 8px;font-size:11px;color:var(--ink);font-family:var(--sans);text-decoration:none;font-weight:500;">Terms &amp; Privacy</a>
     </div>
   </aside>
 
   <main class="main">
 
     <div class="page-header">
-      <div class="eyebrow" style="margin-bottom:12px">UniProfile guide</div>
-      <h1 class="h1" style="margin-bottom:14px">How it works</h1>
-      <p class="lede">A plain-language guide — what UniProfile is, what it does, and what it honestly doesn't.</p>
+      <div class="eyebrow" style="margin-bottom:12px">Terms &amp; privacy</div>
+      <h1 class="h1" style="margin-bottom:14px">At a glance</h1>
+      <p class="lede">A plain-English summary of how UniProfile works, what we hold, and what you can expect from us.</p>
     </div>
 
-    <!-- 01 -->
-    <section class="guide-section">
-      <div class="guide-num">01</div>
-      <h2 class="h2" style="margin-bottom:16px">What UniProfile is</h2>
-      <p class="guide-prose">Most travelers are scattered data. Your passport number lives in one airline system, your KTN in another, your meal preference somewhere only one hotel remembered, your loyalty number re-typed at every checkout. UniProfile doesn't replace any of that — it gives you one place to hold your own travel identity, so you're never starting from zero. Add your passport once. Set your seat preference once. When you join a group trip, your readiness is already there. Your data stays yours: you control what you share and with whom, and you can delete it at any time.</p>
-    </section>
+    <p class="terms-intro">The detailed legal documents — Terms of Service, Privacy Policy, Cookie Policy — are in review and will be published here when finalized. Until then, this page is the honest summary.</p>
 
-    <!-- 02 -->
-    <section class="guide-section">
-      <div class="guide-num">02</div>
-      <h2 class="h2" style="margin-bottom:16px">You own your travel identity</h2>
-      <p class="guide-prose">Every airline, hotel, and booking platform holds a fragment of your travel life. They share it within their own systems — they don't share it with each other, or with you. UniProfile works the other way: it's your record, not a vendor's. You maintain your documents, preferences, and emergency contacts in one place. You decide what goes out and to whom.</p>
-    </section>
-
-    <!-- 03 -->
-    <section class="guide-section">
-      <div class="guide-num">03</div>
-      <h2 class="h2" style="margin-bottom:16px">Your documents — held by you</h2>
-      <p class="guide-prose">Add your passport, visas or residency permits, trusted traveler numbers (KTN, Global Entry), driver's license, and travel insurance here. UniProfile tracks expiry dates and surfaces alerts when something needs attention.</p>
-      <p class="guide-prose">One important clarification: we store what you enter — we do not verify documents with any government database. You still need the physical document at the border. Sensitive numbers are stored masked; you'll see the last four digits on screen, not the full string.</p>
-    </section>
-
-    <!-- 04 -->
-    <section class="guide-section">
-      <div class="guide-num">04</div>
-      <h2 class="h2" style="margin-bottom:16px">Journeys — your trips as one record</h2>
-      <p class="guide-prose">A Journey is your trip as one unified record. Travel solo and it's your own complete picture — itinerary, documents, and readiness in one place. Travel with others and everyone shares that same view: who has documents on file, whose passport is expiring, who still needs to be added. Think of it as one version of the trip — not seven separate email threads.</p>
-    </section>
-
-    <!-- 05 -->
-    <section class="guide-section">
-      <div class="guide-num">05</div>
-      <h2 class="h2" style="margin-bottom:16px">Readiness &amp; admissibility — what "on file" means</h2>
-      <p class="guide-prose">When UniProfile says a document is "on file," it means you've entered it — not that an algorithm has cleared you for travel. Entry decisions are made by people at borders. We pull visa requirements and entry rules for common corridors, but we can't guarantee they're current or complete for every situation.</p>
-      <p class="guide-prose">"Passport on file — check entry rules for your destination" is what we'll say. "You're cleared to travel" is not something UniProfile would say. Travel insurance is shown as on file with coverage dates — not as proof of coverage.</p>
-    </section>
-
-    <!-- 06 -->
-    <section class="guide-section">
-      <div class="guide-num">06</div>
-      <h2 class="h2" style="margin-bottom:16px">Sharing &amp; privacy — what you share, with whom</h2>
-      <p class="guide-prose">Today, sharing happens within Journeys. When you join as a linked member, you choose whether to approve the organizer's request to see your readiness status. If you approve, the organizer sees whether your documents are on file — not the document details themselves. If you don't, they see only that you're pending. Named travelers (children or guests the organizer manages) work differently — the organizer enters their documents directly on their behalf.</p>
-      <div class="guide-callout">
-        <span class="guide-soon">Coming soon</span>
-        <p>One day you'll be able to share just what's needed at the moment — your seat preference and meal code with a hotel at check-in, or your KTN to an airline without forwarding your passport. Per trip, per vendor, chosen by you. That capability is in development and not available yet.</p>
+    <!-- Your data is yours -->
+    <section class="terms-section">
+      <h2 class="h2" style="margin-bottom:16px">Your data is yours</h2>
+      <p class="terms-prose">You own what you upload to UniProfile — your passport details, visa data, trips, loyalty numbers, everything. We hold it as a <strong>custodian</strong>, not an owner.</p>
+      <p class="terms-prose" style="margin-top:18px"><strong>What you can do today:</strong></p>
+      <ul class="terms-list">
+        <li><strong>Revoke trip-group sharing</strong> — if you've shared a trip with companions, you can pull that sharing back from within the trip.</li>
+        <li><strong>Request a data export, account deletion, or full revocation</strong> by writing to <a href="mailto:hello@uniprofile.net" style="color:var(--ink);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">hello@uniprofile.net</a>. We'll handle it personally — at our current stage, every request is read and answered by a person.</li>
+      </ul>
+      <div class="terms-callout">
+        <div class="terms-label">In active development</div>
+        <p>Self-serve data export, self-serve account deletion, and a full consent ledger with per-operator revocation are being built — they'll move from "email request" to "one-tap action" when they ship. Until then, our promise is that any request gets handled, not that you can do it in two clicks.</p>
       </div>
     </section>
 
-    <!-- 07 -->
-    <section class="guide-section">
-      <div class="guide-num">07</div>
-      <h2 class="h2" style="margin-bottom:16px">The Travel Readiness Record</h2>
-      <p class="guide-prose">From any Journey, you can generate a PDF — a dated snapshot of your document status, entry-rule checks, and emergency contacts for that trip. It's useful to have before departure, to share with a travel manager, or to carry as a reference on the road.</p>
-      <p class="guide-prose">What it is not: an official document. It doesn't stand in for your passport, your visa, or any credential you'd show at a border. Print it as a checklist — not as proof of anything.</p>
+    <!-- What we collect -->
+    <section class="terms-section">
+      <h2 class="h2" style="margin-bottom:16px">What we collect</h2>
+      <p class="terms-prose">Only what's needed to make UniProfile work for you.</p>
+      <ul class="terms-list">
+        <li><strong>Identity and travel documents</strong> you choose to upload (passport, visas, driver's license, loyalty, insurance, trusted-traveler programs).</li>
+        <li><strong>Trip information</strong> you add or that we parse from emails you forward to us.</li>
+        <li><strong>Account activity</strong> — when you log in, what consent you've given, what's been viewed — so you can see it yourself in your Privacy tab.</li>
+        <li><strong>Technical basics</strong> — things like a session token that keeps you logged in.</li>
+      </ul>
+      <p class="terms-prose" style="margin-top:18px">That's the list. We don't collect browsing history, location tracking, contact lists, or anything else not on it.</p>
     </section>
+
+    <!-- What we don't do -->
+    <section class="terms-section">
+      <h2 class="h2" style="margin-bottom:16px">What we don't do</h2>
+      <p class="terms-prose">Sometimes the clearest picture of a product is what it isn't.</p>
+      <ul class="terms-list">
+        <li><strong>We don't sell your data.</strong> Not to airlines, not to advertisers, not to data brokers, not to anyone.</li>
+        <li><strong>We don't run ads.</strong> There are no advertisers paying for placement in UniProfile.</li>
+        <li><strong>We don't have third-party tracking pixels.</strong> No Google Analytics, no Facebook pixel, no behavioral-tracking scripts on this site. You can verify it in your browser.</li>
+        <li><strong>We don't share with airlines, hotels, or any third party</strong> unless you specifically and explicitly ask us to — for a purpose you can see, with a record of your consent.</li>
+        <li><strong>We don't pretend to verify documents we haven't.</strong> What you give us is on file. We don't endorse it as authentic. When verified credentials become available, you'll see them marked as such.</li>
+      </ul>
+    </section>
+
+    <!-- Copyright and ownership -->
+    <section class="terms-section">
+      <h2 class="h2" style="margin-bottom:16px">Copyright and ownership</h2>
+      <p class="terms-prose">A clear line: <strong>your content stays yours, our product stays ours.</strong></p>
+      <ul class="terms-list">
+        <li><strong>Your content</strong> — the documents you upload, the trips you record, the notes you write — is yours. UniProfile gets a limited right to store and process it <em>only</em> so we can provide the service you've asked for. We don't claim ownership, and we don't license your content to anyone else.</li>
+        <li><strong>The UniProfile product</strong> — the name, design, code, brand, and "Arrive ready. Stay in control." — is ours. You're welcome to use UniProfile; you're not licensed to copy or rebrand it.</li>
+      </ul>
+    </section>
+
+    <!-- Who can use UniProfile -->
+    <section class="terms-section">
+      <h2 class="h2" style="margin-bottom:16px">Who can use UniProfile</h2>
+      <p class="terms-prose">UniProfile is currently <strong>invitation-only</strong>. We onboard travelers carefully and intentionally, not in bulk.</p>
+      <p class="terms-prose">You need to be <strong>18 or older</strong> to use UniProfile. If you're under 18, this product isn't for you yet.</p>
+      <p class="terms-prose">UniProfile is provided for personal travel-identity management. It's not for storing data on people who haven't consented to be in it, not for commercial document verification by third parties, and not for any of the abusive uses you'd expect a polite footnote to list.</p>
+    </section>
+
+    <!-- What we can and can't promise -->
+    <section class="terms-section">
+      <h2 class="h2" style="margin-bottom:16px">What we can and can't promise</h2>
+      <p class="terms-prose">We work hard to keep your data safe and the service reliable. Your data is encrypted at rest using AWS-managed keys and in transit using HTTPS. Access to the systems holding your data is restricted to the small team that operates the service.</p>
+      <p class="terms-prose">What we can't honestly promise:</p>
+      <ul class="terms-list">
+        <li>That UniProfile will never have a bug.</li>
+        <li>That the service will never be unavailable for maintenance.</li>
+        <li>That we can guarantee any particular outcome at a border or with an airline. (Final decisions there rest with the relevant authorities — we say so explicitly wherever it matters.)</li>
+      </ul>
+      <p class="terms-prose" style="margin-top:18px">By using UniProfile, you're accepting the service as it is — useful, carefully built, but not magic. The full Terms of Service (publishing when legal review is done) covers liability and dispute resolution in proper legal language. Until then, this paragraph is our honest plain-language version.</p>
+    </section>
+
+    <!-- How to reach us -->
+    <section class="terms-section">
+      <h2 class="h2" style="margin-bottom:16px">How to reach us</h2>
+      <p class="terms-prose">If something on this page is unclear, if you've spotted a gap between what we say and what we do, or if you have a question about how your data is handled — write to us through our <a href="/feedback.html" style="color:var(--ink);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">feedback page</a>, or directly at <a href="mailto:hello@uniprofile.net" style="color:var(--ink);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">hello@uniprofile.net</a>.</p>
+      <p class="terms-prose">We read what comes in. If a reply is needed, it comes within a few days.</p>
+    </section>
+
+    <!-- When this page changes -->
+    <section class="terms-section">
+      <h2 class="h2" style="margin-bottom:16px">When this page changes</h2>
+      <p class="terms-prose">This is the current honest summary. When the full legal documents are reviewed and published, this page will link to them and continue to serve as the plain-English overview. We'll note any material change here. If you'd like to be told when the full documents publish, the feedback page is the way.</p>
+    </section>
+
+    <span class="terms-updated">Last updated: May 27, 2026. The full Terms of Service, Privacy Policy, and Cookie Policy are in legal review and will be published here.</span>
+    <span class="terms-tagline">Arrive ready. Stay in control.</span>
 
   </main>
 </div>
@@ -228,17 +268,17 @@ function _sidebarUpdate(p){
   _st("sidebar-avatar",_ini(p));
   _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
 }
-async function guideInit(){
+async function termsInit(){
   var h=_ph();
   if(h){_tok=h;localStorage.setItem("up_token",_tok);history.replaceState(null,"",window.location.pathname);}
   else _tok=localStorage.getItem("up_token");
-  if(!_tok){location.href=_loginUrl();return;}
+  if(!_tok){return;}
   try{
     var p=await _req("GET","/api/v1/me");
     _sidebarUpdate(p);
   }catch(e){}
 }
-guideInit();
+termsInit();
 </script>
 </body>
 </html>
