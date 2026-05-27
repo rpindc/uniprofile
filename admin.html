@@ -79,7 +79,9 @@ var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _tok=null;
 var _allReqs=[];
 function _ph(){var h=location.hash;if(!h)return null;var m=h.match(/id_token=([^&]+)/);return m?m[1]:null;}
-function _loginUrl(){return'https://auth.uniprofile.net/login?response_type=token&client_id=2heljmdli4f9cv2i4m0i020mfc&redirect_uri='+encodeURIComponent(location.origin+'/admin.html');}
+var _CD='https://uniprofile-auth.auth.us-east-1.amazoncognito.com';
+var _CID='2heljmdli4f9cv2i4m0i020mfc';
+function _loginUrl(){return _CD+'/login?client_id='+_CID+'&response_type=token&scope=email+openid+profile&redirect_uri='+encodeURIComponent(location.origin+'/admin.html');}
 function showToast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3200);}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 async function _req(method,ep,body){
