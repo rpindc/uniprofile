@@ -777,7 +777,7 @@ exports.handler=async function(event){
       const alerts=await sql("SELECT doc_type,expiry_date,days_remaining,alert_level FROM expiring_documents WHERE traveler_uuid=:u AND alert_level IN ('EXPIRED','CRITICAL','WARNING') ORDER BY days_remaining ASC",[uuidParam("u",uuid)]);
       return ok({alerts},event);
     }
-    if(method==="POST"&&uuid&&(path.indexOf("/doccheck/")!==-1||path.endsWith("/doccheck"))){
+    if(method==="POST"&&uuid&&path.indexOf("/admin/")===-1&&(path.indexOf("/doccheck/")!==-1||path.endsWith("/doccheck"))){
       const token=await verifyToken(event);
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
       if(myUuid!==uuid) return err("Access denied",event,403);
@@ -2559,10 +2559,12 @@ exports.handler=async function(event){
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
       const {trip_id,travel_purpose}=body;
       if(!trip_id)return err("trip_id required",event,400);
-      const [tripRows,passportRows,identRows]=await Promise.all([
+      const [tripRows,passportRows,identRows,visaRows,segmentRows]=await Promise.all([
         sql("SELECT id,destination_iata,departure_date::text,return_date::text FROM trips WHERE id=:tid::uuid AND traveler_uuid=:u",[strParam("tid",trip_id),uuidParam("u",myUuid)]),
-        sql("SELECT issuing_country,nationality,expiry_date::text FROM travel_documents WHERE traveler_uuid=:u AND doc_type='PASSPORT' AND is_primary=TRUE LIMIT 1",[uuidParam("u",myUuid)]),
-        sql("SELECT nationality FROM traveler_identity WHERE traveler_uuid=:u LIMIT 1",[uuidParam("u",myUuid)])
+        sql("SELECT issuing_country,nationality,expiry_date::text FROM travel_documents WHERE traveler_uuid=:u AND doc_type='PASSPORT' ORDER BY is_primary DESC,updated_at DESC LIMIT 1",[uuidParam("u",myUuid)]),
+        sql("SELECT nationality FROM traveler_identity WHERE traveler_uuid=:u LIMIT 1",[uuidParam("u",myUuid)]),
+        sql("SELECT visa_type,issuing_country,destination_country,valid_from::text,valid_until::text,entries FROM travel_documents WHERE traveler_uuid=:u AND doc_type IN ('VISA','ESTA') ORDER BY valid_until DESC NULLS LAST",[uuidParam("u",myUuid)]),
+        sql("SELECT destination_iata FROM trip_segments WHERE trip_id=:tid::uuid AND segment_type='FLIGHT' ORDER BY segment_order ASC",[strParam("tid",trip_id)])
       ]);
       if(!tripRows.length)return err("Trip not found",event,404);
       const trip=tripRows[0];
@@ -2571,9 +2573,11 @@ exports.handler=async function(event){
       if(existing.length)return err("A review is already pending for this trip",event,409);
       const pp=passportRows[0]||{};
       const identNat=(identRows[0]||{}).nationality;
+      const transitIatas=segmentRows.slice(0,-1).map(function(s){return s.destination_iata;}).filter(Boolean);
+      await logSecEvent(myUuid,"doccheck_consent_given",{destination_iata:trip.destination_iata,trip_id,departure_date:trip.departure_date||null},event);
       await sql(
-        "INSERT INTO doccheck_requests(requester_uuid,trip_id,nationality,passport_issuing_country,passport_expiry,destination_iata,departure_date,return_date,travel_purpose) VALUES(:u::uuid,:tid::uuid,:nat,:pic,:pexp,:dest,:dep,:ret,:purp)",
-        [uuidParam("u",myUuid),strParam("tid",trip_id),strParam("nat",identNat||pp.nationality||null),strParam("pic",pp.issuing_country||null),dateParam("pexp",pp.expiry_date||null),strParam("dest",trip.destination_iata),dateParam("dep",trip.departure_date||null),dateParam("ret",trip.return_date||null),strParam("purp",travel_purpose||null)]
+        "INSERT INTO doccheck_requests(requester_uuid,trip_id,nationality,passport_issuing_country,passport_expiry,destination_iata,departure_date,return_date,travel_purpose,consented_at,visas_snapshot,transit_iatas) VALUES(:u::uuid,:tid::uuid,:nat,:pic,:pexp,:dest,:dep,:ret,:purp,NOW(),:vis::jsonb,:trans::jsonb)",
+        [uuidParam("u",myUuid),strParam("tid",trip_id),strParam("nat",identNat||pp.nationality||null),strParam("pic",pp.issuing_country||null),dateParam("pexp",pp.expiry_date||null),strParam("dest",trip.destination_iata),dateParam("dep",trip.departure_date||null),dateParam("ret",trip.return_date||null),strParam("purp",travel_purpose||null),strParam("vis",JSON.stringify(visaRows)),strParam("trans",JSON.stringify(transitIatas))]
       );
       const created=await sql("SELECT id,trip_id::text,status,created_at FROM doccheck_requests WHERE requester_uuid=:u AND trip_id=:tid::uuid ORDER BY created_at DESC LIMIT 1",[uuidParam("u",myUuid),strParam("tid",trip_id)]);
       return ok(created[0]||{status:"pending"},event,201);
@@ -2598,7 +2602,7 @@ exports.handler=async function(event){
       const adminCheck=await sql("SELECT is_admin FROM travelers WHERE uuid=:u",[uuidParam("u",myUuid)]);
       if(!adminCheck.length||!adminCheck[0].is_admin)return err("Forbidden",event,403);
       const rows=await sql(
-        "SELECT r.id,r.trip_id::text,r.status,r.result,r.admin_note,r.reviewed_at,r.created_at,r.nationality,r.passport_issuing_country,r.passport_expiry::text,r.destination_iata,r.departure_date::text,r.return_date::text,r.travel_purpose,COALESCE(NULLIF(TRIM(i.legal_first||' '||i.legal_last),''),t.display_name,t.email) AS requester_name,t.email AS requester_email,COALESCE(NULLIF(TRIM(ri.legal_first||' '||ri.legal_last),''),rt.display_name) AS reviewer_name FROM doccheck_requests r JOIN travelers t ON t.uuid=r.requester_uuid LEFT JOIN traveler_identity i ON i.traveler_uuid=r.requester_uuid LEFT JOIN travelers rt ON rt.uuid=r.reviewed_by LEFT JOIN traveler_identity ri ON ri.traveler_uuid=r.reviewed_by ORDER BY CASE WHEN r.status='pending' THEN 0 WHEN r.status='under_review' THEN 1 ELSE 2 END,r.created_at ASC LIMIT 50",
+        "SELECT r.id,r.trip_id::text,r.status,r.result,r.admin_note,r.timatic_raw,r.reviewed_at,r.created_at,r.nationality,r.passport_issuing_country,r.passport_expiry::text,r.destination_iata,r.departure_date::text,r.return_date::text,r.travel_purpose,r.visas_snapshot,r.transit_iatas,COALESCE(NULLIF(TRIM(i.legal_first||' '||i.legal_last),''),t.display_name,t.email) AS requester_name,t.email AS requester_email,COALESCE(NULLIF(TRIM(ri.legal_first||' '||ri.legal_last),''),rt.display_name) AS reviewer_name FROM doccheck_requests r JOIN travelers t ON t.uuid=r.requester_uuid LEFT JOIN traveler_identity i ON i.traveler_uuid=r.requester_uuid LEFT JOIN travelers rt ON rt.uuid=r.reviewed_by LEFT JOIN traveler_identity ri ON ri.traveler_uuid=r.reviewed_by ORDER BY CASE WHEN r.status='pending' THEN 0 WHEN r.status='under_review' THEN 1 ELSE 2 END,r.created_at ASC LIMIT 50",
         []
       );
       return ok(rows,event);
@@ -2610,7 +2614,7 @@ exports.handler=async function(event){
       const adminCheck=await sql("SELECT is_admin FROM travelers WHERE uuid=:u",[uuidParam("u",myUuid)]);
       if(!adminCheck.length||!adminCheck[0].is_admin)return err("Forbidden",event,403);
       const reqId=path.split('/').filter(Boolean)[4];
-      const {status,result,admin_note}=body;
+      const {status,result,admin_note,timatic_raw}=body;
       const validStatuses=['pending','under_review','reviewed'];
       const validResults=['clear','conditional','action_needed'];
       if(status!=null&&!validStatuses.includes(status))return err("Invalid status",event,400);
@@ -2622,11 +2626,38 @@ exports.handler=async function(event){
       if(status!=null){setClauses.push("status=:st");qParams.push(strParam("st",status));}
       if(result!=null){setClauses.push("result=:res");qParams.push(strParam("res",result));}
       if(admin_note!=null){setClauses.push("admin_note=:note");qParams.push(strParam("note",admin_note));}
+      if(timatic_raw!=null){setClauses.push("timatic_raw=:tr");qParams.push(strParam("tr",timatic_raw));}
       if(status==='reviewed'){setClauses.push("reviewed_by=:rev::uuid","reviewed_at=NOW()");qParams.push(uuidParam("rev",myUuid));}
       setClauses.push("updated_at=NOW()");
       await sql("UPDATE doccheck_requests SET "+setClauses.join(",")+" WHERE id=:rid::uuid",qParams);
       const updated=await sql("SELECT id,status,result,admin_note,reviewed_at,updated_at FROM doccheck_requests WHERE id=:rid::uuid",[strParam("rid",reqId)]);
       return ok(updated[0]||{},event);
+    }
+    // POST /api/v1/admin/doccheck/{id}/summarize
+    if(method==="POST"&&path.match(/^\/api\/v1\/admin\/doccheck\/[^/]+\/summarize$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const adminCheck=await sql("SELECT is_admin FROM travelers WHERE uuid=:u",[uuidParam("u",myUuid)]);
+      if(!adminCheck.length||!adminCheck[0].is_admin)return err("Forbidden",event,403);
+      const reqId=path.split('/').filter(Boolean)[4];
+      const {timatic_raw}=body;
+      if(!timatic_raw||!timatic_raw.trim())return err("timatic_raw required",event,400);
+      const rows=await sql("SELECT nationality,passport_issuing_country,passport_expiry::text,destination_iata,transit_iatas,departure_date::text,visas_snapshot FROM doccheck_requests WHERE id=:rid::uuid",[strParam("rid",reqId)]);
+      if(!rows.length)return err("Not found",event,404);
+      const req=rows[0];
+      const transitList=(typeof req.transit_iatas==="string"?JSON.parse(req.transit_iatas):(req.transit_iatas||[])).join(', ')||'none';
+      const visaList=(typeof req.visas_snapshot==="string"?JSON.parse(req.visas_snapshot):(req.visas_snapshot||[])).map(function(v){return(v.visa_type||'VISA')+(v.issuing_country?' issued by '+v.issuing_country:'')+(v.valid_until?' valid to '+v.valid_until:'');}).join('; ')||'none recorded';
+      const prompt=`You are helping a human travel reviewer assess official entry requirements.\nSummarize the following Timatic output in ONE sentence (max 25 words).\n\nRules:\n- Start with exactly one flag: "✓" if entry is unconditionally permitted, "⚠" if conditions apply (e.g. eTA, digital travel authorisation, health cert, limited stay), or "●" if a visa or action is required before travel.\n- Mention all conditions — omit nothing. If in doubt, surface the condition.\n- Do not assert clearance unless it is unconditional.\n- Do not mention Timatic by name.\n- Err toward "conditional" when in doubt.\n\nTraveler context: nationality=${req.nationality||'unknown'}, passport issued by=${req.passport_issuing_country||'unknown'}, expiry=${req.passport_expiry||'unknown'}, destination=${req.destination_iata||'unknown'}, transit=${transitList}, departure=${req.departure_date||'unknown'}, visas/permits: ${visaList}\n\nTimatic output:\n${timatic_raw.slice(0,4000)}\n\nRespond ONLY with JSON: {"summary": "...", "suggested_result": "clear|conditional|action_needed"}`;
+      const secret=await smClient.send(new GetSecretValueCommand({SecretId:"/uniprofile/anthropic/key"}));
+      const apiKey=secret.SecretString.trim();
+      const aiRes=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01"},body:JSON.stringify({model:"claude-haiku-4-5-20251001",max_tokens:256,messages:[{role:"user",content:prompt}]})});
+      if(!aiRes.ok){const et=await aiRes.text();throw new Error("Anthropic API "+aiRes.status+": "+et.slice(0,200));}
+      const aiData=await aiRes.json();
+      const raw=aiData.content[0].text;
+      const m=raw.match(/\{[\s\S]*\}/);
+      if(!m)throw new Error("Haiku returned non-JSON: "+raw.slice(0,200));
+      const parsed=JSON.parse(m[0]);
+      return ok({summary:parsed.summary||'',suggested_result:parsed.suggested_result||'conditional'},event);
     }
 
     return err("Not found",event,404);
