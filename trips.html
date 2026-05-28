@@ -208,6 +208,10 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 /* Pending trip */
 .trip-card.pending{border-color:var(--amber);border-left-width:3px}
 .pending-pill{background:var(--amber-soft);color:var(--amber);display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:100px;font-family:var(--sans);font-size:10px;font-weight:500;letter-spacing:0.01em;line-height:1.4}
+.trip-journey-badge{background:var(--paper-warm);color:var(--ink-soft);border:0.5px solid var(--rule-strong);display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:100px;font-family:var(--sans);font-size:10px;font-weight:500;letter-spacing:0.01em;line-height:1.4;cursor:pointer;text-decoration:none}
+.trip-journey-badge:hover{background:var(--rule);color:var(--ink)}
+.bound-trip-modal-body{font-size:14px;line-height:1.55;color:var(--ink-soft);margin-bottom:20px}
+.bound-trip-modal-body strong{color:var(--ink)}
 .pending-actions{margin-top:12px;padding-top:12px;border-top:0.5px solid var(--rule)}
 .pending-msg{font-size:12px;color:var(--ink-mute);margin-bottom:10px}
 </style>
@@ -406,6 +410,21 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   </div>
 </div>
 
+<!-- ── Bound-Trip Modal ─── -->
+<div class="modal-overlay" id="bound-trip-modal" onclick="if(event.target===this)closeBoundTripModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="h3">This trip is frozen</h2>
+      <button class="modal-close" onclick="closeBoundTripModal()">&#x2715;</button>
+    </div>
+    <div class="bound-trip-modal-body" id="bound-trip-modal-body"></div>
+    <div class="form-actions">
+      <button class="btn btn-secondary btn-sm" onclick="closeBoundTripModal()">Cancel</button>
+      <a class="btn btn-primary btn-sm" id="bound-trip-journey-link" href="#">Go to Journey</a>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="/components/mobile-drawer.js"></script>
@@ -415,6 +434,7 @@ var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
 var _tok=null,_uid=null;
 var _allTrips=[];
+var _journeyMap={};
 var _curFilter="all";
 
 function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent("https://www.uniprofile.net/home.html");}
@@ -1255,7 +1275,9 @@ function _tripCard(t){
   // Pending verification pill
   var isPending=(t.status==='pending');
   var pendingPillHtml=isPending?'<span class="pending-pill">Pending verification</span>':'';
-  var pillsRow='<div class="trip-pills-row">'+ctxTrigger+dcHtml+pendingPillHtml+'</div>';
+  // Journey badge (trip is bound to a Journey)
+  var journeyBadgeHtml=t.trip_group_id?'<a class="trip-journey-badge" href="/trip.html?id='+encodeURIComponent(t.id)+'" title="This trip is part of a Journey">Journey ↗</a>':'';
+  var pillsRow='<div class="trip-pills-row">'+ctxTrigger+dcHtml+pendingPillHtml+journeyBadgeHtml+'</div>';
   // Meta line (simplified — context moved to pills row)
   var metaParts=[_fmtRangeProse(t.departure_date,t.return_date)];
   var nights=_nightCount(t.departure_date,t.return_date);
@@ -1328,6 +1350,8 @@ function renderTrips(trips){
 
 /* ── Context change ── */
 async function changeContext(tripId,newCtx){
+  var t=_allTrips.find(function(x){return x.id===tripId;});
+  if(t&&t.trip_group_id){showBoundTripModal(t);return;}
   try{
     await _req("PUT","/api/v1/profile/"+_uid,{module:"trip_context",data:{trip_id:tripId,context:newCtx}});
     var t=_allTrips.find(function(x){return x.id===tripId;});
@@ -1359,6 +1383,8 @@ document.addEventListener("click",function(e){
 
 /* ── Delete ── */
 async function deleteTrip(tripId){
+  var t=_allTrips.find(function(x){return x.id===tripId;});
+  if(t&&t.trip_group_id){showBoundTripModal(t);return;}
   if(!confirm("Delete this trip from your vault?"))return;
   try{
     await _req("PUT","/api/v1/profile/"+_uid,{module:"trip_delete",data:{trip_id:tripId}});
@@ -1368,6 +1394,23 @@ async function deleteTrip(tripId){
     showToast("Trip deleted.");
   }catch(e){showToast("Error deleting trip.");}
 }
+
+/* ── Bound-trip modal ── */
+function showBoundTripModal(t){
+  var jInfo=_journeyMap[t.trip_group_id]||{};
+  var jName=jInfo.name||null;
+  var isArchived=!!jInfo.archived_at;
+  var bodyHtml;
+  if(isArchived){
+    bodyHtml='This trip is part of an archived Journey'+(jName?': <strong>'+jName+'</strong>':'')+'. The trip stays frozen as part of the historical record. To unfreeze it (which requires hard-deleting the Journey), write to <a href="mailto:hello@uniprofile.net" style="color:var(--ink)">hello@uniprofile.net</a>.';
+  }else{
+    bodyHtml=(jName?'<strong>'+jName+'</strong> is':'A Journey is')+' built on this trip. While the Journey exists, this trip cannot be edited. To make changes, create a new Journey.';
+  }
+  document.getElementById("bound-trip-modal-body").innerHTML=bodyHtml;
+  document.getElementById("bound-trip-journey-link").href="/trip.html?id="+encodeURIComponent(t.id);
+  document.getElementById("bound-trip-modal").classList.add("open");
+}
+function closeBoundTripModal(){document.getElementById("bound-trip-modal").classList.remove("open");}
 
 /* ── Add / Edit modal ── */
 var _editingTripId=null;
@@ -1383,6 +1426,7 @@ function openAddTrip(){
 function openEditTrip(id){
   var t=_allTrips.find(function(x){return x.id===id;});
   if(!t)return;
+  if(t.trip_group_id){showBoundTripModal(t);return;}
   _editingTripId=id;
   _st("trip-modal-title","Edit trip");
   _st("trip-submit-btn","Save changes");
@@ -1523,6 +1567,10 @@ async function tripsInit(){
     updateInboxAddress(p.uniprofile_number);
     updateLede();
     renderTrips(_allTrips);
+    // Populate journey name map for bound-trip modal (non-blocking)
+    _req("GET","/api/v1/trip-groups").then(function(gl){
+      (gl||[]).forEach(function(g){_journeyMap[g.id]={name:g.name,archived_at:g.archived_at};});
+    }).catch(function(){});
     // DocCheck: fetch all requests, then update pills in place
     _loadDocCheckRequests(_allTrips);
     // Handle ?verify_trip= links from TripVault confirmation emails
