@@ -409,6 +409,21 @@ body.doc-editing #save-pdf-btn{display:none!important}
 </div>
 
 
+<!-- ── Confirm On-Behalf Modal ── -->
+<div class="modal-overlay" id="confirm-onbehalf-modal" onclick="if(event.target===this)closeConfirmOnBehalf()">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <h2 class="h3" id="confirm-onbehalf-title">Mark as ready?</h2>
+      <button class="modal-close" onclick="closeConfirmOnBehalf()">&#x2715;</button>
+    </div>
+    <p id="confirm-onbehalf-body" style="font-size:14px;line-height:1.55;color:var(--ink-soft);margin-bottom:24px"></p>
+    <div style="display:flex;gap:12px">
+      <button class="btn btn-primary btn-sm" id="confirm-onbehalf-btn" onclick="submitConfirmOnBehalf()">Confirm</button>
+      <button class="btn btn-secondary btn-sm" onclick="closeConfirmOnBehalf()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Document Upload Modal ── -->
 <div class="modal-overlay" id="doc-modal" onclick="if(event.target===this)closeDocModal()">
   <div class="modal" style="max-width:460px">
@@ -1157,7 +1172,34 @@ function renderReadinessMatrix(readiness){
     return'<span style="color:var(--ink-faint)">–</span>';
   }
 
-  function overallCell(status){
+  var isOrg=readiness.role==='organizer';
+
+  function confirmedCell(m){
+    var att=m.attestation;
+    if(m.access_kind==='linked_pending')return'<span style="color:var(--amber);font-size:12px;letter-spacing:1px">···</span>';
+    if(m.access_kind==='linked_declined')return'<span style="color:var(--ink-faint)">–</span>';
+    if(att){
+      var byOrg=m.kind==='named_only';
+      var color=byOrg?'var(--color-attest-org)':'var(--color-attest-self)';
+      var dateStr=att.confirmed_at?_fmtShort(att.confirmed_at.slice(0,10)):'';
+      var byLabel=byOrg?'by Organizer':'by Self';
+      var tip=escHtml(dateStr?'Confirmed '+dateStr+' · '+byLabel:byLabel);
+      var glyph='<span title="'+tip+'" style="color:'+color+';cursor:help;display:inline-flex;align-items:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" style="vertical-align:middle"><use href="#i-person-check"/></svg></span>';
+      if(byOrg&&isOrg){
+        glyph+='<button onclick="openConfirmOnBehalf(\''+escHtml(m.member_id)+'\',\''+escHtml(m.display_name||'')+'\',true)" style="font-size:10px;font-weight:500;color:var(--ink-mute);background:none;border:none;cursor:pointer;padding:0 0 0 6px;letter-spacing:0.02em">Unmark →</button>';
+      }
+      return glyph;
+    }
+    if(m.kind==='named_only'&&isOrg){
+      return'<button onclick="openConfirmOnBehalf(\''+escHtml(m.member_id)+'\',\''+escHtml(m.display_name||'')+'\',false)" style="font-size:11px;font-weight:500;color:var(--color-attest-org);background:none;border:none;cursor:pointer;padding:0;letter-spacing:0.02em">Confirm →</button>';
+    }
+    return'<span style="color:var(--ink-faint)">–</span>';
+  }
+
+  function overallCell(m){
+    if(m.access_kind==='linked_pending')return'<span class="pill pill-amber" style="font-size:10px">Awaiting consent</span>';
+    if(m.access_kind==='linked_declined')return'<span class="pill pill-neutral" style="font-size:10px">Declined sharing</span>';
+    var status=m.overall_status;
     if(status==="ready")return'<span class="pill pill-green" style="font-size:10px">Ready</span>';
     if(status==="action_needed")return'<span class="pill pill-amber" style="font-size:10px">Action needed</span>';
     if(status==="blocked")return'<span class="pill pill-red" style="font-size:10px">Blocked</span>';
@@ -1167,6 +1209,7 @@ function renderReadinessMatrix(readiness){
   var html='<div class="readiness-wrap"><table class="readiness-table"><thead><tr>';
   html+='<th>Member</th>';
   colIds.forEach(function(cid){html+='<th>'+escHtml(colLabels[cid])+'</th>';});
+  html+='<th>Confirmed</th>';
   html+='<th>Overall</th>';
   html+='</tr></thead><tbody>';
 
@@ -1180,7 +1223,8 @@ function renderReadinessMatrix(readiness){
       var chk=checkMap[m.member_id]?checkMap[m.member_id][cid]:null;
       html+='<td data-label="'+escHtml(colLabels[cid])+'">'+statusIcon(chk)+'</td>';
     });
-    html+='<td data-label="Overall">'+overallCell(m.overall_status)+'</td>';
+    html+='<td data-label="Confirmed">'+confirmedCell(m)+'</td>';
+    html+='<td data-label="Overall">'+overallCell(m)+'</td>';
     html+='</tr>';
   });
 
@@ -1843,7 +1887,7 @@ function _auditSubject(action,payload,targetName){
   }
 }
 function renderAuditSection(){
-  var html='<div class="doc-section edit-only">';
+  var html='<div class="doc-section">';
   html+='<div class="doc-section-head">';
   html+='<div class="doc-section-label">Activity Log</div>';
   html+='<button class="doc-audit-toggle" id="doc-audit-btn" onclick="toggleAuditInline()">Show ↓</button>';
@@ -1853,6 +1897,37 @@ function renderAuditSection(){
   return html;
 }
 var _auditLoaded=false;
+var _confirmTargetId=null,_confirmTargetName=null,_confirmIsUnmark=false;
+function openConfirmOnBehalf(memberId,displayName,isUnmark){
+  _confirmTargetId=memberId;_confirmTargetName=displayName;_confirmIsUnmark=!!isUnmark;
+  var modal=document.getElementById('confirm-onbehalf-modal');
+  document.getElementById('confirm-onbehalf-title').textContent=isUnmark?'Remove confirmation?':'Mark as ready?';
+  document.getElementById('confirm-onbehalf-body').textContent=isUnmark?
+    'Remove the readiness confirmation for '+displayName+'? They will show as unconfirmed until confirmed again.':
+    'Mark '+displayName+' as ready? You\'re confirming their travel readiness on their behalf.';
+  var btn=document.getElementById('confirm-onbehalf-btn');
+  btn.textContent=isUnmark?'Remove':'Confirm';btn.disabled=false;
+  modal.classList.add('open');
+}
+function closeConfirmOnBehalf(){document.getElementById('confirm-onbehalf-modal').classList.remove('open');_confirmTargetId=null;}
+async function submitConfirmOnBehalf(){
+  if(!_confirmTargetId||!_group)return;
+  var btn=document.getElementById('confirm-onbehalf-btn');
+  btn.disabled=true;btn.textContent=_confirmIsUnmark?'Removing…':'Confirming…';
+  try{
+    if(_confirmIsUnmark){
+      await _req('DELETE','/api/v1/trip-groups/'+_group.id+'/members/'+_confirmTargetId+'/confirm');
+    }else{
+      await _req('POST','/api/v1/trip-groups/'+_group.id+'/members/'+_confirmTargetId+'/confirm',{});
+    }
+    closeConfirmOnBehalf();
+    _readiness=await _req('GET','/api/v1/trip-groups/'+_group.id+'/readiness');
+    renderGroupSection();renderReadinessSentence();renderLifecyclePill();
+    _auditLoaded=false;
+  }catch(e){
+    btn.disabled=false;btn.textContent=_confirmIsUnmark?'Remove':'Confirm';
+  }
+}
 async function toggleAuditInline(){
   var body=document.getElementById('doc-audit-body');
   var btn=document.getElementById('doc-audit-btn');
@@ -1874,8 +1949,13 @@ async function toggleAuditInline(){
       workspace_reference_added:'added a reference',workspace_reference_edited:'edited a reference',workspace_reference_removed:'removed a reference',
       itinerary_added:'added an itinerary item',itinerary_edited:'edited an itinerary item',itinerary_removed:'removed an itinerary item',
       document_added:'uploaded a document',document_removed:'removed a document',
-      emergency_contact_added:'added an emergency contact',emergency_contact_removed:'removed an emergency contact',
+      emergency_contact_added:'added an emergency contact',emergency_contact_edited:'edited an emergency contact',emergency_contact_removed:'removed an emergency contact',
       group_renamed:'renamed the group',group_archived:'archived the group',group_deleted:'deleted the group',
+      trip_edit_blocked:'attempted to edit a frozen trip',
+      journey_attestation_auto_revoked:'had readiness confirmation auto-revoked',
+      organizer_attestation_added:'confirmed readiness on behalf of a member',
+      organizer_attestation_removed:'removed readiness confirmation for a member',
+      booking_ref_updated:'updated a booking reference',
     };
     var h='<div>';
     rows.forEach(function(r){

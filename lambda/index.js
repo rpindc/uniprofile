@@ -1111,6 +1111,57 @@ exports.handler=async function(event){
       writeAuditLog(groupId,myUuid,'member_removed',(removed&&removed.linked_uuid)||null,{member_id:memberId,display_name:(removed&&removed.display_name)||null});
       return ok({success:true},event);
     }
+    // POST /api/v1/trip-groups/{group_id}/members/{member_id}/confirm
+    if(method==="POST"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/members\/[^/]+\/confirm$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const groupId=parts[3],memberId=parts[5];
+      const grpRows=await sql("SELECT members,owner_uuid FROM traveler_groups WHERE id=:id",[strParam("id",groupId)]);
+      if(!grpRows.length)return err("Trip Group not found",event,404);
+      if(grpRows[0].owner_uuid!==myUuid)return err("Only the organizer can confirm on behalf of a member",event,403);
+      const members=typeof grpRows[0].members==="string"?JSON.parse(grpRows[0].members):(grpRows[0].members||[]);
+      const member=members.find(function(m){return m.id===memberId;});
+      if(!member)return err("Member not found",event,404);
+      if(member.kind!=='named_only')return err("On-behalf confirmation is only available for named-only members",event,400);
+      const namedUuid=member.named_only_id;
+      if(!namedUuid)return err("Member has no named_only_id",event,400);
+      const existing=await sql("SELECT attestation_id::text,confirmed_at FROM journey_member_attestations WHERE trip_group_id=:gid AND member_uuid=:u AND revoked_at IS NULL",[strParam("gid",groupId),uuidParam("u",namedUuid)]);
+      if(existing.length)return ok({attestation_id:existing[0].attestation_id,confirmed_at:existing[0].confirmed_at,created:false},event);
+      try{
+        const rows=await sql("INSERT INTO journey_member_attestations(trip_group_id,member_uuid,confirmed_via) VALUES(:gid,:u,'organizer_attestation') RETURNING attestation_id::text,confirmed_at",
+          [strParam("gid",groupId),uuidParam("u",namedUuid)]);
+        writeAuditLog(groupId,myUuid,'organizer_attestation_added',null,{attestation_id:rows[0].attestation_id,member_id:memberId,display_name:member.display_name});
+        return{statusCode:201,headers:cors(go(event)),body:JSON.stringify({attestation_id:rows[0].attestation_id,confirmed_at:rows[0].confirmed_at,created:true})};
+      }catch(e){
+        if(e.message&&e.message.includes('idx_jma_one_active')){
+          const retry=await sql("SELECT attestation_id::text,confirmed_at FROM journey_member_attestations WHERE trip_group_id=:gid AND member_uuid=:u AND revoked_at IS NULL",[strParam("gid",groupId),uuidParam("u",namedUuid)]);
+          if(retry.length)return ok({attestation_id:retry[0].attestation_id,confirmed_at:retry[0].confirmed_at,created:false},event);
+        }
+        throw e;
+      }
+    }
+    // DELETE /api/v1/trip-groups/{group_id}/members/{member_id}/confirm
+    if(method==="DELETE"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/members\/[^/]+\/confirm$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const parts=path.split('/').filter(Boolean);
+      const groupId=parts[3],memberId=parts[5];
+      const grpRows=await sql("SELECT members,owner_uuid FROM traveler_groups WHERE id=:id",[strParam("id",groupId)]);
+      if(!grpRows.length)return err("Trip Group not found",event,404);
+      if(grpRows[0].owner_uuid!==myUuid)return err("Only the organizer can remove a confirmation",event,403);
+      const members=typeof grpRows[0].members==="string"?JSON.parse(grpRows[0].members):(grpRows[0].members||[]);
+      const member=members.find(function(m){return m.id===memberId;});
+      if(!member)return err("Member not found",event,404);
+      if(member.kind!=='named_only')return err("On-behalf confirmation is only available for named-only members",event,400);
+      const namedUuid=member.named_only_id;
+      if(!namedUuid)return err("Member has no named_only_id",event,400);
+      const rows=await sql("UPDATE journey_member_attestations SET revoked_at=NOW(),updated_at=NOW() WHERE trip_group_id=:gid AND member_uuid=:u AND revoked_at IS NULL RETURNING attestation_id::text",
+        [strParam("gid",groupId),uuidParam("u",namedUuid)]);
+      if(!rows.length)return err("No active confirmation found",event,404);
+      writeAuditLog(groupId,myUuid,'organizer_attestation_removed',null,{attestation_id:rows[0].attestation_id,member_id:memberId,display_name:member.display_name});
+      return ok({success:true,attestation_id:rows[0].attestation_id},event);
+    }
     // ── Named-only Document Routes ─────────────────────────────────────────
     // GET /api/v1/named-only/{id}/documents
     if(method==="GET"&&path.match(/^\/api\/v1\/named-only\/[^/]+\/documents$/)){
