@@ -54,6 +54,42 @@ async function writeNotification(recipientUuid,groupId,kind,payload){
       [strParam("id",id),strParam("u",recipientUuid),strParam("gid",groupId),strParam("kind",kind),strParam("payload",JSON.stringify(payload||{}))]);
   }catch(e){console.warn("notification write failed:",e.message);}
 }
+async function autoRevokeAttestation(groupId,memberUuid,reason){
+  try{
+    const rows=await sql("UPDATE journey_member_attestations SET revoked_at=NOW(),updated_at=NOW() WHERE trip_group_id=:gid AND member_uuid=:u AND revoked_at IS NULL RETURNING attestation_id::text",[strParam("gid",groupId),uuidParam("u",memberUuid)]);
+    if(rows.length)writeAuditLog(groupId,memberUuid,'journey_attestation_auto_revoked',null,{attestation_id:rows[0].attestation_id,reason});
+  }catch(e){console.warn("autoRevokeAttestation failed:",e.message);}
+}
+const MEMBER_FIELD_VISIBILITY={
+  id:'PUBLIC',
+  kind:'PUBLIC',
+  display_name:'PUBLIC',
+  avatar_color:'PUBLIC',
+  role:'PUBLIC',
+  linked_uuid:'PUBLIC',     // TEMP: front-end uses for member ID. Replace with opaque session-token in a future stage. Don't copy this pattern.
+  named_only_id:'PUBLIC',   // TEMP: same. Known follow-up.
+  booking_ref:'TIER_2',
+  // Any field not listed: defaults to PRIVATE_OPAQUE (omitted from output).
+};
+function filterMembersForCaller(members,callerUuid,callerIsOrganizer){
+  return members.map(function(m){
+    if(!m||typeof m!=='object')return{};
+    var out={};
+    Object.keys(MEMBER_FIELD_VISIBILITY).forEach(function(field){
+      var vis=MEMBER_FIELD_VISIBILITY[field];
+      if(vis==='PUBLIC'){
+        if(Object.prototype.hasOwnProperty.call(m,field))out[field]=m[field];
+      }else if(vis==='TIER_2'){
+        var isSelf=callerUuid&&m.linked_uuid===callerUuid;
+        if(callerIsOrganizer||isSelf){
+          if(Object.prototype.hasOwnProperty.call(m,field))out[field]=m[field];
+        }
+      }
+      // PRIVATE_OPAQUE: never included
+    });
+    return out;
+  });
+}
 async function getTravelerDisplayName(uuid){
   try{
     const rows=await sql("SELECT i.legal_first,i.legal_last,t.email FROM travelers t LEFT JOIN traveler_identity i ON i.traveler_uuid=t.uuid WHERE t.uuid=:u",[uuidParam("u",uuid)]);
@@ -732,6 +768,14 @@ exports.handler=async function(event){
           if(String(body.data.display_name||'').trim()!==String(_cdn||'').trim())_identFields.push('display_name');
         }
       }
+      if(['trip_update','trip_context','trip_delete'].includes(body.module)&&body.data.trip_id){
+        const boundRows=await sql("SELECT id,archived_at FROM traveler_groups WHERE trip_id=:tid LIMIT 1",[uuidParam("tid",body.data.trip_id)]);
+        if(boundRows.length){
+          const g=boundRows[0];
+          writeAuditLog(g.id,uuid,'trip_edit_blocked',null,{trip_id:body.data.trip_id,journey_id:g.id,attempted_module:body.module});
+          return{statusCode:409,headers:cors(go(event)),body:JSON.stringify({error:'trip_bound_to_journey',message:'This trip is part of a Journey and cannot be modified. Hard-delete the Journey to unfreeze the Trip.',journey_id:g.id,journey_archived:!!g.archived_at})};
+        }
+      }
       await updateModule(uuid,body.module,body.data);
       const _modEvtMap={identity:["identity_updated",{fields:_identFields}],document_add:["document_added",{doc_type:body.data.doc_type}],document_update:["document_updated",{doc_type:body.data.doc_type}],document_delete:["document_deleted",{doc_type:(body.data&&body.data.doc_type)||null}],trip_add:["trip_added",{destination:body.data.destination_iata}],trip_delete:["trip_deleted",{}]};
       const _modEvt=_modEvtMap[body.module];
@@ -910,7 +954,7 @@ exports.handler=async function(event){
         [strParam("id",groupId),uuidParam("u",myUuid),strParam("name",groupName),strParam("dest",trip.destination_iata||null),uuidParam("tid",tripId),strParam("members",JSON.stringify(members))]);
       await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_created',:m::jsonb)",
         [uuidParam("u",myUuid),strParam("m",JSON.stringify({trip_group_id:groupId,trip_id:tripId}))]);
-      return{statusCode:201,headers:cors(go(event)),body:JSON.stringify({id:groupId,name:groupName,members,trip_id:tripId})};
+      return{statusCode:201,headers:cors(go(event)),body:JSON.stringify({id:groupId,name:groupName,members:filterMembersForCaller(members,myUuid,true),trip_id:tripId})};
     }
     // GET /api/v1/trip-groups — list all Trip Groups for the user (owned + joined)
     if(method==="GET"&&path==="/api/v1/trip-groups"){
@@ -942,7 +986,7 @@ exports.handler=async function(event){
         role==='organizer'?sql("SELECT id,target_uuid,status,requested_scopes,granted_scopes,requested_at,responded_at FROM trip_group_consents WHERE trip_group_id=:id",[strParam("id",groupId)]):Promise.resolve([]),
       ]);
       const row=groupRows[0];
-      const members=typeof row.members==="string"?JSON.parse(row.members):(row.members||[]);
+      const members=filterMembersForCaller(typeof row.members==="string"?JSON.parse(row.members):(row.members||[]),myUuid,role==='organizer');
       const resp={id:row.id,name:row.name,destination:row.destination_iata||row.destination,destination_name:(RULES[row.destination_iata||'']||{}).name||row.destination,trip_id:row.trip_id_str,trip_name:row.trip_name,departure_date:row.departure_date,return_date:row.return_date,archived_at:row.archived_at,members,role};
       if(role==='organizer')resp.consents=consents.map(function(c){try{return Object.assign({},c,{requested_scopes:typeof c.requested_scopes==='string'?JSON.parse(c.requested_scopes):(c.requested_scopes||[]),granted_scopes:typeof c.granted_scopes==='string'?JSON.parse(c.granted_scopes):(c.granted_scopes||null)});}catch(e){return c;}});
       if(role==='member')resp.organizer_name=[row.owner_first,row.owner_last].filter(Boolean).join(' ')||row.owner_email||null;
@@ -1151,9 +1195,10 @@ exports.handler=async function(event){
       const parts=path.split('/').filter(Boolean);
       const groupId=parts[3],consentId=parts[5];
       await validateTripGroupId(groupId,myUuid);
-      const rows=await sql("UPDATE trip_group_consents SET status='withdrawn',responded_at=NOW() WHERE id=:cid AND trip_group_id=:gid AND requester_uuid=:u AND status='pending' RETURNING id",
+      const rows=await sql("UPDATE trip_group_consents SET status='withdrawn',responded_at=NOW() WHERE id=:cid AND trip_group_id=:gid AND requester_uuid=:u AND status='pending' RETURNING id,target_uuid::text",
         [uuidParam("cid",consentId),strParam("gid",groupId),uuidParam("u",myUuid)]);
       if(!rows||!rows.length)return err("Consent not found or already resolved",event,404);
+      await autoRevokeAttestation(groupId,rows[0].target_uuid,'consent_revoked');
       await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,metadata) VALUES(:u,'trip_group_consent_withdrawn',:m::jsonb)",
         [uuidParam("u",myUuid),strParam("m",JSON.stringify({trip_group_id:groupId,consent_id:consentId}))]);
       return ok({success:true},event);
@@ -1179,28 +1224,51 @@ exports.handler=async function(event){
       namedDocs.forEach(function(d){if(!namedDocMap[d.named_only_id])namedDocMap[d.named_only_id]=[];namedDocMap[d.named_only_id].push(d);});
       const consents=await sql("SELECT target_uuid::text,status FROM trip_group_consents WHERE trip_group_id=:id",[strParam("id",groupId)]);
       const consentMap={};consents.forEach(function(c){consentMap[c.target_uuid]=c.status;});
+      const attestRows=await sql("SELECT member_uuid::text,attestation_id::text,confirmed_at,notes FROM journey_member_attestations WHERE trip_group_id=:gid AND revoked_at IS NULL",[strParam("gid",groupId)]);
+      const attestMap={};attestRows.forEach(function(a){attestMap[a.member_uuid]={attestation_id:a.attestation_id,confirmed_at:a.confirmed_at,notes:a.notes||null};});
       const memberResults=members.map(function(m){
         const isSelf=(m.kind==='self'&&role==='organizer')||(m.kind==='linked'&&m.linked_uuid===myUuid);
         let docs=[],displayName=m.display_name||'Member';
+        const cStatus=m.kind==='linked'?consentMap[m.linked_uuid]:null;
+        let access_kind;
+        if(m.kind==='self')access_kind='self';
+        else if(m.kind==='named_only')access_kind='named_only';
+        else if(m.kind==='linked'&&m.linked_uuid===myUuid)access_kind='self';
+        else if(cStatus==='approved')access_kind='linked_approved';
+        else if(cStatus==='pending')access_kind='linked_pending';
+        else access_kind='linked_declined';
         if(m.kind==='self')docs=selfDocs;
         else if(m.kind==='named_only'){
           if(role==='organizer')docs=namedDocMap[m.named_only_id]||[];
-          else return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,joined:true};
+          else return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,joined:true,access_kind};
         }
         else if(m.kind==='linked'){
-          const cStatus=consentMap[m.linked_uuid];
           if(m.linked_uuid===myUuid){
             // This is the calling member — show their own data
             docs=selfDocs;
           } else if(role==='organizer'){
             if(cStatus!=='approved'){
-              return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,checks:[{id:'consent_pending',label:'Data sharing',status:cStatus==='pending'?'pending':'failed',detail:cStatus==='pending'?'Sharing request sent — waiting for approval':'No sharing request sent'}],overall_status:'action_needed'};
+              // Four-column stubs for pending/declined members (docs not accessible)
+              const isPending=cStatus==='pending';
+              const stubStatus=isPending?'pending':'info';
+              const stubDetail=isPending?'Awaiting consent':'Data sharing declined';
+              return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,checks:[
+                {id:'passport_present',label:'Passport',status:stubStatus,detail:stubDetail},
+                {id:'visa',label:'Visa',status:stubStatus,detail:stubDetail},
+                {id:'health',label:'Health',status:stubStatus,detail:stubDetail},
+                {id:'insurance',label:'Travel insurance',status:stubStatus,detail:stubDetail},
+              ],overall_status:'action_needed',access_kind};
             }
             // approved linked member — organizer can't see their actual docs (tier 2 restriction)
-            return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,checks:[{id:'consent_approved',label:'Data sharing',status:'passed',detail:'Member approved data sharing'}],overall_status:'ready',consent_status:'approved'};
+            return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,checks:[
+              {id:'passport_present',label:'Passport',status:'info',detail:'Data shared — document details held privately by member'},
+              {id:'visa',label:'Visa',status:'info',detail:'Verify with official sources or request a DocCheck'},
+              {id:'health',label:'Health',status:'info',detail:'Verify with official sources or request a DocCheck'},
+              {id:'insurance',label:'Travel insurance',status:'info',detail:'Data shared — insurance details held privately by member'},
+            ],overall_status:'ready',consent_status:'approved',access_kind,attestation:attestMap[m.linked_uuid]||null};
           } else {
             // Joined member viewing another member — stub only
-            return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,joined:cStatus==='approved'};
+            return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,joined:cStatus==='approved',access_kind};
           }
         }
         const passportDocs=docs.filter(function(d){return d.document_type==='PASSPORT';});
@@ -1208,9 +1276,14 @@ exports.handler=async function(event){
         const admissibility=evaluateAdmissibility(passportDocs,destIata,returnDate);
         const passportCheck={id:'passport_present',label:'Passport',status:passportDocs.length?'passed':'failed',detail:passportDocs.length?'On file':'Not added'};
         const noRules=admissibility.overall_status==='n/a';
-        const admChecks=noRules?[{id:'rules_na',label:'Entry rules',status:'info',detail:'Requirements for '+destIata+' not yet available — verify with official sources'}]:admissibility.checks;
-        let insuranceCheck=null;
-        if(insuranceDocs.length){
+        // Visa + Health: stub evaluation — Stage 2.5 will add real rules-table evaluation
+        const visaCheck={id:'visa',label:'Visa',status:'info',detail:'Verify with official sources or request a DocCheck'};
+        const healthCheck={id:'health',label:'Health',status:'info',detail:'Verify with official sources or request a DocCheck'};
+        let insuranceCheck;
+        if(m.kind==='named_only'){
+          // Named-only members have no UniProfile account; insurance is not evaluable
+          insuranceCheck={id:'insurance',label:'Travel insurance',status:'info',detail:'Not applicable — confirm insurance outside UniProfile'};
+        } else if(insuranceDocs.length){
           const ins=insuranceDocs[0];
           const tripStart=returnDate?(new Date(returnDate.slice(0,10))):null;
           const vf=ins.valid_from?new Date(ins.valid_from.slice(0,10)):null;
@@ -1228,8 +1301,10 @@ exports.handler=async function(event){
         } else {
           insuranceCheck={id:'insurance',label:'Travel insurance',status:'info',detail:'No travel insurance on file · some destinations require proof of coverage'};
         }
-        const allChecks=[passportCheck,...admChecks,insuranceCheck];
-        return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,checks:allChecks,overall_status:passportDocs.length?(noRules?'ready':admissibility.overall_status):'action_needed'};
+        const allChecks=[passportCheck,visaCheck,healthCheck,insuranceCheck];
+        // Fix: self members use linked_uuid for attestation lookup; named_only use named_only_id
+        const attestation=(m.kind==='linked'||m.kind==='self')?(attestMap[m.linked_uuid]||null):(m.kind==='named_only'?(attestMap[m.named_only_id]||null):null);
+        return{member_id:m.id,kind:m.kind,display_name:displayName,avatar_color:m.avatar_color,checks:allChecks,overall_status:passportDocs.length?(noRules?'ready':admissibility.overall_status):'action_needed',access_kind,attestation};
       });
       const total=memberResults.length;
       const ready=memberResults.filter(function(m){return m.overall_status==='ready';}).length;
@@ -2129,6 +2204,7 @@ exports.handler=async function(event){
       if(consent.target_uuid!==myUuid)return err("This invitation isn't for your account.",event,403);
       if(consent.status!=='pending')return err("Invitation is no longer pending (status: "+consent.status+")",event,409);
       await sql("UPDATE trip_group_consents SET status='declined',revoked_by='member',responded_at=NOW() WHERE id=:cid::uuid",[strParam("cid",consentId)]);
+      await autoRevokeAttestation(consent.trip_group_id,myUuid,'consent_revoked');
       await sql("UPDATE trip_group_notifications SET read_at=NOW() WHERE recipient_uuid=:u AND trip_group_id=:gid AND kind='group_invite' AND read_at IS NULL",[uuidParam("u",myUuid),strParam("gid",consent.trip_group_id)]);
       writeAuditLog(consent.trip_group_id,myUuid,'consent_declined',consent.requester_uuid,{consent_id:consentId});
       writeNotification(consent.requester_uuid,consent.trip_group_id,'sharing_declined',{member_uuid:myUuid});
@@ -2144,6 +2220,7 @@ exports.handler=async function(event){
       const consentRows=await sql("SELECT id FROM trip_group_consents WHERE trip_group_id=:gid AND target_uuid=:u AND status='approved'",[strParam("gid",groupId),uuidParam("u",myUuid)]);
       if(!consentRows.length)return err("You are not a member of this group",event,403);
       await sql("UPDATE trip_group_consents SET status='declined',revoked_by='member',responded_at=NOW() WHERE trip_group_id=:gid AND target_uuid=:u AND status='approved'",[strParam("gid",groupId),uuidParam("u",myUuid)]);
+      await autoRevokeAttestation(groupId,myUuid,'consent_revoked');
       // Get organizer uuid to notify
       const grpRows=await sql("SELECT owner_uuid FROM traveler_groups WHERE id=:id",[strParam("id",groupId)]);
       if(grpRows.length){
@@ -2658,6 +2735,56 @@ exports.handler=async function(event){
       if(!m)throw new Error("Haiku returned non-JSON: "+raw.slice(0,200));
       const parsed=JSON.parse(m[0]);
       return ok({summary:parsed.summary||'',suggested_result:parsed.suggested_result||'conditional'},event);
+    }
+    // POST /api/v1/trip-groups/{group_id}/attest
+    if(method==="POST"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/attest$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      const grpRows=await sql("SELECT owner_uuid FROM traveler_groups WHERE id=:id",[strParam("id",groupId)]);
+      if(!grpRows.length)return err("Trip Group not found",event,404);
+      if(grpRows[0].owner_uuid===myUuid)return err("Organizers cannot attest for themselves",event,403);
+      const cRows=await sql("SELECT status FROM trip_group_consents WHERE trip_group_id=:gid AND target_uuid=:u",[strParam("gid",groupId),uuidParam("u",myUuid)]);
+      if(!cRows.length)return err("Trip Group not found",event,404);
+      if(cRows[0].status!=='approved')return err("Consent not approved",event,403);
+      const notes=body&&typeof body.notes==='string'?body.notes.trim()||null:null;
+      const tripRows=await sql("SELECT t.destination_iata FROM traveler_groups tg LEFT JOIN trips t ON t.id=tg.trip_id WHERE tg.id=:id",[strParam("id",groupId)]);
+      const destinationIata=tripRows.length?(tripRows[0].destination_iata||null):null;
+      const existing=await sql("SELECT attestation_id::text,confirmed_at,notes FROM journey_member_attestations WHERE trip_group_id=:gid AND member_uuid=:u AND revoked_at IS NULL",[strParam("gid",groupId),uuidParam("u",myUuid)]);
+      if(existing.length)return ok({attestation_id:existing[0].attestation_id,confirmed_at:existing[0].confirmed_at,notes:existing[0].notes||null,created:false},event);
+      try{
+        const rows=await sql("INSERT INTO journey_member_attestations(trip_group_id,member_uuid,notes) VALUES(:gid,:u,:notes) RETURNING attestation_id::text,confirmed_at",
+          [strParam("gid",groupId),uuidParam("u",myUuid),strParam("notes",notes)]);
+        writeAuditLog(groupId,myUuid,'journey_member_attested',null,{attestation_id:rows[0].attestation_id,destination_iata:destinationIata});
+        return{statusCode:201,headers:cors(go(event)),body:JSON.stringify({attestation_id:rows[0].attestation_id,confirmed_at:rows[0].confirmed_at,notes,created:true})};
+      }catch(e){
+        if(e.message&&e.message.includes('idx_jma_one_active')){
+          const retry=await sql("SELECT attestation_id::text,confirmed_at,notes FROM journey_member_attestations WHERE trip_group_id=:gid AND member_uuid=:u AND revoked_at IS NULL",[strParam("gid",groupId),uuidParam("u",myUuid)]);
+          if(retry.length)return ok({attestation_id:retry[0].attestation_id,confirmed_at:retry[0].confirmed_at,notes:retry[0].notes||null,created:false},event);
+        }
+        throw e;
+      }
+    }
+    // DELETE /api/v1/trip-groups/{group_id}/attest
+    if(method==="DELETE"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/attest$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      const rows=await sql("UPDATE journey_member_attestations SET revoked_at=NOW(),updated_at=NOW() WHERE trip_group_id=:gid AND member_uuid=:u AND revoked_at IS NULL RETURNING attestation_id::text",
+        [strParam("gid",groupId),uuidParam("u",myUuid)]);
+      if(!rows.length)return err("No active attestation found",event,404);
+      writeAuditLog(groupId,myUuid,'journey_member_unattested',null,{attestation_id:rows[0].attestation_id});
+      return ok({success:true,attestation_id:rows[0].attestation_id},event);
+    }
+    // GET /api/v1/trip-groups/{group_id}/attestation/me
+    if(method==="GET"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/attestation\/me$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      await validateTripGroupAccess(groupId,myUuid);
+      const rows=await sql("SELECT attestation_id::text,confirmed_at,notes FROM journey_member_attestations WHERE trip_group_id=:gid AND member_uuid=:u AND revoked_at IS NULL",[strParam("gid",groupId),uuidParam("u",myUuid)]);
+      if(!rows.length)return ok({trip_group_id:groupId,attestation:null},event);
+      return ok({trip_group_id:groupId,attestation:{attestation_id:rows[0].attestation_id,confirmed_at:rows[0].confirmed_at,notes:rows[0].notes||null}},event);
     }
 
     return err("Not found",event,404);
