@@ -1444,7 +1444,8 @@ function openEditTrip(id){
 function closeTripModal(){document.getElementById("trip-modal").classList.remove("open");}
 async function submitTrip(){
   var dest=_val("t-dest").trim().toUpperCase();
-  if(!dest){_showErr("trip-modal-error","Destination IATA code is required.");return;}
+  var name=_val("t-name").trim();
+  if(!dest&&!name){_showErr("trip-modal-error","Add a destination code or a trip name.");return;}
   var btn=document.getElementById("trip-submit-btn");
   btn.disabled=true;btn.textContent="Saving…";
   _showErr("trip-modal-error","");

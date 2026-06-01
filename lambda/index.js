@@ -318,13 +318,13 @@ async function updateModule(uuid,module,data){
       await sql("UPDATE loyalty_memberships SET is_active=FALSE WHERE id=:lid AND traveler_uuid=:u",[uuidParam("lid",data.loyalty_id),uuidParam("u",uuid)]);
       break;
     case "trip_add":{
-      if(!data.destination_iata)throw {status:400,message:"destination_iata required"};
+      if(!data.destination_iata&&!data.trip_name)throw {status:400,message:"Add a destination code or a trip name."};
       await sql("INSERT INTO trips (traveler_uuid,trip_name,trip_locator,departure_date,return_date,origin_iata,destination_iata,trip_context,source_platform,notes) VALUES (:u,:name,:pnr,:dep,:ret,:orig,:dest,:ctx,'manual',:notes)",[uuidParam("u",uuid),strParam("name",data.trip_name||(data.origin_iata||"?")+"-"+(data.destination_iata||"?")),strParam("pnr",data.trip_locator),dateParam("dep",data.departure_date),dateParam("ret",data.return_date),strParam("orig",data.origin_iata?data.origin_iata.toUpperCase().slice(0,3):null),strParam("dest",data.destination_iata?data.destination_iata.toUpperCase().slice(0,3):null),strParam("ctx",data.trip_context||"PERSONAL"),strParam("notes",data.notes)]);
       break;
     }
     case "trip_update":{
       if(!data.trip_id)throw {status:400,message:"trip_id required"};
-      if(!data.destination_iata)throw {status:400,message:"destination_iata required"};
+      if(!data.destination_iata&&!data.trip_name)throw {status:400,message:"Add a destination code or a trip name."};
       await sql("UPDATE trips SET trip_name=:name,trip_locator=:pnr,departure_date=:dep,return_date=:ret,origin_iata=:orig,destination_iata=:dest,trip_context=:ctx,notes=:notes,updated_at=NOW() WHERE id=:tid AND traveler_uuid=:u",[strParam("name",data.trip_name||(data.origin_iata||"?")+"-"+(data.destination_iata||"?")),strParam("pnr",data.trip_locator),dateParam("dep",data.departure_date),dateParam("ret",data.return_date),strParam("orig",data.origin_iata?data.origin_iata.toUpperCase().slice(0,3):null),strParam("dest",data.destination_iata?data.destination_iata.toUpperCase().slice(0,3):null),strParam("ctx",data.trip_context||"PERSONAL"),strParam("notes",data.notes),uuidParam("tid",data.trip_id),uuidParam("u",uuid)]);
       break;
     }
