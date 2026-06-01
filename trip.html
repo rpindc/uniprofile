@@ -2002,8 +2002,9 @@ async function submitReAuth(){
       return;
     }
     if(!res.ok)throw new Error("HTTP "+res.status);
+    var cb=_reAuthCallback;
     closeReAuth();
-    if(_reAuthCallback)await _reAuthCallback();
+    if(cb)await cb();
   }catch(e){
     errEl.textContent="Verification failed. Please try again.";
     errEl.style.display="block";
