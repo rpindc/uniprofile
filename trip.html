@@ -1240,6 +1240,7 @@ function renderReadinessMatrix(readiness){
 /* ── Itinerary section ── */
 function renderItinerarySection(){
   var items=_itinerary||[];
+  if(!items.length)return'';
   var html='<div class="doc-section">';
   html+='<div class="doc-section-head">';
   html+='<div class="doc-section-label">Itinerary</div>';
@@ -1292,6 +1293,7 @@ function renderItinerarySection(){
 function _fmtBytes(b){b=Number(b||0);if(b<1024)return b+'B';if(b<1048576)return(b/1024).toFixed(0)+'KB';return(b/1048576).toFixed(1)+'MB';}
 function renderDocumentsSection(){
   var docs=_documents||[];
+  if(!docs.length)return'';
   var html='<div class="doc-section">';
   html+='<div class="doc-section-head">';
   html+='<div class="doc-section-label">Trip Documents</div>';
@@ -1417,37 +1419,35 @@ function renderWorkspaceSection(){
   /* Accommodations */
   var accoms=(_workspace&&_workspace.accommodations)||[];
   var sortedAccoms=accoms.slice().sort(function(a,b){return(a.check_in||"9")>(b.check_in||"9")?1:(a.check_in||"9")<(b.check_in||"9")?-1:0;});
+  if(sortedAccoms.length){
   html+='<div class="doc-section">';
   html+='<div class="doc-section-head">';
   html+='<div class="doc-section-label">Accommodations</div>';
   if(_role==='organizer')html+='<button class="btn btn-secondary btn-sm edit-only" onclick="openAccomModal(null)">Add</button>';
   html+='</div>';
-  if(!sortedAccoms.length){
-    html+='<div class="caption" style="color:var(--ink-faint);font-style:italic;padding:6px 0">No accommodations added yet.</div>';
-  }else{
-    html+='<div>';
-    sortedAccoms.forEach(function(a){
-      var meta=[];
-      if(a.address)meta.push('<a href="https://maps.google.com/?q='+encodeURIComponent(a.address)+'" target="_blank" rel="noopener" style="color:var(--ink-mute);text-decoration:underline">'+escHtml(a.address)+'</a>');
-      if(a.phone)meta.push('<a href="tel:'+escHtml(a.phone)+'" style="color:var(--ink-mute)">'+escHtml(a.phone)+'</a>');
-      if(a.check_in||a.check_out)meta.push('Check-in '+escHtml(a.check_in||'—')+' · Check-out '+escHtml(a.check_out||'—'));
-      if(a.confirmation_number)meta.push('Conf: '+escHtml(a.confirmation_number));
-      if(a.notes)meta.push(escHtml(a.notes));
-      html+='<div class="ws-item">';
-      html+='<div class="ws-item-main"><div style="font-size:13px;font-weight:500">'+escHtml(a.name)+'</div>';
-      if(meta.length)html+='<div class="caption" style="margin-top:3px;line-height:1.6">'+meta.join(' · ')+'</div>';
-      html+='</div>';
-      if(_role==='organizer'){
-        html+='<div class="ws-item-actions edit-only">';
-        html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px" onclick="openAccomModal(\''+escHtml(a.id)+'\')">Edit</button>';
-        html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px;color:var(--red)" onclick="deleteAccom(\''+escHtml(a.id)+'\')">Remove</button>';
-        html+='</div>';
-      }
-      html+='</div>';
-    });
+  html+='<div>';
+  sortedAccoms.forEach(function(a){
+    var meta=[];
+    if(a.address)meta.push('<a href="https://maps.google.com/?q='+encodeURIComponent(a.address)+'" target="_blank" rel="noopener" style="color:var(--ink-mute);text-decoration:underline">'+escHtml(a.address)+'</a>');
+    if(a.phone)meta.push('<a href="tel:'+escHtml(a.phone)+'" style="color:var(--ink-mute)">'+escHtml(a.phone)+'</a>');
+    if(a.check_in||a.check_out)meta.push('Check-in '+escHtml(a.check_in||'—')+' · Check-out '+escHtml(a.check_out||'—'));
+    if(a.confirmation_number)meta.push('Conf: '+escHtml(a.confirmation_number));
+    if(a.notes)meta.push(escHtml(a.notes));
+    html+='<div class="ws-item">';
+    html+='<div class="ws-item-main"><div style="font-size:13px;font-weight:500">'+escHtml(a.name)+'</div>';
+    if(meta.length)html+='<div class="caption" style="margin-top:3px;line-height:1.6">'+meta.join(' · ')+'</div>';
     html+='</div>';
-  }
+    if(_role==='organizer'){
+      html+='<div class="ws-item-actions edit-only">';
+      html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px" onclick="openAccomModal(\''+escHtml(a.id)+'\')">Edit</button>';
+      html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px;color:var(--red)" onclick="deleteAccom(\''+escHtml(a.id)+'\')">Remove</button>';
+      html+='</div>';
+    }
+    html+='</div>';
+  });
   html+='</div>';
+  html+='</div>';
+  }
 
   /* Documents */
   html+=renderDocumentsSection();
@@ -1457,32 +1457,30 @@ function renderWorkspaceSection(){
 
   /* Quick Reference */
   var refs=(_workspace&&_workspace.reference_numbers)||[];
+  if(refs.length){
   html+='<div class="doc-section">';
   html+='<div class="doc-section-head">';
   html+='<div class="doc-section-label">Quick Reference</div>';
   if(_role==='organizer')html+='<button class="btn btn-secondary btn-sm edit-only" onclick="openRefModal(null)">Add</button>';
   html+='</div>';
-  if(!refs.length){
-    html+='<div class="caption" style="color:var(--ink-faint);font-style:italic;padding:6px 0">No reference numbers added yet.</div>';
-  }else{
-    html+='<div>';
-    refs.forEach(function(r){
-      html+='<div class="ws-item">';
-      html+='<div class="ws-item-main"><div style="font-size:13px;font-weight:500">'+_refIcon(r.label)+escHtml(r.label)+'</div>';
-      html+='<div class="caption">'+_valHtml(r.value)+'</div>';
-      if(r.notes)html+='<div class="caption" style="font-style:italic">'+escHtml(r.notes)+'</div>';
-      html+='</div>';
-      if(_role==='organizer'){
-        html+='<div class="ws-item-actions edit-only">';
-        html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px" onclick="openRefModal(\''+escHtml(r.id)+'\')">Edit</button>';
-        html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px;color:var(--red)" onclick="deleteRef(\''+escHtml(r.id)+'\')">Remove</button>';
-        html+='</div>';
-      }
-      html+='</div>';
-    });
+  html+='<div>';
+  refs.forEach(function(r){
+    html+='<div class="ws-item">';
+    html+='<div class="ws-item-main"><div style="font-size:13px;font-weight:500">'+_refIcon(r.label)+escHtml(r.label)+'</div>';
+    html+='<div class="caption">'+_valHtml(r.value)+'</div>';
+    if(r.notes)html+='<div class="caption" style="font-style:italic">'+escHtml(r.notes)+'</div>';
     html+='</div>';
-  }
+    if(_role==='organizer'){
+      html+='<div class="ws-item-actions edit-only">';
+      html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px" onclick="openRefModal(\''+escHtml(r.id)+'\')">Edit</button>';
+      html+='<button class="btn btn-secondary btn-sm" style="padding:4px 9px;font-size:11px;color:var(--red)" onclick="deleteRef(\''+escHtml(r.id)+'\')">Remove</button>';
+      html+='</div>';
+    }
+    html+='</div>';
+  });
   html+='</div>';
+  html+='</div>';
+  }
 
   /* Trip notes */
   var notes=(_workspace&&_workspace.trip_notes)||"";
@@ -1504,6 +1502,19 @@ function renderWorkspaceSection(){
   /* Emergency contacts */
   html+=renderEmergencyContactsSection();
 
+  if(_role==='organizer'){
+    html+='<div class="doc-section edit-only" id="ws-add-row">';
+    html+='<button class="pill pill-neutral" style="cursor:pointer;border:none" onclick="toggleAddRow()">+ Add to this Journey</button>';
+    html+='<div id="ws-add-pills" style="display:none;flex-wrap:wrap;gap:6px;margin-top:10px">';
+    html+='<button class="pill pill-neutral" style="cursor:pointer;border:none" onclick="openItineraryModal(null)">Itinerary</button>';
+    html+='<button class="pill pill-neutral" style="cursor:pointer;border:none" onclick="openAccomModal(null)">Accommodation</button>';
+    html+='<button class="pill pill-neutral" style="cursor:pointer;border:none" onclick="openDocModal()">Document</button>';
+    html+='<button class="pill pill-neutral" style="cursor:pointer;border:none" onclick="openRefModal(null)">Reference</button>';
+    html+='<button class="pill pill-neutral" style="cursor:pointer;border:none" onclick="openEditNotes()">Note</button>';
+    html+='</div>';
+    html+='</div>';
+  }
+
   return html;
 }
 
@@ -1512,7 +1523,7 @@ function openEditNotes(){
   var d=document.getElementById("ws-notes-display");
   var e=document.getElementById("ws-notes-editor");
   if(d)d.style.display="none";
-  if(e){e.style.display="";document.getElementById("ws-notes-ta").focus();}
+  if(e){e.style.display="";var ta=document.getElementById("ws-notes-ta");if(ta){ta.scrollIntoView({behavior:'smooth',block:'start'});ta.focus();}}
 }
 function cancelEditNotes(){
   var d=document.getElementById("ws-notes-display");
@@ -1971,6 +1982,10 @@ async function openAuditAndFetch(){
     h+='</div>';
     body.innerHTML=h;
   }catch(e){body.innerHTML="<div class='caption' style='color:var(--red)'>Failed to load activity.</div>";}
+}
+function toggleAddRow(){
+  var p=document.getElementById('ws-add-pills');
+  if(p){p.style.display=p.style.display==='none'?'flex':'none';}
 }
 async function toggleAuditInline(){
   var body=document.getElementById('doc-audit-body');
