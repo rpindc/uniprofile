@@ -1042,6 +1042,9 @@ function renderTripHeader(ctx){
 
 /* ── Render group section ── */
 function renderGroupSection(){
+  var _auditWasOpen=false;
+  var _existingBody=document.getElementById('doc-audit-body');
+  if(_existingBody&&_existingBody.classList.contains('open')){_auditWasOpen=true;}
   _auditLoaded=false;
   var html='';
 
@@ -1106,6 +1109,7 @@ function renderGroupSection(){
   }
 
   _ht('group-section',html);
+  if(_auditWasOpen){openAuditAndFetch();}
 }
 
 /* ── Member list ── */
@@ -1928,11 +1932,10 @@ async function submitConfirmOnBehalf(){
     btn.disabled=false;btn.textContent=_confirmIsUnmark?'Remove':'Confirm';
   }
 }
-async function toggleAuditInline(){
+async function openAuditAndFetch(){
   var body=document.getElementById('doc-audit-body');
   var btn=document.getElementById('doc-audit-btn');
   if(!body)return;
-  if(body.classList.contains('open')){body.classList.remove('open');if(btn)btn.textContent='Show ↓';return;}
   body.classList.add('open');if(btn)btn.textContent='Hide ↑';
   if(_auditLoaded)return;
   _auditLoaded=true;
@@ -1968,6 +1971,12 @@ async function toggleAuditInline(){
     h+='</div>';
     body.innerHTML=h;
   }catch(e){body.innerHTML="<div class='caption' style='color:var(--red)'>Failed to load activity.</div>";}
+}
+async function toggleAuditInline(){
+  var body=document.getElementById('doc-audit-body');
+  if(!body)return;
+  if(body.classList.contains('open')){var btn=document.getElementById('doc-audit-btn');body.classList.remove('open');if(btn)btn.textContent='Show ↓';return;}
+  await openAuditAndFetch();
 }
 
 /* ── Re-auth ── */
