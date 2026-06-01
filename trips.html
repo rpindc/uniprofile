@@ -1441,7 +1441,7 @@ function openEditTrip(id){
   _showErr("trip-modal-error","");
   document.getElementById("trip-modal").classList.add("open");
 }
-function closeTripModal(){document.getElementById("trip-modal").classList.remove("open");}
+function closeTripModal(){document.getElementById("trip-modal").classList.remove("open");var b=document.getElementById("trip-submit-btn");if(b){b.disabled=false;}}
 async function submitTrip(){
   var dest=_val("t-dest").trim().toUpperCase();
   var name=_val("t-name").trim();
