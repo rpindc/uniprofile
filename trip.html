@@ -1596,11 +1596,11 @@ async function saveMemberRef(memberId,value){
 /* ── Documents ── */
 async function openDocument(id){
   if(!_group)return;
-  var win=window.open("","_blank","noopener");
+  var win=window.open("","_blank");
   try{
     var res=await _req("GET","/api/v1/trip-groups/"+_group.id+"/documents/"+id+"/download-url");
     win.location.href=res.download_url;
-  }catch(e){win.close();showToast("Failed to open document.");}
+  }catch(e){if(win)win.close();showToast("Failed to open document.");}
 }
 function openDocModal(){
   document.getElementById("doc-filename-display").textContent="No file chosen";
