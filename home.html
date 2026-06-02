@@ -314,7 +314,7 @@ function _sidebarUpdate(p){
 }
 async function _auth(){
   var h=_ph();
-  if(h){_tok=h;localStorage.setItem("up_token",_tok);history.replaceState(null,"",window.location.pathname);}
+  if(h){_tok=h;localStorage.setItem("up_token",_tok);history.replaceState(null,"",window.location.pathname);window._freshLogin=true;}
   else _tok=localStorage.getItem("up_token");
   if(!_tok){location.href=_loginUrl();return false;}
   return true;
@@ -724,6 +724,7 @@ async function declineFamilyInvite(inviteId){
 /* ── Init ── */
 async function homeInit(){
   if(!await _auth())return;
+  if(window._freshLogin){_req("POST","/api/v1/auth/login-event",{}).catch(function(){});}
   try{
     var prof=await _req("GET","/api/v1/me");
     _uid=prof.uuid;

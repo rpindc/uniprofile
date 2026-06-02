@@ -2254,6 +2254,15 @@ exports.handler=async function(event){
       const events=await sql("SELECT event_type,ip_address,metadata,created_at FROM auth_security_events WHERE traveler_uuid=:u ORDER BY created_at DESC LIMIT 50",[uuidParam("u",uuid)]);
       return ok({events:events.map(function(e){try{return Object.assign({},e,{metadata:typeof e.metadata==='string'?JSON.parse(e.metadata):(e.metadata||{})});}catch(_){return e;}})},event);
     }
+    // POST /api/v1/auth/login-event — called by home.html on fresh token exchange
+    if(method==="POST"&&path==="/api/v1/auth/login-event"){
+      const token=await verifyToken(event);
+      const uuid=await getOrCreateTraveler(token.sub,token.email);
+      const ip=((event.headers&&(event.headers['X-Forwarded-For']||event.headers['x-forwarded-for']))||'').split(',')[0].trim()||null;
+      await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,ip_address,metadata) VALUES(:u,'login',:ip,:m::jsonb)",
+        [uuidParam("u",uuid),strParam("ip",ip),strParam("m",JSON.stringify({}))]);
+      return ok({success:true},event);
+    }
     // ── End Auth Security ─────────────────────────────────────────────────────
 
     // ── Notifications ─────────────────────────────────────────────────────────
