@@ -179,6 +179,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .doc-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .doc-section-label{font-family:var(--sans);font-size:10px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-mute)}
 .doc-air-slot,.empty-slot{padding:18px;background:var(--paper-cream);border-radius:6px;border:0.5px dashed var(--rule-strong);font-size:12px;color:var(--ink-faint);font-family:var(--sans);letter-spacing:0.04em;text-align:center}
+.field-label{font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-faint)}
 .doc-audit-toggle{background:none;border:none;cursor:pointer;font-family:var(--sans);font-size:10px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-mute);padding:0;display:flex;align-items:center;gap:6px}
 .doc-audit-toggle:hover{color:var(--ink)}
 .doc-audit-body{margin-top:12px;display:none}
@@ -1406,7 +1407,7 @@ function renderEmergencyContactsSection(){
   html+='<button class="btn btn-secondary btn-sm edit-only" onclick="openContactModal(null)">Add</button>';
   html+='</div>';
   /* Your contacts subsection */
-  html+='<div style="font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:6px">Your contacts</div>';
+  html+='<div class="field-label" style="margin-bottom:6px">Your contacts</div>';
   if(!mine.length){
     html+='<div class="empty-slot">No contacts added yet.</div>';
   }else{
@@ -1414,7 +1415,7 @@ function renderEmergencyContactsSection(){
   }
   /* Other members' contacts subsection */
   if(others.length){
-    html+='<div style="font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-faint);margin-top:16px;margin-bottom:6px">Other members\' contacts</div>';
+    html+='<div class="field-label" style="margin-top:16px;margin-bottom:6px">Other members\' contacts</div>';
     html+='<div>';others.forEach(function(c){html+=_renderContactRow(c);});html+='</div>';
   }
   html+='</div>';
@@ -1436,7 +1437,7 @@ function renderInsuranceSection(){
     if(ephone){
       html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:0.5px solid var(--rule)">';
       html+='<div style="flex:1;min-width:0">';
-      html+='<div style="font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:2px">Emergency assistance</div>';
+      html+='<div class="field-label" style="margin-bottom:2px">Emergency assistance</div>';
       html+='<a href="tel:'+escHtml(ephone)+'" style="font-size:15px;font-weight:600;color:var(--ink);text-decoration:none">'+escHtml(ephone)+'</a>';
       html+='</div></div>';
     }
@@ -1455,7 +1456,7 @@ function renderInsuranceSection(){
     if(ins.doc_number_last4)rows.push({label:'Policy',val:'···'+ins.doc_number_last4,maskedField:{masked:'···'+ins.doc_number_last4,docId:ins.id}});
     rows.forEach(function(r){
       html+='<div class="ws-item"><div class="ws-item-main">';
-      html+='<span style="font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-faint);margin-right:8px">'+escHtml(r.label)+'</span>';
+      html+='<span class="field-label" style="margin-right:8px">'+escHtml(r.label)+'</span>';
       html+='<span style="font-size:13px">'+(r.maskedField?_rvHtml(r.maskedField):escHtml(r.val))+'</span>';
       html+='</div></div>';
     });
