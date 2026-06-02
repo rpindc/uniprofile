@@ -1342,8 +1342,7 @@ function renderTrips(trips){
   }
   var today=new Date();today.setHours(0,0,0,0);
   var sorted=filtered.slice().sort(function(a,b){
-    if(_curFilter==="past") return new Date(b.departure_date)-new Date(a.departure_date);
-    return new Date(a.departure_date)-new Date(b.departure_date);
+    return new Date(b.departure_date)-new Date(a.departure_date);
   });
   _ht("trips-list",sorted.map(_tripCard).join(""));
 }
