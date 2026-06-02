@@ -112,6 +112,9 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .cc-box{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border:1.5px solid var(--rule-strong);border-radius:4px;font-size:11px;line-height:1}
 .cc-box-checked{border-color:var(--green);color:var(--green)}
 .doc-editing .cc-box-clickable{cursor:pointer}
+.readiness-outer{position:relative}
+.readiness-outer.rw-overflow::after{content:'';position:absolute;top:0;right:0;bottom:0;width:40px;background:linear-gradient(to right,transparent,var(--paper));pointer-events:none;z-index:1}
+.readiness-table .cc-col{min-width:72px}
 .member-row{display:flex;align-items:center;gap:8px}
 .status-icon{font-size:15px;cursor:default}
 /* Workspace */
@@ -176,6 +179,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .doc-countdown-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:14px}
 .doc-controls{display:flex;gap:6px;flex-wrap:wrap;padding:12px 0 14px;border-bottom:0.5px solid var(--rule)}
 .doc-section{padding:22px 0;border-top:0.5px solid var(--rule-strong)}
+.doc-section--primary{border-top:1.5px solid var(--ink)}
 .doc-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .doc-section-label{font-family:var(--sans);font-size:10px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-mute)}
 .doc-air-slot,.empty-slot{padding:18px;background:var(--paper-cream);border-radius:6px;border:0.5px dashed var(--rule-strong);font-size:12px;color:var(--ink-faint);font-family:var(--sans);letter-spacing:0.04em;text-align:center}
@@ -241,6 +245,7 @@ body.doc-editing #save-pdf-btn{display:none!important}
   .doc-flight-row,.ws-item,.readiness-table tr{page-break-inside:avoid}
   /* Keep section headers with first row of content */
   .doc-section{page-break-inside:auto}
+  .readiness-outer::after{display:none}
   /* Warm card backgrounds survive print */
   .card-warm,.readiness-card{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   /* Countdown hidden (irrelevant in static PDF) */
@@ -762,7 +767,7 @@ function _fmtSegDate(dt){
   return isNaN(d.getTime())?'':d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
 }
 function renderAirSectors(segments,tripCtx){
-  var html='<div class="doc-section">';
+  var html='<div class="doc-section doc-section--primary">';
   html+='<div class="doc-section-head"><div class="doc-section-label">Air Sectors</div></div>';
   if(!segments||!segments.length){
     html+='<div class="doc-air-slot">No flight segments on file for this trip.</div>';
@@ -1096,7 +1101,7 @@ function renderGroupSection(){
     html+=renderAirSectors(_segments,_group||_trip);
 
     /* Travelers & Readiness */
-    html+='<div class="doc-section">';
+    html+='<div class="doc-section doc-section--primary">';
     html+='<div class="doc-section-head">';
     html+='<div class="doc-section-label">Travelers &amp; Readiness</div>';
     if(_group.archived_at)html+='<span class="pill pill-neutral" style="font-size:10px">Archived '+escHtml(_fmtShort(_group.archived_at.slice(0,10)))+'</span>';
@@ -1136,6 +1141,7 @@ function renderGroupSection(){
   }
 
   _ht('group-section',html);
+  _updateRwFade();
   if(_auditWasOpen){openAuditAndFetch();}
 }
 
@@ -1240,10 +1246,10 @@ function renderReadinessMatrix(readiness){
   var ccDef=(_group&&_group.custom_columns&&_group.custom_columns.columns)||[];
   var ccVals=(_group&&_group.custom_columns&&_group.custom_columns.values)||{};
 
-  var html='<div class="readiness-wrap"><table class="readiness-table"><thead><tr>';
+  var html='<div class="readiness-outer"><div class="readiness-wrap"><table class="readiness-table"><thead><tr>';
   html+='<th>Member</th>';
   colIds.forEach(function(cid){html+='<th>'+escHtml(colLabels[cid])+'</th>';});
-  ccDef.forEach(function(col){html+='<th>'+escHtml(col.label)+'</th>';});
+  ccDef.forEach(function(col){html+='<th class="cc-col">'+escHtml(col.label)+'</th>';});
   html+='<th>Confirmed</th>';
   html+='<th>Overall</th>';
   html+='</tr></thead><tbody>';
@@ -1263,14 +1269,14 @@ function renderReadinessMatrix(readiness){
       var clickable=(_role==='organizer');
       var cls='cc-box'+(isChecked?' cc-box-checked':'')+(clickable?' cc-box-clickable':'');
       var oc=clickable?' onclick="toggleCcBox(this,\''+escHtml(_group.id)+'\',\''+escHtml(col.id)+'\',\''+escHtml(m.member_id)+'\')"':'';
-      html+='<td data-label="'+escHtml(col.label)+'"><span class="'+cls+'"'+oc+'>'+(isChecked?'✓':'')+'</span></td>';
+      html+='<td class="cc-col" data-label="'+escHtml(col.label)+'"><span class="'+cls+'"'+oc+'>'+(isChecked?'✓':'')+'</span></td>';
     });
     html+='<td data-label="Confirmed">'+confirmedCell(m)+'</td>';
     html+='<td data-label="Overall">'+overallCell(m)+'</td>';
     html+='</tr>';
   });
 
-  html+='</tbody></table></div>';
+  html+='</tbody></table></div></div>';
   if(readiness.disclaimer)html+='<p class="caption" style="margin-top:12px;font-style:italic;max-width:560px">'+escHtml(readiness.disclaimer)+'</p>';
   return html;
 }
@@ -2494,6 +2500,13 @@ async function tripInit(){
   }
 }
 tripInit();
+function _updateRwFade(){
+  var w=document.querySelector('.readiness-wrap');
+  var o=document.querySelector('.readiness-outer');
+  if(!w||!o)return;
+  o.classList.toggle('rw-overflow',w.scrollWidth>w.clientWidth);
+}
+window.addEventListener('resize',_updateRwFade);
 </script>
 </body>
 </html>
