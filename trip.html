@@ -107,6 +107,8 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .readiness-table td{padding:10px 14px;border-bottom:0.5px solid var(--rule);text-align:center;vertical-align:middle}
 .readiness-table td:first-child{text-align:left;padding-left:0}
 .readiness-table tbody tr:last-child td{border-bottom:none}
+.cc-box{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border:1.5px solid var(--rule-strong);border-radius:4px;font-size:11px;line-height:1}
+.cc-box-checked{border-color:var(--green);color:var(--green)}
 .member-row{display:flex;align-items:center;gap:8px}
 .status-icon{font-size:15px;cursor:default}
 /* Workspace */
@@ -1210,9 +1212,13 @@ function renderReadinessMatrix(readiness){
     return'<span class="pill pill-neutral" style="font-size:10px">'+escHtml(status||"—")+'</span>';
   }
 
+  var ccDef=(_group&&_group.custom_columns&&_group.custom_columns.columns)||[];
+  var ccVals=(_group&&_group.custom_columns&&_group.custom_columns.values)||{};
+
   var html='<div class="readiness-wrap"><table class="readiness-table"><thead><tr>';
   html+='<th>Member</th>';
   colIds.forEach(function(cid){html+='<th>'+escHtml(colLabels[cid])+'</th>';});
+  ccDef.forEach(function(col){html+='<th>'+escHtml(col.label)+'</th>';});
   html+='<th>Confirmed</th>';
   html+='<th>Overall</th>';
   html+='</tr></thead><tbody>';
@@ -1226,6 +1232,10 @@ function renderReadinessMatrix(readiness){
     colIds.forEach(function(cid){
       var chk=checkMap[m.member_id]?checkMap[m.member_id][cid]:null;
       html+='<td data-label="'+escHtml(colLabels[cid])+'">'+statusIcon(chk)+'</td>';
+    });
+    ccDef.forEach(function(col){
+      var isChecked=!!(ccVals[col.id]&&ccVals[col.id][m.member_id]);
+      html+='<td data-label="'+escHtml(col.label)+'"><span class="cc-box'+(isChecked?' cc-box-checked':'')+'">'+( isChecked?'✓':'' )+'</span></td>';
     });
     html+='<td data-label="Confirmed">'+confirmedCell(m)+'</td>';
     html+='<td data-label="Overall">'+overallCell(m)+'</td>';
