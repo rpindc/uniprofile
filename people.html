@@ -48,8 +48,8 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .avatar-44{width:44px;height:44px;font-size:15px;font-style:normal;font-family:var(--sans);font-weight:500;flex-shrink:0}
 /* deterministic palette */
 .av-info{background:var(--color-background-info);color:var(--color-text-info)}
-.av-warm{background:#FDE9C2;color:#6B4711}
-.av-cool{background:#DDE7F0;color:#244164}
+.av-warm{background:#f0e8dc;color:#6b4a26}
+.av-cool{background:#dde8e0;color:#245534}
 .av-muted{background:var(--color-background-secondary);color:var(--color-text-secondary)}
 /* sidebar avatar fallback */
 .avatar-1{background:linear-gradient(135deg,#d8d3c8,#c4bfb3)}
@@ -97,7 +97,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .fpill{font-family:var(--sans);font-size:12px;font-weight:500;padding:5px 12px;border-radius:100px;border:0.5px solid var(--rule-strong);background:#fff;color:var(--ink-mute);cursor:pointer;transition:background 120ms,color 120ms,border-color 120ms}
 .fpill.active{background:var(--ink);color:#fff;border-color:var(--ink)}
 /* Person card */
-.person-card{background:#fff;border:0.5px solid var(--rule);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:8px;position:relative}
+.person-card{background:#fff;border:0.5px solid var(--rule);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:12px;margin-bottom:6px;position:relative}
 .person-card:hover{border-color:var(--rule-strong)}
 .person-card-body{flex:1;min-width:0}
 .person-card-name{font-size:14px;font-weight:500;color:var(--ink);line-height:1.3}
@@ -537,13 +537,24 @@ function _personCard(p){
     var d=new Date(p.created_at||p.sent_at);
     dateStr=' · added '+d.toLocaleDateString("en-US",{month:"short",year:"numeric"});
   }
+  var emailField=p.member_email||p.to_email||p.from_email||null;
+  var isEmailFallback=!!(emailField&&p.display_name===emailField);
+  var cardSub;
+  if(isEmailFallback){
+    var fp=[];
+    if(p.created_at||p.sent_at){var fd=new Date(p.created_at||p.sent_at);fp.push('Added '+fd.toLocaleDateString("en-US",{month:"short",year:"numeric"}));}
+    if(p.group_count&&p.group_count>0)fp.push(p.group_count+(p.group_count===1?' group':' groups'));
+    cardSub=rel+(fp.join(' · '));
+  }else{
+    cardSub=rel+(p.display_name||"")+sub2+groupStr+dateStr;
+  }
   var canEdit=(p._type==="named_only");
   var editBtn=canEdit?'<button class="kebab-item" onclick="openEditModal(\''+_esc(p.id)+'\')">Edit</button>':"";
   return '<div class="person-card" data-id="'+_esc(p.id)+'" data-type="'+_esc(p._type)+'" onclick="if(!event.target.closest(\'.kebab-wrap\'))openDetailById(\''+_esc(p.id)+'\')">'
     +'<div class="avatar avatar-44 av-'+color+'">'+ini+'</div>'
     +'<div class="person-card-body">'
     +'<div class="person-card-name">'+name+'</div>'
-    +'<div class="person-card-sub">'+rel+(p.display_name||"")+sub2+groupStr+dateStr+'</div>'
+    +'<div class="person-card-sub">'+cardSub+'</div>'
     +'</div>'
     +'<div class="person-card-right">'
     +badge
