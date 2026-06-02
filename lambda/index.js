@@ -169,7 +169,7 @@ function validateUpId(id){
   return body[7]===UP_ALPHABET[sum%UP_ALPHABET.length];
 }
 /* ─────────────────────────────────────────────────────────────────────────── */
-const ORIGINS=["https://www.uniprofile.net","https://main.d3dngzji06baij.amplifyapp.com"];
+const ORIGINS=["https://www.uniprofile.net","https://uniprofile.net","https://main.d3dngzji06baij.amplifyapp.com"];
 const cors=(o)=>{const a=ORIGINS.includes(o)?o:ORIGINS[0];return{"Content-Type":"application/json","Access-Control-Allow-Origin":a,"Access-Control-Allow-Headers":"Content-Type,Authorization,x-uniprofile-key","Access-Control-Allow-Methods":"GET,POST,PUT,PATCH,DELETE,OPTIONS","Access-Control-Allow-Credentials":"true"};};
 const go=(e)=>(e.headers&&(e.headers.origin||e.headers.Origin))||"";
 const ok=(b,e,s=200)=>({statusCode:s,headers:cors(go(e)),body:JSON.stringify(b)});
@@ -987,7 +987,7 @@ exports.handler=async function(event){
       ]);
       const row=groupRows[0];
       const members=filterMembersForCaller(typeof row.members==="string"?JSON.parse(row.members):(row.members||[]),myUuid,role==='organizer');
-      const resp={id:row.id,name:row.name,destination:row.destination_iata||row.destination,destination_name:(RULES[row.destination_iata||'']||{}).name||row.destination,trip_id:row.trip_id_str,trip_name:row.trip_name,departure_date:row.departure_date,return_date:row.return_date,archived_at:row.archived_at,members,role};
+      const resp={id:row.id,name:row.name,destination:row.destination_iata||row.destination,destination_name:(RULES[row.destination_iata||'']||{}).name||row.destination,trip_id:row.trip_id_str,trip_name:row.trip_name,departure_date:row.departure_date,return_date:row.return_date,archived_at:row.archived_at,members,role,custom_columns:typeof row.custom_columns==='string'?JSON.parse(row.custom_columns):(row.custom_columns||{columns:[],values:{}})};
       if(role==='organizer')resp.consents=consents.map(function(c){try{return Object.assign({},c,{requested_scopes:typeof c.requested_scopes==='string'?JSON.parse(c.requested_scopes):(c.requested_scopes||[]),granted_scopes:typeof c.granted_scopes==='string'?JSON.parse(c.granted_scopes):(c.granted_scopes||null)});}catch(e){return c;}});
       if(role==='member')resp.organizer_name=[row.owner_first,row.owner_last].filter(Boolean).join(' ')||row.owner_email||null;
       return ok(resp,event);
@@ -1091,6 +1091,57 @@ exports.handler=async function(event){
       members[idx]=Object.assign({},members[idx],{booking_ref:booking_ref&&booking_ref.trim()||null});
       await sql("UPDATE traveler_groups SET members=:m::jsonb,updated_at=NOW() WHERE id=:id",[strParam("m",JSON.stringify(members)),strParam("id",groupId)]);
       return ok({success:true},event);
+    }
+    // PATCH /api/v1/trip-groups/{group_id}/custom-columns
+    if(method==="PATCH"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/custom-columns$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      const grpRows=await sql("SELECT owner_uuid,custom_columns FROM traveler_groups WHERE id=:id",[strParam("id",groupId)]);
+      if(!grpRows.length)return err("Trip Group not found",event,404);
+      if(grpRows[0].owner_uuid!==myUuid)return err("Only the organizer can manage custom columns",event,403);
+      const cc=typeof grpRows[0].custom_columns==='string'?JSON.parse(grpRows[0].custom_columns):(grpRows[0].custom_columns||{columns:[],values:{}});
+      const cols=cc.columns||[];
+      const vals=cc.values||{};
+      const {action,column_id,label}=body||{};
+      if(action==='add'){
+        if(cols.length>=8)return err("Custom column limit reached (8 max)",event,400);
+        const rawLabel=(label||'').trim().slice(0,40);
+        if(!rawLabel)return err("label is required",event,400);
+        const{randomBytes}=require('crypto');
+        const b=randomBytes(6);
+        const colId='col_'+b.toString('hex');
+        cols.push({id:colId,label:rawLabel});
+        cc.columns=cols;
+        await sql("UPDATE traveler_groups SET custom_columns=:cc::jsonb,updated_at=NOW() WHERE id=:id",[strParam("cc",JSON.stringify(cc)),strParam("id",groupId)]);
+        writeAuditLog(groupId,myUuid,'custom_column_added',null,{column_id:colId,label:rawLabel});
+        return ok({custom_columns:cc,near_limit:cols.length>=4},event);
+      }
+      if(action==='rename'){
+        if(!column_id)return err("column_id is required",event,400);
+        const rawLabel=(label||'').trim().slice(0,40);
+        if(!rawLabel)return err("label is required",event,400);
+        const idx=cols.findIndex(function(c){return c.id===column_id;});
+        if(idx===-1)return err("Column not found",event,404);
+        const oldLabel=cols[idx].label;
+        cols[idx]=Object.assign({},cols[idx],{label:rawLabel});
+        cc.columns=cols;
+        await sql("UPDATE traveler_groups SET custom_columns=:cc::jsonb,updated_at=NOW() WHERE id=:id",[strParam("cc",JSON.stringify(cc)),strParam("id",groupId)]);
+        writeAuditLog(groupId,myUuid,'custom_column_renamed',null,{column_id,old_label:oldLabel,new_label:rawLabel});
+        return ok({custom_columns:cc,near_limit:cols.length>=4},event);
+      }
+      if(action==='remove'){
+        if(!column_id)return err("column_id is required",event,400);
+        const col=cols.find(function(c){return c.id===column_id;});
+        if(!col)return err("Column not found",event,404);
+        cc.columns=cols.filter(function(c){return c.id!==column_id;});
+        delete vals[column_id];
+        cc.values=vals;
+        await sql("UPDATE traveler_groups SET custom_columns=:cc::jsonb,updated_at=NOW() WHERE id=:id",[strParam("cc",JSON.stringify(cc)),strParam("id",groupId)]);
+        writeAuditLog(groupId,myUuid,'custom_column_removed',null,{column_id,label:col.label});
+        return ok({custom_columns:cc,near_limit:cc.columns.length>=4},event);
+      }
+      return err("action must be 'add', 'rename', or 'remove'",event,400);
     }
     // DELETE /api/v1/trip-groups/{group_id}/members/{member_id}
     if(method==="DELETE"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/members\/[^/]+$/)){
@@ -2552,7 +2603,7 @@ exports.handler=async function(event){
       const docs=await sql("SELECT id,filename,s3_key FROM trip_documents WHERE id=:id::uuid AND trip_group_id=:gid",[strParam("id",docId),strParam("gid",groupId)]);
       if(!docs.length)return err("Document not found",event,404);
       const doc=docs[0];
-      const downloadUrl=await getSignedUrl(s3,new GetObjectCommand({Bucket:DOCS_BUCKET,Key:doc.s3_key,ResponseContentDisposition:`attachment; filename="${doc.filename}"`}),{expiresIn:900});
+      const downloadUrl=await getSignedUrl(s3,new GetObjectCommand({Bucket:DOCS_BUCKET,Key:doc.s3_key,ResponseContentDisposition:`inline; filename="${doc.filename}"`}),{expiresIn:900});
       return ok({download_url:downloadUrl,expires_in:900},event);
     }
     // DELETE /api/v1/trip-groups/{group_id}/documents/{doc_id}
