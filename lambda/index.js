@@ -1143,6 +1143,29 @@ exports.handler=async function(event){
       }
       return err("action must be 'add', 'rename', or 'remove'",event,400);
     }
+    // PATCH /api/v1/trip-groups/{group_id}/custom-columns/values
+    if(method==="PATCH"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/custom-columns\/values$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const groupId=path.split('/').filter(Boolean)[3];
+      const ownerRows=await sql("SELECT owner_uuid FROM traveler_groups WHERE id=:id",[strParam("id",groupId)]);
+      if(!ownerRows.length)return err("Trip Group not found",event,404);
+      if(ownerRows[0].owner_uuid!==myUuid)return err("Only the organizer can update custom column values",event,403);
+      const{column_id,member_id,checked}=body||{};
+      if(!column_id||!member_id||typeof checked!=='boolean')return err("column_id, member_id, and checked (boolean) are required",event,400);
+      if(checked){
+        await sql(
+          "UPDATE traveler_groups SET custom_columns=jsonb_set(custom_columns,ARRAY['values',:col_id,:mem_id],'true'::jsonb,true),updated_at=NOW() WHERE id=:id",
+          [strParam("col_id",column_id),strParam("mem_id",member_id),strParam("id",groupId)]
+        );
+      }else{
+        await sql(
+          "UPDATE traveler_groups SET custom_columns=custom_columns#-ARRAY['values',:col_id,:mem_id],updated_at=NOW() WHERE id=:id",
+          [strParam("col_id",column_id),strParam("mem_id",member_id),strParam("id",groupId)]
+        );
+      }
+      return ok({success:true},event);
+    }
     // DELETE /api/v1/trip-groups/{group_id}/members/{member_id}
     if(method==="DELETE"&&path.match(/^\/api\/v1\/trip-groups\/[^/]+\/members\/[^/]+$/)){
       const token=await verifyToken(event);
