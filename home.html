@@ -503,7 +503,7 @@ function renderHealth(p){
     },
     {
       label:"Trusted traveler (KTN / Global Entry)",
-      detail:docs.find(function(d){return d.doc_type==="KTN"||d.doc_type==="GLOBAL_ENTRY";})?"Auto-applied to US bookings":"Not set — skip the security line",
+      detail:docs.find(function(d){return d.doc_type==="KTN"||d.doc_type==="GLOBAL_ENTRY";})?"Number recorded":"Not set — skip the security line",
       done:!!(docs.find(function(d){return d.doc_type==="KTN"||d.doc_type==="GLOBAL_ENTRY";})),
       link:"me.html",
       optional:true
