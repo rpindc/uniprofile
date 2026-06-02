@@ -556,7 +556,7 @@ async function privacyInit(){
       rows+='<div class="activity-row">'
         +'<div class="activity-time">'+_evtTime(e.created_at||e.event_at)+'</div>'
         +'<div class="activity-text">'+_evtLabel(e)+'</div>'
-        +(e.ip_address?'<div class="activity-meta">'+e.ip_address+'</div>':'<div class="activity-meta"></div>')
+        +(e.ip_address?'<div class="activity-meta">'+(e.metadata&&e.metadata.city?e.metadata.city+(e.metadata.region?', '+e.metadata.region:'')+' · ':'')+e.ip_address+'</div>':'<div class="activity-meta"></div>')
         +'</div>';
     });
     if(!rows)rows='<div class="activity-row"><div class="activity-time">—</div><div class="activity-text" style="color:var(--ink-mute);">No activity recorded yet. Actions like updating your profile, adding documents, or changing context will appear here.</div><div class="activity-meta"></div></div>';

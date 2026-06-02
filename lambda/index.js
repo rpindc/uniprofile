@@ -2259,8 +2259,10 @@ exports.handler=async function(event){
       const token=await verifyToken(event);
       const uuid=await getOrCreateTraveler(token.sub,token.email);
       const ip=((event.headers&&(event.headers['X-Forwarded-For']||event.headers['x-forwarded-for']))||'').split(',')[0].trim()||null;
+      var geoMeta={};
+      if(ip){try{var gr=await fetch('http://ip-api.com/json/'+ip+'?fields=city,regionName');if(gr.ok){var gj=await gr.json();if(gj.city)geoMeta={city:gj.city,region:gj.regionName||null};}}catch(_){}}
       await sql("INSERT INTO auth_security_events(traveler_uuid,event_type,ip_address,metadata) VALUES(:u,'login',:ip,:m::jsonb)",
-        [uuidParam("u",uuid),strParam("ip",ip),strParam("m",JSON.stringify({}))]);
+        [uuidParam("u",uuid),strParam("ip",ip),strParam("m",JSON.stringify(geoMeta))]);
       return ok({success:true},event);
     }
     // ── End Auth Security ─────────────────────────────────────────────────────
