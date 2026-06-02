@@ -107,6 +107,8 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .readiness-table td{padding:10px 14px;border-bottom:0.5px solid var(--rule);text-align:center;vertical-align:middle}
 .readiness-table td:first-child{text-align:left;padding-left:0}
 .readiness-table tbody tr:last-child td{border-bottom:none}
+.ws-item--clickable{cursor:pointer;border-radius:4px;transition:background 120ms ease}
+.ws-item--clickable:hover{background:var(--paper-warm)}
 .cc-box{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border:1.5px solid var(--rule-strong);border-radius:4px;font-size:11px;line-height:1}
 .cc-box-checked{border-color:var(--green);color:var(--green)}
 .doc-editing .cc-box-clickable{cursor:pointer}
@@ -176,7 +178,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .doc-section{padding:22px 0;border-top:0.5px solid var(--rule-strong)}
 .doc-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .doc-section-label{font-family:var(--sans);font-size:10px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-mute)}
-.doc-air-slot{padding:18px;background:var(--paper-cream);border-radius:6px;border:0.5px dashed var(--rule-strong);font-size:12px;color:var(--ink-faint);font-family:var(--sans);letter-spacing:0.04em;text-align:center}
+.doc-air-slot,.empty-slot{padding:18px;background:var(--paper-cream);border-radius:6px;border:0.5px dashed var(--rule-strong);font-size:12px;color:var(--ink-faint);font-family:var(--sans);letter-spacing:0.04em;text-align:center}
 .doc-audit-toggle{background:none;border:none;cursor:pointer;font-family:var(--sans);font-size:10px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-mute);padding:0;display:flex;align-items:center;gap:6px}
 .doc-audit-toggle:hover{color:var(--ink)}
 .doc-audit-body{margin-top:12px;display:none}
@@ -1359,7 +1361,7 @@ function renderDocumentsSection(){
     docs.forEach(function(d){
       var ext=d.filename?d.filename.split('.').pop().toLowerCase():'';
       var canDelete=(_uid===d.uploaded_by||_role==='organizer');
-      html+='<div class="ws-item" style="cursor:pointer" onclick="openDocument(\''+escHtml(d.id)+'\')">';
+      html+='<div class="ws-item ws-item--clickable" onclick="openDocument(\''+escHtml(d.id)+'\')">';
       html+='<div class="ws-item-main">';
       html+='<div style="font-size:13px;font-weight:500">'+escHtml(d.label||d.filename)+(ext?'<span style="font-family:var(--mono);font-size:11px;color:var(--ink-mute);margin-left:6px">.'+escHtml(ext)+'</span>':'')+'</div>';
       html+='<div class="caption" style="margin-top:2px">'+escHtml(_fmtBytes(d.file_size_bytes))+' · Added '+escHtml(formatLocal(d.uploaded_at))+' by '+escHtml(d.uploader_name)+'</div>';
@@ -1406,7 +1408,7 @@ function renderEmergencyContactsSection(){
   /* Your contacts subsection */
   html+='<div style="font-size:11px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:6px">Your contacts</div>';
   if(!mine.length){
-    html+='<div class="caption" style="color:var(--ink-faint);font-style:italic;padding:3px 0">None added yet.</div>';
+    html+='<div class="empty-slot">No contacts added yet.</div>';
   }else{
     html+='<div>';mine.forEach(function(c){html+=_renderContactRow(c);});html+='</div>';
   }
@@ -1428,7 +1430,7 @@ function renderInsuranceSection(){
   html+='<a class="btn btn-secondary btn-sm" href="/me.html#insurance" target="_blank" rel="noopener">Manage</a>';
   html+='</div>';
   if(!ins){
-    html+='<div class="caption" style="color:var(--ink-faint);font-style:italic;padding:6px 0">No travel insurance on file. Add it on your <a href="/me.html" style="color:var(--ink-mute)">profile</a> · some destinations require proof of coverage.</div>';
+    html+='<div class="empty-slot">No insurance added yet. <a href="/me.html#insurance" style="color:var(--ink-mute)">Add it on your profile →</a></div>';
   }else{
     var ephone=ins.emergency_phone;
     if(ephone){
@@ -1444,7 +1446,10 @@ function renderInsuranceSection(){
     var vf=ins.valid_from?ins.valid_from.slice(0,10):null;
     var vu=ins.valid_until?ins.valid_until.slice(0,10):null;
     if(vf||vu){
-      var dateStr=(vf&&vu)?(vf+' – '+vu):vf?('From '+vf):('Until '+vu);
+      var dateStr;
+      if(vf&&vu){var yf=vf.slice(0,4),yu=vu.slice(0,4);dateStr=yf===yu?(_fmtShort(vf)+' – '+_fmtShort(vu)+', '+yu):(_fmtShort(vf)+', '+yf+' – '+_fmtShort(vu)+', '+yu);}
+      else if(vf){dateStr='From '+_fmtShort(vf)+', '+vf.slice(0,4);}
+      else{dateStr='Until '+_fmtShort(vu)+', '+vu.slice(0,4);}
       rows.push({label:'Valid',val:dateStr});
     }
     if(ins.doc_number_last4)rows.push({label:'Policy',val:'···'+ins.doc_number_last4,maskedField:{masked:'···'+ins.doc_number_last4,docId:ins.id}});
