@@ -595,6 +595,24 @@ body.doc-editing #save-pdf-btn{display:none!important}
   </div>
 </div>
 
+<div class="modal-overlay" id="manage-cols-modal" onclick="if(event.target===this)closeManageColsModal()">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <h2 class="h3">Manage columns</h2>
+      <button class="modal-close" onclick="closeManageColsModal()">&#x2715;</button>
+    </div>
+    <div id="manage-cols-list"></div>
+    <div id="manage-cols-limit-note" class="caption" style="color:var(--ink-mute);margin-top:10px;display:none"></div>
+    <div style="margin-top:16px;border-top:0.5px solid var(--rule);padding-top:16px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <input class="form-input" id="manage-cols-input" maxlength="40" placeholder="New column name…" style="flex:1" onkeydown="if(event.key==='Enter')submitAddCol()"/>
+        <button class="btn btn-primary btn-sm" id="manage-cols-add-btn" onclick="submitAddCol()">Add</button>
+      </div>
+      <div id="manage-cols-error" style="font-size:12px;color:var(--red);margin-top:6px;display:none"></div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="/components/mobile-drawer.js"></script>
@@ -1097,7 +1115,10 @@ function renderGroupSection(){
 
     if(_readiness&&_readiness.members&&_readiness.members.length){
       html+='<div style="margin-top:24px">';
-      html+='<div style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:12px">Readiness — '+escHtml(_readiness.destination_name||_readiness.destination||'')+'</div>';
+      html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
+      html+='<div style="font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute)">Readiness — '+escHtml(_readiness.destination_name||_readiness.destination||'')+'</div>';
+      if(_role==='organizer'){html+='<button class="btn btn-secondary btn-sm edit-only" onclick="openManageColsModal()" style="font-size:10px">Manage columns</button>';}
+      html+='</div>';
       html+=renderReadinessMatrix(_readiness);
       html+='</div>';
     }
@@ -1884,6 +1905,75 @@ async function deleteRef(id){
   }catch(e){showToast("Failed to remove reference.");}
 }
 
+/* ── Manage columns modal ── */
+function openManageColsModal(){
+  if(!_group)return;
+  _renderManageColsList();
+  document.getElementById('manage-cols-input').value='';
+  document.getElementById('manage-cols-error').style.display='none';
+  document.getElementById('manage-cols-modal').classList.add('open');
+  document.getElementById('manage-cols-input').focus();
+}
+function closeManageColsModal(){document.getElementById('manage-cols-modal').classList.remove('open');}
+function _renderManageColsList(){
+  var cols=(_group&&_group.custom_columns&&_group.custom_columns.columns)||[];
+  var listEl=document.getElementById('manage-cols-list');
+  var limitEl=document.getElementById('manage-cols-limit-note');
+  var addBtn=document.getElementById('manage-cols-add-btn');
+  var atLimit=cols.length>=8;
+  addBtn.disabled=atLimit;
+  if(atLimit){limitEl.textContent='Maximum of 8 custom columns reached.';limitEl.style.display='';}
+  else{limitEl.style.display='none';}
+  if(!cols.length){listEl.innerHTML='<p class="caption" style="color:var(--ink-mute)">No custom columns yet.</p>';return;}
+  var h='';
+  cols.forEach(function(col){
+    h+='<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--rule)">';
+    h+='<input class="form-input" style="flex:1;font-size:13px" maxlength="40" value="'+escHtml(col.label)+'" data-col-id="'+escHtml(col.id)+'" onblur="submitRenameCol(this)" onkeydown="if(event.key===\'Enter\')this.blur()"/>';
+    h+='<button onclick="submitRemoveCol(\''+escHtml(col.id)+'\')" style="background:none;border:none;cursor:pointer;color:var(--ink-mute);font-size:16px;padding:0 4px;line-height:1" title="Remove">&#x2715;</button>';
+    h+='</div>';
+  });
+  listEl.innerHTML=h;
+}
+async function submitAddCol(){
+  var input=document.getElementById('manage-cols-input');
+  var errEl=document.getElementById('manage-cols-error');
+  var btn=document.getElementById('manage-cols-add-btn');
+  var label=(input.value||'').trim();
+  if(!label){errEl.textContent='Column name is required.';errEl.style.display='';return;}
+  errEl.style.display='';btn.disabled=true;btn.textContent='Adding…';
+  try{
+    var res=await _req('PATCH','/api/v1/trip-groups/'+_group.id+'/custom-columns',{action:'add',label:label});
+    _group.custom_columns=res.custom_columns;
+    input.value='';_renderManageColsList();renderGroupSection();
+    showToast(res.near_limit?'Column added — '+res.custom_columns.columns.length+' of 8 used.':'Column added.');
+  }catch(e){btn.disabled=false;errEl.textContent=e.message||'Failed to add column.';errEl.style.display='';}
+  finally{btn.textContent='Add';}
+}
+async function submitRenameCol(inputEl){
+  var colId=inputEl.getAttribute('data-col-id');
+  var cols=(_group&&_group.custom_columns&&_group.custom_columns.columns)||[];
+  var col=cols.find(function(c){return c.id===colId;});
+  var newLabel=(inputEl.value||'').trim();
+  if(!col||!newLabel||newLabel===col.label)return;
+  try{
+    var res=await _req('PATCH','/api/v1/trip-groups/'+_group.id+'/custom-columns',{action:'rename',column_id:colId,label:newLabel});
+    _group.custom_columns=res.custom_columns;
+    renderGroupSection();
+    showToast('Column renamed.');
+  }catch(e){inputEl.value=col.label;showToast(e.message||'Failed to rename column.');}
+}
+async function submitRemoveCol(colId){
+  var cols=(_group&&_group.custom_columns&&_group.custom_columns.columns)||[];
+  var col=cols.find(function(c){return c.id===colId;});
+  if(!col)return;
+  try{
+    var res=await _req('PATCH','/api/v1/trip-groups/'+_group.id+'/custom-columns',{action:'remove',column_id:colId});
+    _group.custom_columns=res.custom_columns;
+    _renderManageColsList();renderGroupSection();
+    showToast('Column removed.');
+  }catch(e){showToast(e.message||'Failed to remove column.');}
+}
+
 /* ── Audit log ── */
 function _auditSubject(action,payload,targetName){
   var p=payload&&typeof payload==='object'?payload:{};
@@ -1908,6 +1998,10 @@ function _auditSubject(action,payload,targetName){
       return p.display_name?' · '+escHtml(p.display_name):(targetName?' · '+escHtml(targetName):'');
     case 'consent_requested':
       return (p.scopes&&p.scopes.length)?' · '+escHtml(p.scopes.join(', ')):'';
+    case 'custom_column_added':case 'custom_column_removed':
+      return p.label?' · '+escHtml(p.label):'';
+    case 'custom_column_renamed':
+      return (p.old_label&&p.new_label)?' · '+escHtml(p.old_label)+' → '+escHtml(p.new_label):'';
     default:return '';
   }
 }
@@ -1980,6 +2074,9 @@ async function openAuditAndFetch(){
       organizer_attestation_added:'confirmed readiness on behalf of a member',
       organizer_attestation_removed:'removed readiness confirmation for a member',
       booking_ref_updated:'updated a booking reference',
+      custom_column_added:'added a custom column',
+      custom_column_renamed:'renamed a custom column',
+      custom_column_removed:'removed a custom column',
     };
     var h='<div>';
     rows.forEach(function(r){
