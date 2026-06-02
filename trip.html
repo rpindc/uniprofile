@@ -1938,6 +1938,8 @@ async function submitAddCol(){
   var input=document.getElementById('manage-cols-input');
   var errEl=document.getElementById('manage-cols-error');
   var btn=document.getElementById('manage-cols-add-btn');
+  var cols=(_group&&_group.custom_columns&&_group.custom_columns.columns)||[];
+  if(cols.length>=8){errEl.textContent='Maximum of 8 columns reached.';errEl.style.display='';return;}
   var label=(input.value||'').trim();
   if(!label){errEl.textContent='Column name is required.';errEl.style.display='';return;}
   errEl.style.display='';btn.disabled=true;btn.textContent='Adding…';
