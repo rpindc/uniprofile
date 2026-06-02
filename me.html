@@ -1604,7 +1604,7 @@ function _renderIdentityCards(p){
       var lbl=_esc(_docLabel(d.doc_type));
       if(d.doc_number_last4){return lbl+' <span class="rv-wrap" data-masked="···'+_esc(d.doc_number_last4)+'" data-doc-id="'+_esc(d.id)+'"><span class="rv-val">···'+_esc(d.doc_number_last4)+'</span><button class="rv-btn" onclick="_reveal(this)">show</button></span>';}
       return lbl;
-    }).join(", ")+". Applied automatically on U.S.-touching bookings.";
+    }).join(", ")+". Number recorded.";
     if(tbtn)tbtn.textContent="Edit";
   }else{
     _ht("trusted-pill",_pill("pill-neutral","Not set"));
