@@ -987,6 +987,12 @@ exports.handler=async function(event){
       ]);
       const row=groupRows[0];
       const members=filterMembersForCaller(typeof row.members==="string"?JSON.parse(row.members):(row.members||[]),myUuid,role==='organizer');
+      if(row.trip_id_str){
+        const dcRows=await sql("SELECT requester_uuid::text,status,result,admin_note,reviewed_at,destination_iata FROM doccheck_requests WHERE trip_id=:tid::uuid",[strParam("tid",row.trip_id_str)]);
+        const dcMap={};
+        dcRows.forEach(function(r){dcMap[r.requester_uuid]={status:r.status,result:r.result,admin_note:r.admin_note||null,reviewed_at:r.reviewed_at||null,destination_iata:r.destination_iata||null};});
+        members.forEach(function(m){m.doccheck=(m.linked_uuid&&dcMap[m.linked_uuid])||null;});
+      }
       const resp={id:row.id,name:row.name,destination:row.destination_iata||row.destination,destination_name:(RULES[row.destination_iata||'']||{}).name||row.destination,trip_id:row.trip_id_str,trip_name:row.trip_name,departure_date:row.departure_date,return_date:row.return_date,archived_at:row.archived_at,members,role,custom_columns:typeof row.custom_columns==='string'?JSON.parse(row.custom_columns):(row.custom_columns||{columns:[],values:{}})};
       if(role==='organizer')resp.consents=consents.map(function(c){try{return Object.assign({},c,{requested_scopes:typeof c.requested_scopes==='string'?JSON.parse(c.requested_scopes):(c.requested_scopes||[]),granted_scopes:typeof c.granted_scopes==='string'?JSON.parse(c.granted_scopes):(c.granted_scopes||null)});}catch(e){return c;}});
       if(role==='member')resp.organizer_name=[row.owner_first,row.owner_last].filter(Boolean).join(' ')||row.owner_email||null;
