@@ -227,7 +227,7 @@ body.doc-editing #save-pdf-btn{display:none!important}
   .doc-edit-bar,.doc-controls,
   .edit-only,.ws-item-actions,
   #save-pdf-btn,#pdf-hint,#ws-notes-editor,
-  .modal-overlay,#toast-msg{display:none!important}
+  .modal-overlay,#toast-msg,.dc-link-out{display:none!important}
   /* Full-width single-column layout */
   .shell{display:block}
   .main{max-width:100%;padding:0;margin:0}
@@ -1134,6 +1134,8 @@ function renderGroupSection(){
 
     html+='</div>'; /* end travelers section */
 
+    html+=renderDocCheckSection();
+
     html+=renderWorkspaceSection();
 
     /* Activity log — inline collapsed */
@@ -1175,6 +1177,73 @@ function renderMemberList(members){
     }
     html+='</div>';
   });
+  html+='</div>';
+  return html;
+}
+
+/* ── Entry Readiness · DocCheck section ── */
+function renderDocCheckSection(){
+  if(!_group)return'';
+  var tripId=_group.trip_id||null;
+  var html='<div class="doc-section">';
+  html+='<div class="doc-section-head">';
+  html+='<div class="doc-section-label">Entry Readiness · DocCheck</div>';
+  html+='</div>';
+
+  if(!tripId){
+    /* CASE B — no booking linked */
+    html+='<div class="empty-slot" style="text-align:left">';
+    html+='<div style="margin-bottom:12px">This journey isn\'t linked to a booking. Run an entry check to see visa &amp; passport readiness.</div>';
+    html+='<a href="/trips.html" class="btn btn-secondary btn-sm dc-link-out">Run a DocCheck</a>';
+    html+='</div>';
+  }else{
+    /* CASE A — has trip_id */
+    html+='<p class="caption" style="margin-bottom:14px;color:var(--ink-faint)">Verified against Timatic — the airline-industry entry-rules source.</p>';
+    var members=_group.members||[];
+    if(!members.length){
+      html+='<div class="caption" style="color:var(--ink-faint);font-style:italic;padding:6px 0">No members yet.</div>';
+    }else{
+      html+='<div>';
+      members.forEach(function(m){
+        var avClass='av-'+(m.avatar_color||'muted');
+        html+='<div style="display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:0.5px solid var(--rule)">';
+        html+='<div class="avatar avatar-sm '+avClass+'">'+escHtml((m.display_name||'?').slice(0,2).toUpperCase())+'</div>';
+        html+='<div style="flex:1;min-width:0">';
+        html+='<div style="font-size:13px;font-weight:500;line-height:1.3">'+escHtml(m.display_name||'Member')+'</div>';
+        var pillHtml='';var noteHtml='';var linkHtml='';
+        if(m.kind==='named_only'){
+          /* Reuse attestation already fetched by _readiness — same field path as confirmedCell in the matrix */
+          var rm=_readiness?(_readiness.members||[]).find(function(r){return r.member_id===m.id;}):null;
+          if(rm&&rm.attestation){
+            pillHtml='<span class="pill" style="font-size:10px;background:var(--attest-org-soft);color:var(--color-attest-org)">Organizer-confirmed</span>';
+          }else{
+            pillHtml='<span class="pill pill-neutral" style="font-size:10px">Not confirmed</span>';
+          }
+          noteHtml='<span class="caption" style="margin-left:6px;color:var(--ink-faint)">No account — can\'t run an automated check.</span>';
+        }else{
+          var dc=m.doccheck||null;
+          if(!dc){
+            pillHtml='<span class="pill pill-neutral" style="font-size:10px">No entry check yet</span>';
+          }else if(dc.status==='pending'||dc.status==='under_review'){
+            pillHtml='<span class="pill pill-neutral" style="font-size:10px">⏳ Pending review</span>';
+          }else if(dc.status==='reviewed'&&dc.result==='clear'){
+            pillHtml='<span class="pill pill-green" style="font-size:10px">✓ Entry rules met</span>';
+          }else if(dc.result==='conditional'){
+            pillHtml='<span class="pill pill-amber" style="font-size:10px">⚠ Conditional</span>';
+            if(dc.admin_note)noteHtml='<span class="caption" style="margin-left:6px">'+escHtml(dc.admin_note)+'</span>';
+          }else if(dc.result==='action_needed'){
+            pillHtml='<span class="pill pill-red" style="font-size:10px">✗ Action needed</span>';
+            if(dc.admin_note)noteHtml='<span class="caption" style="margin-left:6px">'+escHtml(dc.admin_note)+'</span>';
+          }
+          linkHtml='<div style="margin-top:3px"><a href="/trips.html?verify_trip='+encodeURIComponent(tripId)+'" class="caption dc-link-out" style="color:var(--ink-mute);text-decoration:underline">Run / view DocCheck →</a></div>';
+        }
+        html+='<div style="margin-top:5px;display:flex;flex-wrap:wrap;align-items:center;gap:4px">'+pillHtml+noteHtml+'</div>';
+        html+=linkHtml;
+        html+='</div></div>';
+      });
+      html+='</div>';
+    }
+  }
   html+='</div>';
   return html;
 }
