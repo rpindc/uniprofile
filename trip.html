@@ -168,6 +168,12 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 /* Direction B — travel document layout */
 .doc-header{padding-bottom:24px;border-bottom:2px solid var(--ink);margin-bottom:0}
 .doc-header-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.doc-date-box{flex-shrink:0;text-align:center;width:58px;padding:8px 0;border-radius:8px;background:var(--paper-cream)}
+.doc-date-box.past{background:transparent;border:0.5px solid var(--rule)}
+.doc-date-month{font-family:var(--sans);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
+.doc-date-day{font-family:var(--serif);font-size:24px;font-weight:300;color:var(--ink);line-height:1.1}
+.doc-date-day.past{color:var(--ink-mute)}
+.doc-date-year{font-family:var(--sans);font-size:9px;letter-spacing:0.08em;color:var(--ink-mute);font-weight:400;margin-top:2px}
 .doc-issuer-block{text-align:right;flex-shrink:0}
 .doc-issuer-mark{font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:0.2em;text-transform:uppercase;color:var(--ink-mute);line-height:1.9}
 .doc-issuer-mark strong{display:block;font-size:11px;letter-spacing:0.14em;color:var(--ink)}
@@ -1059,9 +1065,14 @@ function renderTripHeader(ctx){
   var dep=ctx.departure_date?new Date(ctx.departure_date+'T00:00:00'):null;
   var past=dep&&dep<today;
   var cd=_countdown(ctx.departure_date,ctx.return_date);
+  var depMonth=dep?dep.toLocaleDateString("en-US",{month:"short"}):"—";
+  var depDay=dep?dep.getDate():"?";
+  var depYear=dep?dep.getFullYear():"";
+  var dateBox='<div class="doc-date-box'+(past?' past':'')+'"><div class="doc-date-month">'+depMonth+'</div><div class="doc-date-day'+(past?' past':'')+'">'+depDay+'</div>'+(depYear?'<div class="doc-date-year">'+depYear+'</div>':'')+'</div>';
   var html='<div class="doc-header">';
   html+='<div class="doc-header-top">';
-  html+='<div style="min-width:0"><div class="eyebrow" style="margin-bottom:10px">'+escHtml(past?'Past trip':'Upcoming trip')+'</div>';
+  html+=dateBox;
+  html+='<div style="min-width:0;flex:1"><div class="eyebrow" style="margin-bottom:10px">'+escHtml(past?'Past trip':'Upcoming trip')+'</div>';
   html+='<h1 class="h1">'+escHtml(ctx.title)+'</h1></div>';
   html+='<div class="doc-issuer-block"><div class="doc-issuer-mark"><strong>UniProfile</strong>Journey Record</div>';
   if(ctx.trip_locator)html+='<div class="doc-locator">'+escHtml(ctx.trip_locator.toUpperCase())+'</div>';
