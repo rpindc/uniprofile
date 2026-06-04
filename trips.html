@@ -109,7 +109,8 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .trip-title{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--ink);letter-spacing:-0.005em;margin-bottom:2px}
 .trip-title em{font-style:italic;font-weight:300}
 .trip-route{font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-bottom:10px;letter-spacing:0.04em}
-.trip-meta-line{border-top:0.5px solid var(--rule);margin-top:14px;padding-top:12px;font-size:12px;color:var(--ink-mute);line-height:1.5}
+.trip-meta-line{border-top:0.5px solid var(--rule);margin-top:14px;padding-top:12px;font-size:12px;color:var(--ink-mute);line-height:1.5;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.trip-meta-added{font-size:11px;color:var(--ink-faint);white-space:nowrap;flex-shrink:0}
 .trip-actions{flex-shrink:0;display:flex;align-items:flex-start;gap:4px;padding-top:2px}
 .trip-ctx-wrap{position:relative;display:inline}
 .trip-ctx-btn{font-family:var(--sans);font-size:12px;color:var(--ink-mute);background:none;border:none;padding:0;cursor:pointer;line-height:inherit;letter-spacing:inherit}
@@ -1286,8 +1287,8 @@ function _tripCard(t){
   var nights=_nightCount(t.departure_date,t.return_date);
   if(nights>0) metaParts.push(nights+" night"+(nights===1?"":"s"));
   if(t.trip_locator) metaParts.push("PNR "+t.trip_locator.toUpperCase());
-  if(t.source_platform==='email'&&t.created_at) metaParts.push('Added '+new Date(t.created_at.slice(0,10)+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}));
-  var details='<p class="trip-meta-line">'+metaParts.join(" · ")+(daysEl?" "+daysEl:"")+"</p>";
+  var addedHtml=(t.source_platform==='email'&&t.created_at)?'<span class="trip-meta-added">Added '+new Date(t.created_at.slice(0,10)+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+'</span>':'';
+  var details='<p class="trip-meta-line"><span>'+metaParts.join(" · ")+(daysEl?" "+daysEl:"")+"</span>"+addedHtml+"</p>";
   // Pending confirm/reject actions
   var pendingActions=isPending
     ?'<div class="pending-actions">'
