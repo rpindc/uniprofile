@@ -1130,8 +1130,8 @@ function applyFilter(filter,btn){
 }
 function _filteredTrips(){
   var today=new Date();today.setHours(0,0,0,0);
-  if(_curFilter==="upcoming") return _allTrips.filter(function(t){return t.departure_date&&new Date(t.departure_date)>=today;});
-  if(_curFilter==="past") return _allTrips.filter(function(t){return !t.departure_date||new Date(t.departure_date)<today;});
+  if(_curFilter==="upcoming") return _allTrips.filter(function(t){return t.departure_date&&_parseDate(t.departure_date)>=today;});
+  if(_curFilter==="past") return _allTrips.filter(function(t){return !t.departure_date||_parseDate(t.departure_date)<today;});
   if(_curFilter==="PERSONAL"||_curFilter==="CORPORATE"||_curFilter==="BLEISURE") return _allTrips.filter(function(t){return t.trip_context===_curFilter;});
   return _allTrips;
 }
@@ -1231,13 +1231,14 @@ function _ctxPill(c){
   var s=c==="CORPORATE"?"background:var(--green-soft);color:var(--green)":c==="BLEISURE"?"background:var(--amber-soft);color:var(--amber)":"background:#e8f0fe;color:#1a56db";
   return '<span style="display:inline-block;font-size:11px;padding:2px 9px;border-radius:100px;font-weight:500;'+s+'">'+_ctxLabel(c)+'</span>';
 }
+function _parseDate(s){return s?new Date(s.slice(0,10)+'T12:00:00'):null;}
 function _fmtRangeProse(dep,ret){
   if(!dep)return"—";
-  var d=new Date(dep);
+  var d=_parseDate(dep);
   var opts={month:"short",day:"numeric"};
   var yr="'"+String(d.getFullYear()).slice(2);
   var s=d.toLocaleDateString("en-US",opts);
-  if(ret) s+=" – "+new Date(ret).toLocaleDateString("en-US",opts);
+  if(ret) s+=" – "+_parseDate(ret).toLocaleDateString("en-US",opts);
   s+=", "+yr;
   return s;
 }
@@ -1246,7 +1247,7 @@ function _nightCount(dep,ret){
   return Math.max(0,Math.round((new Date(ret)-new Date(dep))/86400000));
 }
 function _tripCard(t){
-  var dep=t.departure_date?new Date(t.departure_date):null;
+  var dep=t.departure_date?_parseDate(t.departure_date):null;
   var today=new Date();today.setHours(0,0,0,0);
   var past=dep&&dep<today;
   var month=dep?dep.toLocaleDateString("en-US",{month:"short"}):"—";
@@ -1493,7 +1494,7 @@ function exportCsv(){
 /* ── Lede text ── */
 function updateLede(){
   var today=new Date();today.setHours(0,0,0,0);
-  var up=_allTrips.filter(function(t){return t.departure_date&&new Date(t.departure_date)>=today;});
+  var up=_allTrips.filter(function(t){return t.departure_date&&_parseDate(t.departure_date)>=today;});
   var total=_allTrips.length;
   _st("trips-lede",total+" trip"+(total===1?"":"s")+" in your vault"+(up.length?" — "+up.length+" coming up":"")+".");
   var miThis=_distMiles(_allTrips,true);
@@ -1545,7 +1546,7 @@ async function verifyTrip(tripId,action,evt){
       var t=_allTrips.find(function(x){return x.id===tripId;});
       if(t){
         var today=new Date();today.setHours(0,0,0,0);
-        t.status=t.departure_date&&new Date(t.departure_date)>=today?'upcoming':'completed';
+        t.status=t.departure_date&&_parseDate(t.departure_date)>=today?'upcoming':'completed';
       }
       renderTrips(_allTrips);
       updateLede();
@@ -1587,7 +1588,7 @@ async function tripsInit(){
           showToast('Booking removed.');
         }else{
           var vt=_allTrips.find(function(t){return t.id===vtId;});
-          if(vt){var vd=new Date();vd.setHours(0,0,0,0);vt.status=vt.departure_date&&new Date(vt.departure_date)>=vd?'upcoming':'completed';}
+          if(vt){var vd=new Date();vd.setHours(0,0,0,0);vt.status=vt.departure_date&&_parseDate(vt.departure_date)>=vd?'upcoming':'completed';}
           showToast('Trip added to vault.');
         }
         renderTrips(_allTrips);
