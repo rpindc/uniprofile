@@ -1283,6 +1283,7 @@ function _tripCard(t){
   var nights=_nightCount(t.departure_date,t.return_date);
   if(nights>0) metaParts.push(nights+" night"+(nights===1?"":"s"));
   if(t.trip_locator) metaParts.push("PNR "+t.trip_locator.toUpperCase());
+  if(t.source_platform==='email'&&t.created_at) metaParts.push('Added '+_dcDateStr(t.created_at));
   var details='<p class="trip-meta-line">'+metaParts.join(" · ")+(daysEl?" "+daysEl:"")+"</p>";
   // Pending confirm/reject actions
   var pendingActions=isPending
