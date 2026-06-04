@@ -104,6 +104,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .trip-date{flex-shrink:0;text-align:center;width:58px;padding:8px 0;border-radius:8px;background:var(--paper-cream)}
 .trip-date-month{font-family:var(--sans);font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);font-weight:500}
 .trip-date-day{font-family:var(--serif);font-size:24px;font-weight:300;color:var(--ink);line-height:1.1}
+.trip-date-year{font-family:var(--sans);font-size:9px;letter-spacing:0.08em;color:var(--ink-mute);font-weight:400;margin-top:2px}
 .trip-main{flex:1;min-width:0}
 .trip-title{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--ink);letter-spacing:-0.005em;margin-bottom:2px}
 .trip-title em{font-style:italic;font-weight:300}
@@ -1252,6 +1253,7 @@ function _tripCard(t){
   var past=dep&&dep<today;
   var month=dep?dep.toLocaleDateString("en-US",{month:"short"}):"—";
   var day=dep?dep.getDate():"?";
+  var year=dep?dep.getFullYear():"";
   var name=_tripName(t);
   var route=(t.origin_iata&&t.destination_iata&&t.origin_iata.toUpperCase()!==t.destination_iata.toUpperCase())?t.origin_iata.toUpperCase()+" → "+t.destination_iata.toUpperCase():"";
   var daysEl="";
@@ -1299,7 +1301,7 @@ function _tripCard(t){
   var sparkline=_buildSparkline(t.segments,t.id,past);
   return '<div class="trip-card'+(past?" past":"")+(isPending?" pending":"")+'" id="tc-'+t.id+'">'
     +'<div class="trip-card-top">'
-    +'<div class="trip-date"><div class="trip-date-month">'+month+'</div><div class="trip-date-day">'+day+'</div></div>'
+    +'<div class="trip-date"><div class="trip-date-month">'+month+'</div><div class="trip-date-day">'+day+'</div>'+(year?'<div class="trip-date-year">'+year+'</div>':'')+'</div>'
     +'<div class="trip-main">'
     +'<a href="/trip.html?id='+t.id+'" class="trip-title" style="text-decoration:none;color:inherit">'+name+'</a>'
     +(route?'<div class="trip-route">'+route+'</div>':"")
