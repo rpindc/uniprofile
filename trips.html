@@ -210,6 +210,12 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .empty-cta:hover{color:var(--ink);border-color:var(--ink)}
 /* Km stat */
 .trips-km-stat{font-family:var(--serif);font-size:15px;font-style:italic;font-weight:300;color:var(--ink-soft);margin-top:4px}
+/* Year strip */
+.year-strip{display:flex;flex-wrap:wrap;gap:0;padding:14px 20px;background:var(--paper-cream);border-radius:10px;border:0.5px solid var(--rule);margin-bottom:22px}
+.year-strip-eyebrow{width:100%;font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:10px}
+.year-strip-stat{padding-right:32px}
+.year-strip-num{font-family:var(--serif);font-size:26px;font-weight:300;color:var(--ink);line-height:1;margin-bottom:3px}
+.year-strip-label{font-family:var(--sans);font-size:9px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute)}
 /* Pills row */
 .trip-pills-row{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;margin-top:8px}
 /* Context pill button */
@@ -358,6 +364,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       <button class="filter-export" onclick="exportCsv()">⬇ Export CSV</button>
     </div>
 
+    <div id="year-strip" style="display:none"></div>
     <div class="trips-count-label" id="trips-count" style="display:none"></div>
     <div id="trips-list"></div>
     <div id="trips-calendar" style="display:none"></div>
@@ -1563,12 +1570,37 @@ function exportCsv(){
   showToast("Exported "+rows.length+" trips.");
 }
 
+/* ── Year strip ── */
+function updateYearStrip(){
+  var year=new Date().getFullYear();
+  var yt=_allTrips.filter(function(t){return t.departure_date&&t.departure_date.slice(0,4)===String(year);});
+  var el=document.getElementById('year-strip');
+  if(!el)return;
+  if(!yt.length){el.style.display='none';return;}
+  var nights=yt.reduce(function(s,t){return s+_nightCount(t.departure_date,t.return_date);},0);
+  var ctrySet={};
+  yt.forEach(function(t){var c=t.destination_iata?_IATA_COUNTRY[t.destination_iata.toUpperCase()]:null;if(c)ctrySet[c]=1;});
+  var ctryCount=Object.keys(ctrySet).length;
+  var mi=_distMiles(_allTrips,true);
+  var stats=[
+    {num:yt.length,label:yt.length===1?'trip':'trips'},
+    {num:nights,label:nights===1?'night away':'nights away'}
+  ];
+  if(ctryCount>0)stats.push({num:ctryCount,label:ctryCount===1?'country':'countries'});
+  if(mi>0)stats.push({num:mi.toLocaleString(),label:'mi flown'});
+  var html='<div class="year-strip-eyebrow">'+year+'</div>'
+    +stats.map(function(s){return '<div class="year-strip-stat"><div class="year-strip-num">'+s.num+'</div><div class="year-strip-label">'+s.label+'</div></div>';}).join('');
+  el.innerHTML='<div class="year-strip">'+html+'</div>';
+  el.style.display='';
+}
+
 /* ── Lede text ── */
 function updateLede(){
   var today=new Date();today.setHours(0,0,0,0);
   var up=_allTrips.filter(function(t){return t.departure_date&&_parseDate(t.departure_date)>=today;});
   var total=_allTrips.length;
   _st("trips-lede",total+" trip"+(total===1?"":"s")+" in your vault"+(up.length?" — "+up.length+" coming up":"")+".");
+  updateYearStrip();
   var miThis=_distMiles(_allTrips,true);
   var miLife=_distMiles(_allTrips,false);
   var kmEl=document.getElementById('trips-km');
