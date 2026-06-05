@@ -201,6 +201,12 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .map-legend-dot{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0}
 /* Count label */
 .trips-count-label{font-size:11px;font-weight:500;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:14px}
+/* Empty state */
+.trips-empty-state{padding:48px 0 40px;text-align:center}
+.trips-empty-head{font-family:var(--serif);font-size:20px;font-weight:300;color:var(--ink-soft);margin:0 0 8px}
+.trips-empty-sub{font-size:13px;color:var(--ink-mute);margin:0 0 20px}
+.empty-cta{font-family:var(--sans);font-size:12px;font-weight:500;padding:7px 18px;border-radius:100px;border:0.5px solid var(--rule-strong);background:transparent;color:var(--ink-soft);cursor:pointer;transition:all 120ms ease}
+.empty-cta:hover{color:var(--ink);border-color:var(--ink)}
 /* Km stat */
 .trips-km-stat{font-family:var(--serif);font-size:15px;font-style:italic;font-weight:300;color:var(--ink-soft);margin-top:4px}
 /* Pills row */
@@ -1357,12 +1363,30 @@ function renderTrips(trips){
     }else{countEl.style.display='none';}
   }
   if(!filtered.length){
-    var msg=_curSearch?'No trips match "'+_curSearch+'".'
-      :_curFilter==="upcoming"?"No upcoming trips."
-      :_curFilter==="past"?"No past trips recorded."
-      :"No trips match this filter.";
-    if(!trips.length) msg="No trips yet. Add your first one.";
-    _ht("trips-list","<div style='padding:32px 0;color:var(--ink-mute);font-size:13px;'>"+msg+"</div>");
+    var emptyHead,emptySub,emptyCta;
+    if(!trips.length){
+      emptyHead="Your vault is empty";
+      emptySub="Trips you add or forward by email will appear here.";
+      emptyCta='';
+    } else if(_curSearch){
+      emptyHead='No results for “'+_curSearch+'”';
+      emptySub="Try a destination, IATA code, or PNR.";
+      emptyCta='<button class="empty-cta" onclick="document.getElementById(\'trip-search\').value=\'\';applySearch(\'\')">Clear search</button>';
+    } else if(_curFilter==="upcoming"){
+      emptyHead="No upcoming trips";
+      emptySub="Nothing on the horizon yet.";
+      emptyCta='<button class="empty-cta" onclick="applyFilter(\'past\',document.getElementById(\'filter-past\'))">View past trips</button>';
+    } else if(_curFilter==="past"){
+      emptyHead="No past trips recorded";
+      emptySub="Completed trips will show up here.";
+      emptyCta='<button class="empty-cta" onclick="applyFilter(\'all\',document.getElementById(\'filter-all\'))">View all trips</button>';
+    } else {
+      var ctxLabel=_curFilter==="CORPORATE"?"business":_curFilter==="BLEISURE"?"bleisure":"personal";
+      emptyHead="No "+ctxLabel+" trips";
+      emptySub="Change a trip’s context to "+ctxLabel+" to see it here.";
+      emptyCta='<button class="empty-cta" onclick="applyFilter(\'all\',document.getElementById(\'filter-all\'))">View all trips</button>';
+    }
+    _ht("trips-list",'<div class="trips-empty-state"><p class="trips-empty-head">'+emptyHead+'</p><p class="trips-empty-sub">'+emptySub+'</p>'+emptyCta+'</div>');
     return;
   }
   var today=new Date();today.setHours(0,0,0,0);
