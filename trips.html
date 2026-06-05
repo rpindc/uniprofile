@@ -139,6 +139,8 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .past .trip-title{color:var(--ink-soft)}
 /* Segment block */
 .seg-block{border-top:0.5px solid var(--rule);margin-top:14px;padding-top:14px;display:flex;flex-direction:column;gap:12px}
+.trip-segs-toggle{display:inline-flex;align-items:center;gap:5px;font-family:var(--sans);font-size:11px;color:var(--ink-mute);cursor:pointer;margin-top:8px;user-select:none;background:none;border:none;padding:0;line-height:1.4}
+.trip-segs-toggle:hover{color:var(--ink)}
 .seg-group{display:flex;flex-direction:column;gap:6px}
 .seg-return-label{font-family:var(--serif);font-style:italic;font-weight:300;font-size:13px;color:var(--ink-mute);margin-bottom:2px}
 .seg-date-header{font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.13em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:4px}
@@ -1225,7 +1227,7 @@ function _fmtLabel(raw){
     return tok.charAt(0).toUpperCase()+tok.slice(1).toLowerCase();
   });
 }
-function _segmentsBlock(segments){
+function _segmentsBlock(segments,tripId){
   if(!segments||!segments.length)return'';
   var segs=segments.slice().sort(function(a,b){return(a.segment_order||0)-(b.segment_order||0);});
   var groups=[];
@@ -1246,7 +1248,8 @@ function _segmentsBlock(segments){
     }
     if(maxGap>=2)retIdx=maxI;
   }
-  var html='<div class="seg-block">';
+  var blockId=tripId?'id="sb-'+tripId+'" ':'';
+  var html='<div class="seg-block" '+blockId+'style="display:none">';
   groups.forEach(function(g,gi){
     html+='<div class="seg-group">';
     if(gi===retIdx)html+='<div class="seg-return-label"><em>Returning</em></div>';
@@ -1282,6 +1285,17 @@ function _segmentsBlock(segments){
   });
   return html+'</div>';
 }
+/* ── Segment expand toggle ── */
+function toggleSegs(id){
+  var block=document.getElementById('sb-'+id);
+  var btn=document.getElementById('st-'+id);
+  if(!block||!btn)return;
+  var open=block.style.display!=='none';
+  block.style.display=open?'none':'';
+  var label=btn.getAttribute('data-label');
+  btn.innerHTML=(open?'▶ ':'▼ ')+label;
+}
+
 /* ── Trip card render ── */
 function _ctxLabel(c){return c==="CORPORATE"?"Business":c==="BLEISURE"?"Bleisure":"Personal";}
 function _ctxPill(c){
@@ -1355,6 +1369,15 @@ function _tripCard(t){
       +'<button class="btn btn-secondary btn-sm" onclick="verifyTrip(\''+t.id+'\',\'reject\',event)">Not mine</button>'
       +'</div></div>'
     :'';
+  // Segments toggle
+  var _segs=t.segments||[];
+  var _fCount=_segs.filter(function(s){return s.segment_type==='FLIGHT';}).length;
+  var _hCount=_segs.filter(function(s){return s.segment_type==='HOTEL';}).length;
+  var _segParts=[];
+  if(_fCount>0)_segParts.push(_fCount+' flight'+(_fCount===1?' leg':' legs'));
+  if(_hCount>0)_segParts.push(_hCount+' hotel'+(_hCount===1?'':'s'));
+  var _segLabel=_segParts.join(' · ');
+  var segsToggle=_segLabel?'<button class="trip-segs-toggle" id="st-'+t.id+'" data-label="'+_segLabel+'" onclick="toggleSegs(\''+t.id+'\')">&#9654; '+_segLabel+'</button>':'';
   // Sparkline
   var sparkline=_buildSparkline(t.segments,t.id,past);
   return '<div class="trip-card'+(past?" past":"")+(isPending?" pending":"")+'" id="tc-'+t.id+'">'
@@ -1378,8 +1401,9 @@ function _tripCard(t){
     +'</div>'
     +sparkline
     +details
+    +segsToggle
     +pendingActions
-    +_segmentsBlock(t.segments)
+    +_segmentsBlock(t.segments,t.id)
     +'</div>';
 }
 function renderTrips(trips){
