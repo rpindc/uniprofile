@@ -95,8 +95,11 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .filter-btn{font-family:var(--sans);font-size:12px;font-weight:500;padding:6px 14px;border-radius:100px;cursor:pointer;border:0.5px solid var(--rule-strong);background:transparent;color:var(--ink-soft);transition:all 120ms ease;white-space:nowrap}
 .filter-btn:hover{color:var(--ink);border-color:var(--rule-strong)}
 .filter-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
-.filter-export{margin-left:auto;font-family:var(--sans);font-size:12px;font-weight:500;padding:6px 14px;border-radius:100px;cursor:pointer;border:0.5px solid var(--rule-strong);background:transparent;color:var(--ink-soft);transition:all 120ms ease;white-space:nowrap}
+.filter-export{font-family:var(--sans);font-size:12px;font-weight:500;padding:6px 14px;border-radius:100px;cursor:pointer;border:0.5px solid var(--rule-strong);background:transparent;color:var(--ink-soft);transition:all 120ms ease;white-space:nowrap}
 .filter-export:hover{color:var(--ink)}
+.filter-search{margin-left:auto;font-family:var(--sans);font-size:12px;padding:5px 14px;border-radius:100px;border:0.5px solid var(--rule-strong);background:transparent;color:var(--ink);outline:none;width:180px;transition:border-color 120ms ease}
+.filter-search:focus{border-color:var(--ink)}
+.filter-search::placeholder{color:var(--ink-faint)}
 /* Trip card */
 .trip-card{background:#fff;border:0.5px solid var(--rule);border-radius:12px;padding:22px 24px;margin-bottom:12px;transition:border-color 120ms ease}
 .trip-card:hover{border-color:var(--rule-strong)}
@@ -344,6 +347,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       <button class="filter-btn" id="filter-PERSONAL" onclick="applyFilter('PERSONAL',this)">Personal</button>
       <button class="filter-btn" id="filter-CORPORATE" onclick="applyFilter('CORPORATE',this)">Business</button>
       <button class="filter-btn" id="filter-BLEISURE" onclick="applyFilter('BLEISURE',this)">Bleisure</button>
+      <input class="filter-search" id="trip-search" type="search" placeholder="Search trips…" oninput="applySearch(this.value)">
       <button class="filter-export" onclick="exportCsv()">⬇ Export CSV</button>
     </div>
 
@@ -438,6 +442,7 @@ var _tok=null,_uid=null;
 var _allTrips=[];
 var _journeyMap={};
 var _curFilter="all";
+var _curSearch="";
 
 function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent("https://www.uniprofile.net/home.html");}
 function _ph(){var p=new URLSearchParams(window.location.hash.slice(1));return p.get("id_token")||p.get("access_token");}
@@ -1130,12 +1135,26 @@ function applyFilter(filter,btn){
   if(_curView==='map')renderMapView(_filteredTrips());
   else renderTrips(_allTrips);
 }
+function applySearch(q){
+  _curSearch=q.trim().toLowerCase();
+  renderTrips(_allTrips);
+}
 function _filteredTrips(){
   var today=new Date();today.setHours(0,0,0,0);
-  if(_curFilter==="upcoming") return _allTrips.filter(function(t){return t.departure_date&&_parseDate(t.departure_date)>=today;});
-  if(_curFilter==="past") return _allTrips.filter(function(t){return !t.departure_date||_parseDate(t.departure_date)<today;});
-  if(_curFilter==="PERSONAL"||_curFilter==="CORPORATE"||_curFilter==="BLEISURE") return _allTrips.filter(function(t){return t.trip_context===_curFilter;});
-  return _allTrips;
+  var base=_allTrips;
+  if(_curFilter==="upcoming") base=base.filter(function(t){return t.departure_date&&_parseDate(t.departure_date)>=today;});
+  else if(_curFilter==="past") base=base.filter(function(t){return !t.departure_date||_parseDate(t.departure_date)<today;});
+  else if(_curFilter==="PERSONAL"||_curFilter==="CORPORATE"||_curFilter==="BLEISURE") base=base.filter(function(t){return t.trip_context===_curFilter;});
+  if(_curSearch){
+    var q=_curSearch;
+    base=base.filter(function(t){
+      return (t.trip_name&&t.trip_name.toLowerCase().indexOf(q)>-1)
+        ||(t.destination_iata&&t.destination_iata.toLowerCase().indexOf(q)>-1)
+        ||(t.origin_iata&&t.origin_iata.toLowerCase().indexOf(q)>-1)
+        ||(t.trip_locator&&t.trip_locator.toLowerCase().indexOf(q)>-1);
+    });
+  }
+  return base;
 }
 
 /* ── Segment helpers ── */
@@ -1338,7 +1357,8 @@ function renderTrips(trips){
     }else{countEl.style.display='none';}
   }
   if(!filtered.length){
-    var msg=_curFilter==="upcoming"?"No upcoming trips."
+    var msg=_curSearch?'No trips match "'+_curSearch+'".'
+      :_curFilter==="upcoming"?"No upcoming trips."
       :_curFilter==="past"?"No past trips recorded."
       :"No trips match this filter.";
     if(!trips.length) msg="No trips yet. Add your first one.";
