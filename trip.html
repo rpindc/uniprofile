@@ -183,6 +183,14 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .doc-meta-label{font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:3px}
 .doc-meta-value{font-size:13px;color:var(--ink);line-height:1.3}
 .doc-countdown-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:14px}
+/* Intelligence layer */
+.intel-alert-strip{background:var(--red-soft);border-radius:8px;padding:10px 14px;margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.intel-alert-strip-label{font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--red);width:100%;margin-bottom:2px}
+.intel-umbrella-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.intel-chip{font-size:11px;cursor:default;position:relative}
+.intel-chip-urgent{font-weight:600;outline:1.5px solid var(--red)}
+.intel-conn-row{display:flex;align-items:baseline;gap:10px;padding:6px 0;border-top:0.5px dashed var(--rule)}
+.intel-fusion-line{font-family:var(--serif);font-size:13px;font-style:italic;font-weight:300;color:var(--ink-soft);line-height:1.4}
 .doc-controls{display:flex;gap:6px;flex-wrap:wrap;padding:12px 0 14px;border-bottom:0.5px solid var(--rule)}
 .doc-section{padding:22px 0;border-top:0.5px solid var(--rule-strong)}
 .doc-section--primary{border-top:1.5px solid var(--ink)}
@@ -256,6 +264,11 @@ body.doc-editing #save-pdf-btn{display:none!important}
   .card-warm,.readiness-card{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   /* Countdown hidden (irrelevant in static PDF) */
   .doc-countdown-row{display:none}
+  /* Intelligence: chips print with text label + border, no color-only meaning */
+  .intel-alert-strip{background:none;border:1px solid #999;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .intel-umbrella-row{margin-top:8px}
+  .intel-chip{border:0.5px solid #999!important;background:none!important;color:#000!important}
+  .intel-fusion-line{font-style:italic;color:#000}
   /* Phase 2 slots: appear when populated */
   #pdf-admissibility:not(:empty),#pdf-provenance:not(:empty){display:block!important;font-size:10pt;color:#444;padding:10pt 0 0;border-top:0.5pt solid #bbb;margin-top:10pt}
   /* Running footer stamp on every page */
@@ -630,13 +643,14 @@ body.doc-editing #save-pdf-btn{display:none!important}
 
 <div class="toast" id="toast"></div>
 
+<script src="/intelligence.js"></script>
 <script src="/components/mobile-drawer.js"></script>
 <script>
 var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
 var _tok=null,_uid=null,_myInitials='';
-var _trip=null,_group=null,_readiness=null,_familyProfile=null,_workspace=null,_itinerary=null,_documents=null,_contacts=null,_segments=null,_myInsurance=null;
+var _trip=null,_group=null,_readiness=null,_familyProfile=null,_workspace=null,_itinerary=null,_documents=null,_contacts=null,_segments=null,_myInsurance=null,_intelligence=null;
 var _IATA_CITY={
   'ATL':'Atlanta','LAX':'Los Angeles','ORD':'Chicago','DFW':'Dallas','DEN':'Denver',
   'JFK':'New York','SFO':'San Francisco','SEA':'Seattle','LAS':'Las Vegas','MCO':'Orlando',
@@ -810,13 +824,34 @@ function renderAirSectors(segments,tripCtx){
     h+='</div>';
     return h;
   }
+  function _connChipAfter(seg){
+    if(!_intelligence||!_intelligence.components) return '';
+    var fromIata=(seg.destination_iata||'').toUpperCase();
+    var comp=_intelligence.components.find(function(c){
+      return c.type==='FLIGHT'&&(c.fromIata||'').toUpperCase()===fromIata;
+    });
+    if(!comp||!comp.band||!comp.band.length) return '';
+    var out='<div class="intel-conn-row">';
+    comp.band.forEach(function(sig){out+=_intelChip(sig);});
+    if(comp.fusionLine) out+='<span class="intel-fusion-line">'+escHtml(comp.fusionLine)+'</span>';
+    out+='</div>';
+    return out;
+  }
+  function _renderGroup(segs){
+    var h='';
+    for(var i=0;i<segs.length;i++){
+      h+=_flightRow(segs[i]);
+      if(i<segs.length-1) h+=_connChipAfter(segs[i]);
+    }
+    return h;
+  }
   if(showLabels){
     html+='<div class="doc-flight-dir">Outbound</div>';
-    outbound.forEach(function(s){html+=_flightRow(s);});
+    html+=_renderGroup(outbound);
     html+='<div class="doc-flight-dir" style="margin-top:18px">Return</div>';
-    ret.forEach(function(s){html+=_flightRow(s);});
+    html+=_renderGroup(ret);
   }else{
-    segments.forEach(function(s){html+=_flightRow(s);});
+    html+=_renderGroup(segments);
   }
   html+='</div>';
   return html;
@@ -1060,6 +1095,30 @@ function renderLifecyclePill(){
 
 /* renderTripHeader(ctx) — shared by organizer and member views.
    ctx: { title, departure_date, return_date, trip_locator, metaFields:[{label,value}], showDocCheck } */
+/* ── Intelligence render helpers ── */
+function _intelSevClass(sev){
+  return sev==='ok'?'pill-ready':sev==='soon'?'pill-amber':'pill-red';
+}
+function _intelChip(sig){
+  var cls='pill '+_intelSevClass(sig.severity)+' intel-chip'+(sig.severity==='urgent'?' intel-chip-urgent':'');
+  return '<span class="'+cls+'" title="'+escHtml(sig.detail)+'">'+escHtml(sig.label)+'</span>';
+}
+function renderIntelUmbrella(){
+  var el=document.getElementById('intel-umbrella');
+  if(!el)return;
+  var intel=_intelligence;
+  if(!intel||!intel.umbrella||!intel.umbrella.length){el.innerHTML='';return;}
+  el.innerHTML='<div class="intel-umbrella-row">'+intel.umbrella.map(_intelChip).join('')+'</div>';
+}
+function renderIntelAlerts(){
+  var el=document.getElementById('intel-alerts');
+  if(!el)return;
+  var intel=_intelligence;
+  if(!intel||!intel.alerts||!intel.alerts.length){el.innerHTML='';return;}
+  var chips=intel.alerts.map(_intelChip).join('');
+  el.innerHTML='<div class="intel-alert-strip"><div class="intel-alert-strip-label">Heads up</div>'+chips+'</div>';
+}
+
 function renderTripHeader(ctx){
   var today=new Date();today.setHours(0,0,0,0);
   var dep=ctx.departure_date?new Date(ctx.departure_date+'T00:00:00'):null;
@@ -1078,9 +1137,11 @@ function renderTripHeader(ctx){
   if(ctx.trip_locator)html+='<div class="doc-locator">'+escHtml(ctx.trip_locator.toUpperCase())+'</div>';
   html+='<div id="lifecycle-pill" style="margin-top:6px"></div>';
   html+='</div></div>';
+  html+='<div id="intel-alerts"></div>';
   html+='<div class="doc-meta-row">';
   (ctx.metaFields||[]).forEach(function(f){html+='<div class="doc-meta-field"><div class="doc-meta-label">'+escHtml(f.label)+'</div><div class="doc-meta-value">'+escHtml(f.value)+'</div></div>';});
   html+='</div>';
+  html+='<div id="intel-umbrella"></div>';
   html+='<div id="readiness-sentence"></div>';
   html+='<div id="pdf-admissibility"></div>';
   if(ctx.showDocCheck)html+='<div id="trip-doccheck-wrap"></div>';
@@ -1125,7 +1186,7 @@ function renderGroupSection(){
     html+='</div>';
 
     /* Air sectors */
-    html+=renderAirSectors(_segments,_group||_trip);
+    html+=renderAirSectors(_segments||(_trip&&_trip.segments)||[],_group||_trip);
 
     /* Travelers & Readiness */
     html+='<div class="doc-section doc-section--primary">';
@@ -2516,6 +2577,7 @@ async function tripInit(){
         _req("GET","/api/v1/trip-groups/"+groupId+"/segments").catch(function(){return[];}),
       ]);
       _group=results[0];_readiness=results[1];_workspace=results[2];_itinerary=results[3]||[];_documents=results[4]||[];_contacts=results[5]||[];_segments=results[6]||[];
+      _intelligence=(_group&&_group.intelligence)||{umbrella:[],components:[],alerts:[]};
       document.title=(_group.name||"Group")+" — UniProfile";
       var today=new Date();today.setHours(0,0,0,0);
       var dep=_group.departure_date?new Date(_group.departure_date+'T00:00:00'):null;
@@ -2527,6 +2589,7 @@ async function tripInit(){
       if(nights>0)memMeta.push({label:'Duration',value:nights+' night'+(nights===1?'':'s')});
       if(_group.organizer_name)memMeta.push({label:'Organized by',value:_group.organizer_name});
       renderTripHeader({title:_group.name||'Group',departure_date:_group.departure_date,return_date:_group.return_date,trip_locator:null,metaFields:memMeta,showDocCheck:false});
+      renderIntelAlerts();renderIntelUmbrella();
       renderReadinessSentence();renderLifecyclePill();
       renderPdfAdmissibility();renderPdfProvenance();
       renderGroupSection();
@@ -2566,7 +2629,16 @@ async function tripInit(){
     if(_trip.departure_date||_trip.return_date)orgMeta.push({label:'Dates',value:_fmtRange(_trip.departure_date,_trip.return_date)});
     if(nights>0)orgMeta.push({label:'Duration',value:nights+' night'+(nights===1?'':'s')});
     if(_trip.trip_context)orgMeta.push({label:'Type',value:_ctxLabel(_trip.trip_context)});
+    /* Solo intelligence — compute client-side; raw docs stay in browser memory only */
+    if(!_trip.trip_group_id&&typeof computeTripIntelligence==='function'){
+      try{
+        var soloDocs=(p.documents||[]).filter(function(d){return d.doc_type==='PASSPORT'&&d.is_primary;})
+          .map(function(d){return{display_name:'You',expiry_date:d.expiry_date,issuing_country:d.issuing_country};});
+        _intelligence=computeTripIntelligence(_trip,[],soloDocs);
+      }catch(e){_intelligence={umbrella:[],components:[],alerts:[]};}
+    }
     renderTripHeader({title:_tripName(_trip),departure_date:_trip.departure_date,return_date:_trip.return_date,trip_locator:_trip.trip_locator||null,metaFields:orgMeta,showDocCheck:!_trip.trip_group_id});
+    renderIntelAlerts();renderIntelUmbrella();
     if(!_trip.trip_group_id&&_trip.destination_iata){_fetchSoloDocCheck(_trip.id);}
 
     if(_trip.trip_group_id){
@@ -2587,6 +2659,8 @@ async function tripInit(){
         _documents=results[4]||[];
         _contacts=results[5]||[];
         _segments=results[6]||[];
+        _intelligence=(_group&&_group.intelligence)||{umbrella:[],components:[],alerts:[]};
+        renderIntelAlerts();renderIntelUmbrella();
         renderReadinessSentence();renderLifecyclePill();
         renderPdfAdmissibility();renderPdfProvenance();
       }catch(e){

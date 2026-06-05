@@ -1,3 +1,4 @@
+const { computeTripIntelligence } = require('./intelligence');
 const { RDSDataClient, ExecuteStatementCommand } = require("@aws-sdk/client-rds-data");
 const { CognitoIdentityProviderClient, AdminGetUserCommand, AdminInitiateAuthCommand } = require("@aws-sdk/client-cognito-identity-provider");
 const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
@@ -982,7 +983,7 @@ exports.handler=async function(event){
       const groupId=path.split('/').filter(Boolean)[3];
       const {role}=await validateTripGroupAccess(groupId,myUuid);
       const [groupRows,consents]=await Promise.all([
-        sql("SELECT tg.*,tg.trip_id::text AS trip_id_str,t.trip_name,t.departure_date,t.return_date,t.destination_iata,u.email AS owner_email,i.legal_first AS owner_first,i.legal_last AS owner_last FROM traveler_groups tg LEFT JOIN trips t ON t.id=tg.trip_id LEFT JOIN travelers u ON u.uuid=tg.owner_uuid LEFT JOIN traveler_identity i ON i.traveler_uuid=tg.owner_uuid WHERE tg.id=:id",[strParam("id",groupId)]),
+        sql("SELECT tg.*,tg.trip_id::text AS trip_id_str,t.trip_name,t.origin_iata,t.departure_date,t.return_date,t.destination_iata,u.email AS owner_email,i.legal_first AS owner_first,i.legal_last AS owner_last FROM traveler_groups tg LEFT JOIN trips t ON t.id=tg.trip_id LEFT JOIN travelers u ON u.uuid=tg.owner_uuid LEFT JOIN traveler_identity i ON i.traveler_uuid=tg.owner_uuid WHERE tg.id=:id",[strParam("id",groupId)]),
         role==='organizer'?sql("SELECT id,target_uuid,status,requested_scopes,granted_scopes,requested_at,responded_at FROM trip_group_consents WHERE trip_group_id=:id",[strParam("id",groupId)]):Promise.resolve([]),
       ]);
       const row=groupRows[0];
@@ -993,7 +994,27 @@ exports.handler=async function(event){
         dcRows.forEach(function(r){dcMap[r.requester_uuid]={status:r.status,result:r.result,admin_note:r.admin_note||null,reviewed_at:r.reviewed_at||null,destination_iata:r.destination_iata||null};});
         members.forEach(function(m){m.doccheck=(m.linked_uuid&&dcMap[m.linked_uuid])||null;});
       }
-      const resp={id:row.id,name:row.name,destination:row.destination_iata||row.destination,destination_name:(RULES[row.destination_iata||'']||{}).name||row.destination,trip_id:row.trip_id_str,trip_name:row.trip_name,departure_date:row.departure_date,return_date:row.return_date,archived_at:row.archived_at,members,role,custom_columns:typeof row.custom_columns==='string'?JSON.parse(row.custom_columns):(row.custom_columns||{columns:[],values:{}})};
+      /* Travel intelligence — pure compute, no DB writes, raw docs stay server-side */
+      if(row.trip_id_str){
+        try{
+          const segRows=await sql("SELECT id,segment_type,segment_order,origin_iata,destination_iata,departure_datetime::text AS departure_datetime,arrival_datetime::text AS arrival_datetime,carrier,flight_number,cabin_class FROM trip_segments WHERE trip_id=:tid::uuid ORDER BY segment_order",[strParam("tid",row.trip_id_str)]);
+          const tripForIntel={origin_iata:row.origin_iata,destination_iata:row.destination_iata,departure_date:row.departure_date,return_date:row.return_date,segments:segRows};
+          let memberPassports=[];
+          if(role==='organizer'){
+            for(const m of members.filter(function(m){return!!m.linked_uuid;})){
+              try{
+                const pRows=await sql("SELECT expiry_date::text AS expiry_date,issuing_country FROM travel_documents WHERE traveler_uuid=:uid::uuid AND doc_type='PASSPORT' AND is_primary=true LIMIT 1",[uuidParam("uid",m.linked_uuid)]);
+                if(pRows.length>0) memberPassports.push({display_name:m.display_name||'Member',expiry_date:pRows[0].expiry_date,issuing_country:pRows[0].issuing_country});
+              }catch(e){/* skip member — doc fetch failure must not break the response */}
+            }
+          }
+          row.intelligence=computeTripIntelligence(tripForIntel,members,memberPassports);
+        }catch(e){
+          console.error('Intelligence compute error:',e.message);
+          row.intelligence={umbrella:[],components:[],alerts:[]};
+        }
+      }
+      const resp={id:row.id,name:row.name,destination:row.destination_iata||row.destination,destination_name:(RULES[row.destination_iata||'']||{}).name||row.destination,trip_id:row.trip_id_str,trip_name:row.trip_name,departure_date:row.departure_date,return_date:row.return_date,archived_at:row.archived_at,members,role,custom_columns:typeof row.custom_columns==='string'?JSON.parse(row.custom_columns):(row.custom_columns||{columns:[],values:{}}),intelligence:row.intelligence||{umbrella:[],components:[],alerts:[]}};
       if(role==='organizer')resp.consents=consents.map(function(c){try{return Object.assign({},c,{requested_scopes:typeof c.requested_scopes==='string'?JSON.parse(c.requested_scopes):(c.requested_scopes||[]),granted_scopes:typeof c.granted_scopes==='string'?JSON.parse(c.granted_scopes):(c.granted_scopes||null)});}catch(e){return c;}});
       if(role==='member')resp.organizer_name=[row.owner_first,row.owner_last].filter(Boolean).join(' ')||row.owner_email||null;
       return ok(resp,event);
