@@ -111,7 +111,8 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .trip-main{flex:1;min-width:0}
 .trip-title{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--ink);letter-spacing:-0.005em;margin-bottom:2px}
 .trip-title em{font-style:italic;font-weight:300}
-.trip-route{font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-bottom:10px;letter-spacing:0.04em}
+.trip-route{font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-bottom:10px;letter-spacing:0.04em;display:flex;align-items:center;gap:8px}
+.dest-country-chip{font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:0.08em;padding:1px 6px;border-radius:4px;border:0.5px solid var(--rule-strong);color:var(--ink-mute);flex-shrink:0}
 .trip-meta-line{border-top:0.5px solid var(--rule);margin-top:14px;padding-top:12px;font-size:12px;color:var(--ink-mute);line-height:1.5;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 .trip-meta-added{font-size:11px;color:var(--ink-faint);white-space:nowrap;flex-shrink:0}
 .trip-actions{flex-shrink:0;display:flex;align-items:flex-start;gap:4px;padding-top:2px}
@@ -530,6 +531,28 @@ var _IATA_COORDS={
   'MEX':[19.4363,-99.0721],'CUN':[21.0365,-86.8771],'GDL':[20.5218,-103.3106],
   'AMD':[23.0736,72.6347],'CLT':[35.2140,-80.9431],'HND':[35.5494,139.7798],
   'ITM':[34.7855,135.4381],'JAI':[26.8242,75.8122],'UDR':[24.6177,73.8961]
+};
+var _IATA_COUNTRY={
+  'ATL':'US','LAX':'US','ORD':'US','DFW':'US','DEN':'US','JFK':'US','SFO':'US','SEA':'US','LAS':'US','MCO':'US',
+  'EWR':'US','MIA':'US','IAH':'US','PHX':'US','BOS':'US','MSP':'US','DTW':'US','PHL':'US','LGA':'US','FLL':'US',
+  'BWI':'US','IAD':'US','DCA':'US','MDW':'US','SLC':'US','HNL':'US','SAN':'US','TPA':'US','PDX':'US','SJC':'US',
+  'OAK':'US','RDU':'US','BNA':'US','MCI':'US','STL':'US','MSY':'US','SAT':'US','AUS':'US','CLT':'US',
+  'LIR':'CR','SJO':'CR','MBJ':'JM','PUJ':'DO',
+  'LHR':'GB','LGW':'GB','CDG':'FR','NCE':'FR','AMS':'NL','FRA':'DE','MUC':'DE','HAM':'DE',
+  'IST':'TR','MAD':'ES','BCN':'ES','FCO':'IT','MXP':'IT','ZRH':'CH','GVA':'CH',
+  'CPH':'DK','ARN':'SE','BRU':'BE','VIE':'AT','DUB':'IE','LIS':'PT','ATH':'GR','HEL':'FI','OSL':'NO',
+  'WAW':'PL','PRG':'CZ','BUD':'HU',
+  'DXB':'AE','DOH':'QA','AUH':'AE','KWI':'KW','AMM':'JO','CAI':'EG',
+  'ADD':'ET','NBO':'KE','JNB':'ZA','CPT':'ZA','LOS':'NG','ACC':'GH',
+  'DEL':'IN','BOM':'IN','MAA':'IN','BLR':'IN','CCU':'IN','HYD':'IN','AMD':'IN','JAI':'IN','UDR':'IN',
+  'CMB':'LK','DAC':'BD','KTM':'NP','KHI':'PK','LHE':'PK','ISB':'PK',
+  'SIN':'SG','BKK':'TH','KUL':'MY','CGK':'ID','MNL':'PH',
+  'HKG':'HK','PVG':'CN','PEK':'CN','CAN':'CN','ICN':'KR',
+  'NRT':'JP','KIX':'JP','HND':'JP','ITM':'JP',
+  'SGN':'VN','HAN':'VN','RGN':'MM',
+  'MEL':'AU','SYD':'AU','BNE':'AU','AKL':'NZ',
+  'GRU':'BR','GIG':'BR','EZE':'AR','SCL':'CL','LIM':'PE','BOG':'CO','MDE':'CO','UIO':'EC',
+  'YYZ':'CA','YVR':'CA','YUL':'CA','MEX':'MX','CUN':'MX','GDL':'MX'
 };
 function _gcDist(la1,lo1,la2,lo2){
   var R=6371,dLa=(la2-la1)*Math.PI/180,dLo=(lo2-lo1)*Math.PI/180;
@@ -1282,6 +1305,8 @@ function _tripCard(t){
   var year=dep?dep.getFullYear():"";
   var name=_tripName(t);
   var route=(t.origin_iata&&t.destination_iata&&t.origin_iata.toUpperCase()!==t.destination_iata.toUpperCase())?t.origin_iata.toUpperCase()+" → "+t.destination_iata.toUpperCase():"";
+  var countryCode=t.destination_iata?(_IATA_COUNTRY[t.destination_iata.toUpperCase()]||''):'';
+  var countryChip=countryCode?'<span class="dest-country-chip">'+countryCode+'</span>':'';
   var daysEl="";
   if(dep&&!past){
     var diff=Math.round((dep-today)/86400000);
@@ -1330,7 +1355,7 @@ function _tripCard(t){
     +'<div class="trip-date"><div class="trip-date-month">'+month+'</div><div class="trip-date-day">'+day+'</div>'+(year?'<div class="trip-date-year">'+year+'</div>':'')+'</div>'
     +'<div class="trip-main">'
     +'<a href="/trip.html?id='+t.id+'" class="trip-title" style="text-decoration:none;color:inherit">'+name+'</a>'
-    +(route?'<div class="trip-route">'+route+'</div>':"")
+    +(route||countryChip?'<div class="trip-route">'+route+countryChip+'</div>':"")
     +pillsRow
     +'</div>'
     +'<div class="trip-actions">'
