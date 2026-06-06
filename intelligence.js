@@ -158,7 +158,7 @@ function _computeConnections(segments, memberCount) {
     var cur=flights[i], nxt=flights[i+1];
     if (!cur.arrival_datetime||!nxt.departure_datetime) continue;
     var gap = _minutesBetween(cur.arrival_datetime, nxt.departure_datetime);
-    if (gap===null||gap<0) continue;
+    if (gap===null||gap<0||gap>1440) continue;
 
     var cDest = (cur.destination_iata||'').toUpperCase();
     var nOrig = (nxt.origin_iata||'').toUpperCase();
@@ -190,6 +190,64 @@ function _computeConnections(segments, memberCount) {
   return results;
 }
 
+/* -- Signal: cascade_buffer (flight arrival -> hotel check-in, date-level) -- */
+
+function _computeCascade(segments) {
+  var results = [];
+  var all = segments || [];
+  var flights = all.filter(function(s){ return s.segment_type === 'FLIGHT'; });
+  var hotels  = all.filter(function(s){ return s.segment_type === 'HOTEL'; });
+  if (!hotels.length) return results;
+
+  hotels.forEach(function(hotel) {
+    var checkinDt = hotel.departure_datetime;
+    if (!checkinDt) return;
+    var checkinMs = new Date(String(checkinDt).replace(' ', 'T')).getTime();
+    if (isNaN(checkinMs)) return;
+
+    /* Find preceding flight: latest arrival_datetime strictly before hotel check-in */
+    var prevFlight = null, prevArrMs = -Infinity;
+    flights.forEach(function(f) {
+      if (!f.arrival_datetime) return;
+      var ms = new Date(String(f.arrival_datetime).replace(' ', 'T')).getTime();
+      if (!isNaN(ms) && ms < checkinMs && ms > prevArrMs) {
+        prevArrMs = ms; prevFlight = f;
+      }
+    });
+    if (!prevFlight) return;
+
+    /* Date-level comparison: how many days after check-in does the flight arrive? */
+    var flightArrDate    = String(prevFlight.arrival_datetime).slice(0, 10);
+    var hotelCheckinDate = String(checkinDt).slice(0, 10);
+    var dateDiff = Math.round(
+      (new Date(flightArrDate + 'T12:00:00Z') - new Date(hotelCheckinDate + 'T12:00:00Z')) / 86400000
+    );
+    /* dateDiff <= 0: same day or flight arrives before check-in opens -- silent (hotel holds room) */
+    if (dateDiff <= 0) return;
+
+    var severity  = dateDiff === 1 ? 'act' : 'urgent';
+    var carrier   = (prevFlight.carrier || '').toUpperCase();
+    var fltNum    = prevFlight.flight_number || '';
+    var fltLabel  = carrier ? (carrier + (fltNum ? ' ' + fltNum : '')) : 'Your flight';
+    var hotelName = hotel.carrier || (hotel.destination_iata || '').toUpperCase() || 'hotel';
+    var fusionLine = fltLabel + ' arrives '
+      + (dateDiff === 1 ? 'a day' : dateDiff + ' days')
+      + ' after ' + hotelName + ' check-in -- '
+      + (dateDiff === 1 ? 'you could lose the first night.' : 'significant stay disruption.');
+    var detail = 'Flight arrives ' + flightArrDate + '; hotel check-in was ' + hotelCheckinDate
+      + '. ' + dateDiff + ' night(s) at risk if the inbound is delayed past midnight.';
+
+    results.push({
+      fromIata:   prevFlight.destination_iata,
+      toIata:     hotel.destination_iata || prevFlight.destination_iata,
+      signal:     _sig('cascade_buffer', 'Cascade: ' + dateDiff + 'd late', severity, detail, 'alert'),
+      fusionLine: fusionLine
+    });
+  });
+
+  return results;
+}
+
 /* ── Signal: passport_validity ── */
 /*
  * docs: [{display_name, expiry_date, issuing_country}]
@@ -207,7 +265,7 @@ function _computePassportValidity(docs, refDate, memberCount) {
     var severity = daysPost<=30?'urgent' : daysPost<=90?'act' : 'soon';
     var isSelf = memberCount===0;
     var name = doc.display_name||'Traveler';
-    var subject = isSelf?’Your passport’:name+"’s passport";
+    var subject = isSelf?'Your passport':name+"'s passport";
     var detail = subject+' may not meet the 6-month validity window for this destination. '
       +(isSelf?'Check renewal timelines before departure.':'Coordinate with '+name+' on renewal.');
 
@@ -292,6 +350,9 @@ function computeTripIntelligence(trip, members, docs) {
     /* Connections */
     var connResults = _computeConnections(trip.segments, memberCount);
 
+    /* Cascade: flight -> hotel check-in date risk */
+    var cascadeResults = _computeCascade(trip.segments);
+
     /* Passport validity */
     var passportSigs = _computePassportValidity(docs, trip.return_date||trip.departure_date, memberCount);
 
@@ -308,6 +369,11 @@ function computeTripIntelligence(trip, members, docs) {
       return { componentId:'conn_'+idx, type:'FLIGHT',
                fromIata:cr.fromIata, toIata:cr.toIata,
                band:[cr.signal], fusionLine:cr.fusionLine };
+    });
+    cascadeResults.forEach(function(cr,idx){
+      components.push({ componentId:'casc_'+idx, type:'FLIGHT',
+                        fromIata:cr.fromIata, toIata:cr.toIata,
+                        band:[cr.signal], fusionLine:cr.fusionLine });
     });
     if (memberCount>0) {
       passportSigs.forEach(function(s,idx){
