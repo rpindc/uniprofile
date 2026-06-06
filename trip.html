@@ -225,6 +225,16 @@ body.doc-editing #doc-edit-btn{display:none!important}
 .doc-flight-dir{font-family:var(--sans);font-size:9px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--ink-faint);padding-bottom:8px;margin-bottom:4px;border-bottom:0.5px solid var(--rule)}
 .doc-flight-dir+.doc-flight-dir{margin-top:18px}
 @media(max-width:599px){.doc-flight-row{flex-wrap:wrap;gap:6px}.doc-flight-flt{min-width:auto}.doc-flight-times{text-align:left;flex-basis:100%}}
+/* ── Stay + Layover rows ── */
+.seg-stay-row{display:flex;align-items:flex-start;gap:10px;padding:12px 0;border-bottom:0.5px solid var(--rule)}
+.seg-stay-icon{width:28px;height:28px;border-radius:50%;background:var(--amber-soft);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.seg-stay-triangle{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:9px solid var(--amber);display:inline-block}
+.seg-stay-body{flex:1;min-width:0}
+.seg-stay-name{font-size:13px;font-weight:500;color:var(--ink)}
+.seg-stay-meta{font-size:11px;color:var(--ink-soft);margin-top:2px}
+.seg-stay-add{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-mute);font-family:var(--sans);margin-top:4px;background:none;border:0.5px dashed var(--rule-strong);padding:3px 8px;border-radius:4px;cursor:default}
+.seg-layover-row{display:flex;align-items:center;gap:8px;padding:6px 0 6px 4px;color:var(--ink-mute);font-size:11px;font-family:var(--sans);border-bottom:0.5px dashed var(--rule)}
+.seg-layover-line{width:18px;height:0;border-top:1.5px dashed var(--ink-faint);flex-shrink:0}
 /* ── Readiness sentence ── */
 .readiness-sentence{font-size:13px;color:var(--ink-soft);padding:10px 0 0;font-family:var(--sans);line-height:1.4}
 /* ── Phase 2 slots (screen: hidden; print: shown when populated) ── */
@@ -269,6 +279,10 @@ body.doc-editing #save-pdf-btn{display:none!important}
   .intel-umbrella-row{margin-top:8px}
   .intel-chip{border:0.5px solid #999!important;background:none!important;color:#000!important}
   .intel-fusion-line{font-style:italic;color:#000}
+  /* Stay/layover: shape (triangle vs dashed) is the cue, not color */
+  .seg-stay-icon{background:none!important;border:0.5pt solid #666}
+  .seg-stay-triangle{border-bottom-color:#333!important}
+  .seg-layover-row{border-bottom:0.5pt dashed #aaa}
   /* Phase 2 slots: appear when populated */
   #pdf-admissibility:not(:empty),#pdf-provenance:not(:empty){display:block!important;font-size:10pt;color:#444;padding:10pt 0 0;border-top:0.5pt solid #bbb;margin-top:10pt}
   /* Running footer stamp on every page */
@@ -789,18 +803,30 @@ function _fmtSegDate(dt){
 function renderAirSectors(segments,tripCtx){
   var html='<div class="doc-section doc-section--primary">';
   html+='<div class="doc-section-head"><div class="doc-section-label">Air Sectors</div></div>';
-  if(!segments||!segments.length){
+  var all=(segments||[]).slice().sort(function(a,b){return(a.segment_order||0)-(b.segment_order||0);});
+  var flights=all.filter(function(s){return s.segment_type==='FLIGHT';});
+  var hotels=all.filter(function(s){return s.segment_type==='HOTEL';});
+  if(!flights.length&&!hotels.length){
     html+='<div class="doc-air-slot">No flight segments on file for this trip.</div>';
     html+='</div>';
     return html;
   }
-  var retDate=tripCtx&&(tripCtx.return_date);
-  var outbound=segments,ret=[];
-  var showLabels=false;
-  if(retDate){
-    outbound=segments.filter(function(s){return String(s.departure_datetime||'').slice(0,10)<retDate;});
-    ret=segments.filter(function(s){return String(s.departure_datetime||'').slice(0,10)>=retDate;});
-    showLabels=outbound.length>0&&ret.length>0;
+  function _sdts(dt){
+    if(!dt)return null;
+    var s=String(dt).replace(' ','T');
+    if(!/Z$|[+-]\d{2}:?\d{2}$/.test(s))s+='Z';
+    var d=new Date(s);
+    return isNaN(d.getTime())?null:d.getTime();
+  }
+  function _gapMins(dt1,dt2){
+    var t1=_sdts(dt1),t2=_sdts(dt2);
+    if(t1===null||t2===null)return null;
+    return Math.round((t2-t1)/60000);
+  }
+  function _nightStr(mins){
+    if(!mins||mins<=0)return'';
+    var n=Math.round(mins/1440);
+    return n+' night'+(n===1?'':'s');
   }
   function _flightRow(s){
     var depTime=_fmtSegTime(s.departure_datetime);
@@ -814,44 +840,122 @@ function renderAirSectors(segments,tripCtx){
     var h='<div class="doc-flight-row">';
     h+='<div class="doc-flight-flt"><span class="doc-flight-code">'+escHtml((s.carrier||'').toUpperCase()+(s.flight_number?' '+s.flight_number:''))+'</span></div>';
     h+='<div class="doc-flight-route">';
-    h+='<div class="doc-flight-iata">'+escHtml(s.origin_iata||'—')+' <span class="doc-flight-arrow">→</span> '+escHtml(s.destination_iata||'—')+'</div>';
-    if(oCity&&dCity)h+='<div class="doc-flight-cities">'+escHtml(oCity)+' → '+escHtml(dCity)+'</div>';
+    h+='<div class="doc-flight-iata">'+escHtml(s.origin_iata||'--')+' <span class="doc-flight-arrow">-&gt;</span> '+escHtml(s.destination_iata||'--')+'</div>';
+    if(oCity&&dCity)h+='<div class="doc-flight-cities">'+escHtml(oCity)+' -&gt; '+escHtml(dCity)+'</div>';
     h+='</div>';
     h+='<div class="doc-flight-times">';
     h+='<div class="doc-flight-date">'+escHtml(depDate)+'</div>';
-    h+='<div class="doc-flight-clock">'+escHtml(depTime)+' → '+escHtml(arrTime)+(nextDay?'<span class="doc-flight-nextday">+1</span>':'')+'</div>';
-    h+='</div>';
-    h+='</div>';
+    h+='<div class="doc-flight-clock">'+escHtml(depTime)+' -&gt; '+escHtml(arrTime)+(nextDay?'<span class="doc-flight-nextday">+1</span>':'')+'</div>';
+    h+='</div></div>';
     return h;
   }
+  function _stayRow(htls,gapMins,iataAt){
+    var h='<div class="seg-stay-row">';
+    h+='<div class="seg-stay-icon"><span class="seg-stay-triangle"></span></div>';
+    h+='<div class="seg-stay-body">';
+    if(htls&&htls.length){
+      htls.forEach(function(ht){
+        var nm=ht.carrier?escHtml(ht.carrier):(iataAt?escHtml(iataAt):'Stay');
+        h+='<div class="seg-stay-name">'+nm+'</div>';
+        var mp=[];
+        if(gapMins)mp.push(_nightStr(gapMins));
+        if(ht.cabin_class)mp.push(escHtml(ht.cabin_class));
+        if(ht.seat_number)mp.push('Room '+escHtml(ht.seat_number));
+        if(mp.length)h+='<div class="seg-stay-meta">'+mp.join(' · ')+'</div>';
+      });
+    }else{
+      var loc=iataAt?(_IATA_CITY[iataAt]||iataAt):'';
+      h+='<div class="seg-stay-name">'+(loc?escHtml(loc):'Stay')+'</div>';
+      var ns=_nightStr(gapMins);
+      if(ns)h+='<div class="seg-stay-meta">'+ns+'</div>';
+      h+='<div class="seg-stay-add">+ add hotel</div>';
+    }
+    h+='</div></div>';
+    return h;
+  }
+  function _layoverRow(gapMins,iataAt){
+    var lh=Math.floor(gapMins/60),lm=gapMins%60;
+    var ds=lh>0?lh+'h'+(lm>0?' '+lm+'m':''):(lm+'m');
+    return '<div class="seg-layover-row"><span class="seg-layover-line"></span><span>'+ds+' layover at '+escHtml(iataAt)+'</span></div>';
+  }
   function _connChipAfter(seg){
-    if(!_intelligence||!_intelligence.components) return '';
+    if(!_intelligence||!_intelligence.components)return'';
     var fromIata=(seg.destination_iata||'').toUpperCase();
     var comp=_intelligence.components.find(function(c){
       return c.type==='FLIGHT'&&(c.fromIata||'').toUpperCase()===fromIata;
     });
-    if(!comp||!comp.band||!comp.band.length) return '';
+    if(!comp||!comp.band||!comp.band.length)return'';
     var out='<div class="intel-conn-row">';
     comp.band.forEach(function(sig){out+=_intelChip(sig);});
-    if(comp.fusionLine) out+='<span class="intel-fusion-line">'+escHtml(comp.fusionLine)+'</span>';
+    if(comp.fusionLine)out+='<span class="intel-fusion-line">'+escHtml(comp.fusionLine)+'</span>';
     out+='</div>';
     return out;
   }
-  function _renderGroup(segs){
+  function _buildTimeline(fSegs,hSegs){
+    var consumed={};
+    var items=[];
+    for(var i=0;i<fSegs.length;i++){
+      items.push({type:'flight',seg:fSegs[i]});
+      if(i<fSegs.length-1){
+        var prev=fSegs[i],nxt=fSegs[i+1];
+        var gapMins=_gapMins(prev.arrival_datetime,nxt.departure_datetime);
+        var iataAt=(prev.destination_iata||'').toUpperCase();
+        if(gapMins!==null&&gapMins>0){
+          if(gapMins>1440){
+            var prevArr=_sdts(prev.arrival_datetime);
+            var nxtDep=_sdts(nxt.departure_datetime);
+            var matching=hSegs.filter(function(h){
+              var key=h.id||h.segment_order;
+              if(consumed[key])return false;
+              var cin=_sdts(h.departure_datetime),cout=_sdts(h.arrival_datetime);
+              if(cin===null||cout===null||prevArr===null||nxtDep===null)return false;
+              return cin<nxtDep&&cout>prevArr;
+            });
+            matching.forEach(function(h){consumed[h.id||h.segment_order]=true;});
+            items.push({type:'stay',explicit:matching.length>0,hotels:matching,mins:gapMins,iata:iataAt});
+          }else{
+            items.push({type:'layover',mins:gapMins,iata:iataAt});
+          }
+        }
+      }
+    }
+    hSegs.forEach(function(h){
+      if(!consumed[h.id||h.segment_order]){
+        var insertIdx=items.length;
+        for(var j=0;j<items.length;j++){
+          if(items[j].type==='flight'&&(items[j].seg.segment_order||0)<(h.segment_order||0))insertIdx=j+1;
+        }
+        items.splice(insertIdx,0,{type:'stay',explicit:true,hotels:[h],mins:null,iata:null});
+      }
+    });
+    return items;
+  }
+  function _renderTimeline(items){
     var h='';
-    for(var i=0;i<segs.length;i++){
-      h+=_flightRow(segs[i]);
-      if(i<segs.length-1) h+=_connChipAfter(segs[i]);
+    for(var i=0;i<items.length;i++){
+      var item=items[i];
+      if(item.type==='flight'){h+=_flightRow(item.seg);h+=_connChipAfter(item.seg);}
+      else if(item.type==='stay'){h+=_stayRow(item.hotels,item.mins,item.iata);}
+      else if(item.type==='layover'){h+=_layoverRow(item.mins,item.iata);}
     }
     return h;
   }
+  var retDate=tripCtx&&tripCtx.return_date;
+  var outFlights=flights,retFlights=[],outHotels=hotels,retHotels=[],showLabels=false;
+  if(retDate){
+    outFlights=flights.filter(function(s){return String(s.departure_datetime||'').slice(0,10)<retDate;});
+    retFlights=flights.filter(function(s){return String(s.departure_datetime||'').slice(0,10)>=retDate;});
+    outHotels=hotels.filter(function(h){return String(h.departure_datetime||'').slice(0,10)<retDate;});
+    retHotels=hotels.filter(function(h){return String(h.departure_datetime||'').slice(0,10)>=retDate;});
+    showLabels=outFlights.length>0&&retFlights.length>0;
+  }
   if(showLabels){
     html+='<div class="doc-flight-dir">Outbound</div>';
-    html+=_renderGroup(outbound);
+    html+=_renderTimeline(_buildTimeline(outFlights,outHotels));
     html+='<div class="doc-flight-dir" style="margin-top:18px">Return</div>';
-    html+=_renderGroup(ret);
+    html+=_renderTimeline(_buildTimeline(retFlights,retHotels));
   }else{
-    html+=_renderGroup(segments);
+    html+=_renderTimeline(_buildTimeline(flights,hotels));
   }
   html+='</div>';
   return html;

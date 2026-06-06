@@ -619,7 +619,7 @@ function _buildSparkline(segments,tripId,isPast){
         if(d2<a2)d2=new Date(d2.getTime()+86400000);
         lay=Math.max(0,Math.round((d2-a2)/60000));
       }
-      if(lay>0&&lay<=1080)items.push({type:'gap',dur:lay,at:(s.destination_iata||'').toUpperCase()});
+      if(lay>0&&lay<=1440)items.push({type:'gap',dur:lay,at:(s.destination_iata||'').toUpperCase()});
     }
   });
   var total=items.reduce(function(acc,x){return acc+x.dur;},0);
