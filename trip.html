@@ -930,10 +930,24 @@ function renderAirSectors(segments,tripCtx){
     });
     return items;
   }
-  function _renderTimeline(items){
+  function _renderTimeline(items,retDate){
     var h='';
+    var hasOut=retDate&&items.some(function(it){return it.type==='flight'&&String(it.seg.departure_datetime||'').slice(0,10)<retDate;});
+    var hasRet=retDate&&items.some(function(it){return it.type==='flight'&&String(it.seg.departure_datetime||'').slice(0,10)>=retDate;});
+    var showLabels=hasOut&&hasRet;
+    var labelledOut=false,labelledRet=false;
     for(var i=0;i<items.length;i++){
       var item=items[i];
+      if(showLabels&&item.type==='flight'){
+        var depDate=String(item.seg.departure_datetime||'').slice(0,10);
+        if(!labelledOut&&depDate<retDate){
+          h+='<div class="doc-flight-dir">Outbound</div>';
+          labelledOut=true;
+        }else if(!labelledRet&&depDate>=retDate){
+          h+='<div class="doc-flight-dir" style="margin-top:18px">Return</div>';
+          labelledRet=true;
+        }
+      }
       if(item.type==='flight'){h+=_flightRow(item.seg);h+=_connChipAfter(item.seg);}
       else if(item.type==='stay'){h+=_stayRow(item.hotels,item.mins,item.iata);}
       else if(item.type==='layover'){h+=_layoverRow(item.mins,item.iata);}
@@ -941,22 +955,7 @@ function renderAirSectors(segments,tripCtx){
     return h;
   }
   var retDate=tripCtx&&tripCtx.return_date;
-  var outFlights=flights,retFlights=[],outHotels=hotels,retHotels=[],showLabels=false;
-  if(retDate){
-    outFlights=flights.filter(function(s){return String(s.departure_datetime||'').slice(0,10)<retDate;});
-    retFlights=flights.filter(function(s){return String(s.departure_datetime||'').slice(0,10)>=retDate;});
-    outHotels=hotels.filter(function(h){return String(h.departure_datetime||'').slice(0,10)<retDate;});
-    retHotels=hotels.filter(function(h){return String(h.departure_datetime||'').slice(0,10)>=retDate;});
-    showLabels=outFlights.length>0&&retFlights.length>0;
-  }
-  if(showLabels){
-    html+='<div class="doc-flight-dir">Outbound</div>';
-    html+=_renderTimeline(_buildTimeline(outFlights,outHotels));
-    html+='<div class="doc-flight-dir" style="margin-top:18px">Return</div>';
-    html+=_renderTimeline(_buildTimeline(retFlights,retHotels));
-  }else{
-    html+=_renderTimeline(_buildTimeline(flights,hotels));
-  }
+  html+=_renderTimeline(_buildTimeline(flights,hotels),retDate);
   html+='</div>';
   return html;
 }

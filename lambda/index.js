@@ -2785,7 +2785,7 @@ exports.handler=async function(event){
       const {row}=await validateTripGroupAccess(groupId,myUuid);
       if(!row.trip_id)return ok([],event);
       const rows=await sql(
-        "SELECT id,segment_order,carrier,flight_number,origin_iata,destination_iata,departure_datetime,arrival_datetime,cabin_class FROM trip_segments WHERE trip_id=:tid::uuid AND segment_type='FLIGHT' ORDER BY segment_order ASC,departure_datetime ASC",
+        "SELECT id,segment_order,segment_type,carrier,flight_number,origin_iata,destination_iata,departure_datetime,arrival_datetime,cabin_class,seat_number FROM trip_segments WHERE trip_id=:tid::uuid ORDER BY segment_order ASC,departure_datetime ASC",
         [strParam("tid",row.trip_id)]
       );
       return ok(rows,event);
