@@ -135,18 +135,10 @@ function _daysBetween(dateA, dateB) {
   );
 }
 
-function _parseMs(dt) {
-  if (!dt) return NaN;
-  var s = String(dt)
-    .replace(' ', 'T')
-    .replace(/([+-]\d{2})$/, '$1:00');
-  if (!/Z$|[+-]\d{2}:?\d{2}$/.test(s)) s += 'Z';
-  return new Date(s).getTime();
-}
-
 function _minutesBetween(dtA, dtB) {
   if (!dtA || !dtB) return null;
-  var a = _parseMs(dtA), b = _parseMs(dtB);
+  var a = new Date(String(dtA).replace(' ','T'));
+  var b = new Date(String(dtB).replace(' ','T'));
   return (isNaN(a)||isNaN(b)) ? null : Math.round((b-a)/60000);
 }
 
@@ -208,19 +200,17 @@ function _computeCascade(segments) {
   if (!hotels.length) return results;
 
   hotels.forEach(function(hotel) {
-    var checkinDt  = hotel.departure_datetime;
-    var checkoutDt = hotel.arrival_datetime;
-    if (!checkinDt || !checkoutDt) return;
-    var checkoutMs = _parseMs(checkoutDt);
-    if (isNaN(checkoutMs)) return;
+    var checkinDt = hotel.departure_datetime;
+    if (!checkinDt) return;
+    var checkinMs = new Date(String(checkinDt).replace(' ', 'T')).getTime();
+    if (isNaN(checkinMs)) return;
 
-    /* Preceding flight: latest arrival before hotel CHECKOUT
-       (captures flights landing after check-in but before checkout) */
+    /* Find preceding flight: latest arrival_datetime strictly before hotel check-in */
     var prevFlight = null, prevArrMs = -Infinity;
     flights.forEach(function(f) {
       if (!f.arrival_datetime) return;
-      var ms = _parseMs(f.arrival_datetime);
-      if (!isNaN(ms) && ms < checkoutMs && ms > prevArrMs) {
+      var ms = new Date(String(f.arrival_datetime).replace(' ', 'T')).getTime();
+      if (!isNaN(ms) && ms < checkinMs && ms > prevArrMs) {
         prevArrMs = ms; prevFlight = f;
       }
     });

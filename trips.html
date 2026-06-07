@@ -596,9 +596,17 @@ function _parseDT(s){
   s=String(s).replace(' ','T').replace(/([+-]\d{2})(?::?(\d{2}))?$/,function(_,h,m){return h+':'+(m||'00');});
   return new Date(s);
 }
+function _segSortCmp(a,b){
+  var ta=_parseDT(a.departure_datetime).getTime();
+  var tb=_parseDT(b.departure_datetime).getTime();
+  if(!isNaN(ta)&&!isNaN(tb)&&ta!==tb)return ta-tb;
+  if(!isNaN(ta)&&isNaN(tb))return-1;
+  if(isNaN(ta)&&!isNaN(tb))return 1;
+  return(a.segment_order||0)-(b.segment_order||0);
+}
 function _buildSparkline(segments,tripId,isPast){
   if(!segments||!segments.length)return'';
-  var flights=segments.filter(function(s){return s.segment_type==='FLIGHT';}).sort(function(a,b){return(a.segment_order||0)-(b.segment_order||0);});
+  var flights=segments.filter(function(s){return s.segment_type==='FLIGHT';}).sort(_segSortCmp);
   if(!flights.length)return'';
   var items=[];
   flights.forEach(function(s,i){
@@ -1229,7 +1237,7 @@ function _fmtLabel(raw){
 }
 function _segmentsBlock(segments,tripId){
   if(!segments||!segments.length)return'';
-  var segs=segments.slice().sort(function(a,b){return(a.segment_order||0)-(b.segment_order||0);});
+  var segs=segments.slice().sort(_segSortCmp);
   var groups=[];
   segs.forEach(function(s){
     var dt=s.departure_datetime||'';
