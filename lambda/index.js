@@ -1,5 +1,5 @@
 const { computeTripIntelligence } = require('./intelligence');
-const { RDSDataClient, ExecuteStatementCommand } = require("@aws-sdk/client-rds-data");
+const { RDSDataClient, ExecuteStatementCommand, BeginTransactionCommand, CommitTransactionCommand, RollbackTransactionCommand } = require("@aws-sdk/client-rds-data");
 const { CognitoIdentityProviderClient, AdminGetUserCommand, AdminInitiateAuthCommand } = require("@aws-sdk/client-cognito-identity-provider");
 const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
@@ -12,6 +12,10 @@ const DB = { resourceArn: process.env.AURORA_CLUSTER_ARN, secretArn: process.env
 const verifier = CognitoJwtVerifier.create({ userPoolId: process.env.COGNITO_USER_POOL_ID, tokenUse: "id", clientId: process.env.COGNITO_CLIENT_ID });
 async function sql(query, params = []) {
   try { const res = await rds.send(new ExecuteStatementCommand({ ...DB, sql: query, parameters: params, formatRecordsAs: "JSON" })); return res.formattedRecords ? JSON.parse(res.formattedRecords) : []; }
+  catch (e) { console.error("SQL Error:", e.message, "Q:", query.slice(0,100)); throw e; }
+}
+async function sqlTx(txId, query, params = []) {
+  try { const res = await rds.send(new ExecuteStatementCommand({ ...DB, sql: query, parameters: params, formatRecordsAs: "JSON", transactionId: txId })); return res.formattedRecords ? JSON.parse(res.formattedRecords) : []; }
   catch (e) { console.error("SQL Error:", e.message, "Q:", query.slice(0,100)); throw e; }
 }
 const uuidParam=(n,v)=>({name:n,value:{stringValue:v},typeHint:"UUID"});
@@ -234,8 +238,10 @@ async function buildProfile(uuid){
     sql("SELECT code,label,category,sort_order,fields_required,fields_optional FROM document_types WHERE is_active=TRUE ORDER BY sort_order",[]),
     sql("SELECT id,name,type,destination,dep::text,ret::text,members,flights,hotel,notes,trip_id::text,archived_at FROM traveler_groups WHERE owner_uuid=:u ORDER BY updated_at DESC",p),
     sql("SELECT module_name,data FROM traveler_profile_modules WHERE traveler_uuid=:u",p),
+    sql("SELECT id,trip_name,trip_locator,departure_date::text,return_date::text,absorbed_into_trip_id::text FROM trips WHERE traveler_uuid=:u AND status='absorbed' ORDER BY departure_date",p),
+    sql("SELECT a.id AS primary_id,b.id AS candidate_id,a.trip_name AS primary_name,b.trip_name AS candidate_name,b.departure_date::text AS candidate_dep,b.return_date::text AS candidate_ret FROM trips a JOIN trips b ON b.traveler_uuid=a.traveler_uuid AND b.id>a.id AND b.departure_date<=COALESCE(a.return_date,a.departure_date) AND COALESCE(b.return_date,b.departure_date)>=a.departure_date AND a.status<>'absorbed' AND b.status<>'absorbed' AND b.departure_date>=a.departure_date-INTERVAL '2 days' LEFT JOIN trip_merge_dismissals d ON d.traveler_uuid=a.traveler_uuid AND ((d.trip_id_a=a.id AND d.trip_id_b=b.id) OR (d.trip_id_a=b.id AND d.trip_id_b=a.id)) WHERE a.traveler_uuid=:u AND d.id IS NULL",p),
   ]);
-  const [identity,docs,seat,meal,loyalty,bleisure,meta,payment,tripRows,segmentRows,passengerRows,docTypeRows,groupRows,moduleRows]=R;
+  const [identity,docs,seat,meal,loyalty,bleisure,meta,payment,tripRows,segmentRows,passengerRows,docTypeRows,groupRows,moduleRows,absorbedTripRows,suggestionRows]=R;
   let mealData=meal[0]||null;
   if(mealData){
     try{mealData.allergies=typeof mealData.allergies==="string"?JSON.parse(mealData.allergies):(mealData.allergies||[]);}catch(e){mealData.allergies=[];}
@@ -256,13 +262,16 @@ async function buildProfile(uuid){
   passengerRows.forEach(p=>{if(!paxByTrip[p.trip_id])paxByTrip[p.trip_id]=[];paxByTrip[p.trip_id].push(p);});
   const tripGroupMap={};
   groupRows.forEach(function(g){if(g.trip_id)tripGroupMap[g.trip_id]=g.id;});
+  const absorbedByPrimary={};
+  absorbedTripRows.forEach(r=>{const pid=r.absorbed_into_trip_id;if(pid){if(!absorbedByPrimary[pid])absorbedByPrimary[pid]=[];absorbedByPrimary[pid].push(r);}});
   const trips=tripRows.map(t=>{
     const dep=t.departure_date?new Date(t.departure_date):null;
     const ret=t.return_date?new Date(t.return_date):null;
     const daysUntil=dep?Math.floor((dep-now)/86400000):null;
-    const status=!dep?"unknown":daysUntil>0?"upcoming":ret&&now<=ret?"in-progress":"completed";
-    return Object.assign({},t,{days_until:daysUntil,status,segments:segsByTrip[t.id]||[],passengers:paxByTrip[t.id]||[],trip_group_id:tripGroupMap[t.id]||null});
-  });
+    const computedStatus=!dep?"unknown":daysUntil>0?"upcoming":ret&&now<=ret?"in-progress":"completed";
+    const status=t.status==='absorbed'?'absorbed':computedStatus;
+    return Object.assign({},t,{days_until:daysUntil,status,segments:segsByTrip[t.id]||[],passengers:paxByTrip[t.id]||[],trip_group_id:tripGroupMap[t.id]||null,absorbed_trips:absorbedByPrimary[t.id]||[]});
+  }).filter(t=>t.status!=='absorbed');
   const groups=groupRows.filter(function(g){return!g.trip_id;}).map(g=>({id:g.id,name:g.name,type:g.type,destination:g.destination,dep:g.dep,ret:g.ret,members:typeof g.members==="string"?JSON.parse(g.members):(g.members||[]),flights:typeof g.flights==="string"?JSON.parse(g.flights):(g.flights||[]),hotel:g.hotel?(typeof g.hotel==="string"?JSON.parse(g.hotel):g.hotel):null,notes:typeof g.notes==="string"?JSON.parse(g.notes):(g.notes||[])}));
   const profileModules={};
   moduleRows.forEach(r=>{try{profileModules[r.module_name]=typeof r.data==="string"?JSON.parse(r.data):r.data;}catch(e){profileModules[r.module_name]={};} });
@@ -274,7 +283,7 @@ async function buildProfile(uuid){
     trips.length>0
   ];
   const profileCompleteness=Math.round(_milestones.filter(Boolean).length/_milestones.length*100);
-  return {uuid,uniprofile_number:meta[0]&&meta[0].uniprofile_number||null,email:meta[0]&&meta[0].email,tier:meta[0]&&meta[0].tier||"free",profile_completeness:profileCompleteness,display_name:meta[0]&&meta[0].display_name||null,active_context:bleisure[0]&&bleisure[0].active_context||"PERSONAL",identity:identity[0]||null,documents:docsWithExpiry,document_types:docTypesGrouped,seat_preferences:seat[0]||null,meal_preferences:mealData,...profileModules,loyalty_programs:loyalty,payment_profiles:payment,trips,trips_count:trips.length,groups,generated_at:new Date().toISOString()};
+  return {uuid,uniprofile_number:meta[0]&&meta[0].uniprofile_number||null,email:meta[0]&&meta[0].email,tier:meta[0]&&meta[0].tier||"free",profile_completeness:profileCompleteness,display_name:meta[0]&&meta[0].display_name||null,active_context:bleisure[0]&&bleisure[0].active_context||"PERSONAL",identity:identity[0]||null,documents:docsWithExpiry,document_types:docTypesGrouped,seat_preferences:seat[0]||null,meal_preferences:mealData,...profileModules,loyalty_programs:loyalty,payment_profiles:payment,trips,trips_count:trips.length,groups,merge_suggestions:suggestionRows||[],generated_at:new Date().toISOString()};
 }
 async function updateModule(uuid,module,data){
   switch(module){
@@ -737,6 +746,71 @@ exports.handler=async function(event){
       const travelerUuid=await getOrCreateTraveler(token.sub,token.email);
       if(!travelerUuid)return err("Traveler not found",event,404);
       return ok(await buildProfile(travelerUuid),event);
+    }
+    if(method==="POST"&&path==="/api/v1/trips/absorb"){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      if(!myUuid)return err("Traveler not found",event,404);
+      const body=JSON.parse(event.body||"{}");
+      const primaryId=body.primary_trip_id;
+      const absorbId=body.absorb_trip_id;
+      if(!primaryId||!absorbId)return err("primary_trip_id and absorb_trip_id required",event,400);
+      if(primaryId===absorbId)return err("Cannot absorb a trip into itself",event,400);
+      const [primaryRows,absorbRows]=await Promise.all([
+        sql("SELECT id FROM trips WHERE id=:pid AND traveler_uuid=:u AND status<>'absorbed'",[uuidParam("pid",primaryId),uuidParam("u",myUuid)]),
+        sql("SELECT id FROM trips WHERE id=:aid AND traveler_uuid=:u AND status<>'absorbed'",[uuidParam("aid",absorbId),uuidParam("u",myUuid)])
+      ]);
+      if(!primaryRows.length)return err("Primary trip not found",event,404);
+      if(!absorbRows.length)return err("Trip to absorb not found",event,404);
+      const txRes=await rds.send(new BeginTransactionCommand(DB));
+      const txId=txRes.transactionId;
+      try{
+        await sqlTx(txId,"UPDATE trip_segments SET absorbed_from_trip_id=trip_id,trip_id=:primary WHERE trip_id=:absorbed",[uuidParam("primary",primaryId),uuidParam("absorbed",absorbId)]);
+        await sqlTx(txId,"UPDATE trips SET status='absorbed',absorbed_into_trip_id=:primary,updated_at=NOW() WHERE id=:absorbed AND traveler_uuid=:u",[uuidParam("primary",primaryId),uuidParam("absorbed",absorbId),uuidParam("u",myUuid)]);
+        await rds.send(new CommitTransactionCommand({resourceArn:DB.resourceArn,secretArn:DB.secretArn,transactionId:txId}));
+      }catch(e){
+        await rds.send(new RollbackTransactionCommand({resourceArn:DB.resourceArn,secretArn:DB.secretArn,transactionId:txId})).catch(()=>{});
+        throw e;
+      }
+      return ok({success:true},event);
+    }
+    if(method==="POST"&&path==="/api/v1/trips/unabsorb"){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      if(!myUuid)return err("Traveler not found",event,404);
+      const body=JSON.parse(event.body||"{}");
+      const absorbedId=body.absorbed_trip_id;
+      if(!absorbedId)return err("absorbed_trip_id required",event,400);
+      const absorbedRows=await sql("SELECT id,absorbed_into_trip_id,departure_date,return_date FROM trips WHERE id=:aid AND traveler_uuid=:u AND status='absorbed'",[uuidParam("aid",absorbedId),uuidParam("u",myUuid)]);
+      if(!absorbedRows.length)return err("Absorbed trip not found",event,404);
+      const _t=absorbedRows[0];
+      const _dep=_t.departure_date?new Date(_t.departure_date):null;
+      const _ret=_t.return_date?new Date(_t.return_date):null;
+      const _now=new Date();
+      const _daysUntil=_dep?Math.floor((_dep-_now)/86400000):null;
+      const restoredStatus=!_dep?"unknown":_daysUntil>0?"upcoming":_ret&&_now<=_ret?"in-progress":"completed";
+      const txRes=await rds.send(new BeginTransactionCommand(DB));
+      const txId=txRes.transactionId;
+      try{
+        await sqlTx(txId,"UPDATE trip_segments SET trip_id=absorbed_from_trip_id,absorbed_from_trip_id=NULL WHERE absorbed_from_trip_id=:absorbed",[uuidParam("absorbed",absorbedId)]);
+        await sqlTx(txId,"UPDATE trips SET status=:rs,absorbed_into_trip_id=NULL,updated_at=NOW() WHERE id=:absorbed AND traveler_uuid=:u",[strParam("rs",restoredStatus),uuidParam("absorbed",absorbedId),uuidParam("u",myUuid)]);
+        await rds.send(new CommitTransactionCommand({resourceArn:DB.resourceArn,secretArn:DB.secretArn,transactionId:txId}));
+      }catch(e){
+        await rds.send(new RollbackTransactionCommand({resourceArn:DB.resourceArn,secretArn:DB.secretArn,transactionId:txId})).catch(()=>{});
+        throw e;
+      }
+      return ok({success:true},event);
+    }
+    if(method==="POST"&&path==="/api/v1/trips/merge-dismiss"){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      if(!myUuid)return err("Traveler not found",event,404);
+      const body=JSON.parse(event.body||"{}");
+      const tripIdA=body.trip_id_a;
+      const tripIdB=body.trip_id_b;
+      if(!tripIdA||!tripIdB)return err("trip_id_a and trip_id_b required",event,400);
+      await sql("INSERT INTO trip_merge_dismissals (id,traveler_uuid,trip_id_a,trip_id_b) VALUES (uuid_generate_v4(),:u,:a,:b) ON CONFLICT DO NOTHING",[uuidParam("u",myUuid),uuidParam("a",tripIdA),uuidParam("b",tripIdB)]);
+      return ok({success:true},event);
     }
     if(method==="GET"&&path.match(/\/profile\/[^/]+$/)&&path.indexOf("/bleisure")===-1){
       const token=await verifyToken(event);

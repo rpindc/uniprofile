@@ -1277,6 +1277,22 @@ function renderGroupSection(){
 
   if(!_group){
     html+=renderAirSectors((_trip&&_trip.segments)||[],_trip);
+    var _absorbed=(_trip&&_trip.absorbed_trips)||[];
+    if(_absorbed.length){
+      html+='<div class="doc-section">';
+      html+='<div class="doc-section-label">Merged bookings</div>';
+      _absorbed.forEach(function(ab){
+        var depStr=ab.departure_date?new Date(ab.departure_date+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
+        var retStr=ab.return_date?new Date(ab.return_date+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):null;
+        var dateRange=retStr?(depStr+' – '+retStr):depStr;
+        html+='<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:0.5px solid var(--rule)">'
+          +'<div><div style="font-size:13px;font-weight:500;color:var(--ink)">'+escHtml(ab.trip_name||'Booking')+'</div>'
+          +'<div style="font-size:12px;color:var(--ink-mute);margin-top:2px">'+escHtml(dateRange)+(ab.trip_locator?' · PNR '+escHtml(ab.trip_locator.toUpperCase()):'')+'</div></div>'
+          +'<button class="btn btn-secondary btn-sm" onclick="unabsorbTrip(\''+escHtml(ab.id)+'\')">Unmerge</button>'
+          +'</div>';
+      });
+      html+='</div>';
+    }
     html+='<div class="doc-section">';
     html+='<div class="card-warm">';
     html+='<div class="h2" style="margin-bottom:10px">No group yet</div>';
@@ -2462,6 +2478,13 @@ async function leaveGroup(){
   }catch(e){showToast("Failed to leave journey.");}
 }
 
+async function unabsorbTrip(absorbedId){
+  if(!confirm('Unmerge this booking? Its segments will move back to a separate trip.'))return;
+  try{
+    await _req('POST','/api/v1/trips/unabsorb',{absorbed_trip_id:absorbedId});
+    window.location.reload();
+  }catch(e){showToast('Error unmerging — please try again.');}
+}
 async function createGroup(){
   if(!_trip)return;
   try{

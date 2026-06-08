@@ -234,6 +234,12 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .bound-trip-modal-body strong{color:var(--ink)}
 .pending-actions{margin-top:12px;padding-top:12px;border-top:0.5px solid var(--rule)}
 .pending-msg{font-size:12px;color:var(--ink-mute);margin-bottom:10px}
+.merge-banner{margin-bottom:16px}
+.merge-banner-card{background:var(--amber-soft);border:0.5px solid rgba(186,117,23,0.22);border-radius:10px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+.merge-banner-card:last-child{margin-bottom:0}
+.merge-banner-text{font-size:13px;color:var(--ink-soft);line-height:1.45}
+.merge-banner-name{font-weight:500;color:var(--ink)}
+.merge-banner-actions{display:flex;gap:8px;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -367,6 +373,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     </div>
 
     <div id="year-strip" style="display:none"></div>
+    <div id="merge-banner" class="merge-banner"></div>
     <div class="trips-count-label" id="trips-count" style="display:none"></div>
     <div id="trips-list"></div>
     <div id="trips-calendar" style="display:none"></div>
@@ -456,6 +463,7 @@ var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
 var _tok=null,_uid=null;
 var _allTrips=[];
+var _mergeSuggestions=[];
 var _journeyMap={};
 var _curFilter="all";
 var _curSearch="";
@@ -1414,6 +1422,52 @@ function _tripCard(t){
     +_segmentsBlock(t.segments,t.id)
     +'</div>';
 }
+/* ── Merge suggestions ── */
+function renderMergeBanner(){
+  var el=document.getElementById('merge-banner');
+  if(!el)return;
+  if(!_mergeSuggestions.length){el.innerHTML='';return;}
+  el.innerHTML=_mergeSuggestions.map(function(s,i){
+    var dep=s.candidate_dep?new Date(s.candidate_dep+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric'}):null;
+    var ret=s.candidate_ret?new Date(s.candidate_ret+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric'}):null;
+    var dateHint=dep&&ret?(dep+' – '+ret):dep||'';
+    return '<div class="merge-banner-card">'
+      +'<div class="merge-banner-text"><span class="merge-banner-name">'+_escHtml(s.primary_name)+'</span>'
+      +' and <span class="merge-banner-name">'+_escHtml(s.candidate_name)+'</span>'
+      +(dateHint?' <span style="color:var(--ink-mute)">('+_escHtml(dateHint)+')</span>':'')
+      +' look like one trip.</div>'
+      +'<div class="merge-banner-actions">'
+      +'<button class="btn btn-sm" style="background:var(--amber);color:#fff;border-color:var(--amber)" onclick="confirmMerge('+i+')">Merge</button>'
+      +'<button class="btn btn-secondary btn-sm" onclick="dismissMerge('+i+')">Not the same trip</button>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+}
+async function confirmMerge(idx){
+  var s=_mergeSuggestions[idx];
+  if(!s)return;
+  if(!confirm('Merge "'+s.candidate_name+'" into "'+s.primary_name+'"?\n\nThe hotel booking\'s segments will move to the flight trip. This can be undone from the trip detail page.'))return;
+  try{
+    await _req('POST','/api/v1/trips/absorb',{primary_trip_id:s.primary_id,absorb_trip_id:s.candidate_id});
+    var fresh=await _req('GET','/api/v1/me');
+    _allTrips=fresh.trips||[];
+    _mergeSuggestions=fresh.merge_suggestions||[];
+    renderMergeBanner();
+    renderTrips(_allTrips);
+    updateLede();
+    showToast('Trips merged. Open the trip to unmerge.');
+  }catch(e){showToast('Error merging trips — please try again.');}
+}
+async function dismissMerge(idx){
+  var s=_mergeSuggestions[idx];
+  if(!s)return;
+  try{
+    await _req('POST','/api/v1/trips/merge-dismiss',{trip_id_a:s.primary_id,trip_id_b:s.candidate_id});
+    _mergeSuggestions.splice(idx,1);
+    renderMergeBanner();
+    showToast('Suggestion dismissed.');
+  }catch(e){showToast('Error — please try again.');}
+}
 function renderTrips(trips){
   var filtered=_filteredTrips();
   // Count label
@@ -1702,8 +1756,10 @@ async function tripsInit(){
     _uid=p.uuid;
     _sidebarUpdate(p);
     _allTrips=p.trips||[];
+    _mergeSuggestions=p.merge_suggestions||[];
     updateInboxAddress(p.uniprofile_number);
     updateLede();
+    renderMergeBanner();
     renderTrips(_allTrips);
     // Populate journey name map for bound-trip modal (non-blocking)
     _req("GET","/api/v1/trip-groups").then(function(gl){
