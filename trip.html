@@ -1276,6 +1276,7 @@ function renderGroupSection(){
   var html='';
 
   if(!_group){
+    html+=renderAirSectors((_trip&&_trip.segments)||[],_trip);
     html+='<div class="doc-section">';
     html+='<div class="card-warm">';
     html+='<div class="h2" style="margin-bottom:10px">No group yet</div>';
