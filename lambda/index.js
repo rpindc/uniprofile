@@ -765,7 +765,7 @@ exports.handler=async function(event){
       const txRes=await rds.send(new BeginTransactionCommand(DB));
       const txId=txRes.transactionId;
       try{
-        await sqlTx(txId,"UPDATE trip_segments SET absorbed_from_trip_id=trip_id,trip_id=:primary WHERE trip_id=:absorbed",[uuidParam("primary",primaryId),uuidParam("absorbed",absorbId)]);
+        await sqlTx(txId,"UPDATE trip_segments SET absorbed_from_trip_id=trip_id,trip_id=:primary,segment_order=segment_order+(SELECT COALESCE(MAX(s2.segment_order),0) FROM trip_segments s2 WHERE s2.trip_id=:primary) WHERE trip_id=:absorbed",[uuidParam("primary",primaryId),uuidParam("absorbed",absorbId)]);
         await sqlTx(txId,"UPDATE trips SET status='absorbed',absorbed_into_trip_id=:primary,updated_at=NOW() WHERE id=:absorbed AND traveler_uuid=:u",[uuidParam("primary",primaryId),uuidParam("absorbed",absorbId),uuidParam("u",myUuid)]);
         await rds.send(new CommitTransactionCommand({resourceArn:DB.resourceArn,secretArn:DB.secretArn,transactionId:txId}));
       }catch(e){
