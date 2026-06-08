@@ -233,7 +233,7 @@ async function buildProfile(uuid){
     sql("SELECT profile_complete,tier,email,uniprofile_number,display_name FROM travelers WHERE uuid=:u",p),
     sql("SELECT context,preferred_card,company_name,cost_center,policy_description,expense_platform,corporate_card FROM payment_profiles WHERE traveler_uuid=:u ORDER BY context",p),
     sql("SELECT id,trip_name,trip_locator,departure_date,return_date,origin_iata,destination_iata,trip_context,status,total_fare,currency,notes,source_platform,created_at::text FROM trips WHERE traveler_uuid=:u ORDER BY departure_date DESC LIMIT 50",p),
-    sql("SELECT s.trip_id,s.id,s.segment_type,s.segment_order,s.carrier,s.flight_number,s.origin_iata,s.destination_iata,s.departure_datetime,s.arrival_datetime,s.cabin_class,s.seat_number,s.duration_minutes,s.aircraft_type FROM trip_segments s INNER JOIN trips t ON t.id=s.trip_id WHERE t.traveler_uuid=:u ORDER BY s.trip_id,s.segment_order",p),
+    sql("SELECT s.trip_id,s.id,s.segment_type,s.segment_order,s.carrier,s.flight_number,s.train_number,s.origin_iata,s.destination_iata,s.origin_name,s.destination_name,s.departure_datetime,s.arrival_datetime,s.cabin_class,s.seat_number,s.duration_minutes,s.aircraft_type FROM trip_segments s INNER JOIN trips t ON t.id=s.trip_id WHERE t.traveler_uuid=:u ORDER BY s.trip_id,s.segment_order",p),
     sql("SELECT ps.trip_id,ps.passenger_name,ps.seat_number,ps.is_primary FROM trip_passengers ps INNER JOIN trips t ON t.id=ps.trip_id WHERE t.traveler_uuid=:u ORDER BY ps.trip_id,ps.is_primary DESC",p),
     sql("SELECT code,label,category,sort_order,fields_required,fields_optional FROM document_types WHERE is_active=TRUE ORDER BY sort_order",[]),
     sql("SELECT id,name,type,destination,dep::text,ret::text,members,flights,hotel,notes,trip_id::text,archived_at FROM traveler_groups WHERE owner_uuid=:u ORDER BY updated_at DESC",p),
@@ -810,6 +810,49 @@ exports.handler=async function(event){
       const tripIdB=body.trip_id_b;
       if(!tripIdA||!tripIdB)return err("trip_id_a and trip_id_b required",event,400);
       await sql("INSERT INTO trip_merge_dismissals (id,traveler_uuid,trip_id_a,trip_id_b) VALUES (uuid_generate_v4(),:u,:a,:b) ON CONFLICT DO NOTHING",[uuidParam("u",myUuid),uuidParam("a",tripIdA),uuidParam("b",tripIdB)]);
+      return ok({success:true},event);
+    }
+    // POST /api/v1/trips/:id/segments — manually add a segment to a trip
+    if(method==="POST"&&path.match(/^\/api\/v1\/trips\/[^/]+\/segments$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      if(!myUuid)return err("Traveler not found",event,404);
+      const parts=path.split('/').filter(Boolean);
+      const tripId=parts[3];
+      const tripRows=await sql("SELECT id FROM trips WHERE id=:tid AND traveler_uuid=:u",[uuidParam("tid",tripId),uuidParam("u",myUuid)]);
+      if(!tripRows||!tripRows.length)return err("Trip not found",event,404);
+      const body=JSON.parse(event.body||"{}");
+      const segType=(body.segment_type||'').toUpperCase();
+      const VALID_TYPES=['FLIGHT','HOTEL','TRAIN','CAR','FERRY','CRUISE'];
+      if(!VALID_TYPES.includes(segType))return err("Invalid segment_type",event,400);
+      if(!body.departure_date)return err("departure_date required",event,400);
+      const maxRows=await sql("SELECT COALESCE(MAX(segment_order),0) AS mx FROM trip_segments WHERE trip_id=:tid",[uuidParam("tid",tripId)]);
+      const nextOrder=(maxRows[0]?.mx||0)+1;
+      const{randomBytes}=require('crypto');
+      const b=randomBytes(16);b[6]=(b[6]&0x0f)|0x40;b[8]=(b[8]&0x3f)|0x80;
+      const segId=b.toString('hex').replace(/(.{8})(.{4})(.{4})(.{4})(.{12})/,'$1-$2-$3-$4-$5');
+      await sql(
+        "INSERT INTO trip_segments(id,trip_id,segment_type,segment_order,origin_iata,destination_iata,origin_name,destination_name,carrier,flight_number,train_number,departure_datetime,arrival_datetime,booking_ref) VALUES(:id::uuid,:tid,:stype,:order,:oi,:di,:oname,:dname,:carrier,:fn,:tn,:dep::timestamptz,:arr::timestamptz,:ref)",
+        [strParam("id",segId),uuidParam("tid",tripId),strParam("stype",segType),numParam("order",nextOrder),
+         strParam("oi",body.origin_iata||null),strParam("di",body.destination_iata||null),
+         strParam("oname",body.origin_name||null),strParam("dname",body.destination_name||null),
+         strParam("carrier",body.carrier||null),strParam("fn",body.flight_number||null),strParam("tn",body.train_number||null),
+         strParam("dep",body.departure_date||null),strParam("arr",body.arrival_date||null),
+         strParam("ref",body.booking_ref||null)]
+      );
+      return{statusCode:201,headers:cors(go(event)),body:JSON.stringify({id:segId,segment_order:nextOrder})};
+    }
+    // DELETE /api/v1/trips/:id/segments/:segId — remove a manually-added segment
+    if(method==="DELETE"&&path.match(/^\/api\/v1\/trips\/[^/]+\/segments\/[^/]+$/)){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      if(!myUuid)return err("Traveler not found",event,404);
+      const parts=path.split('/').filter(Boolean);
+      const tripId=parts[3];
+      const segId=parts[5];
+      const ownerCheck=await sql("SELECT ts.id FROM trip_segments ts JOIN trips t ON t.id=ts.trip_id WHERE ts.id=:sid::uuid AND ts.trip_id=:tid AND t.traveler_uuid=:u",[strParam("sid",segId),uuidParam("tid",tripId),uuidParam("u",myUuid)]);
+      if(!ownerCheck||!ownerCheck.length)return err("Segment not found",event,404);
+      await sql("DELETE FROM trip_segments WHERE id=:sid::uuid",[strParam("sid",segId)]);
       return ok({success:true},event);
     }
     if(method==="GET"&&path.match(/\/profile\/[^/]+$/)&&path.indexOf("/bleisure")===-1){

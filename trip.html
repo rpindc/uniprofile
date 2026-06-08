@@ -250,7 +250,7 @@ body.doc-editing #save-pdf-btn{display:none!important}
   #breadcrumb-link,
   .doc-edit-bar,.doc-controls,
   .edit-only,.ws-item-actions,
-  #save-pdf-btn,#pdf-hint,#ws-notes-editor,
+  #save-pdf-btn,#pdf-hint,#ws-notes-editor,#add-seg-btn,.seg-stay-add,
   .modal-overlay,#toast-msg,.dc-link-out{display:none!important}
   /* Full-width single-column layout */
   .shell{display:block}
@@ -319,6 +319,7 @@ body.doc-editing #save-pdf-btn{display:none!important}
   <symbol id="i-bookmark" viewBox="0 0 24 24" fill="none"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></symbol>
   <symbol id="i-phone-alert" viewBox="0 0 24 24" fill="none"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.62 3.38 2 2 0 0 1 3.62 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6.18 6.18l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></symbol>
   <symbol id="i-person-check" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.5" stroke="currentColor" stroke-width="1.25"/><path d="M3 19c0-3 2.5-5 6-5" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M14 15l2.5 2.5L21 12" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-train" viewBox="0 0 24 24" fill="none"><rect x="4" y="3" width="16" height="14" rx="3" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M4 13h16" stroke="currentColor" stroke-width="1.25"/><path d="M8 17l-2 4M16 17l2 4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><circle cx="8.5" cy="8.5" r="1.25" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.25" fill="currentColor"/></symbol>
 </svg>
 
 <header class="mob-header">
@@ -655,6 +656,54 @@ body.doc-editing #save-pdf-btn{display:none!important}
   </div>
 </div>
 
+<!-- ── Add Segment Modal ── -->
+<div class="modal-overlay" id="add-seg-modal" onclick="if(event.target===this)closeAddSegModal()">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-header">
+      <h2 class="h3">Add segment</h2>
+      <button class="modal-close" onclick="closeAddSegModal()">&#x2715;</button>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Type</label>
+      <select class="form-input" id="as-type" onchange="_updateSegFields()">
+        <option value="TRAIN">Train</option>
+        <option value="FLIGHT">Flight</option>
+        <option value="HOTEL">Hotel</option>
+        <option value="CAR">Car rental</option>
+        <option value="FERRY">Ferry</option>
+        <option value="CRUISE">Cruise</option>
+      </select>
+    </div>
+    <div id="as-iata-panel" style="display:none">
+      <div style="display:flex;gap:10px">
+        <div class="form-field" style="flex:1"><label class="form-label">Origin (IATA)</label><input class="form-input" id="as-origin-iata" maxlength="3" placeholder="e.g. DCA" style="text-transform:uppercase"/></div>
+        <div class="form-field" style="flex:1"><label class="form-label">Destination (IATA)</label><input class="form-input" id="as-dest-iata" maxlength="3" placeholder="e.g. NRT" style="text-transform:uppercase"/></div>
+      </div>
+    </div>
+    <div id="as-name-panel">
+      <div class="form-field"><label class="form-label" id="as-origin-label">Origin</label><input class="form-input" id="as-origin-name" maxlength="200" placeholder="e.g. Tokyo Station"/></div>
+      <div class="form-field"><label class="form-label" id="as-dest-label">Destination</label><input class="form-input" id="as-dest-name" maxlength="200" placeholder="e.g. Hiroshima Station"/></div>
+    </div>
+    <div class="form-field"><label class="form-label" id="as-carrier-label">Operator</label><input class="form-input" id="as-carrier" maxlength="100" placeholder="e.g. JR Central"/></div>
+    <div id="as-service-panel">
+      <div class="form-field"><label class="form-label" id="as-service-label">Train number</label><input class="form-input" id="as-service-num" maxlength="30" placeholder=""/></div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <div class="form-field" style="flex:1"><label class="form-label" id="as-dep-label">Departure</label><input class="form-input" id="as-dep-date" type="date"/></div>
+      <div class="form-field" style="flex:1"><label class="form-label" id="as-arr-label">Arrival</label><input class="form-input" id="as-arr-date" type="date"/></div>
+    </div>
+    <div id="as-cabin-panel" style="display:none">
+      <div class="form-field"><label class="form-label">Cabin class</label><select class="form-input" id="as-cabin"><option value="">—</option><option value="economy">Economy</option><option value="premium_economy">Premium Economy</option><option value="business">Business</option><option value="first">First</option></select></div>
+    </div>
+    <div class="form-field"><label class="form-label">Booking reference</label><input class="form-input" id="as-booking-ref" maxlength="100" placeholder="PNR or confirmation number"/></div>
+    <div id="as-error" class="form-error"></div>
+    <div class="form-actions">
+      <button class="btn btn-primary btn-sm" id="as-submit-btn" onclick="submitAddSeg()">Add segment</button>
+      <button class="btn btn-secondary btn-sm" onclick="closeAddSegModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="/intelligence.js"></script>
@@ -802,12 +851,15 @@ function _fmtSegDate(dt){
 }
 function renderAirSectors(segments,tripCtx){
   var html='<div class="doc-section doc-section--primary">';
-  html+='<div class="doc-section-head"><div class="doc-section-label">Air Sectors</div></div>';
+  html+='<div class="doc-section-head"><div class="doc-section-label">Itinerary</div>'
+    +(!_group&&_trip?'<button class="btn btn-secondary btn-sm" id="add-seg-btn" onclick="openAddSegModal()">+ Add segment</button>':'')
+    +'</div>';
   var all=(segments||[]).slice().sort(_segSortCmp);
   var flights=all.filter(function(s){return s.segment_type==='FLIGHT';});
   var hotels=all.filter(function(s){return s.segment_type==='HOTEL';});
-  if(!flights.length&&!hotels.length){
-    html+='<div class="doc-air-slot">No flight segments on file for this trip.</div>';
+  var otherLegs=all.filter(function(s){return s.segment_type!=='FLIGHT'&&s.segment_type!=='HOTEL';});
+  if(!flights.length&&!hotels.length&&!otherLegs.length){
+    html+='<div class="doc-air-slot">No segments on file for this trip.</div>';
     html+='</div>';
     return html;
   }
@@ -856,6 +908,27 @@ function renderAirSectors(segments,tripCtx){
     h+='</div></div>';
     return h;
   }
+  function _otherLegRow(s){
+    var typeLabel={TRAIN:'Train',CAR:'Car',FERRY:'Ferry',CRUISE:'Cruise'}[s.segment_type]||(s.segment_type||'');
+    var orig=s.origin_name||(s.origin_iata?s.origin_iata.toUpperCase():'')||'';
+    var dest=s.destination_name||(s.destination_iata?s.destination_iata.toUpperCase():'')||'';
+    var serviceNum=s.train_number||'';
+    var carrierStr=s.carrier?(serviceNum?escHtml(s.carrier)+' '+escHtml(serviceNum):escHtml(s.carrier)):(serviceNum?escHtml(serviceNum):typeLabel);
+    var depTime=_fmtSegTime(s.departure_datetime);
+    var arrTime=_fmtSegTime(s.arrival_datetime);
+    var depDate=_fmtSegDate(s.departure_datetime);
+    var h='<div class="doc-flight-row">';
+    h+='<div class="doc-flight-flt"><span class="doc-flight-code">'+typeLabel+'</span></div>';
+    h+='<div class="doc-flight-route">';
+    if(orig||dest)h+='<div class="doc-flight-iata">'+escHtml(orig||'—')+' <span class="doc-flight-arrow">-&gt;</span> '+escHtml(dest||'—')+'</div>';
+    h+='<div class="doc-flight-cities">'+carrierStr+'</div>';
+    h+='</div>';
+    h+='<div class="doc-flight-times">';
+    if(depDate)h+='<div class="doc-flight-date">'+escHtml(depDate)+'</div>';
+    if(depTime)h+='<div class="doc-flight-clock">'+escHtml(depTime)+(arrTime?' -&gt; '+escHtml(arrTime):'')+'</div>';
+    h+='</div></div>';
+    return h;
+  }
   function _stayRow(htls,gapMins,iataAt){
     var h='<div class="seg-stay-row">';
     h+='<div class="seg-stay-icon"><span class="seg-stay-triangle"></span></div>';
@@ -875,7 +948,7 @@ function renderAirSectors(segments,tripCtx){
       h+='<div class="seg-stay-name">'+(loc?escHtml(loc):'Stay')+'</div>';
       var ns=_nightStr(gapMins);
       if(ns)h+='<div class="seg-stay-meta">'+ns+'</div>';
-      h+='<div class="seg-stay-add">+ add hotel</div>';
+      h+='<div class="seg-stay-add" onclick="openAddSegModal()" style="cursor:pointer">+ add segment</div>';
     }
     h+='</div></div>';
     return h;
@@ -898,15 +971,16 @@ function renderAirSectors(segments,tripCtx){
     out+='</div>';
     return out;
   }
-  function _buildTimeline(fSegs,hSegs){
+  function _buildTimeline(allLegs,hSegs){
     var consumed={};
     var items=[];
-    for(var i=0;i<fSegs.length;i++){
-      items.push({type:'flight',seg:fSegs[i]});
-      if(i<fSegs.length-1){
-        var prev=fSegs[i],nxt=fSegs[i+1];
+    for(var i=0;i<allLegs.length;i++){
+      var legSeg=allLegs[i];
+      items.push({type:legSeg.segment_type==='FLIGHT'?'flight':'otherleg',seg:legSeg});
+      if(i<allLegs.length-1){
+        var prev=allLegs[i],nxt=allLegs[i+1];
         var gapMins=_gapMins(prev.arrival_datetime,nxt.departure_datetime);
-        var iataAt=(prev.destination_iata||'').toUpperCase();
+        var iataAt=(prev.destination_iata||'').toUpperCase()||(prev.destination_name||'');
         if(gapMins!==null&&gapMins>0){
           if(gapMins>1440){
             var prevArr=_sdts(prev.arrival_datetime);
@@ -930,7 +1004,7 @@ function renderAirSectors(segments,tripCtx){
       if(!consumed[h.id||h.segment_order]){
         var insertIdx=items.length;
         for(var j=0;j<items.length;j++){
-          if(items[j].type==='flight'&&(items[j].seg.segment_order||0)<(h.segment_order||0))insertIdx=j+1;
+          if((items[j].type==='flight'||items[j].type==='otherleg')&&(items[j].seg.segment_order||0)<(h.segment_order||0))insertIdx=j+1;
         }
         items.splice(insertIdx,0,{type:'stay',explicit:true,hotels:[h],mins:null,iata:null});
       }
@@ -956,13 +1030,15 @@ function renderAirSectors(segments,tripCtx){
         }
       }
       if(item.type==='flight'){h+=_flightRow(item.seg);h+=_connChipAfter(item.seg);}
+      else if(item.type==='otherleg'){h+=_otherLegRow(item.seg);}
       else if(item.type==='stay'){h+=_stayRow(item.hotels,item.mins,item.iata);}
       else if(item.type==='layover'){h+=_layoverRow(item.mins,item.iata);}
     }
     return h;
   }
   var retDate=tripCtx&&tripCtx.return_date;
-  html+=_renderTimeline(_buildTimeline(flights,hotels),retDate);
+  var allLegs=flights.concat(otherLegs).sort(_segSortCmp);
+  html+=_renderTimeline(_buildTimeline(allLegs,hotels),retDate);
   html+='</div>';
   return html;
 }
@@ -2815,6 +2891,69 @@ function _updateRwFade(){
   o.classList.toggle('rw-overflow',w.scrollWidth>w.clientWidth);
 }
 window.addEventListener('resize',_updateRwFade);
+
+function openAddSegModal(){
+  var fields=['as-origin-iata','as-dest-iata','as-origin-name','as-dest-name','as-carrier','as-service-num','as-booking-ref'];
+  fields.forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  var dep=document.getElementById('as-dep-date');var arr=document.getElementById('as-arr-date');
+  if(dep)dep.value='';if(arr)arr.value='';
+  var cab=document.getElementById('as-cabin');if(cab)cab.value='';
+  document.getElementById('as-type').value='TRAIN';
+  document.getElementById('as-error').textContent='';
+  var btn=document.getElementById('as-submit-btn');if(btn){btn.disabled=false;btn.textContent='Add segment';}
+  _updateSegFields();
+  document.getElementById('add-seg-modal').classList.add('open');
+}
+function closeAddSegModal(){document.getElementById('add-seg-modal').classList.remove('open');}
+function _updateSegFields(){
+  var t=document.getElementById('as-type').value;
+  document.getElementById('as-iata-panel').style.display=t==='FLIGHT'?'':'none';
+  document.getElementById('as-name-panel').style.display=(t!=='FLIGHT'&&t!=='HOTEL')?'':'none';
+  document.getElementById('as-service-panel').style.display=(t==='FLIGHT'||t==='TRAIN')?'':'none';
+  document.getElementById('as-cabin-panel').style.display=t==='FLIGHT'?'':'none';
+  var lm={FLIGHT:{carrier:'Carrier',service:'Flight number',dep:'Departure',arr:'Arrival',orig:'Origin',dest:'Destination',carPh:'e.g. United Airlines'},
+          TRAIN:{carrier:'Operator',service:'Train number',dep:'Departure',arr:'Arrival',orig:'Origin',dest:'Destination',carPh:'e.g. JR Central'},
+          HOTEL:{carrier:'Hotel name',dep:'Check-in',arr:'Check-out',carPh:'e.g. Marriott Ginza'},
+          CAR:{carrier:'Company',dep:'Pick-up date',arr:'Drop-off date',orig:'Pick-up location',dest:'Drop-off location',carPh:'e.g. Hertz'},
+          FERRY:{carrier:'Operator',dep:'Departure',arr:'Arrival',orig:'Departure port',dest:'Arrival port',carPh:'e.g. Brittany Ferries'},
+          CRUISE:{carrier:'Cruise line',dep:'Embarkation date',arr:'Disembarkation date',orig:'Embarkation port',dest:'Disembarkation port',carPh:'e.g. Royal Caribbean'}}[t]||{};
+  var _sl=function(id,v){var e=document.getElementById(id);if(e&&v)e.textContent=v;};
+  var _ph=function(id,v){var e=document.getElementById(id);if(e&&v!==undefined)e.placeholder=v;};
+  _sl('as-carrier-label',lm.carrier);_sl('as-dep-label',lm.dep);_sl('as-arr-label',lm.arr);
+  _sl('as-service-label',lm.service);_sl('as-origin-label',lm.orig);_sl('as-dest-label',lm.dest);
+  _ph('as-carrier',lm.carPh||'');
+}
+async function submitAddSeg(){
+  var t=document.getElementById('as-type').value;
+  var dep=document.getElementById('as-dep-date').value;
+  var errEl=document.getElementById('as-error');
+  if(!dep){errEl.textContent='Departure date is required.';return;}
+  var body={segment_type:t,departure_date:dep};
+  var arr=document.getElementById('as-arr-date').value;if(arr)body.arrival_date=arr;
+  if(t==='FLIGHT'){
+    var oi=(document.getElementById('as-origin-iata').value||'').toUpperCase();
+    var di=(document.getElementById('as-dest-iata').value||'').toUpperCase();
+    if(oi)body.origin_iata=oi;if(di)body.destination_iata=di;
+    var fn=document.getElementById('as-service-num').value;if(fn)body.flight_number=fn;
+    var cab=document.getElementById('as-cabin').value;if(cab)body.cabin_class=cab;
+  }else if(t!=='HOTEL'){
+    var on=document.getElementById('as-origin-name').value;if(on)body.origin_name=on;
+    var dn=document.getElementById('as-dest-name').value;if(dn)body.destination_name=dn;
+    if(t==='TRAIN'){var tn=document.getElementById('as-service-num').value;if(tn)body.train_number=tn;}
+  }
+  var carrier=document.getElementById('as-carrier').value;if(carrier)body.carrier=carrier;
+  var ref=document.getElementById('as-booking-ref').value;if(ref)body.booking_ref=ref;
+  var btn=document.getElementById('as-submit-btn');
+  btn.disabled=true;btn.textContent='Adding…';errEl.textContent='';
+  try{
+    await _req('POST','/api/v1/trips/'+_trip.id+'/segments',body);
+    closeAddSegModal();
+    window.location.reload();
+  }catch(e){
+    errEl.textContent='Failed to add segment. Please try again.';
+    btn.disabled=false;btn.textContent='Add segment';
+  }
+}
 </script>
 </body>
 </html>
