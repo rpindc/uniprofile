@@ -103,6 +103,16 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .alert-card{display:flex;gap:14px;align-items:flex-start;padding:16px 18px;margin-bottom:10px;border-radius:10px;border:0.5px solid rgba(186,117,23,0.35);background:#fff}
 .alert-card.red{border-color:rgba(196,77,77,0.35)}
 .alert-card.invite{border-color:rgba(3,105,161,0.3);background:linear-gradient(to bottom right,#fff,#f0f8ff)}
+/* Watch alert banner */
+.watch-alert-card{background:#fff;border-radius:10px;padding:14px 18px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+.watch-alert-card.act{border:0.5px solid rgba(186,117,23,0.35)}
+.watch-alert-card.urgent{border:0.5px solid rgba(196,77,77,0.35);background:#fff8f8}
+.watch-alert-body{flex:1;min-width:0}
+.watch-alert-title{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:3px}
+.watch-alert-detail{font-size:12px;color:var(--ink-mute);margin-top:2px}
+.watch-alert-sev{display:inline-block;font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;padding:2px 7px;border-radius:100px;margin-bottom:6px}
+.watch-alert-sev.act{background:var(--amber-soft);color:var(--amber)}
+.watch-alert-sev.urgent{background:var(--red-soft);color:var(--red)}
 
 @media(max-width:767px){.stats-row{grid-template-columns:1fr 1fr}}
 /* ── Masked-field reveal ── */
@@ -233,6 +243,9 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       <div id="family-notifications"></div>
     </section>
 
+    <!-- Watch alerts (populated async) -->
+    <div id="watch-alert-banner" style="margin-bottom:4px"></div>
+
     <!-- Alerts -->
     <section class="section" id="section-alerts">
       <div class="section-header">
@@ -346,6 +359,33 @@ function renderStats(p){
 }
 
 /* ── Alerts ── */
+var _watchAlerts=[];
+function renderWatchAlerts(){
+  var el=document.getElementById('watch-alert-banner');
+  if(!el)return;
+  if(!_watchAlerts.length){el.innerHTML='';return;}
+  el.innerHTML=_watchAlerts.map(function(a){
+    var sc=a.to_severity==='urgent'?'urgent':'act';
+    var sl=a.to_severity==='urgent'?'Urgent':'Act now';
+    return '<div class="watch-alert-card '+sc+'" id="wal-'+escHtml(a.id)+'">'
+      +'<div class="watch-alert-body">'
+      +'<span class="watch-alert-sev '+sc+'">'+sl+'</span>'
+      +'<div class="watch-alert-title">'+escHtml(a.label||a.signal_key)+'</div>'
+      +(a.detail?'<div class="watch-alert-detail">'+escHtml(a.detail)+'</div>':'')
+      +'</div>'
+      +'<button class="btn btn-secondary btn-sm" style="flex-shrink:0;margin-top:2px" onclick="dismissWatchAlert(\''+escHtml(a.id)+'\')">Dismiss</button>'
+      +'</div>';
+  }).join('');
+}
+async function dismissWatchAlert(id){
+  try{
+    await _req('POST','/api/v1/me/watch-alerts/'+id+'/dismiss');
+    _watchAlerts=_watchAlerts.filter(function(a){return a.id!==id;});
+    var el=document.getElementById('wal-'+id);
+    if(el)el.remove();
+    if(!_watchAlerts.length){var b=document.getElementById('watch-alert-banner');if(b)b.innerHTML='';}
+  }catch(e){console.error('dismiss watch alert',e);}
+}
 function renderAlerts(p){
   var docs=p.documents||[];
   var today=new Date();today.setHours(0,0,0,0);
@@ -753,6 +793,11 @@ async function homeInit(){
     renderInsight(prof);
     renderNotifications();
     renderFamilyNotifs();
+    // Watch alerts (non-blocking)
+    _req("GET","/api/v1/me/watch-alerts").then(function(alerts){
+      _watchAlerts=alerts||[];
+      renderWatchAlerts();
+    }).catch(function(){});
   }catch(e){console.error(e);}
 }
 homeInit();

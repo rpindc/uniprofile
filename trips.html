@@ -234,6 +234,17 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .bound-trip-modal-body strong{color:var(--ink)}
 .pending-actions{margin-top:12px;padding-top:12px;border-top:0.5px solid var(--rule)}
 .pending-msg{font-size:12px;color:var(--ink-mute);margin-bottom:10px}
+.watch-alert-banner{margin-bottom:16px}
+.watch-alert-card{background:#fff;border-radius:10px;padding:14px 18px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+.watch-alert-card:last-child{margin-bottom:0}
+.watch-alert-card.act{border:0.5px solid rgba(186,117,23,0.35)}
+.watch-alert-card.urgent{border:0.5px solid rgba(196,77,77,0.35);background:#fff8f8}
+.watch-alert-body{flex:1;min-width:0}
+.watch-alert-title{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:3px}
+.watch-alert-detail{font-size:12px;color:var(--ink-mute);margin-top:2px}
+.watch-alert-sev{display:inline-block;font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;padding:2px 7px;border-radius:100px;margin-bottom:6px}
+.watch-alert-sev.act{background:var(--amber-soft);color:var(--amber)}
+.watch-alert-sev.urgent{background:var(--red-soft);color:var(--red)}
 .merge-banner{margin-bottom:16px}
 .merge-banner-card{background:var(--amber-soft);border:0.5px solid rgba(186,117,23,0.22);border-radius:10px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:8px}
 .merge-banner-card:last-child{margin-bottom:0}
@@ -374,6 +385,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     </div>
 
     <div id="year-strip" style="display:none"></div>
+    <div id="watch-alert-banner" class="watch-alert-banner"></div>
     <div id="merge-banner" class="merge-banner"></div>
     <div class="trips-count-label" id="trips-count" style="display:none"></div>
     <div id="trips-list"></div>
@@ -465,6 +477,7 @@ var _CID="2heljmdli4f9cv2i4m0i020mfc";
 var _tok=null,_uid=null;
 var _allTrips=[];
 var _mergeSuggestions=[];
+var _watchAlerts=[];
 var _journeyMap={};
 var _curFilter="all";
 var _curSearch="";
@@ -1428,6 +1441,34 @@ function _tripCard(t){
     +_segmentsBlock(t.segments,t.id)
     +'</div>';
 }
+/* ── Watch alerts ── */
+function renderWatchAlerts(){
+  var el=document.getElementById('watch-alert-banner');
+  if(!el)return;
+  if(!_watchAlerts.length){el.innerHTML='';return;}
+  el.innerHTML=_watchAlerts.map(function(a){
+    var sc=a.to_severity==='urgent'?'urgent':'act';
+    var sl=a.to_severity==='urgent'?'Urgent':'Act now';
+    return '<div class="watch-alert-card '+sc+'" id="wal-'+_escHtml(a.id)+'">'
+      +'<div class="watch-alert-body">'
+      +'<span class="watch-alert-sev '+sc+'">'+sl+'</span>'
+      +'<div class="watch-alert-title">'+_escHtml(a.label||a.signal_key)+'</div>'
+      +(a.detail?'<div class="watch-alert-detail">'+_escHtml(a.detail)+'</div>':'')
+      +'</div>'
+      +'<button class="btn btn-secondary btn-sm" style="flex-shrink:0;margin-top:2px" onclick="dismissWatchAlert(\''+_escHtml(a.id)+'\')">Dismiss</button>'
+      +'</div>';
+  }).join('');
+}
+async function dismissWatchAlert(id){
+  try{
+    await _req('POST','/api/v1/me/watch-alerts/'+id+'/dismiss');
+    _watchAlerts=_watchAlerts.filter(function(a){return a.id!==id;});
+    var el=document.getElementById('wal-'+id);
+    if(el)el.remove();
+    if(!_watchAlerts.length){var b=document.getElementById('watch-alert-banner');if(b)b.innerHTML='';}
+    showToast('Alert dismissed.');
+  }catch(e){showToast('Error dismissing alert — please try again.');}
+}
 /* ── Merge suggestions ── */
 function renderMergeBanner(){
   var el=document.getElementById('merge-banner');
@@ -1767,6 +1808,11 @@ async function tripsInit(){
     updateLede();
     renderMergeBanner();
     renderTrips(_allTrips);
+    // Watch alerts (non-blocking)
+    _req("GET","/api/v1/me/watch-alerts").then(function(alerts){
+      _watchAlerts=alerts||[];
+      renderWatchAlerts();
+    }).catch(function(){});
     // Populate journey name map for bound-trip modal (non-blocking)
     _req("GET","/api/v1/trip-groups").then(function(gl){
       (gl||[]).forEach(function(g){_journeyMap[g.id]={name:g.name,archived_at:g.archived_at};});
