@@ -784,7 +784,7 @@ async function homeInit(){
       var days=Math.round((new Date(next.departure_date)-today)/86400000);
       ledeParts.push(_tripName(next)+(days===0?" is today":" in "+days+" day"+(days===1?"":"s")));
     }
-    _st("home-lede",ledeParts.length?ledeParts.join(" · ")+".":(trips.length?"All clear — no alerts.":"Welcome. Start by adding your identity and first trip."));
+    _st("home-lede",ledeParts.length?ledeParts.join(" · ")+".":(trips.length?"All clear — no alerts.":"Your travel identity in one place — forward your bookings, keep your documents ready, and never get caught out by an expiry or entry rule."));
 
     renderStats(prof);
     renderAlerts(prof);
