@@ -21,6 +21,14 @@ const DB = {
 
 function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#x27;");}
 
+// Normalize flight number to 4-digit padded form: UA882 → UA0882, NH28 → NH0028.
+// Airlines display without leading zeros in emails; booking records use padded form.
+function flightPad(fn) {
+  if (!fn) return fn;
+  var m = fn.match(/^([A-Za-z0-9]{1,3}?)\s*0*(\d{1,4})$/);
+  return m ? m[1].toUpperCase() + m[2].padStart(4, "0") : fn.toUpperCase();
+}
+
 async function sql(query, params = []) {
   try {
     const res = await rds.send(new ExecuteStatementCommand({ ...DB, sql: query, parameters: params, formatRecordsAs: "JSON" }));
@@ -193,7 +201,7 @@ async function getAnthropicKey() {
 }
 
 async function extractBookings(subject, text, apiKey) {
-  const prompt = `Extract all travel bookings from this email. Return ONLY valid JSON, no prose.
+  const prompt = `Classify and extract travel information from this email. Return ONLY valid JSON, no prose.
 
 Subject: ${subject}
 Body:
@@ -201,6 +209,7 @@ ${text}
 
 Return this exact JSON (null for missing values):
 {
+  "email_type": "CONFIRMATION or SCHEDULE_CHANGE or CANCELLATION or UNKNOWN",
   "trips": [
     {
       "trip_name": "descriptive name or null",
@@ -230,17 +239,42 @@ Return this exact JSON (null for missing values):
       ]
     }
   ],
+  "changed_segments": [
+    {
+      "trip_locator": "PNR or booking reference or null",
+      "flight_number": "e.g. UA856 — use NEW flight number if rebooking, otherwise same as original",
+      "origin_iata": "3-letter IATA code or null",
+      "destination_iata": "3-letter IATA code or null",
+      "old_departure_datetime": "YYYY-MM-DDTHH:MM or null",
+      "new_departure_datetime": "YYYY-MM-DDTHH:MM or null",
+      "old_arrival_datetime": "YYYY-MM-DDTHH:MM or null",
+      "new_arrival_datetime": "YYYY-MM-DDTHH:MM or null",
+      "change_note": "brief human-readable description of what changed, e.g. 'Departure moved 2h 30m later' or null"
+    }
+  ],
   "confidence": "HIGH or MEDIUM or LOW"
 }
 
-Rules:
+Email type classification rules:
+- CONFIRMATION: booking receipt or itinerary confirmation — contains fare, e-ticket numbers, full passenger details, "your booking is confirmed"
+- SCHEDULE_CHANGE: airline notifying of a time/flight/routing change to an existing booking — phrases like "schedule change", "flight change", "new departure time", "your flight has been rescheduled", "we've made a change to your flight", "your new flight"
+- CANCELLATION: flight or booking has been cancelled — phrases like "has been cancelled", "cancellation", "your flight will not operate"
+- UNKNOWN: transactional email that doesn't fit the above (check-in reminders, upgrades, loyalty points, hotel confirmations with no flight change)
+
+Field rules by email_type:
+- CONFIRMATION: populate trips[] with full segments; changed_segments must be []
+- SCHEDULE_CHANGE: populate changed_segments[] with one entry per changed flight; trips[] should contain the trip with updated segment data if the full itinerary is present, otherwise trips[] may be []
+- CANCELLATION: populate changed_segments[] with the cancelled flight(s), all new_* fields null; trips[] may be []
+- UNKNOWN: trips[] per normal extraction rules; changed_segments must be []
+
+General rules:
 - Flights: use FLIGHT segment with 2-letter IATA carrier, flight number, IATA airport codes
 - A round-trip may be ONE trip with two segments, or TWO separate trips — use judgement
 - Hotel: create ONE HOTEL segment — carrier=hotel name, origin_iata=destination_iata=nearest airport, departure_datetime=check-in, arrival_datetime=check-out, cabin_class=room type, seat_number=room number if shown
 - Cruise: create one CRUISE segment PER LEG between ports — carrier=ship name, cabin_class=cabin category, seat_number=stateroom number. Each segment: origin_iata=departure port nearest airport, destination_iata=arrival port nearest airport, departure_datetime=sail time from that port, arrival_datetime=arrival at next port. First segment departure=embarkation, last segment arrival=disembarkation. Use best-known IATA for each port (e.g. Nassau=NAS, Cozumel=CZM, San Juan=SJU, Belize=BZE, Grand Cayman=GCM, St Thomas=STT, Barbados=BGI, Jamaica=MBJ). For private islands with no IATA use nearest airport.
 - Car rental: create ONE CAR segment — carrier=rental company, origin_iata=pickup location nearest airport, departure_datetime=pickup datetime, arrival_datetime=dropoff datetime
 - Set trip departure_date and return_date from the first and last segment dates
-- If no booking found, return { "trips": [], "confidence": "LOW" }
+- If no booking found, return { "trips": [], "changed_segments": [], "confidence": "LOW" }
 - IATA codes must be exactly 3 uppercase letters`;
 
   const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -471,8 +505,82 @@ exports.handler = async function(event) {
       // Parse with Claude Haiku
       const apiKey = await getAnthropicKey();
       const parsed = await extractBookings(subject, fullText, apiKey);
-      console.log("Extracted:", parsed.trips.length, "trip(s), confidence:", parsed.confidence);
+      const emailType = parsed.email_type || "UNKNOWN";
+      console.log("[ingest] email_type:", emailType, "| trips:", parsed.trips.length, "| confidence:", parsed.confidence);
+      if ((parsed.changed_segments || []).length) {
+        console.log("[ingest] changed_segments:", JSON.stringify(parsed.changed_segments));
+      }
       console.log("Haiku raw:", JSON.stringify(parsed).slice(0, 1200));
+
+      // SCHEDULE_CHANGE: match existing segment by (trip_locator, flight_number, old departure date)
+      // and UPDATE times + stamp source='email_ingest' so the watch layer does not echo-suppress.
+      // CANCELLATION: write path not yet built — log and skip.
+      if (emailType === "SCHEDULE_CHANGE" || emailType === "CANCELLATION") {
+        const cs = parsed.changed_segments || [];
+        if (!cs.length) {
+          console.log("[ingest]", emailType, "| no changed_segments extracted — skipping");
+          continue;
+        }
+        if (emailType === "CANCELLATION") {
+          cs.forEach(function(c) {
+            console.log("[ingest] CANCELLATION WRITE BLOCKED (pending) | flight:", c.flight_number || "(none)",
+              "| pnr:", c.trip_locator || "(none)");
+          });
+          continue;
+        }
+        // SCHEDULE_CHANGE write path
+        for (const c of cs) {
+          if (!c.trip_locator || !c.flight_number || !c.old_departure_datetime || !c.new_departure_datetime) {
+            console.log("[ingest] SCHEDULE_CHANGE | insufficient fields — skipping segment:", JSON.stringify(c));
+            continue;
+          }
+          const tripRows = await sql(
+            "SELECT id FROM trips WHERE traveler_uuid=:u AND trip_locator=:pnr LIMIT 1",
+            [uuidParam("u", travelerUuid), strParam("pnr", c.trip_locator)]
+          );
+          if (!tripRows.length) {
+            console.log("[ingest] SCHEDULE_CHANGE | no trip found | pnr:", c.trip_locator, "| traveler:", travelerUuid);
+            continue;
+          }
+          const tripId = tripRows[0].id;
+          const oldDepDate = c.old_departure_datetime.slice(0, 10);
+          const fltPadded = flightPad(c.flight_number);
+          const updated = await sql(
+            "UPDATE trip_segments " +
+            "SET departure_datetime=:new_dep, " +
+            "    arrival_datetime=COALESCE(:new_arr, arrival_datetime), " +
+            "    source='email_ingest' " +
+            "WHERE trip_id=:tid " +
+            "  AND (flight_number=:flt OR flight_number=:flt_pad) " +
+            "  AND departure_datetime::date = :old_dep::date " +
+            "RETURNING id::text, departure_datetime::text",
+            [
+              uuidParam ("tid",     tripId),
+              strParam  ("flt",     c.flight_number),
+              strParam  ("flt_pad", fltPadded),
+              tsParam   ("new_dep", c.new_departure_datetime),
+              tsParam   ("new_arr", c.new_arrival_datetime || null),
+              dateParam ("old_dep", oldDepDate),
+            ]
+          );
+          if (updated.length) {
+            console.log("[ingest] UPDATED segment | flight:", c.flight_number,
+              "| route:", (c.origin_iata || "?") + "-" + (c.destination_iata || "?"),
+              "| old_dep:", c.old_departure_datetime,
+              "| new_dep:", c.new_departure_datetime,
+              "| rows:", updated.length,
+              "| segment_id:", updated[0].id,
+              "| note:", c.change_note || "(none)");
+          } else {
+            console.log("[ingest] NO MATCH for segment | flight:", c.flight_number,
+              "| pnr:", c.trip_locator,
+              "| old_dep_date:", oldDepDate,
+              "| trip_id:", tripId,
+              "— segment not found or already updated");
+          }
+        }
+        continue;
+      }
 
       const addedTrips = [];
 
@@ -549,9 +657,9 @@ exports.handler = async function(event) {
         for (const seg of (trip.segments || [])) {
           if (!seg.origin_iata && !seg.destination_iata) continue;
           await sql(
-            "INSERT INTO trip_segments (trip_id,segment_type,segment_order,carrier,flight_number,origin_iata,destination_iata,departure_datetime,arrival_datetime,cabin_class,seat_number,booking_ref) " +
-            "VALUES (:tid,:type,:ord,:car,:flt,:orig,:dest,:dep,:arr,:cab,:seat,:ref) " +
-            "ON CONFLICT (trip_id,segment_order) DO UPDATE SET carrier=EXCLUDED.carrier,flight_number=EXCLUDED.flight_number,origin_iata=EXCLUDED.origin_iata,destination_iata=EXCLUDED.destination_iata,departure_datetime=EXCLUDED.departure_datetime,arrival_datetime=COALESCE(EXCLUDED.arrival_datetime,trip_segments.arrival_datetime),cabin_class=EXCLUDED.cabin_class,seat_number=COALESCE(EXCLUDED.seat_number,trip_segments.seat_number)",
+            "INSERT INTO trip_segments (trip_id,segment_type,segment_order,carrier,flight_number,origin_iata,destination_iata,departure_datetime,arrival_datetime,cabin_class,seat_number,booking_ref,source) " +
+            "VALUES (:tid,:type,:ord,:car,:flt,:orig,:dest,:dep,:arr,:cab,:seat,:ref,'email_ingest') " +
+            "ON CONFLICT (trip_id,segment_order) DO UPDATE SET carrier=EXCLUDED.carrier,flight_number=EXCLUDED.flight_number,origin_iata=EXCLUDED.origin_iata,destination_iata=EXCLUDED.destination_iata,departure_datetime=EXCLUDED.departure_datetime,arrival_datetime=COALESCE(EXCLUDED.arrival_datetime,trip_segments.arrival_datetime),cabin_class=EXCLUDED.cabin_class,seat_number=COALESCE(EXCLUDED.seat_number,trip_segments.seat_number),source='email_ingest'",
             [
               uuidParam("tid",  tripId),
               strParam("type", seg.segment_type  || "FLIGHT"),

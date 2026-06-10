@@ -58,7 +58,7 @@ fi
 
 rm -f "$OUT"   # always delete first — 7z 'a' updates in place and can leave stale files
 cd "$SCRIPT_DIR"   # cd so source is '.' — avoids lambda\ prefix in zip entries
-MSYS_NO_PATHCONV=1 "$SEVENZIP_CMD" a "$OUT_WIN" . -xr'!email-ingest' -xr'!*.zip' -xr'!*.sh' > /dev/null
+MSYS_NO_PATHCONV=1 "$SEVENZIP_CMD" a "$OUT_WIN" . -xr'!email-ingest' -xr'!watch' -xr'!*.zip' -xr'!*.sh' > /dev/null
 
 echo "[package] Cleaning up..."
 rm "$SCRIPT_DIR/intelligence.js"

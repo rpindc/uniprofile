@@ -166,7 +166,7 @@ function _computeConnections(segments, memberCount) {
     var cur=flights[i], nxt=flights[i+1];
     if (!cur.arrival_datetime||!nxt.departure_datetime) continue;
     var gap = _minutesBetween(cur.arrival_datetime, nxt.departure_datetime);
-    if (gap===null||gap<0||gap>1440) continue;
+    if (gap===null||gap>1440) continue;
 
     var cDest = (cur.destination_iata||'').toUpperCase();
     var nOrig = (nxt.origin_iata||'').toUpperCase();
@@ -181,6 +181,9 @@ function _computeConnections(segments, memberCount) {
     if (severity==='ok'||severity==='soon') {
       detail = gap+' min connection at '+cDest+' (min '+mct+' min). '
         +(severity==='soon'?'Workable, but watch for delays.':'Comfortable buffer.');
+    } else if (gap<0) {
+      detail = 'Missed connection at '+cDest+' — arrives '+(Math.abs(gap))+' min after connecting flight departs.';
+      fusionLine = 'Missed connection at '+cDest+groupStr+' — schedule change creates impossible connection.';
     } else {
       detail = gap+' min at '+cDest+' — MCT is '+mct+' min. '
         +(severity==='urgent'?'Likely insufficient. Plan for disruption.':'May not leave enough time.');

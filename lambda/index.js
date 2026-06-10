@@ -3106,6 +3106,40 @@ exports.handler=async function(event){
       return ok({trip_group_id:groupId,attestation:{attestation_id:rows[0].attestation_id,confirmed_at:rows[0].confirmed_at,notes:rows[0].notes||null}},event);
     }
 
+    // GET /api/v1/me/watch-alerts
+    if(method==="GET"&&path==="/api/v1/me/watch-alerts"){
+      const token=await verifyToken(event);
+      const travelerUuid=await getOrCreateTraveler(token.sub,token.email);
+      if(!travelerUuid)return err("Traveler not found",event,404);
+      const alerts=await sql(
+        "SELECT id::text,signal_key,entity_key,label,detail,to_severity,occurred_at "+
+        "FROM watch_events "+
+        "WHERE traveler_uuid=:u AND dismissed_at IS NULL AND to_severity IN ('act','urgent') "+
+        "ORDER BY occurred_at DESC LIMIT 20",
+        [uuidParam("u",travelerUuid)]
+      );
+      return ok(alerts,event);
+    }
+    // POST /api/v1/me/watch-alerts/:id/dismiss
+    if(method==="POST"&&/^\/api\/v1\/me\/watch-alerts\/[0-9a-f-]+\/dismiss$/.test(path)){
+      const token=await verifyToken(event);
+      const travelerUuid=await getOrCreateTraveler(token.sub,token.email);
+      if(!travelerUuid)return err("Traveler not found",event,404);
+      const alertId=path.split('/').filter(Boolean)[4];
+      const rows=await sql(
+        "UPDATE watch_events SET dismissed_at=NOW() WHERE id=:id::uuid AND traveler_uuid=:u RETURNING id::text",
+        [uuidParam("id",alertId),uuidParam("u",travelerUuid)]
+      );
+      if(!rows.length){
+        const check=await sql(
+          "SELECT id FROM watch_events WHERE id=:id::uuid AND traveler_uuid=:u",
+          [uuidParam("id",alertId),uuidParam("u",travelerUuid)]
+        );
+        if(!check.length)return err("Not found",event,404);
+        // already dismissed — idempotent OK
+      }
+      return ok({dismissed:true},event);
+    }
     return err("Not found",event,404);
   }catch(e){
     if(e.status)return err(e.message,event,e.status);
