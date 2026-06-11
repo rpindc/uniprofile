@@ -307,6 +307,7 @@ body.me-editing .me-edit-banner{display:flex}
     <a href="/groups.html" class="nav-item"><svg class="icon"><use href="#i-groups"/></svg>Journey</a>
     <a href="/privacy.html" class="nav-item"><svg class="icon"><use href="#i-privacy"/></svg>Privacy</a>
     <a href="/guide.html" class="nav-item"><svg class="icon"><use href="#i-book"/></svg>Guide</a>
+    <a href="/admin.html" class="nav-item" id="sidebar-admin" style="display:none"><svg class="icon"><use href="#i-privacy"/></svg>Admin</a>
   </nav>
   <div class="sidebar-user-card">
     <div class="user-card-inner">
@@ -1407,6 +1408,8 @@ function _sidebarUpdate(p){
   _st("sidebar-name",_dn(p));
   _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
   _st("sidebar-avatar",_ini(p));
+  var al=document.getElementById("sidebar-admin");
+  if(al)al.style.display=p.is_admin?"":"none";
 }
 
 /* ── Auth ── */
