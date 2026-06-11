@@ -230,7 +230,7 @@ async function buildProfile(uuid){
     sql("SELECT primary_meal_code,beverage_pref,allergies,avoid_items,dietary_notes FROM meal_preferences WHERE traveler_uuid=:u",p),
     sql("SELECT id,program_type,provider_name,program_name,member_number,tier_status,tier_expires,auto_apply,linked_card_type,linked_card_last4,points_balance,notes FROM loyalty_memberships WHERE traveler_uuid=:u AND is_active=TRUE ORDER BY program_type,provider_name",p),
     sql("SELECT active_context,last_switched_at FROM bleisure_context WHERE traveler_uuid=:u",p),
-    sql("SELECT profile_complete,tier,email,uniprofile_number,display_name FROM travelers WHERE uuid=:u",p),
+    sql("SELECT profile_complete,tier,email,uniprofile_number,display_name,is_admin FROM travelers WHERE uuid=:u",p),
     sql("SELECT context,preferred_card,company_name,cost_center,policy_description,expense_platform,corporate_card FROM payment_profiles WHERE traveler_uuid=:u ORDER BY context",p),
     sql("SELECT id,trip_name,trip_locator,departure_date,return_date,origin_iata,destination_iata,trip_context,status,total_fare,currency,notes,source_platform,created_at::text FROM trips WHERE traveler_uuid=:u ORDER BY departure_date DESC LIMIT 50",p),
     sql("SELECT s.trip_id,s.id,s.segment_type,s.segment_order,s.source,s.carrier,s.flight_number,s.train_number,s.origin_iata,s.destination_iata,s.origin_name,s.destination_name,s.departure_datetime,s.arrival_datetime,s.cabin_class,s.seat_number,s.notes,s.duration_minutes,s.aircraft_type FROM trip_segments s INNER JOIN trips t ON t.id=s.trip_id WHERE t.traveler_uuid=:u ORDER BY s.trip_id,s.segment_order",p),
@@ -283,7 +283,7 @@ async function buildProfile(uuid){
     trips.length>0
   ];
   const profileCompleteness=Math.round(_milestones.filter(Boolean).length/_milestones.length*100);
-  return {uuid,uniprofile_number:meta[0]&&meta[0].uniprofile_number||null,email:meta[0]&&meta[0].email,tier:meta[0]&&meta[0].tier||"free",profile_completeness:profileCompleteness,display_name:meta[0]&&meta[0].display_name||null,active_context:bleisure[0]&&bleisure[0].active_context||"PERSONAL",identity:identity[0]||null,documents:docsWithExpiry,document_types:docTypesGrouped,seat_preferences:seat[0]||null,meal_preferences:mealData,...profileModules,loyalty_programs:loyalty,payment_profiles:payment,trips,trips_count:trips.length,groups,merge_suggestions:suggestionRows||[],generated_at:new Date().toISOString()};
+  return {uuid,uniprofile_number:meta[0]&&meta[0].uniprofile_number||null,email:meta[0]&&meta[0].email,tier:meta[0]&&meta[0].tier||"free",is_admin:!!(meta[0]&&meta[0].is_admin),profile_completeness:profileCompleteness,display_name:meta[0]&&meta[0].display_name||null,active_context:bleisure[0]&&bleisure[0].active_context||"PERSONAL",identity:identity[0]||null,documents:docsWithExpiry,document_types:docTypesGrouped,seat_preferences:seat[0]||null,meal_preferences:mealData,...profileModules,loyalty_programs:loyalty,payment_profiles:payment,trips,trips_count:trips.length,groups,merge_suggestions:suggestionRows||[],generated_at:new Date().toISOString()};
 }
 async function updateModule(uuid,module,data){
   switch(module){
@@ -2293,7 +2293,7 @@ exports.handler=async function(event){
       const myUuid=await getOrCreateTraveler(token.sub,token.email);
       let {display_name}=body;
       if(display_name!==null&&display_name!==undefined){
-        display_name=String(display_name).trim().replace(/[ -​-‏﻿]/g,"");
+        display_name=String(display_name).trim().replace(/[\u0000-\u001f\u200b-\u200f\ufeff]/g,"");
         if(display_name.length===0)display_name=null;
         else if(display_name.length>40)return err("Display name must be 40 characters or fewer",event,400);
         else if(/^UP-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(display_name))return err("Display name cannot match a UniProfile ID format",event,400);

@@ -20,8 +20,10 @@ OUT="$REPO_ROOT/uniprofile-lambda.zip"
 OUT_WIN="$(cygpath -w "$OUT")"
 SRC_WIN="$(cygpath -w "$SCRIPT_DIR")"
 
-echo "[package] Copying shared intelligence module..."
-cp "$REPO_ROOT/intelligence.js" "$SCRIPT_DIR/intelligence.js"
+echo "[package] Copying shared intelligence module (LF-normalised)..."
+# core.autocrlf=true on Windows checks out files with CRLF; Lambda runs on Linux
+# and Node 20 rejects CRLF in some source constructs. Always copy the LF git blob.
+git -C "$REPO_ROOT" show HEAD:intelligence.js > "$SCRIPT_DIR/intelligence.js"
 
 echo "[package] Syntax check..."
 node --check "$SCRIPT_DIR/index.js"        || { echo "[package] ABORT: index.js failed node --check"; exit 1; }
