@@ -150,7 +150,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     <a href="/me.html" class="mob-nav-item" data-page="me"><svg class="icon" aria-hidden="true"><use href="#i-me"/></svg>Me</a>
     <a href="/people.html" class="mob-nav-item" data-page="people"><svg class="icon" aria-hidden="true"><use href="#i-people"/></svg>People</a>
     <a href="/trips.html" class="mob-nav-item" data-page="trips"><svg class="icon" aria-hidden="true"><use href="#i-trips"/></svg>Trips</a>
-    <a href="/groups.html" class="mob-nav-item" data-page="groups"><svg class="icon" aria-hidden="true"><use href="#i-groups"/></svg>Journey</a>
+    <a href="/groups.html" class="mob-nav-item" data-page="groups"><svg class="icon" aria-hidden="true"><use href="#i-groups"/></svg>Journeys</a>
     <a href="/privacy.html" class="mob-nav-item" data-page="privacy"><svg class="icon" aria-hidden="true"><use href="#i-privacy"/></svg>Privacy</a>
     <a href="/guide.html" class="mob-nav-item" data-page="guide"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg>Guide</a>
   </div>
@@ -178,7 +178,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       <a href="/me.html" class="nav-item"><svg class="icon"><use href="#i-me"/></svg>Me</a>
       <a href="/people.html" class="nav-item"><svg class="icon"><use href="#i-people"/></svg>People</a>
       <a href="/trips.html" class="nav-item"><svg class="icon"><use href="#i-trips"/></svg>Trips</a>
-      <a href="/groups.html" class="nav-item"><svg class="icon"><use href="#i-groups"/></svg>Journey</a>
+      <a href="/groups.html" class="nav-item"><svg class="icon"><use href="#i-groups"/></svg>Journeys</a>
       <a href="/privacy.html" class="nav-item"><svg class="icon"><use href="#i-privacy"/></svg>Privacy</a>
       <a href="/guide.html" class="nav-item"><svg class="icon"><use href="#i-book"/></svg>Guide</a>
       <a href="/admin.html" class="nav-item" id="sidebar-admin" style="display:none"><svg class="icon"><use href="#i-privacy"/></svg>Admin</a>
@@ -216,7 +216,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       </div>
       <div class="stat-card">
         <div class="stat-num" id="stat-docs">—</div>
-        <div class="stat-label">Documents</div>
+        <div class="stat-label">DocVault</div>
         <div class="stat-sub" id="stat-docs-sub"></div>
       </div>
       <div class="stat-card">
@@ -263,7 +263,10 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     <section class="section">
       <div class="section-header">
         <h2 class="section-label">What's next</h2>
-        <a href="/trips.html" class="caption" style="text-decoration:none">All trips →</a>
+        <div style="display:flex;align-items:center;gap:16px">
+          <a href="/trips.html" class="caption" style="text-decoration:none">DocCheck →</a>
+          <a href="/trips.html" class="caption" style="text-decoration:none">All trips →</a>
+        </div>
       </div>
       <div id="home-next-trip"></div>
     </section>
@@ -352,7 +355,7 @@ function renderStats(p){
   _st("stat-docs-sub",expiring.length?expiring.length+" expiring soon":"All current");
   _st("stat-loyalty",loyal.length);
   var autoApply=loyal.filter(function(l){return l.auto_apply;}).length;
-  _st("stat-loyalty-sub",autoApply+" auto-applied");
+  _st("stat-loyalty-sub",loyal.length+" on file");
   _st("stat-pct",pct+"%");
   var bar=document.getElementById("stat-progress");
   if(bar){

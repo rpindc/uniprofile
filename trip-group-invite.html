@@ -98,7 +98,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     <a href="/me.html" class="mob-nav-item" data-page="me"><svg class="icon" aria-hidden="true"><use href="#i-me"/></svg>Me</a>
     <a href="/people.html" class="mob-nav-item" data-page="people"><svg class="icon" aria-hidden="true"><use href="#i-people"/></svg>People</a>
     <a href="/trips.html" class="mob-nav-item" data-page="trips"><svg class="icon" aria-hidden="true"><use href="#i-trips"/></svg>Trips</a>
-    <a href="/groups.html" class="mob-nav-item active" data-page="groups"><svg class="icon" aria-hidden="true"><use href="#i-groups"/></svg>Journey</a>
+    <a href="/groups.html" class="mob-nav-item active" data-page="groups"><svg class="icon" aria-hidden="true"><use href="#i-groups"/></svg>Journeys</a>
     <a href="/privacy.html" class="mob-nav-item" data-page="privacy"><svg class="icon" aria-hidden="true"><use href="#i-privacy"/></svg>Privacy</a>
     <a href="/guide.html" class="mob-nav-item" data-page="guide"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg>Guide</a>
   </div>
@@ -125,7 +125,7 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       <a href="/me.html" class="nav-item"><svg class="icon"><use href="#i-me"/></svg>Me</a>
       <a href="/people.html" class="nav-item"><svg class="icon"><use href="#i-people"/></svg>People</a>
       <a href="/trips.html" class="nav-item"><svg class="icon"><use href="#i-trips"/></svg>Trips</a>
-      <a href="/groups.html" class="nav-item active"><svg class="icon"><use href="#i-groups"/></svg>Journey</a>
+      <a href="/groups.html" class="nav-item active"><svg class="icon"><use href="#i-groups"/></svg>Journeys</a>
       <a href="/privacy.html" class="nav-item"><svg class="icon"><use href="#i-privacy"/></svg>Privacy</a>
       <a href="/guide.html" class="nav-item"><svg class="icon"><use href="#i-book"/></svg>Guide</a>
     </nav>
@@ -222,8 +222,8 @@ function renderState(state,extra){
     /* Scope rows — fall back to all three if API returns null/[] */
     var SCOPE_META={
       passport_details:{label:"Passport details",desc:"Validity and nationality — used to check entry requirements for your destination"},
-      dietary_preference:{label:"Dietary preference",desc:"Meal category (e.g., vegetarian) — shared for in-flight meal coordination"},
-      seat_preference:{label:"Seat preference",desc:"Seat position and cabin class — shared for booking coordination"},
+      dietary_preference:{label:"Dietary preference",desc:"Meal category (e.g., vegetarian) — shared with your trip organiser"},
+      seat_preference:{label:"Seat preference",desc:"Seat position and cabin class — shared with your trip organiser"},
     };
     var scopes=(inv.requested_scopes&&inv.requested_scopes.length)?inv.requested_scopes:Object.keys(SCOPE_META);
     html+='<div class="scope-section">';
