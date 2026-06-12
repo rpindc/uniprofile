@@ -13,10 +13,9 @@
 :root{--ink:#1a1a1a;--ink-soft:#4a4a48;--ink-mute:#8a8a86;--ink-faint:#b8b8b3;--paper:#faf8f4;--paper-warm:#f3efe7;--paper-cream:#f9f7f2;--rule:rgba(26,26,26,0.08);--rule-strong:rgba(26,26,26,0.18);--green:#2d6a4f;--green-soft:#e8efe9;--amber:#ba7517;--amber-soft:#f9f1e3;--red:#c44d4d;--red-soft:#f4e8e8;--serif:'Fraunces',Georgia,serif;--sans:'Inter Tight',-apple-system,sans-serif;--mono:'JetBrains Mono','SF Mono',Menlo,monospace}
 *{box-sizing:border-box;margin:0;padding:0}html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;font-size:14px;font-weight:400}
-.h1{font-family:var(--serif);font-weight:300;font-size:clamp(36px,5vw,52px);line-height:1.1;letter-spacing:-0.02em;color:var(--ink)}
+.h1{font-family:var(--serif);font-weight:300;font-size:clamp(32px,5vw,48px);line-height:1.1;letter-spacing:-0.02em;color:var(--ink)}
 .h1 em{font-style:italic;font-weight:300}
 .h2{font-family:var(--serif);font-weight:400;font-size:22px;line-height:1.25;letter-spacing:-0.01em;color:var(--ink)}
-.h2 em{font-style:italic;font-weight:300}
 .lede{font-family:var(--serif);font-weight:300;font-size:17px;line-height:1.5;letter-spacing:-0.005em;color:var(--ink-soft)}
 .eyebrow{font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-mute)}
 .shell{display:flex;min-height:100vh}
@@ -42,9 +41,16 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .icon{width:16px;height:16px;flex-shrink:0;display:inline-block;vertical-align:middle}
 .id{font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:0.04em;color:var(--ink)}
 .main{flex:1;padding:36px 48px;min-width:0;max-width:760px}
-.page-header{margin-bottom:40px}
+.page-header{margin-bottom:28px}
 
-/* Terms sections */
+/* Tab strip */
+.tab-strip{display:flex;gap:2px;border-bottom:0.5px solid var(--rule);margin-bottom:32px}
+.tab-btn{font-family:var(--sans);font-size:13px;font-weight:400;color:var(--ink-mute);background:none;border:none;padding:10px 16px 11px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-0.5px;transition:color 120ms,border-color 120ms;display:inline-flex;align-items:center;gap:7px;line-height:1}
+.tab-btn:hover{color:var(--ink-soft)}
+.tab-btn.active{color:var(--ink);font-weight:500;border-bottom-color:var(--ink)}
+.tab-badge{font-size:9px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:2px 6px;border-radius:100px;background:var(--red-soft);color:var(--red)}
+
+/* Plain-English summary styles (Tab 1) */
 .terms-section{padding:32px 0;border-bottom:0.5px solid var(--rule)}
 .terms-section:last-of-type{border-bottom:none;padding-bottom:0}
 .terms-prose{font-size:15px;line-height:1.72;color:var(--ink-soft);max-width:620px}
@@ -60,10 +66,38 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .terms-tagline{font-family:var(--serif);font-style:italic;font-weight:300;font-size:18px;color:var(--amber);letter-spacing:-0.01em;margin-top:40px;display:block}
 .terms-updated{font-size:12px;color:var(--ink-faint);margin-top:10px;display:block}
 
+/* Legal document styles (Tab 2) */
+.draft-banner{background:var(--red-soft);border:1px solid rgba(196,77,77,0.4);border-radius:8px;padding:16px 20px;margin-bottom:28px}
+.draft-banner strong{font-size:13px;font-weight:600;color:var(--red);display:block;margin-bottom:6px;letter-spacing:0.01em}
+.draft-banner p{font-size:13px;line-height:1.6;color:#8a3535}
+.legal-meta{font-size:13px;color:var(--ink-mute);margin-bottom:28px;padding-bottom:20px;border-bottom:0.5px solid var(--rule)}
+.legal-meta strong{color:var(--ink-soft)}
+.legal-section{padding:24px 0;border-bottom:0.5px solid var(--rule)}
+.legal-section:last-of-type{border-bottom:none;padding-bottom:0}
+.legal-h2{font-family:var(--serif);font-weight:400;font-size:18px;line-height:1.25;letter-spacing:-0.005em;color:var(--ink);margin-bottom:14px}
+.legal-h3{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--ink);margin:16px 0 8px;letter-spacing:0.01em}
+.legal-prose{font-size:14px;line-height:1.68;color:var(--ink-soft);max-width:640px}
+.legal-prose+.legal-prose{margin-top:10px}
+.legal-list{margin:10px 0;padding:0 0 0 18px;list-style:disc;max-width:640px}
+.legal-list li{font-size:14px;line-height:1.65;color:var(--ink-soft);padding:3px 0}
+.legal-placeholder{font-family:var(--mono);font-size:12px;font-weight:500;background:rgba(186,117,23,0.12);color:var(--amber);padding:1px 5px;border-radius:3px;white-space:nowrap}
+
+/* Future/not-yet-live callouts */
+.future-section{background:rgba(186,117,23,0.04);border:0.5px solid rgba(186,117,23,0.28);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:16px 20px;margin:16px 0 8px}
+.future-section-hdr{margin-bottom:14px;padding-bottom:10px;border-bottom:0.5px solid rgba(186,117,23,0.2)}
+.future-label{font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:var(--amber);display:block;margin-bottom:5px}
+.future-desc{font-size:13px;line-height:1.55;color:#7a5a1a}
+.future-inline{display:inline-block;background:var(--amber-soft);color:var(--amber);font-size:11px;font-weight:500;padding:2px 7px;border-radius:4px;margin-left:4px;line-height:1.4}
+
+/* Coming soon placeholder (Tabs 3 & 4) */
+.coming-soon-panel{padding:48px 0;text-align:center;max-width:480px}
+.coming-soon-panel p{font-size:15px;line-height:1.65;color:var(--ink-mute);margin-top:10px}
+
 @media(max-width:767px){
   .sidebar{display:none}
   .main{padding:20px 18px}
-  .terms-prose{font-size:14px}
+  .terms-prose,.legal-prose{font-size:14px}
+  .tab-btn{font-size:12px;padding:9px 10px 10px}
 }
 </style>
 </head>
@@ -78,7 +112,6 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   <symbol id="i-groups" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><circle cx="16" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><path d="M2 20C2 17 4.7 15 8 15" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M10 18C10 15.5 12.5 14 16 14C19.5 14 22 15.5 22 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
   <symbol id="i-book" viewBox="0 0 24 24" fill="none"><path d="M4 6C4 5.45 4.45 5 5 5H11V19H5C4.45 19 4 18.55 4 18V6Z" stroke="currentColor" stroke-width="1.25"/><path d="M13 5H19C19.55 5 20 5.45 20 6V18C20 18.55 19.55 19 19 19H13V5Z" stroke="currentColor" stroke-width="1.25"/><path d="M11 5V19" stroke="currentColor" stroke-width="1.25"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
-  <symbol id="i-terms" viewBox="0 0 24 24" fill="none"><path d="M9 5H7C5.9 5 5 5.9 5 7V19C5 20.1 5.9 21 7 21H17C18.1 21 19 20.1 19 19V7C19 5.9 18.1 5 17 5H15" stroke="currentColor" stroke-width="1.25"/><rect x="9" y="3" width="6" height="4" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M9 12H15M9 16H13" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
 </svg>
 
 <header class="mob-header">
@@ -145,106 +178,370 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
   <main class="main">
 
     <div class="page-header">
-      <div class="eyebrow" style="margin-bottom:12px">Terms &amp; privacy</div>
-      <h1 class="h1" style="margin-bottom:14px">At a glance</h1>
-      <p class="lede">A plain-English summary of how UniProfile works, what we hold, and what you can expect from us.</p>
+      <div class="eyebrow" style="margin-bottom:10px">Terms &amp; privacy</div>
     </div>
 
-    <p class="terms-intro">The detailed legal documents — Terms of Service, Privacy Policy, Cookie Policy — are in review and will be published here when finalized. Until then, this page is the honest summary.</p>
+    <!-- Tab strip -->
+    <div class="tab-strip" role="tablist">
+      <button class="tab-btn active" role="tab" aria-selected="true"  aria-controls="panel-summary" onclick="switchTab('summary',this)">Summary</button>
+      <button class="tab-btn"        role="tab" aria-selected="false" aria-controls="panel-tos"     onclick="switchTab('tos',this)">Terms of Service <span class="tab-badge">Draft</span></button>
+      <button class="tab-btn"        role="tab" aria-selected="false" aria-controls="panel-privacy" onclick="switchTab('privacy',this)">Privacy Policy</button>
+      <button class="tab-btn"        role="tab" aria-selected="false" aria-controls="panel-cookies" onclick="switchTab('cookies',this)">Cookie Policy</button>
+    </div>
 
-    <!-- Your data is yours -->
-    <section class="terms-section">
-      <h2 class="h2" style="margin-bottom:16px">Your data is yours</h2>
-      <p class="terms-prose">You own what you upload to UniProfile — your passport details, visa data, trips, loyalty numbers, everything. We hold it as a <strong>custodian</strong>, not an owner.</p>
-      <p class="terms-prose" style="margin-top:18px"><strong>What you can do today:</strong></p>
-      <ul class="terms-list">
-        <li><strong>Revoke trip-group sharing</strong> — if you've shared a trip with companions, you can pull that sharing back from within the trip.</li>
-        <li><strong>Request a data export, account deletion, or full revocation</strong> by writing to <a href="mailto:hello@uniprofile.net" style="color:var(--ink);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">hello@uniprofile.net</a>. We'll handle it personally — at our current stage, every request is read and answered by a person.</li>
-      </ul>
-      <div class="terms-callout">
-        <div class="terms-label">In active development</div>
-        <p>Self-serve data export, self-serve account deletion, and a full consent ledger with per-operator revocation are being built — they'll move from "email request" to "one-tap action" when they ship. Until then, our promise is that any request gets handled, not that you can do it in two clicks.</p>
+    <!-- ── Tab 1: Summary (default, public-facing) ── -->
+    <div id="panel-summary" class="tab-panel" role="tabpanel">
+
+      <h1 class="h1" style="margin-bottom:14px">At a glance</h1>
+      <p class="lede" style="margin-bottom:28px">A plain-English summary of how UniProfile works, what we hold, and what you can expect from us.</p>
+
+      <p class="terms-intro">A draft Terms of Service is available for review in the Terms of Service tab — it has not been reviewed by legal counsel and is not yet binding. This page remains the honest, public-facing overview until the full documents are finalized.</p>
+
+      <section class="terms-section">
+        <h2 class="h2" style="margin-bottom:16px">Your data is yours</h2>
+        <p class="terms-prose">You own what you upload to UniProfile — your passport details, visa data, trips, loyalty numbers, everything. We hold it as a <strong>custodian</strong>, not an owner.</p>
+        <p class="terms-prose" style="margin-top:18px"><strong>What you can do today:</strong></p>
+        <ul class="terms-list">
+          <li><strong>Revoke trip-group sharing</strong> — if you've shared a trip with companions, you can pull that sharing back from within the trip.</li>
+          <li><strong>Request a data export, account deletion, or full revocation</strong> by writing to <a href="mailto:hello@uniprofile.net" style="color:var(--ink);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">hello@uniprofile.net</a>. We'll handle it personally — at our current stage, every request is read and answered by a person.</li>
+        </ul>
+        <div class="terms-callout">
+          <div class="terms-label">In active development</div>
+          <p>Self-serve data export, self-serve account deletion, and a full consent ledger with per-operator revocation are being built — they'll move from "email request" to "one-tap action" when they ship. Until then, our promise is that any request gets handled, not that you can do it in two clicks.</p>
+        </div>
+      </section>
+
+      <section class="terms-section">
+        <h2 class="h2" style="margin-bottom:16px">What we collect</h2>
+        <p class="terms-prose">Only what's needed to make UniProfile work for you.</p>
+        <ul class="terms-list">
+          <li><strong>Identity and travel documents</strong> you choose to upload (passport, visas, driver's license, loyalty, insurance, trusted-traveler programs).</li>
+          <li><strong>Trip information</strong> you add or that we parse from emails you forward to us.</li>
+          <li><strong>Account activity</strong> — when you log in, what consent you've given, what's been viewed — so you can see it yourself in your Privacy tab.</li>
+          <li><strong>Technical basics</strong> — things like a session token that keeps you logged in.</li>
+        </ul>
+        <p class="terms-prose" style="margin-top:18px">That's the list. We don't collect browsing history, location tracking, contact lists, or anything else not on it.</p>
+      </section>
+
+      <section class="terms-section">
+        <h2 class="h2" style="margin-bottom:16px">What we don't do</h2>
+        <p class="terms-prose">Sometimes the clearest picture of a product is what it isn't.</p>
+        <ul class="terms-list">
+          <li><strong>We don't sell your data.</strong> Not to airlines, not to advertisers, not to data brokers, not to anyone.</li>
+          <li><strong>We don't run ads.</strong> There are no advertisers paying for placement in UniProfile.</li>
+          <li><strong>We don't have third-party tracking pixels.</strong> No Google Analytics, no Facebook pixel, no behavioral-tracking scripts on this site. You can verify it in your browser.</li>
+          <li><strong>We don't share with airlines, hotels, or any third party</strong> unless you specifically and explicitly ask us to — for a purpose you can see, with a record of your consent.</li>
+          <li><strong>We don't pretend to verify documents we haven't.</strong> What you give us is on file. We don't endorse it as authentic. When verified credentials become available, you'll see them marked as such.</li>
+        </ul>
+      </section>
+
+      <section class="terms-section">
+        <h2 class="h2" style="margin-bottom:16px">Copyright and ownership</h2>
+        <p class="terms-prose">A clear line: <strong>your content stays yours, our product stays ours.</strong></p>
+        <ul class="terms-list">
+          <li><strong>Your content</strong> — the documents you upload, the trips you record, the notes you write — is yours. UniProfile gets a limited right to store and process it <em>only</em> so we can provide the service you've asked for. We don't claim ownership, and we don't license your content to anyone else.</li>
+          <li><strong>The UniProfile product</strong> — the name, design, code, brand, and "Arrive ready. Stay in control." — is ours. You're welcome to use UniProfile; you're not licensed to copy or rebrand it.</li>
+        </ul>
+      </section>
+
+      <section class="terms-section">
+        <h2 class="h2" style="margin-bottom:16px">Who can use UniProfile</h2>
+        <p class="terms-prose">UniProfile is currently <strong>invitation-only</strong>. We onboard travelers carefully and intentionally, not in bulk.</p>
+        <p class="terms-prose">You need to be <strong>18 or older</strong> to use UniProfile. If you're under 18, this product isn't for you yet.</p>
+        <p class="terms-prose">UniProfile is provided for personal travel-identity management. It's not for storing data on people who haven't consented to be in it, not for commercial document verification by third parties, and not for any of the abusive uses you'd expect a polite footnote to list.</p>
+      </section>
+
+      <section class="terms-section">
+        <h2 class="h2" style="margin-bottom:16px">What we can and can't promise</h2>
+        <p class="terms-prose">We work hard to keep your data safe and the service reliable. Your data is encrypted at rest using AWS-managed keys and in transit using HTTPS. Access to the systems holding your data is restricted to the small team that operates the service.</p>
+        <p class="terms-prose">What we can't honestly promise:</p>
+        <ul class="terms-list">
+          <li>That UniProfile will never have a bug.</li>
+          <li>That the service will never be unavailable for maintenance.</li>
+          <li>That we can guarantee any particular outcome at a border or with an airline. (Final decisions there rest with the relevant authorities — we say so explicitly wherever it matters.)</li>
+        </ul>
+        <p class="terms-prose" style="margin-top:18px">By using UniProfile, you're accepting the service as it is — useful, carefully built, but not magic. The Terms of Service tab has the draft legal language covering liability and dispute resolution. Until legal review is complete, this paragraph is our honest plain-language version.</p>
+      </section>
+
+      <section class="terms-section">
+        <h2 class="h2" style="margin-bottom:16px">How to reach us</h2>
+        <p class="terms-prose">If something on this page is unclear, if you've spotted a gap between what we say and what we do, or if you have a question about how your data is handled — write to us through our <a href="/feedback.html" style="color:var(--ink);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">feedback page</a>, or directly at <a href="mailto:hello@uniprofile.net" style="color:var(--ink);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">hello@uniprofile.net</a>.</p>
+        <p class="terms-prose">We read what comes in. If a reply is needed, it comes within a few days.</p>
+      </section>
+
+      <section class="terms-section">
+        <h2 class="h2" style="margin-bottom:16px">When this page changes</h2>
+        <p class="terms-prose">When the full legal documents are reviewed and published, this page will link to them and continue to serve as the plain-English overview. We'll note any material change here.</p>
+      </section>
+
+      <span class="terms-updated">Last updated: May 27, 2026. The full Terms of Service, Privacy Policy, and Cookie Policy are in legal review.</span>
+      <span class="terms-tagline">Arrive ready. Stay in control.</span>
+
+    </div><!-- /panel-summary -->
+
+
+    <!-- ── Tab 2: Terms of Service draft ── -->
+    <div id="panel-tos" class="tab-panel" style="display:none" role="tabpanel">
+
+      <div class="draft-banner">
+        <strong>DRAFT — pending legal review. Not binding.</strong>
+        <p>This document has not been reviewed by qualified legal counsel. It is not the live Terms of Service for uniprofile.net, it has no effective date, and it does not create any legal obligations. Do not rely on it as the binding terms. The plain-English Summary tab is the current public-facing overview. This draft will replace it only after legal counsel has reviewed and approved it for publication.</p>
       </div>
-    </section>
 
-    <!-- What we collect -->
-    <section class="terms-section">
-      <h2 class="h2" style="margin-bottom:16px">What we collect</h2>
-      <p class="terms-prose">Only what's needed to make UniProfile work for you.</p>
-      <ul class="terms-list">
-        <li><strong>Identity and travel documents</strong> you choose to upload (passport, visas, driver's license, loyalty, insurance, trusted-traveler programs).</li>
-        <li><strong>Trip information</strong> you add or that we parse from emails you forward to us.</li>
-        <li><strong>Account activity</strong> — when you log in, what consent you've given, what's been viewed — so you can see it yourself in your Privacy tab.</li>
-        <li><strong>Technical basics</strong> — things like a session token that keeps you logged in.</li>
-      </ul>
-      <p class="terms-prose" style="margin-top:18px">That's the list. We don't collect browsing history, location tracking, contact lists, or anything else not on it.</p>
-    </section>
+      <div class="legal-meta">
+        <strong>Effective date:</strong> <span class="legal-placeholder">[TO BE SET BY LEGAL]</span> &nbsp;&nbsp;
+        <strong>Last updated:</strong> <span class="legal-placeholder">[TO BE SET BY LEGAL]</span>
+      </div>
 
-    <!-- What we don't do -->
-    <section class="terms-section">
-      <h2 class="h2" style="margin-bottom:16px">What we don't do</h2>
-      <p class="terms-prose">Sometimes the clearest picture of a product is what it isn't.</p>
-      <ul class="terms-list">
-        <li><strong>We don't sell your data.</strong> Not to airlines, not to advertisers, not to data brokers, not to anyone.</li>
-        <li><strong>We don't run ads.</strong> There are no advertisers paying for placement in UniProfile.</li>
-        <li><strong>We don't have third-party tracking pixels.</strong> No Google Analytics, no Facebook pixel, no behavioral-tracking scripts on this site. You can verify it in your browser.</li>
-        <li><strong>We don't share with airlines, hotels, or any third party</strong> unless you specifically and explicitly ask us to — for a purpose you can see, with a record of your consent.</li>
-        <li><strong>We don't pretend to verify documents we haven't.</strong> What you give us is on file. We don't endorse it as authentic. When verified credentials become available, you'll see them marked as such.</li>
-      </ul>
-    </section>
+      <p class="legal-prose" style="margin-bottom:20px">These Terms of Service ("Terms") govern your access to and use of UniProfile, including the website at uniprofile.net and any related services (collectively, the "Service") operated by <span class="legal-placeholder">[UniProfile legal entity name to be confirmed]</span>, together with its affiliates ("UniProfile," "we," "us," or "our").</p>
+      <div class="future-section" style="margin-bottom:20px">
+        <span class="future-label">Not yet live at launch — Service definition</span>
+        <p class="future-desc">Mobile applications for iOS and Android, a browser extension, and a public API are planned features not available at initial launch. When released they will be included in the definition of "Service" and these Terms will govern their use.</p>
+      </div>
+      <p class="legal-prose" style="margin-bottom:8px">By creating an account, accessing the Service, or using any UniProfile feature, you ("you," "your," "User") agree to these Terms. If you do not agree, do not use the Service.</p>
 
-    <!-- Copyright and ownership -->
-    <section class="terms-section">
-      <h2 class="h2" style="margin-bottom:16px">Copyright and ownership</h2>
-      <p class="terms-prose">A clear line: <strong>your content stays yours, our product stays ours.</strong></p>
-      <ul class="terms-list">
-        <li><strong>Your content</strong> — the documents you upload, the trips you record, the notes you write — is yours. UniProfile gets a limited right to store and process it <em>only</em> so we can provide the service you've asked for. We don't claim ownership, and we don't license your content to anyone else.</li>
-        <li><strong>The UniProfile product</strong> — the name, design, code, brand, and "Arrive ready. Stay in control." — is ours. You're welcome to use UniProfile; you're not licensed to copy or rebrand it.</li>
-      </ul>
-    </section>
+      <!-- §1 -->
+      <div class="legal-section">
+        <h2 class="legal-h2">1. About UniProfile</h2>
+        <p class="legal-prose">UniProfile is a traveler-sovereign identity platform. We provide tools that allow you to store and manage your travel-related identity, documents, preferences, loyalty memberships, payment instruments, and consent grants in one place, and to share that information with travel operators on your terms.</p>
+        <p class="legal-prose">We are not a travel agent, a tour operator, an airline, or a booking service. We do not search for, sell, or process travel reservations. We do not hold travel inventory. We supply identity and consent infrastructure to systems that do.</p>
+        <p class="legal-prose">You retain ownership of all data you provide to UniProfile. We act as a custodian, not an owner.</p>
+      </div>
 
-    <!-- Who can use UniProfile -->
-    <section class="terms-section">
-      <h2 class="h2" style="margin-bottom:16px">Who can use UniProfile</h2>
-      <p class="terms-prose">UniProfile is currently <strong>invitation-only</strong>. We onboard travelers carefully and intentionally, not in bulk.</p>
-      <p class="terms-prose">You need to be <strong>18 or older</strong> to use UniProfile. If you're under 18, this product isn't for you yet.</p>
-      <p class="terms-prose">UniProfile is provided for personal travel-identity management. It's not for storing data on people who haven't consented to be in it, not for commercial document verification by third parties, and not for any of the abusive uses you'd expect a polite footnote to list.</p>
-    </section>
+      <!-- §2 -->
+      <div class="legal-section">
+        <h2 class="legal-h2">2. Eligibility and accounts</h2>
+        <h3 class="legal-h3">2.1 Eligibility</h3>
+        <p class="legal-prose">You must be at least 16 years old to create a UniProfile account independently. Users between 13 and 16 may use UniProfile only with parental or guardian consent and account management, where permitted by applicable law (including GDPR Article 8 and the United States Children's Online Privacy Protection Act). Users under 13 may not have a UniProfile account except as a managed family profile under a verified parent or guardian account.</p>
+        <h3 class="legal-h3">2.2 Account creation</h3>
+        <p class="legal-prose">You must provide accurate, current, and complete information when creating your account. You are responsible for keeping your account credentials secure. You may not share your account with another person except through the explicit Family or Group profile features.</p>
+        <h3 class="legal-h3">2.3 One account per person</h3>
+        <p class="legal-prose">Each individual may maintain one personal UniProfile account. Creating multiple accounts to circumvent these Terms or any feature limits is grounds for account termination.</p>
+        <h3 class="legal-h3">2.4 Verification</h3>
+        <p class="legal-prose">Some features may require verification of your identity, documents, or other information. We may use third-party verification services. Verification failures may limit your access to certain features but do not affect your right to maintain a basic account.</p>
+      </div>
 
-    <!-- What we can and can't promise -->
-    <section class="terms-section">
-      <h2 class="h2" style="margin-bottom:16px">What we can and can't promise</h2>
-      <p class="terms-prose">We work hard to keep your data safe and the service reliable. Your data is encrypted at rest using AWS-managed keys and in transit using HTTPS. Access to the systems holding your data is restricted to the small team that operates the service.</p>
-      <p class="terms-prose">What we can't honestly promise:</p>
-      <ul class="terms-list">
-        <li>That UniProfile will never have a bug.</li>
-        <li>That the service will never be unavailable for maintenance.</li>
-        <li>That we can guarantee any particular outcome at a border or with an airline. (Final decisions there rest with the relevant authorities — we say so explicitly wherever it matters.)</li>
-      </ul>
-      <p class="terms-prose" style="margin-top:18px">By using UniProfile, you're accepting the service as it is — useful, carefully built, but not magic. The full Terms of Service (publishing when legal review is done) covers liability and dispute resolution in proper legal language. Until then, this paragraph is our honest plain-language version.</p>
-    </section>
+      <!-- §3 -->
+      <div class="legal-section">
+        <h2 class="legal-h2">3. Plans and payment</h2>
+        <h3 class="legal-h3">3.1 Free plan</h3>
+        <p class="legal-prose">UniProfile offers a Free plan that includes core identity and document management features. The Free plan is supported by future premium features and never by sale of your personal data.</p>
 
-    <!-- How to reach us -->
-    <section class="terms-section">
-      <h2 class="h2" style="margin-bottom:16px">How to reach us</h2>
-      <p class="terms-prose">If something on this page is unclear, if you've spotted a gap between what we say and what we do, or if you have a question about how your data is handled — write to us through our <a href="/feedback.html" style="color:var(--ink);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">feedback page</a>, or directly at <a href="mailto:hello@uniprofile.net" style="color:var(--ink);text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px">hello@uniprofile.net</a>.</p>
-      <p class="terms-prose">We read what comes in. If a reply is needed, it comes within a few days.</p>
-    </section>
+        <div class="future-section">
+          <div class="future-section-hdr">
+            <span class="future-label">Not yet live at launch — §3.2–3.6</span>
+            <p class="future-desc">UniProfile is free for all users at initial launch. Paid subscription plans, trials, refunds, price changes, and tax calculations (§3.2–3.6) are planned for a future release. These sections are retained for completeness of legal review and take effect only when paid plans are introduced. No payment processing or recurring billing applies at launch.</p>
+          </div>
+          <h3 class="legal-h3">3.2 Premium plans</h3>
+          <p class="legal-prose">Premium and Premium Plus are paid subscription plans that add features described on the Plans &amp; Premium page. By subscribing, you authorize us to charge your chosen payment method on a recurring basis (monthly or annually as you select) until you cancel.</p>
+          <h3 class="legal-h3">3.3 Trials</h3>
+          <p class="legal-prose">We may offer free trials of Premium plans. Trial terms and length are stated at the time of trial sign-up. If you do not cancel before the trial ends, your subscription begins automatically at the price shown.</p>
+          <h3 class="legal-h3">3.4 Refunds</h3>
+          <p class="legal-prose">Annual subscriptions are refundable on a prorated basis if cancelled within 30 days of the most recent renewal. Monthly subscriptions are not refundable but you can cancel any time and continue to use Premium features until the end of the current month. EU and UK consumer protection laws may grant additional cancellation rights, which we honor as required by law.</p>
+          <h3 class="legal-h3">3.5 Price changes</h3>
+          <p class="legal-prose">We may change subscription prices. Existing subscribers will be notified at least 30 days before any price increase takes effect on their renewal. You may cancel before the new price applies.</p>
+          <h3 class="legal-h3">3.6 Taxes</h3>
+          <p class="legal-prose">Prices shown may exclude applicable taxes (VAT, sales tax, GST, etc.) unless otherwise stated. Taxes will be calculated and shown at checkout based on your billing address.</p>
+        </div>
+      </div>
 
-    <!-- When this page changes -->
-    <section class="terms-section">
-      <h2 class="h2" style="margin-bottom:16px">When this page changes</h2>
-      <p class="terms-prose">This is the current honest summary. When the full legal documents are reviewed and published, this page will link to them and continue to serve as the plain-English overview. We'll note any material change here. If you'd like to be told when the full documents publish, the feedback page is the way.</p>
-    </section>
+      <!-- §4 -->
+      <div class="legal-section">
+        <h2 class="legal-h2">4. Your data and ownership</h2>
+        <h3 class="legal-h3">4.1 You own your data</h3>
+        <p class="legal-prose">All identity, document, preference, loyalty, payment, and consent data you provide to UniProfile remains your property. We act as a data processor and custodian under your direction.</p>
+        <h3 class="legal-h3">4.2 What we do with your data</h3>
+        <p class="legal-prose">We use your data to provide the Service. This includes storing your data securely, showing it to you in the UniProfile application, sharing it with travel operators only when you have given specific consent for that operator, improving the Service through aggregated anonymized analysis, and communicating with you about your account.</p>
+        <p class="legal-prose">We do not sell your individual data, provide it to advertisers, share it without your specific consent, or use it to train artificial intelligence models without your specific consent.</p>
+        <h3 class="legal-h3">4.3 Aggregated insights</h3>
+        <p class="legal-prose">We may produce and use aggregated, anonymized statistics derived from User data. These aggregations cannot be reverse-engineered to identify any individual User and may be used for product improvement, industry research, and limited commercial reporting to industry stakeholders.</p>
+        <h3 class="legal-h3">4.4 Consent ledger</h3>
+        <p class="legal-prose">UniProfile maintains a record of every consent grant you make and every data sharing event. You can view this ledger at any time in your account. You can revoke consent at any time, which immediately stops future sharing. <span class="future-inline">Not yet live: operator deletion trigger — revocation will trigger deletion requests to operators when Connected Operators launches (§5)</span></p>
+        <h3 class="legal-h3">4.5 Data export and portability</h3>
+        <p class="legal-prose">You may export your data at any time in JSON format. The export covers your profile, your trip vault, your loyalty memberships, and your consent history. <span class="future-inline">Not yet live: W3C Verifiable Credentials export — planned for a future release</span></p>
+        <h3 class="legal-h3">4.6 Data deletion</h3>
+        <p class="legal-prose">You may delete your UniProfile account at any time. Deletion is processed according to our Privacy Policy and GDPR &amp; Data Rights policy.</p>
+      </div>
 
-    <span class="terms-updated">Last updated: May 27, 2026. The full Terms of Service, Privacy Policy, and Cookie Policy are in legal review and will be published here.</span>
-    <span class="terms-tagline">Arrive ready. Stay in control.</span>
+      <!-- §5 -->
+      <div class="legal-section">
+        <h2 class="legal-h2">5. Connected operators and third parties</h2>
+        <div class="future-section">
+          <div class="future-section-hdr">
+            <span class="future-label">Not yet live at launch — entire §5</span>
+            <p class="future-desc">The Connected Operators feature — by which external travel operators (airlines, hotels, OTAs, TMCs, etc.) connect to the UniProfile platform to receive consent-scoped data — is not available at initial launch. No external operators can connect at launch. This entire section is retained for legal review of the intended model and takes effect when operator connection is released. Journeys (user-created trip groups between UniProfile members) are a separate, live feature governed by the consent provisions in §4, not by this section.</p>
+          </div>
+          <h3 class="legal-h3">5.1 What "connected operators" means</h3>
+          <p class="legal-prose">When you grant a travel operator access to specified parts of your UniProfile, you create a "Connected Operator" relationship. The operator may receive only the data scoped in your consent grant, only for the duration you specified, and only for the purposes you authorized.</p>
+          <h3 class="legal-h3">5.2 Operator agreements are separate</h3>
+          <p class="legal-prose">Your relationship with any operator is governed by the operator's own terms and privacy policies. UniProfile is not party to your booking agreement or any other arrangement between you and the operator. Disputes about travel services must be resolved with the relevant operator.</p>
+          <h3 class="legal-h3">5.3 What operators may do with your data</h3>
+          <p class="legal-prose">Operators are bound by their own data protection obligations and the consent terms you grant through UniProfile. If you believe an operator has violated those terms, contact UniProfile and we will investigate, including the option to revoke that operator's access.</p>
+          <h3 class="legal-h3">5.4 Browser extension <span class="future-inline" style="vertical-align:middle">Not yet live</span></h3>
+          <p class="legal-prose">If you install the UniProfile browser extension, the extension operates on the websites you visit, subject to browser-managed permissions, your per-domain trust settings, and your per-field disclosure settings. The extension never transmits your data to any party other than the website you are actively interacting with, except as required to communicate with UniProfile's own servers for profile fetching.</p>
+        </div>
+      </div>
+
+      <!-- §6 -->
+      <div class="legal-section">
+        <h2 class="legal-h2">6. Acceptable use</h2>
+        <h3 class="legal-h3">6.1 What you may not do</h3>
+        <ul class="legal-list">
+          <li>Use UniProfile to facilitate travel that violates applicable law (including immigration law, sanctions, or terrorism financing rules)</li>
+          <li>Provide false identity information, including impersonating another person or asserting loyalty memberships you do not hold</li>
+          <li>Use UniProfile to harvest, scrape, or mass-collect data about other Users</li>
+          <li>Reverse engineer, decompile, or attempt to extract source code from the Service except where permitted by applicable law</li>
+          <li>Use the Service to send unsolicited communications, spam, or marketing</li>
+          <li>Attempt to gain unauthorized access to other Users' accounts or to UniProfile's infrastructure</li>
+          <li>Use the Service in any way that interferes with other Users' use or could damage UniProfile's infrastructure</li>
+        </ul>
+        <h3 class="legal-h3">6.2 Reporting violations</h3>
+        <p class="legal-prose">If you become aware of any violation, contact <code>abuse@uniprofile.net</code>.</p>
+      </div>
+
+      <!-- §7 -->
+      <div class="legal-section">
+        <h2 class="legal-h2">7. UniProfile's role and limitations</h2>
+        <h3 class="legal-h3">7.1 We facilitate, we do not transact</h3>
+        <p class="legal-prose">UniProfile facilitates the sharing of your travel identity with operators. We do not book travel, hold inventory, process payments for travel services, or provide travel advice. Any travel arrangements you make are between you and the operator.</p>
+        <h3 class="legal-h3">7.2 No guarantee of operator behavior</h3>
+        <p class="legal-prose">We cannot guarantee that any specific operator will honor a preference, recognize a loyalty status, or accept a document we have validated on your behalf. Operators retain their own systems, processes, and policies.</p>
+        <h3 class="legal-h3">7.3 Document validity is your responsibility</h3>
+        <p class="legal-prose">UniProfile's document expiry alerts and validity checks are provided as a courtesy. Final responsibility for verifying that your travel documents meet destination requirements remains with you. We are not liable for missed flights, denied boarding, or refused entry resulting from document issues, even if our system failed to alert you.</p>
+        <h3 class="legal-h3">7.4 Service availability</h3>
+        <p class="legal-prose">We work hard to keep UniProfile available 24/7, but we do not guarantee uninterrupted service. We may take the Service down for maintenance, security updates, or to address issues. We are not liable for losses arising from temporary unavailability.</p>
+        <h3 class="legal-h3">7.5 No professional advice</h3>
+        <p class="legal-prose">UniProfile does not provide legal, immigration, tax, medical, or financial advice. Information about visa requirements, document validity, and similar matters is provided as general guidance and may not reflect the most current rules. Always verify with official sources before traveling.</p>
+      </div>
+
+      <!-- §8 -->
+      <div class="legal-section">
+        <h2 class="legal-h2">8. Intellectual property</h2>
+        <h3 class="legal-h3">8.1 UniProfile's IP</h3>
+        <p class="legal-prose">The UniProfile name, logo, software, design, and interface are owned by us. You may not copy, modify, or use them without our written permission, except as necessary to use the Service as intended.</p>
+        <h3 class="legal-h3">8.2 Your content</h3>
+        <p class="legal-prose">You retain all rights to the data you provide to UniProfile. By using the Service, you grant us a limited license to store, display, transmit, and process that data only as necessary to deliver the Service to you and your designated Connected Operators.</p>
+        <h3 class="legal-h3">8.3 Feedback</h3>
+        <p class="legal-prose">Suggestions, ideas, or feedback you provide about the Service may be used by UniProfile without obligation to you.</p>
+      </div>
+
+      <!-- §9 -->
+      <div class="legal-section">
+        <h2 class="legal-h2">9. Termination</h2>
+        <h3 class="legal-h3">9.1 You may terminate at any time</h3>
+        <p class="legal-prose">You may delete your account at any time from within the application or by emailing <code>support@uniprofile.net</code>.</p>
+        <h3 class="legal-h3">9.2 We may terminate</h3>
+        <p class="legal-prose">We may suspend or terminate your account if you materially violate these Terms, we are required to do so by law or court order, continuing to provide the Service would violate our compliance obligations, or we discontinue the Service entirely (in which case you will receive at least 60 days' notice and the opportunity to export your data).</p>
+        <h3 class="legal-h3">9.3 Effect of termination</h3>
+        <p class="legal-prose">On termination, your access to the Service ends. Your data is handled per our Privacy Policy and GDPR &amp; Data Rights policy. Connected Operator data sharing relationships are revoked.</p>
+      </div>
+
+      <!-- §10 -->
+      <div class="legal-section">
+        <h2 class="legal-h2">10. Liability</h2>
+        <h3 class="legal-h3">10.1 Disclaimer</h3>
+        <p class="legal-prose">The Service is provided "as is" without warranties of any kind, express or implied, including warranties of merchantability, fitness for a particular purpose, and non-infringement, except as required by applicable law.</p>
+        <h3 class="legal-h3">10.2 Limitation of liability</h3>
+        <p class="legal-prose">To the maximum extent permitted by applicable law, UniProfile's total liability to you for any claim arising out of or relating to the Service is limited to the greater of (a) the amount you have paid to UniProfile in the 12 months preceding the claim, or (b) USD $100.</p>
+        <p class="legal-prose">UniProfile is not liable for indirect, incidental, consequential, special, or punitive damages, including lost profits, loss of business opportunity, or loss of travel arrangements.</p>
+        <h3 class="legal-h3">10.3 Consumer protections</h3>
+        <p class="legal-prose">Some jurisdictions do not allow the exclusion of certain warranties or limitation of certain damages. If you are a consumer in such a jurisdiction (notably the EU, UK, and some US states), the limitations in this section apply only to the extent permitted by law and do not affect your statutory rights.</p>
+      </div>
+
+      <!-- §11 -->
+      <div class="legal-section">
+        <h2 class="legal-h2">11. Indemnification</h2>
+        <p class="legal-prose">You agree to indemnify and hold harmless UniProfile, its officers, employees, and affiliates from any claims, losses, or expenses (including reasonable legal fees) arising out of your violation of these Terms, your provision of inaccurate or fraudulent information, your use of the Service in violation of any law, or your dispute with a Connected Operator or any other third party.</p>
+        <p class="legal-prose">This indemnification does not apply to losses caused by UniProfile's own negligence or willful misconduct.</p>
+      </div>
+
+      <!-- §12 -->
+      <div class="legal-section">
+        <h2 class="legal-h2">12. Disputes and governing law</h2>
+        <h3 class="legal-h3">12.1 Informal resolution first</h3>
+        <p class="legal-prose">Before filing any legal action, you agree to contact us at <code>legal@uniprofile.net</code> and attempt to resolve the dispute informally for at least 30 days.</p>
+        <h3 class="legal-h3">12.2 Governing law</h3>
+        <p class="legal-prose">These Terms are governed by the laws of <span class="legal-placeholder">[JURISDICTION TO BE SET BY LEGAL — likely Delaware, USA or London, UK depending on entity choice]</span>, without regard to conflict of laws principles.</p>
+        <h3 class="legal-h3">12.3 Jurisdiction</h3>
+        <p class="legal-prose">You agree that disputes will be resolved in the courts of <span class="legal-placeholder">[JURISDICTION]</span>, or — for consumer disputes in the EU/UK — in the courts of your country of residence, as required by applicable consumer protection law.</p>
+        <h3 class="legal-h3">12.4 Class action waiver</h3>
+        <p class="legal-prose">To the extent permitted by applicable law, you and UniProfile each agree that any disputes will be resolved on an individual basis and not as part of any class action or representative proceeding. This waiver does not apply where prohibited by law (including in some EU jurisdictions).</p>
+        <h3 class="legal-h3">12.5 Time limit on claims</h3>
+        <p class="legal-prose">Any claim arising out of or relating to the Service must be brought within one year of the date the claim arose, except where applicable law requires a longer period.</p>
+      </div>
+
+      <!-- §13 -->
+      <div class="legal-section">
+        <h2 class="legal-h2">13. Changes to these Terms</h2>
+        <p class="legal-prose">We may update these Terms over time. If we make material changes, we will notify you by email and through the Service at least 30 days before the changes take effect. Your continued use after the effective date constitutes acceptance. If you do not agree with the changes, you may terminate your account before the effective date.</p>
+      </div>
+
+      <!-- §14 -->
+      <div class="legal-section">
+        <h2 class="legal-h2">14. Miscellaneous</h2>
+        <h3 class="legal-h3">14.1 Entire agreement</h3>
+        <p class="legal-prose">These Terms, together with our Privacy Policy, Cookie Policy, and GDPR &amp; Data Rights policy, constitute the entire agreement between you and UniProfile.</p>
+        <h3 class="legal-h3">14.2 No waiver</h3>
+        <p class="legal-prose">Our failure to enforce a provision of these Terms is not a waiver of that provision.</p>
+        <h3 class="legal-h3">14.3 Severability</h3>
+        <p class="legal-prose">If any provision is held invalid, the remaining provisions remain in effect.</p>
+        <h3 class="legal-h3">14.4 No assignment</h3>
+        <p class="legal-prose">You may not assign these Terms. We may assign these Terms in connection with a merger, acquisition, or sale of substantially all our assets, with notice to you.</p>
+        <h3 class="legal-h3">14.5 Force majeure</h3>
+        <p class="legal-prose">We are not liable for delays or failures caused by events beyond our reasonable control, including natural disasters, war, terrorism, pandemic, government action, or major failures of internet or telecommunications infrastructure.</p>
+      </div>
+
+      <!-- §15 -->
+      <div class="legal-section">
+        <h2 class="legal-h2">15. Contact</h2>
+        <ul class="legal-list" style="margin-top:8px">
+          <li>General: <code>support@uniprofile.net</code></li>
+          <li>Legal matters: <code>legal@uniprofile.net</code></li>
+          <li>Abuse reports: <code>abuse@uniprofile.net</code></li>
+          <li>Privacy concerns: <code>privacy@uniprofile.net</code></li>
+        </ul>
+        <p class="legal-prose" style="margin-top:14px">UniProfile<br><span class="legal-placeholder">[Legal entity name to be confirmed]</span><br><span class="legal-placeholder">[Registered address to be confirmed]</span></p>
+      </div>
+
+      <div class="draft-banner" style="margin-top:36px">
+        <strong>DRAFT FOR LEGAL REVIEW — reminder</strong>
+        <p>This document has not been reviewed by qualified legal counsel. Do not publish on the production site without review. Items marked <span style="font-family:var(--mono);font-size:11px;background:rgba(186,117,23,0.15);color:var(--amber);padding:1px 4px;border-radius:3px">[TO BE SET BY LEGAL]</span> or <span style="font-family:var(--mono);font-size:11px;background:rgba(186,117,23,0.15);color:var(--amber);padding:1px 4px;border-radius:3px">[JURISDICTION]</span> require legal input before publication. Items marked "Not yet live at launch" describe planned features that do not apply to users at initial launch.</p>
+      </div>
+
+    </div><!-- /panel-tos -->
+
+
+    <!-- ── Tab 3: Privacy Policy ── -->
+    <div id="panel-privacy" class="tab-panel" style="display:none" role="tabpanel">
+      <div class="coming-soon-panel">
+        <div class="eyebrow" style="margin-bottom:12px">Coming soon</div>
+        <h2 class="h2" style="margin-bottom:10px">Privacy Policy</h2>
+        <p>The Privacy Policy is in legal drafting and has not been reviewed by counsel. It will be published here once finalized. Questions about how your data is handled in the meantime: <a href="mailto:privacy@uniprofile.net" style="color:var(--ink)">privacy@uniprofile.net</a>.</p>
+      </div>
+    </div>
+
+    <!-- ── Tab 4: Cookie Policy ── -->
+    <div id="panel-cookies" class="tab-panel" style="display:none" role="tabpanel">
+      <div class="coming-soon-panel">
+        <div class="eyebrow" style="margin-bottom:12px">Coming soon</div>
+        <h2 class="h2" style="margin-bottom:10px">Cookie Policy</h2>
+        <p>The Cookie Policy is in legal drafting and has not been reviewed by counsel. It will be published here once finalized. UniProfile does not use third-party tracking cookies. Questions: <a href="mailto:privacy@uniprofile.net" style="color:var(--ink)">privacy@uniprofile.net</a>.</p>
+      </div>
+    </div>
 
   </main>
 </div>
 
 <script src="/components/mobile-drawer.js"></script>
 <script>
+function switchTab(id,btn){
+  document.querySelectorAll('.tab-panel').forEach(function(p){p.style.display='none';});
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');b.setAttribute('aria-selected','false');});
+  var panel=document.getElementById('panel-'+id);
+  if(panel)panel.style.display='';
+  if(btn){btn.classList.add('active');btn.setAttribute('aria-selected','true');}
+}
+
 var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
@@ -262,20 +559,20 @@ async function _req(method,ep){
 function _dn(p){if(!p)return"Traveler";if(p.display_name&&p.display_name.trim())return p.display_name.trim();if(p.identity&&p.identity.legal_first)return p.identity.legal_first;return p.uniprofile_number||p.email||"Traveler";}
 function _ini(p){var id=p&&p.identity||{};var f=(id.legal_first||"").trim();var l=(id.legal_last||"").trim();if(f&&l)return(f[0]+l[0]).toUpperCase();if(f)return f.slice(0,2).toUpperCase();var s=_dn(p).trim();return s.length>=2?s.slice(0,2).toUpperCase():s.toUpperCase();}
 function _st(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
-function _sidebarUpdate(p){
-  _st("sidebar-number",p.uniprofile_number||"—");
-  _st("sidebar-name",_dn(p));
-  _st("sidebar-avatar",_ini(p));
-  _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
-}
+
 async function termsInit(){
   var h=_ph();
   if(h){_tok=h;localStorage.setItem("up_token",_tok);history.replaceState(null,"",window.location.pathname);}
   else _tok=localStorage.getItem("up_token");
-  if(!_tok){return;}
+  if(!_tok)return;
   try{
     var p=await _req("GET","/api/v1/me");
-    _sidebarUpdate(p);
+    _st("sidebar-number",p.uniprofile_number||"—");
+    _st("sidebar-name",_dn(p));
+    _st("sidebar-avatar",_ini(p));
+    _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
+    var al=document.getElementById("sidebar-admin");
+    if(al)al.style.display=p.is_admin?"":"none";
   }catch(e){}
 }
 termsInit();
