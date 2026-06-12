@@ -155,4 +155,10 @@ if [[ "$SMOKE_STATUS" == 5* ]]; then
 fi
 
 echo "[deploy] Smoke OK (statusCode: $SMOKE_STATUS)"
+
+echo "[deploy] Recording deploy timestamps in SSM (best-effort)..."
+DEPLOY_TS="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+MSYS_NO_PATHCONV=1 aws ssm put-parameter --name "/uniprofile/deploy/last_deploy_at" --value "$DEPLOY_TS" --type String --overwrite > /dev/null 2>&1 && echo "[deploy] SSM last_deploy_at=$DEPLOY_TS" || echo "[deploy] SSM write skipped (non-fatal)"
+MSYS_NO_PATHCONV=1 aws ssm put-parameter --name "/uniprofile/deploy/last_smoke_at"  --value "$DEPLOY_TS" --type String --overwrite > /dev/null 2>&1 && echo "[deploy] SSM last_smoke_at=$DEPLOY_TS"  || echo "[deploy] SSM write skipped (non-fatal)"
+
 echo "[deploy] DONE — $FUNCTION_NAME deployed, verified, and healthy."

@@ -3140,6 +3140,34 @@ exports.handler=async function(event){
       }
       return ok({dismissed:true},event);
     }
+    // GET /api/v1/admin/stats
+    if(method==="GET"&&path==="/api/v1/admin/stats"){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const adminCheck=await sql("SELECT is_admin FROM travelers WHERE uuid=:u",[uuidParam("u",myUuid)]);
+      if(!adminCheck.length||!adminCheck[0].is_admin)return err("Forbidden",event,403);
+      const [countRows,funnelRows,signupRows]=await Promise.all([
+        sql("SELECT (SELECT COUNT(*)::int FROM travelers) AS users,(SELECT COUNT(*)::int FROM trips) AS trips,(SELECT COUNT(*)::int FROM travel_documents) AS documents,(SELECT COUNT(*)::int FROM traveler_groups) AS journeys,(SELECT COUNT(*)::int FROM doccheck_requests WHERE status IN ('pending','under_review')) AS doccheck_queue",[]),
+        sql("SELECT COUNT(*)::int AS total,COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM travel_documents d WHERE d.traveler_uuid=t.uuid))::int AS with_doc,COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM trips tr WHERE tr.traveler_uuid=t.uuid))::int AS with_trip,COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM trips tr WHERE tr.traveler_uuid=t.uuid AND tr.source_platform='email'))::int AS with_email_trip,COUNT(*) FILTER (WHERE EXISTS (SELECT 1 FROM traveler_groups tg WHERE tg.owner_uuid=t.uuid))::int AS with_journey FROM travelers t WHERE t.gdpr_consent_at>=NOW()-INTERVAL '30 days'",[]),
+        sql("SELECT t.uuid::text,t.email,t.uniprofile_number,t.gdpr_consent_at::text AS signed_up_at,la.created_at::text AS last_active,la.geo_city,la.geo_region,CASE WHEN EXISTS (SELECT 1 FROM travel_documents d WHERE d.traveler_uuid=t.uuid) THEN true ELSE false END AS has_doc,CASE WHEN EXISTS (SELECT 1 FROM trips tr WHERE tr.traveler_uuid=t.uuid) THEN true ELSE false END AS has_trip,CASE WHEN EXISTS (SELECT 1 FROM trips tr WHERE tr.traveler_uuid=t.uuid AND tr.source_platform='email') THEN true ELSE false END AS has_email_trip,CASE WHEN EXISTS (SELECT 1 FROM traveler_groups tg WHERE tg.owner_uuid=t.uuid) THEN true ELSE false END AS has_journey FROM travelers t LEFT JOIN LATERAL (SELECT created_at,metadata->>'city' AS geo_city,metadata->>'region' AS geo_region FROM auth_security_events WHERE traveler_uuid=t.uuid AND event_type='login' ORDER BY created_at DESC LIMIT 1) la ON true ORDER BY t.gdpr_consent_at DESC LIMIT 50",[])
+      ]);
+      return ok({counts:countRows[0]||{},funnel:funnelRows[0]||{},signups:signupRows},event);
+    }
+    // GET /api/v1/admin/health
+    if(method==="GET"&&path==="/api/v1/admin/health"){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      const adminCheck=await sql("SELECT is_admin FROM travelers WHERE uuid=:u",[uuidParam("u",myUuid)]);
+      if(!adminCheck.length||!adminCheck[0].is_admin)return err("Forbidden",event,403);
+      const loginRows=await sql("SELECT COUNT(*) FILTER (WHERE created_at>NOW()-INTERVAL '24 hours')::int AS logins_24h,COUNT(*) FILTER (WHERE created_at>NOW()-INTERVAL '7 days')::int AS logins_7d,MAX(created_at)::text AS last_login_at FROM auth_security_events WHERE event_type='login'",[]);
+      const ls=loginRows[0]||{logins_24h:0,logins_7d:0,last_login_at:null};
+      const {SSMClient:_SSMC,GetParameterCommand:_GPC}=require("@aws-sdk/client-ssm");
+      const ssmC=new _SSMC({region:process.env.AWS_REGION||"us-east-1"});
+      let last_deploy_at=null,last_smoke_at=null;
+      try{const r=await ssmC.send(new _GPC({Name:"/uniprofile/deploy/last_deploy_at"}));last_deploy_at=(r.Parameter&&r.Parameter.Value)||null;}catch(_){}
+      try{const r=await ssmC.send(new _GPC({Name:"/uniprofile/deploy/last_smoke_at"}));last_smoke_at=(r.Parameter&&r.Parameter.Value)||null;}catch(_){}
+      return ok({logins_24h:ls.logins_24h,logins_7d:ls.logins_7d,last_login_at:ls.last_login_at,last_deploy_at,last_smoke_at,failed_logins_note:"not tracked — Cognito Post-Authentication trigger required"},event);
+    }
     return err("Not found",event,404);
   }catch(e){
     if(e.status)return err(e.message,event,e.status);
