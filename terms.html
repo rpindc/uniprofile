@@ -565,8 +565,12 @@ async function termsInit(){
   if(h){_tok=h;localStorage.setItem("up_token",_tok);history.replaceState(null,"",window.location.pathname);}
   else _tok=localStorage.getItem("up_token");
   if(!_tok)return;
+  // Direct fetch — terms is semi-public; a 401 (expired token) must NOT trigger
+  // the Cognito redirect that _req does, which would return the user to home.html.
   try{
-    var p=await _req("GET","/api/v1/me");
+    var r=await fetch(_API+"/api/v1/me",{headers:{Authorization:"Bearer "+_tok}});
+    if(!r.ok){if(r.status===401)localStorage.removeItem("up_token");return;}
+    var p=await r.json();
     _st("sidebar-number",p.uniprofile_number||"—");
     _st("sidebar-name",_dn(p));
     _st("sidebar-avatar",_ini(p));
