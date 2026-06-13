@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>How it works — UniProfile</title>
+<title>Ask — UniProfile</title>
 <meta name="robots" content="noindex,nofollow" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,11 +13,9 @@
 :root{--ink:#1a1a1a;--ink-soft:#4a4a48;--ink-mute:#8a8a86;--ink-faint:#b8b8b3;--paper:#faf8f4;--paper-warm:#f3efe7;--paper-cream:#f9f7f2;--rule:rgba(26,26,26,0.08);--rule-strong:rgba(26,26,26,0.18);--green:#2d6a4f;--green-soft:#e8efe9;--amber:#ba7517;--amber-soft:#f9f1e3;--red:#c44d4d;--red-soft:#f4e8e8;--serif:'Fraunces',Georgia,serif;--sans:'Inter Tight',-apple-system,sans-serif;--mono:'JetBrains Mono','SF Mono',Menlo,monospace}
 *{box-sizing:border-box;margin:0;padding:0}html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.55;font-size:14px;font-weight:400}
-.h1{font-family:var(--serif);font-weight:300;font-size:clamp(36px,5vw,52px);line-height:1.1;letter-spacing:-0.02em;color:var(--ink)}
+.h1{font-family:var(--serif);font-weight:300;font-size:clamp(28px,4vw,40px);line-height:1.1;letter-spacing:-0.02em;color:var(--ink)}
 .h1 em{font-style:italic;font-weight:300}
-.h2{font-family:var(--serif);font-weight:400;font-size:22px;line-height:1.25;letter-spacing:-0.01em;color:var(--ink)}
-.h2 em{font-style:italic;font-weight:300}
-.lede{font-family:var(--serif);font-weight:300;font-size:17px;line-height:1.5;letter-spacing:-0.005em;color:var(--ink-soft)}
+.lede{font-family:var(--serif);font-weight:300;font-size:16px;line-height:1.5;letter-spacing:-0.005em;color:var(--ink-soft)}
 .eyebrow{font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--ink-mute)}
 .shell{display:flex;min-height:100vh}
 .sidebar{width:240px;background:#fff;border-right:0.5px solid var(--rule);padding:28px 0;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
@@ -41,48 +39,64 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
 .avatar-1{background:linear-gradient(135deg,#d8d3c8,#c4bfb3)}
 .icon{width:16px;height:16px;flex-shrink:0;display:inline-block;vertical-align:middle}
 .id{font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:0.04em;color:var(--ink)}
-.main{flex:1;padding:36px 48px;min-width:0;max-width:760px}
-.page-header{margin-bottom:40px}
-
-/* Guide sections */
-.guide-section{padding:32px 0;border-bottom:0.5px solid var(--rule)}
-.guide-section:last-child{border-bottom:none;padding-bottom:8px}
-.guide-num{font-family:var(--serif);font-style:italic;font-weight:300;font-size:13px;color:var(--ink-faint);margin-bottom:10px}
-.guide-prose{font-size:15px;line-height:1.72;color:var(--ink-soft);max-width:620px}
-.guide-prose+.guide-prose{margin-top:14px}
-.guide-callout{background:var(--paper-warm);border-radius:8px;padding:18px 22px;margin-top:18px;max-width:620px}
-.guide-callout p{font-size:14px;line-height:1.65;color:var(--ink-soft)}
-.guide-soon{display:inline-block;font-size:10px;font-weight:500;letter-spacing:0.12em;text-transform:uppercase;color:var(--amber);background:var(--amber-soft);padding:2px 9px;border-radius:100px;margin-bottom:10px}
-.guide-note{display:block;font-size:13px;color:var(--ink-mute);margin-top:12px;max-width:620px;font-style:italic}
-
+/* Chat layout */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;max-width:760px;height:100vh;overflow:hidden}
+.ask-header{padding:36px 48px 24px;flex-shrink:0}
+.chat-area{flex:1;overflow-y:auto;padding:0 48px;display:flex;flex-direction:column;gap:20px}
+.chat-area:empty{display:none}
+.chat-input-wrap{flex-shrink:0;padding:20px 48px 32px;border-top:0.5px solid var(--rule)}
+/* Starter prompts */
+.starters{padding:0 48px 24px;display:flex;flex-wrap:wrap;gap:8px}
+.starter-btn{background:#fff;border:0.5px solid var(--rule-strong);border-radius:100px;padding:7px 16px;font-size:13px;color:var(--ink-soft);cursor:pointer;transition:background 120ms ease;font-family:var(--sans)}
+.starter-btn:hover{background:var(--paper-warm)}
+/* Messages */
+.msg{display:flex;flex-direction:column;gap:4px;max-width:640px}
+.msg-user{align-self:flex-end;align-items:flex-end}
+.msg-assistant{align-self:flex-start;align-items:flex-start}
+.msg-bubble{padding:12px 16px;border-radius:12px;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.msg-user .msg-bubble{background:var(--ink);color:#fff;border-bottom-right-radius:4px}
+.msg-assistant .msg-bubble{background:#fff;border:0.5px solid var(--rule);color:var(--ink);border-bottom-left-radius:4px}
+.msg-disclaimer{font-size:12px;color:var(--amber);padding:4px 4px 0;max-width:480px}
+/* Typing indicator */
+.typing-dots{display:inline-flex;gap:4px;padding:12px 16px;background:#fff;border:0.5px solid var(--rule);border-radius:12px;border-bottom-left-radius:4px}
+.typing-dot{width:6px;height:6px;border-radius:50%;background:var(--ink-faint);animation:dot-pulse 1.2s infinite}
+.typing-dot:nth-child(2){animation-delay:0.2s}
+.typing-dot:nth-child(3){animation-delay:0.4s}
+@keyframes dot-pulse{0%,80%,100%{transform:scale(0.8);opacity:0.4}40%{transform:scale(1.1);opacity:1}}
+/* Input bar */
+.input-row{display:flex;gap:10px;align-items:flex-end}
+.chat-input{flex:1;resize:none;border:0.5px solid var(--rule-strong);border-radius:10px;padding:11px 14px;font-size:14px;font-family:var(--sans);color:var(--ink);background:#fff;line-height:1.5;min-height:44px;max-height:160px;outline:none;transition:border-color 120ms ease}
+.chat-input:focus{border-color:var(--ink-mute)}
+.send-btn{width:40px;height:40px;border-radius:8px;background:var(--ink);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity 120ms ease}
+.send-btn:disabled{opacity:0.35;cursor:default}
+.send-btn svg{width:16px;height:16px;color:#fff}
+.input-hint{font-size:11px;color:var(--ink-faint);margin-top:6px}
+/* Error state */
+.msg-error .msg-bubble{background:var(--red-soft);border-color:var(--red);color:var(--red)}
 @media(max-width:767px){
   .sidebar{display:none}
-  .main{padding:20px 18px}
-  .guide-prose{font-size:14px}
+  .main{height:100dvh}
+  .ask-header{padding:20px 18px 16px}
+  .starters{padding:0 18px 16px}
+  .chat-area{padding:0 18px}
+  .chat-input-wrap{padding:14px 18px 24px}
 }
 </style>
-</head>
-<body>
-
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
-  <symbol id="i-home" viewBox="0 0 24 24" fill="none"><path d="M4 11L12 4L20 11V19C20 19.55 19.55 20 19 20H5C4.45 20 4 19.55 4 19V11Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/><path d="M10 20V14H14V20" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none"><path d="M3 10.5L12 3L21 10.5V20C21 20.55 20.55 21 20 21H15V16H9V21H4C3.45 21 3 20.55 3 20V10.5Z" stroke="currentColor" stroke-width="1.25"/></symbol>
   <symbol id="i-me" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="9" r="3.5" stroke="currentColor" stroke-width="1.25"/><path d="M5 20C5 16 8 14 12 14C16 14 19 16 19 20" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
   <symbol id="i-people" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="9" r="3" stroke="currentColor" stroke-width="1.25"/><circle cx="17" cy="10" r="2.2" stroke="currentColor" stroke-width="1.25"/><path d="M3 19C3 16 5.7 14 9 14C12.3 14 15 16 15 19" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M15 18C15 15.5 16.5 14 17 14C19 14 21 15.5 21 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
   <symbol id="i-trips" viewBox="0 0 24 24" fill="none"><path d="M3 17L9 11L13 15L21 7" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="11" r="1.2" fill="currentColor"/><circle cx="13" cy="15" r="1.2" fill="currentColor"/><circle cx="21" cy="7" r="1.2" fill="currentColor"/><circle cx="3" cy="17" r="1.2" fill="currentColor"/></symbol>
   <symbol id="i-privacy" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="1" stroke="currentColor" stroke-width="1.25"/><path d="M8 11V8C8 5.79 9.79 4 12 4C14.21 4 16 5.79 16 8V11" stroke="currentColor" stroke-width="1.25"/><circle cx="12" cy="15.5" r="1" fill="currentColor"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24" fill="none"><path d="M4 6C4 5.45 4.45 5 5 5H11V19H5C4.45 19 4 18.55 4 18V6Z" stroke="currentColor" stroke-width="1.25"/><path d="M13 5H19C19.55 5 20 5.45 20 6V18C20 18.55 19.55 19 19 19H13V5Z" stroke="currentColor" stroke-width="1.25"/><path d="M11 5V19" stroke="currentColor" stroke-width="1.25"/></symbol>
   <symbol id="i-groups" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><circle cx="16" cy="8" r="3" stroke="currentColor" stroke-width="1.25"/><path d="M2 20C2 17 4.7 15 8 15" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><path d="M10 18C10 15.5 12.5 14 16 14C19.5 14 22 15.5 22 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
   <symbol id="i-ask" viewBox="0 0 24 24" fill="none"><path d="M12 3C7 3 3 6.5 3 11C3 13.2 4.1 15.2 5.9 16.6L5 21L9.7 18.8C10.4 19 11.2 19.1 12 19.1C17 19.1 21 15.6 21 11.05C21 6.5 17 3 12 3Z" stroke="currentColor" stroke-width="1.25" stroke-linejoin="round"/></symbol>
-  <symbol id="i-book" viewBox="0 0 24 24" fill="none"><path d="M4 6C4 5.45 4.45 5 5 5H11V19H5C4.45 19 4 18.55 4 18V6Z" stroke="currentColor" stroke-width="1.25"/><path d="M13 5H19C19.55 5 20 5.45 20 6V18C20 18.55 19.55 19 19 19H13V5Z" stroke="currentColor" stroke-width="1.25"/><path d="M11 5V19" stroke="currentColor" stroke-width="1.25"/></symbol>
+  <symbol id="i-attention" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.25"/><path d="M12 8V13" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/><circle cx="12" cy="16" r="0.6" fill="currentColor"/></symbol>
   <symbol id="i-chevron" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 </svg>
 
-<header class="mob-header">
-  <button class="mob-hamburger-btn" id="mob-hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mob-drawer"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><line x1="2" y1="5" x2="18" y2="5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="10" x2="18" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="2" y1="15" x2="18" y2="15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button>
-  <a href="/home.html" class="mob-wordmark">Uni<em>Profile</em></a>
-  <a href="/me.html" class="mob-avatar-link" aria-label="My profile"><div class="mob-avatar-circle mob-avatar-initials">—</div></a>
-</header>
-<div id="mob-scrim" class="mob-scrim" aria-hidden="true"></div>
-<nav id="mob-drawer" class="mob-drawer" role="dialog" aria-modal="true" aria-labelledby="mob-drawer-title" aria-hidden="true">
+<nav id="mob-drawer" class="mob-drawer" aria-label="Main navigation" role="navigation">
   <div class="mob-drawer-head"><span class="mob-drawer-title" id="mob-drawer-title">Menu</span><button class="mob-close-btn" id="mob-close" aria-label="Close menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 2L14 14M14 2L2 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></button></div>
   <div class="mob-identity" id="mob-identity-block" role="button" tabindex="0" aria-label="Go to profile"><div class="mob-identity-avatar mob-avatar-initials">—</div><div class="mob-identity-info"><div class="mob-identity-name" id="mob-identity-name">—</div><div class="mob-identity-sub" id="mob-identity-sub">—</div></div></div>
   <div class="mob-nav-list">
@@ -93,12 +107,11 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     <a href="/groups.html" class="mob-nav-item" data-page="groups"><svg class="icon" aria-hidden="true"><use href="#i-groups"/></svg>Journeys</a>
     <a href="/ask.html" class="mob-nav-item" data-page="ask"><svg class="icon" aria-hidden="true"><use href="#i-ask"/></svg>Ask</a>
     <a href="/privacy.html" class="mob-nav-item" data-page="privacy"><svg class="icon" aria-hidden="true"><use href="#i-privacy"/></svg>Privacy</a>
-    <a href="/guide.html" class="mob-nav-item mob-nav-item-active" data-page="guide"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg>Guide</a>
+    <a href="/guide.html" class="mob-nav-item" data-page="guide"><svg class="icon" aria-hidden="true"><use href="#i-book"/></svg>Guide</a>
   </div>
   <div class="mob-drawer-footer">
-    <button class="mob-nav-item mob-signout" id="mob-signout-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><polyline points="16 17 21 12 16 7" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"/><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"/></svg>Sign out</button>
-    <a href="/feedback.html" class="mob-nav-item" style="font-size:13px;color:var(--ink-mute);">Give feedback</a>
-    <a href="/terms.html" class="mob-nav-item" style="font-size:13px;color:var(--ink-mute);">Terms &amp; Privacy</a>
+  <a href="/feedback.html" class="mob-nav-item" style="font-size:13px;color:var(--ink-mute);">Give feedback</a>
+  <a href="/terms.html" class="mob-nav-item" style="font-size:13px;color:var(--ink-mute);">Terms &amp; Privacy</a>
   </div>
 </nav>
 
@@ -120,9 +133,10 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
       <a href="/people.html" class="nav-item"><svg class="icon"><use href="#i-people"/></svg>People</a>
       <a href="/trips.html" class="nav-item"><svg class="icon"><use href="#i-trips"/></svg>Trips</a>
       <a href="/groups.html" class="nav-item"><svg class="icon"><use href="#i-groups"/></svg>Journeys</a>
-      <a href="/ask.html" class="nav-item"><svg class="icon"><use href="#i-ask"/></svg>Ask</a>
+      <a href="/ask.html" class="nav-item active"><svg class="icon"><use href="#i-ask"/></svg>Ask</a>
       <a href="/privacy.html" class="nav-item"><svg class="icon"><use href="#i-privacy"/></svg>Privacy</a>
-      <a href="/guide.html" class="nav-item active"><svg class="icon"><use href="#i-book"/></svg>Guide</a>
+      <a href="/guide.html" class="nav-item"><svg class="icon"><use href="#i-book"/></svg>Guide</a>
+      <a href="/admin.html" class="nav-item" id="sidebar-admin" style="display:none"><svg class="icon"><use href="#i-privacy"/></svg>Admin</a>
     </nav>
     <div class="sidebar-user-card">
       <div class="user-card-inner">
@@ -139,74 +153,33 @@ body{font-family:var(--sans);background:var(--paper);color:var(--ink);line-heigh
     </div>
   </aside>
 
-  <main class="main">
+  <main class="main" id="main">
 
-    <div class="page-header">
-      <div class="eyebrow" style="margin-bottom:12px">UniProfile guide</div>
-      <h1 class="h1" style="margin-bottom:14px">How it works</h1>
-      <p class="lede">A plain-language guide — what UniProfile is, what it does, and what it honestly doesn't.</p>
+    <div class="ask-header">
+      <div class="eyebrow" style="margin-bottom:10px">Travel readiness assistant</div>
+      <h1 class="h1" style="margin-bottom:8px">Ask <em>anything</em></h1>
+      <p class="lede" id="ask-lede">About your documents, visa eligibility, or readiness score.</p>
     </div>
 
-    <!-- 01 -->
-    <section class="guide-section">
-      <div class="guide-num">01</div>
-      <h2 class="h2" style="margin-bottom:16px">What UniProfile is</h2>
-      <p class="guide-prose">Most travelers are scattered data. Your passport number lives in one airline system, your KTN in another, your meal preference somewhere only one hotel remembered, your loyalty number re-typed at every checkout. UniProfile doesn't replace any of that — it gives you one place to hold your own travel identity, so you're never starting from zero. Add your passport once. Set your seat preference once. When you join a group trip, your readiness is already there. Your data stays yours: you control what you share and with whom, and you can delete it at any time.</p>
-    </section>
+    <div class="starters" id="starters">
+      <button class="starter-btn" onclick="useStarter(this)">Am I ready for my next trip?</button>
+      <button class="starter-btn" onclick="useStarter(this)">When does my passport expire?</button>
+      <button class="starter-btn" onclick="useStarter(this)">Do I need a visa for my upcoming destination?</button>
+      <button class="starter-btn" onclick="useStarter(this)">What's missing from my travel profile?</button>
+      <button class="starter-btn" onclick="useStarter(this)">Explain my readiness score</button>
+    </div>
 
-    <!-- Getting started -->
-    <section class="guide-section">
-      <h2 class="h2" style="margin-bottom:16px">Getting started — in five steps</h2>
-      <p class="guide-prose"><strong>1. Set up your profile.</strong> Add your legal name, date of birth, and nationality once. This is the foundation everything else builds on, and you'll never have to re-enter it.</p>
-      <p class="guide-prose"><strong>2. Add your documents to DocVault.</strong> Store your passport, visas, and any travel documents in one secure place. UniProfile keeps track of their expiry dates so you don't have to.</p>
-      <p class="guide-prose"><strong>3. Add a trip — or just forward your booking.</strong> Create a trip manually, or forward your confirmation email to trips@uniprofile.net and UniProfile will read it and build the trip for you — no typing needed.</p>
-      <p class="guide-prose"><strong>4. Check your readiness with DocCheck.</strong> For any trip, DocCheck tells you whether your documents will clear your destination's entry requirements — before you travel, not at the airport.</p>
-      <p class="guide-prose"><strong>5. Keep an eye on your dashboard.</strong> UniProfile watches your trips and documents and surfaces alerts — an approaching passport expiry, an entry-rule issue — right on your home dashboard, so nothing catches you out.</p>
-      <div class="guide-callout">
-        <p>For group trips, create a Journey to see everyone's readiness in one place — no more chasing seven separate email threads.</p>
+    <div class="chat-area" id="chat-area"></div>
+
+    <div class="chat-input-wrap">
+      <div class="input-row">
+        <textarea id="chat-input" class="chat-input" placeholder="Ask about your documents, visas, or readiness…" rows="1" aria-label="Your question"></textarea>
+        <button id="send-btn" class="send-btn" onclick="sendMessage()" aria-label="Send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22L11 13L2 9L22 2Z"/></svg>
+        </button>
       </div>
-    </section>
-
-    <!-- 02 -->
-    <section class="guide-section">
-      <div class="guide-num">02</div>
-      <h2 class="h2" style="margin-bottom:16px">You own your travel identity</h2>
-      <p class="guide-prose">Every airline, hotel, and booking platform holds a fragment of your travel life. They share it within their own systems — they don't share it with each other, or with you. UniProfile works the other way: it's your record, not a vendor's. You maintain your documents, preferences, and emergency contacts in one place. You decide what goes out and to whom.</p>
-    </section>
-
-    <!-- 03 -->
-    <section class="guide-section">
-      <div class="guide-num">03</div>
-      <h2 class="h2" style="margin-bottom:16px">DocVault — your documents, held by you</h2>
-      <p class="guide-prose">Add your passport, visas or residency permits, trusted traveler numbers (KTN, Global Entry), driver's license, and travel insurance here. UniProfile tracks expiry dates and surfaces alerts when something needs attention.</p>
-      <p class="guide-prose">One important clarification: we store what you enter — we do not verify documents with any government database. You still need the physical document at the border. Sensitive numbers are stored masked; you'll see the last four digits on screen, not the full string.</p>
-    </section>
-
-    <!-- 04 -->
-    <section class="guide-section">
-      <div class="guide-num">04</div>
-      <h2 class="h2" style="margin-bottom:16px">Journeys — your trips as one record</h2>
-      <p class="guide-prose">A Journey is your trip as one unified record. Travel solo and it's your own complete picture — itinerary, documents, and readiness in one place. Travel with others and everyone shares that same view: who has documents on file, whose passport is expiring, who still needs to be added. Think of it as one version of the trip — not seven separate email threads.</p>
-    </section>
-
-    <!-- 05 -->
-    <section class="guide-section">
-      <div class="guide-num">05</div>
-      <h2 class="h2" style="margin-bottom:16px">DocCheck — what "on file" means</h2>
-      <p class="guide-prose">When UniProfile says a document is "on file," it means you've entered it — not that an algorithm has cleared you for travel. Entry decisions are made by people at borders. A UniProfile reviewer checks entry requirements against current sources for your travel details, but we can't guarantee they're current or complete for every situation.</p>
-      <p class="guide-prose">"Passport on file — check entry rules for your destination" is what we'll say. "You're cleared to travel" is not something UniProfile would say. Travel insurance is shown as on file with coverage dates — not as proof of coverage.</p>
-    </section>
-
-    <!-- 06 -->
-    <section class="guide-section">
-      <div class="guide-num">06</div>
-      <h2 class="h2" style="margin-bottom:16px">Sharing &amp; privacy — what you share, with whom</h2>
-      <p class="guide-prose">Today, sharing happens within Journeys. When you join as a linked member, you choose whether to approve the organizer's request to see your readiness status. If you approve, the organizer sees whether your documents are on file — not the document details themselves. If you don't, they see only that you're pending. Named travelers (children or guests the organizer manages) work differently — the organizer enters their documents directly on their behalf.</p>
-      <div class="guide-callout">
-        <span class="guide-soon">Coming soon</span>
-        <p>One day you'll be able to share just what's needed at the moment — your seat preference and meal code with a hotel at check-in, or your KTN to an airline without forwarding your passport. Per trip, per vendor, chosen by you. That capability is in development and not available yet.</p>
-      </div>
-    </section>
+      <div class="input-hint">Enter to send · Shift+Enter for new line · Does not book travel</div>
+    </div>
 
   </main>
 </div>
@@ -217,36 +190,138 @@ var _API="https://0wsxmo9ftg.execute-api.us-east-1.amazonaws.com/prod";
 var _CD="https://uniprofile-auth.auth.us-east-1.amazoncognito.com";
 var _CID="2heljmdli4f9cv2i4m0i020mfc";
 var _tok=null;
+var _chatHistory=[];
+var _sending=false;
 
 function _loginUrl(){return _CD+"/login?client_id="+_CID+"&response_type=token&scope=email+openid+profile&redirect_uri="+encodeURIComponent("https://www.uniprofile.net/home.html");}
 function _ph(){var p=new URLSearchParams(window.location.hash.slice(1));return p.get("id_token")||p.get("access_token");}
-async function _req(method,ep){
-  var o={method:method,headers:{Authorization:"Bearer "+_tok}};
-  var r=await fetch(_API+ep,o);
-  if(r.status===401){localStorage.removeItem("up_token");location.href=_loginUrl();throw new Error("unauth");}
-  if(!r.ok)throw new Error("HTTP "+r.status);
-  return r.json();
-}
 function _dn(p){if(!p)return"Traveler";if(p.display_name&&p.display_name.trim())return p.display_name.trim();if(p.identity&&p.identity.legal_first)return p.identity.legal_first;return p.uniprofile_number||p.email||"Traveler";}
 function _ini(p){var id=p&&p.identity||{};var f=(id.legal_first||"").trim();var l=(id.legal_last||"").trim();if(f&&l)return(f[0]+l[0]).toUpperCase();if(f)return f.slice(0,2).toUpperCase();var s=_dn(p).trim();return s.length>=2?s.slice(0,2).toUpperCase():s.toUpperCase();}
 function _st(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
-function _sidebarUpdate(p){
-  _st("sidebar-number",p.uniprofile_number||"—");
-  _st("sidebar-name",_dn(p));
-  _st("sidebar-avatar",_ini(p));
-  _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
+
+function appendMessage(role, text, disclaimer){
+  var area=document.getElementById("chat-area");
+  var div=document.createElement("div");
+  div.className="msg msg-"+role;
+  var bub=document.createElement("div");
+  bub.className="msg-bubble";
+  bub.textContent=text;
+  div.appendChild(bub);
+  if(disclaimer){
+    var disc=document.createElement("div");
+    disc.className="msg-disclaimer";
+    disc.textContent="⚠ "+disclaimer;
+    div.appendChild(disc);
+  }
+  area.appendChild(div);
+  area.scrollTop=area.scrollHeight;
+  return div;
 }
-async function guideInit(){
+
+function appendTyping(){
+  var area=document.getElementById("chat-area");
+  var div=document.createElement("div");
+  div.className="msg msg-assistant";
+  div.id="typing-indicator";
+  div.innerHTML='<div class="typing-dots"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';
+  area.appendChild(div);
+  area.scrollTop=area.scrollHeight;
+}
+
+function removeTyping(){
+  var t=document.getElementById("typing-indicator");
+  if(t)t.remove();
+}
+
+function hideStarters(){
+  var s=document.getElementById("starters");
+  if(s)s.style.display="none";
+  var l=document.getElementById("ask-lede");
+  if(l)l.style.display="none";
+}
+
+function useStarter(btn){
+  var text=btn.textContent;
+  var inp=document.getElementById("chat-input");
+  if(inp){inp.value=text;inp.dispatchEvent(new Event("input"));}
+  sendMessage();
+}
+
+async function sendMessage(){
+  if(_sending)return;
+  var inp=document.getElementById("chat-input");
+  var question=(inp.value||"").trim();
+  if(!question)return;
+  if(!_tok){location.href=_loginUrl();return;}
+  hideStarters();
+  appendMessage("user",question,null);
+  inp.value="";
+  inp.style.height="";
+  _sending=true;
+  document.getElementById("send-btn").disabled=true;
+  appendTyping();
+  try{
+    var res=await fetch(_API+"/api/v1/me/agent/readiness",{
+      method:"POST",
+      headers:{Authorization:"Bearer "+_tok,"Content-Type":"application/json"},
+      body:JSON.stringify({question:question,history:_chatHistory.slice(-8)})
+    });
+    removeTyping();
+    if(res.status===401){localStorage.removeItem("up_token");location.href=_loginUrl();return;}
+    if(!res.ok){
+      var et=await res.text();
+      var em="Something went wrong. Please try again.";
+      try{var ej=JSON.parse(et);em=ej.error||em;}catch(_){}
+      var errDiv=appendMessage("assistant",em,null);
+      errDiv.classList.add("msg-error");
+    }else{
+      var data=await res.json();
+      appendMessage("assistant",data.answer||"",data.disclaimer||null);
+      _chatHistory.push({role:"user",content:question});
+      _chatHistory.push({role:"assistant",content:data.answer||""});
+      if(_chatHistory.length>20)_chatHistory=_chatHistory.slice(-20);
+    }
+  }catch(e){
+    removeTyping();
+    appendMessage("assistant","Network error — please check your connection and try again.",null);
+  }
+  _sending=false;
+  document.getElementById("send-btn").disabled=false;
+  inp.focus();
+}
+
+// Auto-resize textarea
+document.addEventListener("DOMContentLoaded",function(){
+  var inp=document.getElementById("chat-input");
+  if(inp){
+    inp.addEventListener("input",function(){
+      this.style.height="";
+      this.style.height=Math.min(this.scrollHeight,160)+"px";
+    });
+    inp.addEventListener("keydown",function(e){
+      if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendMessage();}
+    });
+  }
+});
+
+async function askInit(){
   var h=_ph();
   if(h){_tok=h;localStorage.setItem("up_token",_tok);history.replaceState(null,"",window.location.pathname);}
   else _tok=localStorage.getItem("up_token");
   if(!_tok){location.href=_loginUrl();return;}
   try{
-    var p=await _req("GET","/api/v1/me");
-    _sidebarUpdate(p);
+    var r=await fetch(_API+"/api/v1/me",{headers:{Authorization:"Bearer "+_tok}});
+    if(!r.ok){if(r.status===401){localStorage.removeItem("up_token");location.href=_loginUrl();}return;}
+    var p=await r.json();
+    _st("sidebar-number",p.uniprofile_number||"—");
+    _st("sidebar-name",_dn(p));
+    _st("sidebar-avatar",_ini(p));
+    _st("sidebar-tier",(p.tier||"free").charAt(0).toUpperCase()+(p.tier||"free").slice(1));
+    var al=document.getElementById("sidebar-admin");
+    if(al)al.style.display=p.is_admin?"":"none";
   }catch(e){}
 }
-guideInit();
+askInit();
 </script>
 </body>
 </html>

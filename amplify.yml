@@ -24,6 +24,7 @@ frontend:
       - admin.html
       - guide.html
       - terms.html
+      - ask.html
       - icons.html
       - components/**/*
       - data/**/*

@@ -407,6 +407,14 @@ async function sendInviteEmail(toEmail, inviterName, message, inviteId) {
 }
 const { SecretsManagerClient, GetSecretValueCommand } = require("@aws-sdk/client-secrets-manager");
 const smClient = new SecretsManagerClient({ region: process.env.AWS_REGION || "us-east-1" });
+let _anthropicKey=null;
+async function getAnthropicKey(){
+  if(_anthropicKey)return _anthropicKey;
+  const s=await smClient.send(new GetSecretValueCommand({SecretId:"/uniprofile/anthropic/key"}));
+  const raw=s.SecretString||"";
+  try{_anthropicKey=JSON.parse(raw).api_key||JSON.parse(raw).key;}catch(_){_anthropicKey=raw.trim();}
+  return _anthropicKey;
+}
 let timaticToken = null;
 let timaticTokenExpiry = null;
 async function getTimaticToken() {
@@ -701,6 +709,72 @@ async function buildFamilyProfile(myUuid) {
     })),
     named_only: namedOnly,
   };
+}
+async function buildAgentContext(uuid){
+  const p=[uuidParam("u",uuid)];
+  const today=new Date();today.setHours(0,0,0,0);
+  function _da(s){if(!s)return null;return Math.floor((new Date(s.slice(0,10)+'T12:00:00Z')-today)/86400000);}
+  function _mo(s){if(!s)return null;return(new Date(s.slice(0,10)+'T12:00:00Z')-today)/(1000*60*60*24*30.44);}
+  const [idRows,docRows,tripRows,allTripRows,loyaltyRows,modRows]=await Promise.all([
+    sql("SELECT legal_first,nationality,dob FROM traveler_identity WHERE traveler_uuid=:u",p),
+    sql("SELECT doc_type,issuing_country,expiry_date,valid_until,updated_at FROM travel_documents WHERE traveler_uuid=:u",p),
+    sql("SELECT destination_iata,origin_iata,departure_date::text,return_date::text FROM trips WHERE traveler_uuid=:u AND status NOT IN ('absorbed') AND departure_date>=CURRENT_DATE ORDER BY departure_date LIMIT 5",p),
+    sql("SELECT origin_iata,destination_iata,status FROM trips WHERE traveler_uuid=:u",p),
+    sql("SELECT program_name,program_type,tier_status FROM loyalty_memberships WHERE traveler_uuid=:u",p),
+    sql("SELECT data FROM traveler_profile_modules WHERE traveler_uuid=:u AND module_name='essentials'",p)
+  ]);
+  const id=idRows[0]||{};
+  const docs=docRows;
+  let ess={};
+  try{ess=modRows.length?JSON.parse(modRows[0].data):{};}catch(_){}
+  // Documents: doc_number structurally absent — SELECT list never fetches it
+  const documents=docs.map(d=>{
+    const da=_da(d.expiry_date||d.valid_until);
+    return {doc_type:d.doc_type,issuing_country:d.issuing_country||null,expiry_date:d.expiry_date?d.expiry_date.slice(0,10):null,days_remaining:da,status:da===null?'no_expiry':da<0?'expired':da<90?'expiring_soon':'valid'};
+  });
+  // Readiness score inline (dob used for profPts only — never placed in context)
+  const passport=docs.find(d=>d.doc_type==='PASSPORT');
+  const gaps=[];
+  let dvPts=0;
+  if(passport){dvPts+=10;const mo=_mo(passport.expiry_date);if(mo===null||mo>0)dvPts+=10;if(mo===null||mo>6)dvPts+=5;if(mo===null||mo>24)dvPts+=5;}
+  else gaps.push('No passport on file');
+  const nonPass=docs.filter(d=>d.doc_type!=='PASSPORT');
+  const exp60=nonPass.filter(d=>{const da=_da(d.expiry_date||d.valid_until);return da!==null&&da>=0&&da<=60;});
+  const exp180=nonPass.filter(d=>{const da=_da(d.expiry_date||d.valid_until);return da!==null&&da>60&&da<=180;});
+  dvPts+=exp60.length===0?5:Math.max(5-exp60.length*3,0);
+  dvPts+=exp180.length===0?5:Math.max(5-exp180.length,0);
+  const docValidity=Math.min(dvPts,40);
+  let authPts=0;
+  const ge=docs.find(d=>d.doc_type==='GLOBAL_ENTRY');
+  const nx=docs.find(d=>d.doc_type==='NEXUS');
+  const oci=docs.find(d=>d.doc_type==='OCI');
+  if(ge){const mo=_mo(ge.expiry_date);if(mo===null||mo>0)authPts+=8;else{authPts+=2;gaps.push('Global Entry expired');}}
+  else if(nx){const mo=_mo(nx.expiry_date);if(mo===null||mo>0)authPts+=6;else gaps.push('Nexus expired');}
+  else gaps.push('No trusted traveler program on file');
+  const validVisas=docs.filter(d=>(d.doc_type==='VISA'||d.doc_type==='ESTA')&&(()=>{const mo=_mo(d.expiry_date||d.valid_until);return mo===null||mo>0;})());
+  authPts+=Math.min(validVisas.length*3,8);if(oci)authPts+=4;
+  const authorization=Math.min(authPts,20);
+  let profPts=0;
+  if(id.legal_first)profPts+=4;if(id.dob)profPts+=3;if(id.nationality)profPts+=3;
+  if(ess.emergency_name&&ess.emergency_phone)profPts+=5;else gaps.push('No emergency contact on file');
+  const profile=Math.min(profPts,15);
+  const active=allTripRows.filter(t=>t.status!=='absorbed');
+  const intl=active.filter(t=>t.origin_iata&&t.destination_iata&&t.origin_iata!==t.destination_iata);
+  const ratio=active.length>0?intl.length/active.length:0;
+  const destSet={};active.filter(t=>t.destination_iata).forEach(t=>{destSet[t.destination_iata]=1;});
+  const history=Math.min(Math.round(Math.min(active.length,10)*0.5+(ratio>=0.6?5:ratio>=0.4?4:ratio>=0.2?2:0)+Math.min(Object.keys(destSet).length,5)),15);
+  const freshness=Math.max(10-Math.min(exp60.length*3,6)-Math.min(exp180.length,2),0);
+  const totalScore=docValidity+authorization+profile+history+freshness;
+  // Upcoming trips with TIMATIC rules (nationality used, dob/gender not in context)
+  const passportDaysValid=passport?_da(passport.expiry_date):null;
+  const estaDoc=docs.find(d=>d.doc_type==='ESTA')||null;
+  const upcoming_trips=tripRows.map(t=>{
+    const dest=t.destination_iata||'';
+    const timatic=runTimaticRules(id.nationality||'',dest,[],passportDaysValid,estaDoc,t.departure_date?t.departure_date.slice(0,10):null);
+    return {destination:t.destination_iata,origin:t.origin_iata,departure_date:t.departure_date?t.departure_date.slice(0,10):null,return_date:t.return_date?t.return_date.slice(0,10):null,days_until:t.departure_date?Math.floor((new Date(t.departure_date.slice(0,10)+'T12:00:00Z')-today)/86400000):null,timatic:{overall:timatic.overall,visa:timatic.visa,passport:timatic.passport,eta:timatic.eta,transit:timatic.transit}};
+  });
+  // Context: dob, doc_number, doc_number_last4, member_number, is_admin, payment all absent
+  return {traveler:{first_name:id.legal_first||null,nationality:id.nationality||null},readiness:{total:totalScore,max:100,components:{doc_validity:{score:docValidity,max:40},authorization:{score:authorization,max:20},profile:{score:profile,max:15},history:{score:history,max:15},freshness:{score:freshness,max:10}},gaps},documents,upcoming_trips,loyalty:loyaltyRows.map(l=>({program_name:l.program_name,program_type:l.program_type,tier_status:l.tier_status})),emergency_contact_on_file:!!(ess.emergency_name&&ess.emergency_phone),context_generated_at:new Date().toISOString()};
 }
 exports.handler=async function(event){
   const method=event.httpMethod,path=event.path||"";
@@ -3209,6 +3283,39 @@ exports.handler=async function(event){
       const freshness=Math.max(freshPts,0);
       const total=docValidity+authorization+profile+history+freshness;
       return ok({total,max:100,components:{doc_validity:{score:docValidity,max:40,label:'Document validity'},authorization:{score:authorization,max:20,label:'Authorization coverage'},profile:{score:profile,max:15,label:'Profile completeness'},history:{score:history,max:15,label:'Travel history'},freshness:{score:freshness,max:10,label:'Freshness'}},gaps},event);
+    }
+    // POST /api/v1/me/agent/readiness
+    if(method==="POST"&&path==="/api/v1/me/agent/readiness"){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      if(!myUuid)return err("Traveler not found",event,404);
+      const body=event.body?JSON.parse(event.body):{};
+      const question=(body.question||"").trim();
+      const history_raw=Array.isArray(body.history)?body.history:[];
+      if(!question)return err("question required",event,400);
+      // Booking guard — never reaches LLM
+      const BOOKING_KEYWORDS=/\b(book|reserve|purchase|buy|ticket|price|cost|fare|how much|find flights?|search flights?|cheapest|availability|itinerary price)\b/i;
+      if(BOOKING_KEYWORDS.test(question)){
+        return ok({answer:"I can't help with booking or pricing — I'm your travel readiness assistant. For bookings, use your preferred travel app or airline website. I can help with document status, visa eligibility, your readiness score, or what to prepare before your next trip.",sources:[],disclaimer:null,booking_guard:true},event);
+      }
+      const ctx=await buildAgentContext(myUuid);
+      const anthropicKey=await getAnthropicKey();
+      const systemPrompt=`You are the UniProfile travel readiness assistant. You help travelers understand their document status, visa eligibility, and travel readiness based on their personal profile data provided below.\n\nSTRICT RULES:\n- Never book travel, suggest prices, search for fares, or compare tickets. If asked, decline and redirect to a booking service.\n- For visa or entry eligibility questions, always include: "Verify current requirements with the official embassy or consulate before travel — rules change without notice."\n- Never reveal, reconstruct, or reference document numbers, full dates of birth, or loyalty account numbers.\n- Speak in plain English. Be concise. Use bullet points for lists.\n- If uncertain, say so and recommend the traveler verify with official sources.\n- Answer only from the traveler context provided. Do not invent data.\n\nTRAVELER CONTEXT:\n${JSON.stringify(ctx,null,2)}`;
+      const messages=[
+        ...history_raw.slice(-8).map(m=>({role:m.role,content:String(m.content).slice(0,1000)})),
+        {role:"user",content:question.slice(0,2000)}
+      ];
+      const anthropicRes=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"x-api-key":anthropicKey,"anthropic-version":"2023-06-01","content-type":"application/json"},body:JSON.stringify({model:"claude-haiku-4-5-20251001",max_tokens:512,system:systemPrompt,messages})});
+      if(!anthropicRes.ok){
+        const e2=await anthropicRes.text();
+        console.error("Anthropic agent error:",e2);
+        return err("Agent temporarily unavailable — please try again in a moment",event,503);
+      }
+      const anthropicData=await anthropicRes.json();
+      const answer=(anthropicData.content&&anthropicData.content[0]&&anthropicData.content[0].text)||"I wasn't able to generate a response. Please try again.";
+      const ELIGIBILITY_WORDS=/visa|entry|eligible|requirement|passport|allowed|permit|clearance/i;
+      const disclaimer=(ELIGIBILITY_WORDS.test(answer)&&!answer.toLowerCase().includes("verify"))?"Always verify current entry requirements with the official embassy or consulate before travel.":null;
+      return ok({answer,sources:[],disclaimer,booking_guard:false},event);
     }
     // GET /api/v1/admin/stats
     if(method==="GET"&&path==="/api/v1/admin/stats"){
