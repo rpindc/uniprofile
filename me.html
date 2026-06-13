@@ -192,6 +192,20 @@ body.me-editing .me-edit-banner{display:flex}
 
 .icon{width:16px;height:16px;flex-shrink:0;display:inline-block;vertical-align:middle}
 
+/* ── Readiness score card ── */
+.rs-card{background:var(--paper-warm);border-radius:12px;padding:18px 22px;margin-bottom:24px}
+.rs-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+.rs-total{font-family:var(--serif);font-weight:300;font-size:32px;letter-spacing:-0.03em;line-height:1;color:var(--ink)}
+.rs-total-max{font-size:13px;color:var(--ink-mute);font-family:var(--sans);font-weight:400;letter-spacing:0;margin-left:2px}
+.rs-bars{display:flex;flex-direction:column;gap:8px}
+.rs-bar-row{display:flex;align-items:center;gap:10px}
+.rs-bar-label{font-size:12px;color:var(--ink-mute);width:170px;flex-shrink:0}
+.rs-bar-track{flex:1;height:4px;background:rgba(26,26,26,0.08);border-radius:2px;overflow:hidden}
+.rs-bar-fill{height:100%;border-radius:2px;transition:width 600ms ease}
+.rs-bar-pts{font-size:11px;color:var(--ink-mute);width:38px;text-align:right;flex-shrink:0;font-family:var(--mono)}
+.rs-gaps{margin-top:12px;padding-top:10px;border-top:0.5px solid rgba(26,26,26,0.08)}
+.rs-gap-item{font-size:12px;color:var(--amber);padding:2px 0;line-height:1.5}
+
 /* ── Responsive ── */
 @media(max-width:767px){
   .main{padding:20px;max-width:none}
@@ -335,6 +349,16 @@ body.me-editing .me-edit-banner{display:flex}
       <h1 class="h1" id="me-name" style="margin-bottom:8px">—</h1>
       <p class="lede">Everything UniProfile holds about you as a traveler.</p>
     </div>
+  </div>
+
+  <!-- Readiness score card -->
+  <div class="rs-card" id="rs-card" style="display:none">
+    <div class="rs-head">
+      <span class="eyebrow">Travel readiness</span>
+      <span><span id="rs-total" class="rs-total">—</span><span class="rs-total-max"> / 100</span></span>
+    </div>
+    <div class="rs-bars" id="rs-bars"></div>
+    <div class="rs-gaps" id="rs-gaps" style="display:none"></div>
   </div>
 
   <!-- Three-tab strip -->
@@ -2504,6 +2528,42 @@ async function _autoSavePersPay(){
   }catch(e){_showErrRetry("pers-pay-save-err",_autoSavePersPay);}
 }
 
+/* ── Readiness score ── */
+async function _loadReadinessScore(){
+  try{
+    var r=await fetch(_API+"/api/v1/me/readiness-score",{headers:{Authorization:"Bearer "+_tok}});
+    if(!r.ok)return;
+    var d=await r.json();
+    var card=document.getElementById('rs-card');
+    if(!card)return;
+    var totalEl=document.getElementById('rs-total');
+    totalEl.textContent=d.total;
+    totalEl.style.color=d.total>=90?'var(--green)':d.total>=70?'var(--amber)':'var(--red)';
+    var barsEl=document.getElementById('rs-bars');
+    barsEl.innerHTML='';
+    var order=['doc_validity','authorization','profile','history','freshness'];
+    order.forEach(function(k){
+      var c=d.components[k];if(!c)return;
+      var pct=Math.round(c.score/c.max*100);
+      var col=pct>=80?'var(--green)':pct>=60?'var(--amber)':'var(--red)';
+      var row=document.createElement('div');row.className='rs-bar-row';
+      row.innerHTML='<span class="rs-bar-label">'+_esc(c.label)+'</span>'
+        +'<div class="rs-bar-track"><div class="rs-bar-fill" style="width:0%;background:'+col+'" data-pct="'+pct+'"></div></div>'
+        +'<span class="rs-bar-pts">'+c.score+'/'+c.max+'</span>';
+      barsEl.appendChild(row);
+    });
+    requestAnimationFrame(function(){
+      barsEl.querySelectorAll('.rs-bar-fill').forEach(function(el){el.style.width=el.dataset.pct+'%';});
+    });
+    var gapsEl=document.getElementById('rs-gaps');
+    if(d.gaps&&d.gaps.length){
+      gapsEl.innerHTML=d.gaps.map(function(g){return '<div class="rs-gap-item">↑ '+_esc(g)+'</div>';}).join('');
+      gapsEl.style.display='';
+    }else{gapsEl.style.display='none';}
+    card.style.display='';
+  }catch(e){}
+}
+
 /* ── meRefresh ── */
 async function meRefresh(){
   try{
@@ -2523,6 +2583,7 @@ async function meRefresh(){
     _renderCorpPayCard(p);
     _renderPersPayCard(p);
     _renderLoyaltyCard(p);
+    _loadReadinessScore();
   }catch(e){console.error(e);}
 }
 

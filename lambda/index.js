@@ -3140,6 +3140,76 @@ exports.handler=async function(event){
       }
       return ok({dismissed:true},event);
     }
+    // GET /api/v1/me/readiness-score
+    if(method==="GET"&&path==="/api/v1/me/readiness-score"){
+      const token=await verifyToken(event);
+      const myUuid=await getOrCreateTraveler(token.sub,token.email);
+      if(!myUuid)return err("Traveler not found",event,404);
+      const p=[uuidParam("u",myUuid)];
+      const [idRows,docRows,tripRows,modRows]=await Promise.all([
+        sql("SELECT legal_first,legal_last,dob,nationality FROM traveler_identity WHERE traveler_uuid=:u",p),
+        sql("SELECT doc_type,expiry_date,valid_until,updated_at FROM travel_documents WHERE traveler_uuid=:u",p),
+        sql("SELECT origin_iata,destination_iata,status FROM trips WHERE traveler_uuid=:u",p),
+        sql("SELECT data FROM traveler_profile_modules WHERE traveler_uuid=:u AND module_name='essentials'",p)
+      ]);
+      const id=idRows[0]||{};
+      const docs=docRows;
+      const trips=tripRows;
+      let ess={};
+      try{ess=modRows.length?JSON.parse(modRows[0].data):{};}catch(_){}
+      const today=new Date();today.setHours(0,0,0,0);
+      function _mo(s){if(!s)return null;return(new Date(s.slice(0,10)+'T12:00:00Z')-today)/(1000*60*60*24*30.44);}
+      function _da(s){if(!s)return null;return(new Date(s.slice(0,10)+'T12:00:00Z')-today)/(1000*60*60*24);}
+      // ── 1. Document validity (40) ──
+      const passport=docs.find(d=>d.doc_type==='PASSPORT');
+      let dvPts=0;const gaps=[];
+      if(passport){
+        dvPts+=10;
+        const mo=_mo(passport.expiry_date);
+        if(mo===null||mo>0)dvPts+=10;
+        if(mo===null||mo>6)dvPts+=5;
+        if(mo===null||mo>24)dvPts+=5;
+      }else gaps.push('No passport on file');
+      const nonPass=docs.filter(d=>d.doc_type!=='PASSPORT');
+      const exp60=nonPass.filter(d=>{const da=_da(d.expiry_date||d.valid_until);return da!==null&&da>=0&&da<=60;});
+      const exp180=nonPass.filter(d=>{const da=_da(d.expiry_date||d.valid_until);return da!==null&&da>60&&da<=180;});
+      dvPts+=exp60.length===0?5:Math.max(5-exp60.length*3,0);
+      dvPts+=exp180.length===0?5:Math.max(5-exp180.length,0);
+      const docValidity=Math.min(dvPts,40);
+      // ── 2. Authorization coverage (20) ──
+      let authPts=0;
+      const ge=docs.find(d=>d.doc_type==='GLOBAL_ENTRY');
+      const nx=docs.find(d=>d.doc_type==='NEXUS');
+      const oci=docs.find(d=>d.doc_type==='OCI');
+      if(ge){const mo=_mo(ge.expiry_date);if(mo===null||mo>0)authPts+=8;else{authPts+=2;gaps.push('Global Entry expired');}}
+      else if(nx){const mo=_mo(nx.expiry_date);if(mo===null||mo>0)authPts+=6;else gaps.push('Nexus expired');}
+      else gaps.push('No trusted traveler program on file');
+      const validVisas=docs.filter(d=>(d.doc_type==='VISA'||d.doc_type==='ESTA')&&(()=>{const mo=_mo(d.expiry_date||d.valid_until);return mo===null||mo>0;})());
+      authPts+=Math.min(validVisas.length*3,8);
+      if(oci)authPts+=4;
+      const authorization=Math.min(authPts,20);
+      // ── 3. Profile completeness (15) ──
+      let profPts=0;
+      if(id.legal_first&&id.legal_last)profPts+=4;else gaps.push('Legal name incomplete');
+      if(id.dob)profPts+=3;else gaps.push('Date of birth missing');
+      if(id.nationality)profPts+=3;else gaps.push('Nationality missing');
+      if(ess.emergency_name&&ess.emergency_phone)profPts+=5;else gaps.push('No emergency contact on file');
+      const profile=Math.min(profPts,15);
+      // ── 4. History context (15) ──
+      const active=trips.filter(t=>t.status!=='absorbed');
+      const intl=active.filter(t=>t.origin_iata&&t.destination_iata&&t.origin_iata!==t.destination_iata);
+      const ratio=active.length>0?intl.length/active.length:0;
+      const destSet={};active.filter(t=>t.destination_iata).forEach(t=>{destSet[t.destination_iata]=1;});
+      const tripPts=Math.min(active.length,10)*0.5;
+      const intlPts=ratio>=0.6?5:ratio>=0.4?4:ratio>=0.2?2:0;
+      const destPts=Math.min(Object.keys(destSet).length,5);
+      const history=Math.min(Math.round(tripPts+intlPts+destPts),15);
+      // ── 5. Freshness (10) ──
+      let freshPts=10-Math.min(exp60.length*3,6)-Math.min(exp180.length,2);
+      const freshness=Math.max(freshPts,0);
+      const total=docValidity+authorization+profile+history+freshness;
+      return ok({total,max:100,components:{doc_validity:{score:docValidity,max:40,label:'Document validity'},authorization:{score:authorization,max:20,label:'Authorization coverage'},profile:{score:profile,max:15,label:'Profile completeness'},history:{score:history,max:15,label:'Travel history'},freshness:{score:freshness,max:10,label:'Freshness'}},gaps},event);
+    }
     // GET /api/v1/admin/stats
     if(method==="GET"&&path==="/api/v1/admin/stats"){
       const token=await verifyToken(event);
