@@ -23,6 +23,7 @@ frontend:
       - privacy.html
       - admin.html
       - guide.html
+      - terms.html
       - icons.html
       - components/**/*
       - data/**/*
